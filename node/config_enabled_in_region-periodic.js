@@ -26,7 +26,6 @@ function getAccountId(invokingEvent) {
 }
  
 // This is the handler that's invoked by Lambda
-// Most of this code is boilerplate; use as is
 exports.handler = function(event, context) {
  
 	checkDefined(event, "event");
