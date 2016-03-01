@@ -7,11 +7,8 @@ var s3 = new aws.S3();
 var zlib = require('zlib');
 var config = new aws.ConfigService();
  
-// This function uses the collection of configuration items as well as the
-// rule parameters to compute the compliance value.
-// The example counts the number of resources with type equal to the value
-// of the 'applicableResourceType' and compares that number to the value
-// of the 'maxCount' parameter.
+// This function checks whether CloudTrail is enabled with multi region trail in the home region. 
+// Do not use this rule in other regions.
  
 function evaluateCompliance(configurationItems, ruleParameters, context) {
     checkDefined(configurationItems, "configurationItems");
