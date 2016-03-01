@@ -34,7 +34,6 @@ function isApplicable(configurationItem, event) {
 }
  
 // This is the handler that's invoked by Lambda
-// Most of this code is boilerplate; use as is
 exports.handler = function(event, context) {
 	
 	event = checkDefined(event, "event");
@@ -47,7 +46,7 @@ exports.handler = function(event, context) {
 	// Only run check on IAM Users
 	if (configurationItem.resourceType === 'AWS::IAM::User') {
 	   
-		// List all API Keys for user
+		// List all Access Keys for user
 		iam.listAccessKeys({ UserName: configurationItem.resourceName }, function(keyerr, keydata) {
 
 			var ret = 'NOT_APPLICABLE';
@@ -62,7 +61,7 @@ exports.handler = function(event, context) {
 
 						var now = new Date();
 
-						if (Math.floor((now - Date.parse(keydata.AccessKeyMetadata[k].CreateDate)) / 86400000) > ruleParameters.MaximumAPIKeyAge) {
+						if (Math.floor((now - Date.parse(keydata.AccessKeyMetadata[k].CreateDate)) / 86400000) > ruleParameters.MaximumAccessKeyAge) {
 
 							ret = 'NON_COMPLIANT';
 

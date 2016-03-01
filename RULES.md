@@ -74,18 +74,18 @@ Description: Checks that CloudTrail is enabled in all regions. Use this rule onl
     
 Required Parameter: ```None```
 
-### 11. Ensure IAM User API Key Rotation
-Description: Checks that the IAM User's API Keys have been rotated within the specified number of days.
+### 11. Ensure IAM User Access Key Rotation
+Description: Checks that the IAM User's Access Keys have been rotated within the specified number of days.
 
-	node/iam_api_key_rotation-triggered.js
+	node/iam_access_key_rotation-triggered.js
     
 Required Parameter: ```MaximumAPIKeyAge```
 Example Value: ```90```
 
-### 12. Ensure API Key Disabled on Root Account
-Description: Checks that the Root Account's API Keys have been disabled.
+### 12. Ensure Access Key Disabled on Root Account
+Description: Checks that the Root Account's Access Keys have been disabled.
 
-	node/iam_api_key_root_disabled-periodic.js
+	node/iam_access_key_root_disabled-periodic.js
     
 Required Parameter: ```None```
 

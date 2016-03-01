@@ -26,8 +26,7 @@ function isApplicable(configurationItem, event){
 }
  
 // This is the handler that's invoked by Lambda
-// Most of this code is boilerplate; use as is
- 
+
 exports.handler = function(event, context) {
     event = checkDefined(event, "event");
     var invokingEvent = JSON.parse(event.invokingEvent);
