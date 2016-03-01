@@ -4,9 +4,10 @@
 var aws = require('aws-sdk');
 var config = new aws.ConfigService();
 // This is where it's determined whether the resource is compliant or not.
-// In this example, we simply decide that the resource is compliant if it is an instance and its type matches the type specified as the desired type.
-// If the resource is not an instance, then we deem this resource to be not applicable. (If the scope of the rule is specified to include only
-// instances, this rule would never have been invoked.)
+// In this example, we look at the tenancy of the EC2 instance and determine whether it matches 
+// the "DesiredTenancy" parameter that is passed to the rule. If the tenancy is not of the DesiredTenancy type, the 
+// instance is marked non-compliant. Otherwise, it is marked complaint. 
+
 function evaluateCompliance(configurationItem, ruleParameters, context) {
     checkDefined(configurationItem, "configurationItem");
     checkDefined(configurationItem.configuration, "configurationItem.configuration");
