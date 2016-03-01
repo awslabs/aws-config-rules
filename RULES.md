@@ -68,7 +68,7 @@ Required Parameter: ```DesiredTenancy```
 Example Value: ```dedicated```
 
 ### 10. Ensure CloudTrail is enabled in all regions.
-Description: Checks that CloudTrail is enabled in all regions
+Description: Checks that CloudTrail is enabled in all regions. Use this rule only in your home region 
 
 	node/cloudtrail_enabled_all_regions-periodic.js
     
