@@ -5,11 +5,11 @@
 import boto3
 import json
 
-def evaluate_compliance(config_item, is_flow_logs_enabled):
+def evaluate_compliance(config_item, vpc_id):
     if (config_item['resourceType'] != 'AWS::EC2::VPC'):
         return 'NOT_APPLICABLE'
 
-    elif is_flow_logs_enabled:
+    elif is_flow_logs_enabled(vpc_id):
         return 'COMPLIANT'
     else:
         return 'NON_COMPLIANT'
@@ -35,7 +35,7 @@ def lambda_handler(event, context):
 
     vpc_id = invoking_event['configurationItem']['resourceId']
     compliance_value = evaluate_compliance(
-        invoking_event['configurationItem'], is_flow_logs_enabled(vpc_id))
+        invoking_event['configurationItem'], vpc_id)
 
     config = boto3.client('config')
     response = config.put_evaluations(
