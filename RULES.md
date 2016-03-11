@@ -137,3 +137,11 @@ Example Value: ```AWS::EC2::Instance```, ```10```
 
 See http://docs.aws.amazon.com/config/latest/APIReference/API_ListDiscoveredResources.html
 for resource types.
+
+### 19. Ensure VPC Flow Logs is enabled.
+Description: Checks that VPC Flow Logs is enabled at specific VPC
+
+	python/vpc_flow_logs_enabled.py
+
+Required Resource Identifier: ```VPC ID```
+Example Value: ```vpc-xxxxxxxx```
