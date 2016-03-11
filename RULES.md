@@ -127,8 +127,8 @@ Example Value: ```t2.small```
 
 See https://aws.amazon.com/ec2/instance-types/ for more instance types
 
-### 18. Ensure all EC2 Instances are of a Given Type
-Description: Checks that all EC2 instances are of the type specified
+### 18. Ensure fewer resources than provided count for  a Given Type
+Description: Checks that the number of resources that are active is lower than specified count for a given resource type.
 
 	python/resource_type_max_count-periodic.py
     
