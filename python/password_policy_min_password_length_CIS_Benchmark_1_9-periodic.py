@@ -1,7 +1,7 @@
 #
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 #
-# 1.9 Ensure IAM password policy requires minimum length of 14 or greater (Scored)
+# CIS Amazon Web Services Foundations Benchmark 1.9 Ensure IAM password policy requires minimum length of 14 or greater (Scored)
 #
 
 import boto3
