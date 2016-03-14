@@ -1,6 +1,11 @@
 //
 // This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 //
+// Ensure an IAM password policy exists. 
+// Description: Checks to see if there is a password policy section enabled in IAM.
+//
+// Trigger Type: Periodic
+// Required Paramters: None
 
 var aws  = require('aws-sdk');
 var s3 = new aws.S3();

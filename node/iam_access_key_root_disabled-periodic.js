@@ -1,6 +1,11 @@
 //
 // This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 //
+// Ensure Access Key Disabled on Root Account
+// Description: Checks that the Root Account's Access Keys have been disabled.
+//
+// Trigger Type: Periodic
+// Required Parameter: None
 
 var aws  = require('aws-sdk');
 var s3 = new aws.S3();
