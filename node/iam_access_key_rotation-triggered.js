@@ -1,6 +1,13 @@
 //
 // This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 //
+// Ensure IAM User Access Key Rotation
+// Description: Checks that the IAM User's Access Keys have been rotated within the specified number of days.
+//
+// Trigger Type: Change Triggered
+// Scope of Changes: IAM:User
+// Required Parameter: MaximumAPIKeyAge
+// Example Value: 90
 
 var aws = require('aws-sdk');
 var config = new aws.ConfigService();

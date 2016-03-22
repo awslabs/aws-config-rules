@@ -3,6 +3,7 @@
 #
 # CIS Amazon Web Services Foundations Benchmark 1.9 Ensure IAM password policy requires minimum length of 14 or greater (Scored)
 #
+# Trigger Type: Periodic
 
 import boto3, json
 

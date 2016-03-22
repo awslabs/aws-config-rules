@@ -1,6 +1,14 @@
 #
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 #
+# Ensure all EC2 Instances are of a Given Type
+# Description: Checks that all EC2 instances are of the type specified
+#
+# Trigger Type: Periodic
+# Required Parameters: applicableResourceType, maxCount
+# Example Value: AWS::EC2::Instance, 10
+#
+# See http://docs.aws.amazon.com/config/latest/APIReference/API_ListDiscoveredResources.html for resource types.
 
 import boto3
 import re, json, gzip, StringIO

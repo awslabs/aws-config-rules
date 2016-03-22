@@ -1,6 +1,11 @@
 //
 // This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 //
+// Ensure IAM password policy requires an uppercase character.
+// Description: Checks that the IAM password policy requires an uppercase character
+//
+// Trigger Type: Periodic
+// Required Parameter: None
 
 var aws  = require('aws-sdk');
 var s3 = new aws.S3();

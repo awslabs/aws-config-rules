@@ -1,6 +1,13 @@
 #
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 #
+# Ensure VPC Flow Logs is enabled.
+# Description: Checks that VPC Flow Logs is enabled at specific VPC
+#
+# Trigger Type: Change Triggered
+# Scope of Changes: EC2:VPC
+# Required Resource Identifier: VPC ID
+# Example Value: vpc-xxxxxxxx
 
 import boto3
 import json
