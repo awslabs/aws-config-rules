@@ -23,7 +23,7 @@ Description: Checks that the IAM password policy enforces a maximum password age
 	node/iam_password_maximum_age-periodic.js
 
 Trigger Type: ```Periodic```
-Required Parameter: ```MaxPasswordLength```
+Required Parameter: ```MaxPasswordAge```
 Example Value: ```90```
 
 ### 4. Ensure IAM password policy requires an uppercase character.

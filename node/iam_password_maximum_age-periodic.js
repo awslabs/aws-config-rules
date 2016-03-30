@@ -5,7 +5,7 @@
 // Description: Checks that the IAM password policy enforces a maximum password age
 //
 // Trigger Type: Periodic
-// Required Parameter: MaxPasswordLength
+// Required Parameter: MaxPasswordAge
 // Example Value: 90
 
 var aws  = require('aws-sdk');
