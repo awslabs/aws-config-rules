@@ -57,7 +57,7 @@ exports.handler = function(event, context) {
     			
     		} else {
     
-    		    console.log(keyerr);
+    		    console.log(mfaerr);
     
     		}
     		
