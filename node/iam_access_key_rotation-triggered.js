@@ -6,7 +6,7 @@
 //
 // Trigger Type: Change Triggered
 // Scope of Changes: IAM:User
-// Required Parameter: MaximumAPIKeyAge
+// Required Parameter: MaximumAccessKeyAge
 // Example Value: 90
 
 var aws = require('aws-sdk');
