@@ -6,7 +6,7 @@
 //
 // Trigger Type: Change Triggered
 // Scope of Changes: IAM:User
-// Required Parameter: MaximumAPIKeyAge
+// Required Parameter: MaximumAccessKeyAge
 // Example Value: 90
 
 var aws = require('aws-sdk');
@@ -66,7 +66,7 @@ exports.handler = function(event, context) {
 					// Check all keys
 					for (var k = 0; k < keydata.AccessKeyMetadata.length; k++) {
 
-						var now = new Date();
+						var now = Date.now();
 
 						if (Math.floor((now - Date.parse(keydata.AccessKeyMetadata[k].CreateDate)) / 86400000) > ruleParameters.MaximumAccessKeyAge) {
 
