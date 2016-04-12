@@ -66,7 +66,7 @@ exports.handler = function(event, context) {
 					// Check all keys
 					for (var k = 0; k < keydata.AccessKeyMetadata.length; k++) {
 
-						var now = new Date();
+						var now = Date.now();
 
 						if (Math.floor((now - Date.parse(keydata.AccessKeyMetadata[k].CreateDate)) / 86400000) > ruleParameters.MaximumAccessKeyAge) {
 
