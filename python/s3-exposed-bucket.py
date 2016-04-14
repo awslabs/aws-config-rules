@@ -6,6 +6,9 @@
 #
 # Trigger Type: Change Triggered
 # Scope of Changes: S3:Bucket
+#
+# NOTE: This rule will only find applicable resources once S3 resources are supported by AWS Config.
+#
 
 
 import json
