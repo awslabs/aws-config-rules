@@ -234,7 +234,7 @@ Description: Checks that all buckets have some access restriction in place.
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```S3:Bucket```
 
-### 26. Ensure that no users have multiple factor authentication disabled.
+### 27. Ensure that no users have multiple factor authentication disabled.
 Description: Checks that all users have enabled multiple factor authentication.
 
 	python/iam-mfa.py
