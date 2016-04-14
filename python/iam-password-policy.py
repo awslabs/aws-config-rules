@@ -16,6 +16,7 @@ import boto3
 
 APPLICABLE_RESOURCES = ["AWS::IAM::User"]
 
+
 def normalize_parameters(rule_parameters):
     for key, value in rule_parameters.iteritems():
         if value == u"true":
@@ -34,7 +35,6 @@ def find_violation(password_policy, baseline_policy):
     for field in baseline_policy:
         if field not in password_policy:
             return field + " is not defined."
-            print >> sys.stderr, field + " is not defined."
         elif password_policy[field] is bool:
             if password_policy[field] is not baseline_policy[field] and \
                     baseline_policy[field] is True:
