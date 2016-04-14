@@ -173,6 +173,8 @@ Example Value: ```vpc-xxxxxxxx```
 ### 20. Ensure that no security groups allow public access to the specified ports.
 Description: Checks that all security groups block access to the specified ports.
 
+	python/ec2-exposed-group.py
+
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```EC2:SecurityGroup```
 Accepted Parameters: ```examplePort1```, ```exampleRange1```, ```examplePort2```, ...
@@ -180,6 +182,8 @@ Example Values: ```8080```, ```1-1024```, ```2375```, ...
 
 ### 21. Ensure that no EC2 instances allow public access to the specified ports.
 Description: Checks that all instances block access to the specified ports.
+
+	python/ec2-exposed-instance.py
 
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```EC2:Instance```
@@ -189,6 +193,8 @@ Example Values: ```8080```, ```1-1024```, ```2375```, ...
 ### 22. Ensure that no users have been inactive for a period longer than specified.
 Description: Checks that all users have been active for earlier than specified.
 
+	python/ec2-inactive-user.py
+
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```IAM:User```
 Required Parameters: ```maxInactiveDays```
@@ -196,6 +202,8 @@ Example Value: ```90```
 
 ### 23. Ensure that no users have password policy requirements weaker than specified.
 Description: Checks that all users have strong password policy requirements.
+
+	python/iam-password-policy.py
 
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```EC2:User```
@@ -205,11 +213,15 @@ Example Values: ```true```, ```true```, ```false```, ```6```, ```true```, ```tru
 ### 24. Ensure that no users have access keys that have never been used.
 Description: Checks that all users have only active access keys.
 
+	python/iam-unused-keys.py
+
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```IAM:User```
 
 ### 25. Ensure that there are no users that have never been logged in.
 Description: Checks that all users have logged in at least once.
+
+	python/iam-unused-user.py
 
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```IAM:User```
@@ -217,11 +229,15 @@ Scope of Changes: ```IAM:User```
 ### 26. Ensure that no buckets are globally accessible.
 Description: Checks that all buckets have some access restriction in place.
 
+	python/s3-exposed-bucket.py
+
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```S3:Bucket```
 
 ### 26. Ensure that no users have multiple factor authentication disabled.
 Description: Checks that all users have enabled multiple factor authentication.
+
+	python/iam-mfa.py
 
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```IAM:User```
