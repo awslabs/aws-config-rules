@@ -2,7 +2,7 @@
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 #
 # Ensure that no buckets are globally accessible.
-# Description: Checks that all buckets have some access restriction in place.
+# Description: Checks that all buckets restrict access from the global groups.
 #
 # Trigger Type: Change Triggered
 # Scope of Changes: S3:Bucket

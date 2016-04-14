@@ -227,7 +227,7 @@ Trigger Type: ```Change Triggered```
 Scope of Changes: ```IAM:User```
 
 ### 26. Ensure that no buckets are globally accessible.
-Description: Checks that all buckets have some access restriction in place.
+Description: Checks that all buckets restrict access from the global groups. 
 
 	python/s3-exposed-bucket.py
 
