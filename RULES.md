@@ -184,7 +184,7 @@ Description: Checks that all instances block access to the specified ports.
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```EC2:Instance```
 Accepted Parameters: ```examplePort1```, ```exampleRange1```, ```examplePort2```, ...
-Example Value: ```8080```, ```1-1024```, ```2375```, ...
+Example Values: ```8080```, ```1-1024```, ```2375```, ...
 
 ### 22. Ensure that no users have been inactive for a period longer than specified.
 Description: Checks that all users have been active for earlier than specified.
@@ -200,7 +200,7 @@ Description: Checks that all users have strong password policy requirements.
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```EC2:User```
 Accepted Parameters: ```requireNumbers```, ```expirePassword```, ```hardExpiry```, ```minimumPasswordLength```, ```requireSymbols```, ```requireUppercaseCharacters```, ```requireLowercaseCharacters```, ```allowUsersToChangePassword```, ```passwordReusePrevention```
-Example Value: ```true```, ```true```, ```false```, ```6```, ```true```, ```true```, ```true```, ```true```, ```5```
+Example Values: ```true```, ```true```, ```false```, ```6```, ```true```, ```true```, ```true```, ```true```, ```5```
 
 ### 24. Ensure that no users have access keys that have never been used.
 Description: Checks that all users have only active access keys.

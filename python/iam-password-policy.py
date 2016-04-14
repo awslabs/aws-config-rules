@@ -7,7 +7,7 @@
 # Trigger Type: Change Triggered
 # Scope of Changes: EC2:User
 # Accepted Parameters: requireNumbers, expirePassword, hardExpiry, minimumPasswordLength, requireSymbols, requireUppercaseCharacters, requireLowercaseCharacters, allowUsersToChangePassword, passwordReusePrevention
-# Example Value: true, true, false, 6, true, true, true, true, 5
+# Example Values: true, true, false, 6, true, true, true, true, 5
 
 
 import json
