@@ -233,3 +233,13 @@ Description: Checks that all users have enabled multiple factor authentication.
 
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```IAM:User```
+
+### 27. Ensure all EC2 Instances that have a certain tag format also have a specific security group
+Description: Checks that all EC2 instances that have match a tag format (via regex) also have a specific security group. For example, a tag regex of ```^prod(us|eu|br)[lw]box[0-9]{3}$``` will match ```produslbox001```.
+
+	python/ec2_require_security_group_by_tag.py
+
+Trigger Type: ```Change Triggered```
+Scope of Changes: ```EC2:Instance```
+Required Parameters: ```name```, ```secGroup```
+Example Value: ```^prod(us|eu|br)[lw]box[0-9]{3}$```, ```MyTestGroup```
