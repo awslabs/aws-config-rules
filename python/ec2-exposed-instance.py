@@ -17,11 +17,11 @@ import boto3
 APPLICABLE_RESOURCES = ["AWS::EC2::Instance"]
 
 
-def explode_range(ports):
+def expand_range(ports):
     if "-" in ports:
-        return range(int(ports.split("-")[0]), int(ports.split("-")[1]))
+        return range(int(ports.split("-")[0]), int(ports.split("-")[1])+1)
     else:
-        return int(ports)
+        return [int(ports)]
 
 
 def find_exposed_ports(ip_permissions):
@@ -30,19 +30,19 @@ def find_exposed_ports(ip_permissions):
         if next((r for r in permission["IpRanges"]
                 if "0.0.0.0/0" in r["CidrIp"]), None):
                     exposed_ports.extend(range(permission["FromPort"],
-                                               permission["ToPort"]))
+                                               permission["ToPort"])+1)
     return exposed_ports
 
 
 def find_violation(ip_permissions, forbidden_ports):
     exposed_ports = find_exposed_ports(ip_permissions)
     for forbidden in forbidden_ports:
-        ports = explode_range(forbidden_ports[forbidden])
+        ports = expand_range(forbidden_ports[forbidden])
         for port in ports:
             if port in exposed_ports:
                 return "A forbidden port is exposed to the internet."
-            else:
-                return None
+
+    return None
 
 
 def evaluate_compliance(configuration_item, rule_parameters):
@@ -53,13 +53,18 @@ def evaluate_compliance(configuration_item, rule_parameters):
             configuration_item["resourceType"] + "."
         }
 
-    ec2 = boto3.resource("ec2")
-    instance = ec2.Instance(configuration_item["resourceId"])
-    security_groups = instance.security_groups
+    security_groups = configuration_item["configuration"].get("securityGroups")
 
+    if security_groups is None:
+        return {
+            "compliance_type": "NON_COMPLIANT",
+            "annotation": "The instance doesn't pertain to any security groups."
+        }
+
+    ec2 = boto3.resource("ec2")
     for security_group in security_groups:
         ip_permissions = ec2.SecurityGroup(
-                                           security_group["GroupId"]
+                                           security_group["groupId"]
                                           ).ip_permissions
 
         violation = find_violation(

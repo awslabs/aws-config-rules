@@ -19,12 +19,7 @@ def evaluate_compliance(configuration_item):
     if configuration_item["resourceType"] not in APPLICABLE_RESOURCES:
         return "NOT_APPLICABLE"
 
-    config = boto3.client("config")
-    resource_information = config.get_resource_config_history(
-        resourceType=configuration_item["resourceType"],
-        resourceId=configuration_item["resourceId"]
-    )
-    user_name = resource_information["configurationItems"][0]["resourceName"]
+    user_name = configuration_item["configuration"]["userName"]
 
     iam = boto3.client("iam")
     mfa = iam.list_mfa_devices(UserName=user_name)

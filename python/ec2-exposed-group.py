@@ -19,18 +19,19 @@ APPLICABLE_RESOURCES = ["AWS::EC2::SecurityGroup"]
 
 def expand_range(ports):
     if "-" in ports:
-        return range(int(ports.split("-")[0]), int(ports.split("-")[1]))
+        return range(int(ports.split("-")[0]), int(ports.split("-")[1])+1)
     else:
-        return int(ports)
+        return [int(ports)]
 
 
 def find_exposed_ports(ip_permissions):
     exposed_ports = []
-    for permission in ip_permissions:
-        if next((r for r in permission["IpRanges"]
-                if "0.0.0.0/0" in r["CidrIp"]), None):
-                    exposed_ports.extend(range(permission["FromPort"],
-                                               permission["ToPort"]))
+    for permission in ip_permissions or []:
+        for ip in permission["ipRanges"]:
+            if "0.0.0.0/0" in ip:
+                exposed_ports.extend(range(permission["fromPort"],
+                                           permission["toPort"]+1))
+
     return exposed_ports
 
 
@@ -41,8 +42,8 @@ def find_violation(ip_permissions, forbidden_ports):
         for port in ports:
             if port in exposed_ports:
                 return "A forbidden port is exposed to the internet."
-            else:
-                return None
+
+    return None
 
 
 def evaluate_compliance(configuration_item, rule_parameters):
@@ -53,11 +54,8 @@ def evaluate_compliance(configuration_item, rule_parameters):
             configuration_item["resourceType"] + "."
         }
 
-    ec2 = boto3.resource("ec2")
-    security_group = ec2.SecurityGroup(configuration_item["resourceId"])
-
     violation = find_violation(
-        security_group.ip_permissions,
+        configuration_item["configuration"].get("ipPermissions"),
         rule_parameters
     )
 
