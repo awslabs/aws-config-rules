@@ -226,15 +226,7 @@ Description: Checks that all users have logged in at least once.
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```IAM:User```
 
-### 26. Ensure that no buckets are globally accessible.
-Description: Checks that all buckets restrict access from the global groups. 
-
-	python/s3-exposed-bucket.py
-
-Trigger Type: ```Change Triggered```
-Scope of Changes: ```S3:Bucket```
-
-### 27. Ensure that no users have multiple factor authentication disabled.
+### 26. Ensure that no users have multiple factor authentication disabled.
 Description: Checks that all users have enabled multiple factor authentication.
 
 	python/iam-mfa.py
