@@ -3,7 +3,7 @@
 //
 // Ensure MFA Enabled on Root Account
 // Description: Checks that the Root Account has MFA Enabled
-// 
+//
 // Trigger Type: Periodic
 // Required Parameter: None
 
@@ -21,7 +21,7 @@ function checkDefined(reference, referenceName) {
     }
     return reference;
 }
- 
+
 // Extract the account ID from the event
 function getAccountId(invokingEvent) {
     checkDefined(invokingEvent, "invokingEvent");
@@ -29,10 +29,10 @@ function getAccountId(invokingEvent) {
     var accountIdPattern = /AWSLogs\/(\d+)\/Config/;
     return accountIdPattern.exec(invokingEvent.s3ObjectKey)[1];
 }
- 
+
 // This is the handler that's invoked by Lambda
 exports.handler = function(event, context) {
- 
+
     checkDefined(event, "event");
     var invokingEvent = JSON.parse(event.invokingEvent);
     var ruleParameters = JSON.parse(event.ruleParameters);
@@ -40,29 +40,29 @@ exports.handler = function(event, context) {
     var s3bucket = invokingEvent.s3Bucket;
     var accountId = getAccountId(invokingEvent);
     var orderingTimestamp = invokingEvent.notificationCreationTime;
-    
+
     iam.getAccountSummary(function(err, iamdata) {
 
         if (!err) {
-    
+
             var compliance = 'NON_COMPLIANT';
-            
+
             if (iamdata.SummaryMap['AccountMFAEnabled'] == 1) { compliance = 'COMPLIANT'; }
-            
+
             evaluation = {
                 ComplianceResourceType: 'AWS::::Account',
                 ComplianceResourceId: accountId,
                 ComplianceType: compliance,
                 OrderingTimestamp: orderingTimestamp
             };
-    
+
             putEvaluationsRequest = {
                Evaluations: [
                    evaluation
                ],
                ResultToken: event.resultToken
             };
-    
+
             config.putEvaluations(putEvaluationsRequest, function (err, data) {
                 if (err) {
                     context.fail(err);
@@ -70,8 +70,10 @@ exports.handler = function(event, context) {
                     context.succeed(data);
                 }
             });
-            
+
+        }else{
+            context.fail(err);
         }
-            
+
     });
 };
