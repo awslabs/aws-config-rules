@@ -3,40 +3,40 @@
 //
 // Ensure CloudTrail is Enabled for All Regions
 // Description: Checks that a CloudTrail exists that is set to multi-region
-// 
+//
 // Trigger Type: Periodic
 // Required Parameter: None
 
-var aws  = require('aws-sdk');
+var aws = require('aws-sdk');
 var s3 = new aws.S3();
 var zlib = require('zlib');
 var config = new aws.ConfigService();
- 
-// This function checks whether CloudTrail is enabled with multi region trail in the home region. 
+
+// This function checks whether CloudTrail is enabled with multi region trail in the home region.
 // Do not use this rule in other regions.
- 
+
 function evaluateCompliance(configurationItems, ruleParameters, context) {
     checkDefined(configurationItems, "configurationItems");
     checkDefined(ruleParameters, "ruleParameters");
-    
+
     for (var i = 0; i < configurationItems.length; i++) {
-	    
+
         var item = configurationItems[i];
-	    
+
         if (item.resourceType === 'AWS::CloudTrail::Trail') {
-            
+
             if (item.configuration.isMultiRegionTrail) { return 'COMPLIANT'; }
-            
+
         }
-	
+
     }
-    
+
     return 'NON_COMPLIANT';
-    
+
 }
- 
+
 // Helper function used to validate input
- 
+
 function checkDefined(reference, referenceName) {
     if (!reference) {
         console.log("Error: " + referenceName + " is not defined");
@@ -44,26 +44,41 @@ function checkDefined(reference, referenceName) {
     }
     return reference;
 }
- 
+
 // Extract the account ID from the event
- 
+
 function getAccountId(invokingEvent) {
     checkDefined(invokingEvent, "invokingEvent");
     checkDefined(invokingEvent.s3ObjectKey, "invokingEvent.s3ObjectKey");
     var accountIdPattern = /AWSLogs\/(\d+)\/Config/;
     return accountIdPattern.exec(invokingEvent.s3ObjectKey)[1];
 }
- 
+
+// readSnapshot Constructor for retrieving config s3 bucket region
+var readSnapshot = function(s3key, s3bucket, callback) {
+
+    s3.getBucketLocation({"Bucket": s3bucket}, function (err,data){
+        if(err){
+            callback(err,data);
+        } else {
+            var s3region = data.LocationConstraint ? data.LocationConstraint : 'us-east-1';
+            readSnapshot.returnConfig(s3key, s3bucket, s3region, callback);
+        }
+    });
+};
+
 // Reads and parses the ConfigurationSnapshot from the S3 bucket
 // where Config is set up to deliver
- 
-function readSnapshot(s3client, s3key, s3bucket, callback) {
+readSnapshot.returnConfig = function(s3key, s3bucket, s3region, callback){
+
+    var s3client = new aws.S3({region: 'us-east-1'});
+
     var params = {
         Key: s3key,
         Bucket: s3bucket
     };
     var buffer = "";
-    s3client.getObject(params)
+    s3client.getObject(params, callback)
         .createReadStream()
         .pipe(zlib.createGunzip())
         .on('data', function(chunk) {
@@ -75,11 +90,12 @@ function readSnapshot(s3client, s3key, s3bucket, callback) {
         .on('error', function(err) {
             callback(err, null);
         });
-}
- 
+
+};
+
 // This is the handler that's invoked by Lambda
 // Most of this code is boilerplate; use as is
- 
+
 exports.handler = function(event, context) {
     checkDefined(event, "event");
     var invokingEvent = JSON.parse(event.invokingEvent);
@@ -88,7 +104,8 @@ exports.handler = function(event, context) {
     var s3bucket = invokingEvent.s3Bucket;
     var accountId = getAccountId(invokingEvent);
     var orderingTimestamp = invokingEvent.notificationCreationTime;
-    readSnapshot(s3, s3key, s3bucket, function(err, snapshot) {
+
+    readSnapshot(s3key, s3bucket, function(err, snapshot) {
         var evaluation, putEvaluationsRequest;
         if (err === null) {
             evaluation = {
