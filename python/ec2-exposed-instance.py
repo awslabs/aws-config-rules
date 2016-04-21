@@ -53,6 +53,12 @@ def evaluate_compliance(configuration_item, rule_parameters):
             configuration_item["resourceType"] + "."
         }
 
+    if configuration_item['configurationItemStatus'] == "ResourceDeleted":
+        return {
+            "compliance_type": "NOT_APPLICABLE",
+            "annotation": "The configurationItem was deleted and therefore cannot be validated"
+        }
+
     security_groups = configuration_item["configuration"].get("securityGroups")
 
     if security_groups is None:
@@ -89,12 +95,6 @@ def lambda_handler(event, context):
     invoking_event = json.loads(event["invokingEvent"])
     configuration_item = invoking_event["configurationItem"]
     rule_parameters = json.loads(event["ruleParameters"])
-
-    if configuration_item['configurationItemStatus'] == "ResourceDeleted":
-        return {
-            "compliance_type": "NON_COMPLIANT",
-            "annotation": "The configurationItem was deleted and therefore cannot be validated"
-        }
 
     result_token = "No token found."
     if "resultToken" in event:
