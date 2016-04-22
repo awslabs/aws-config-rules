@@ -78,7 +78,7 @@ readSnapshot.returnConfig = function(s3key, s3bucket, s3region, callback){
         Bucket: s3bucket
     };
     var buffer = "";
-    s3client.getObject(params, callback)
+    s3client.getObject(params)
         .createReadStream()
         .pipe(zlib.createGunzip())
         .on('data', function(chunk) {
