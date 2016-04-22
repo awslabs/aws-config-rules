@@ -71,7 +71,7 @@ var readSnapshot = function(s3key, s3bucket, callback) {
 // where Config is set up to deliver
 readSnapshot.returnConfig = function(s3key, s3bucket, s3region, callback){
 
-    var s3client = new aws.S3({region: 'us-east-1'});
+    var s3client = new aws.S3({region: s3region});
 
     var params = {
         Key: s3key,
