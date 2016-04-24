@@ -30,7 +30,7 @@ def find_exposed_ports(ip_permissions):
         if next((r for r in permission["IpRanges"]
                 if "0.0.0.0/0" in r["CidrIp"]), None):
                     exposed_ports.extend(range(permission["FromPort"],
-                                               permission["ToPort"])+1)
+                                               permission["ToPort"]+1))
     return exposed_ports
 
 
@@ -51,6 +51,12 @@ def evaluate_compliance(configuration_item, rule_parameters):
             "compliance_type": "NOT_APPLICABLE",
             "annotation": "The rule doesn't apply to resources of type " +
             configuration_item["resourceType"] + "."
+        }
+
+    if configuration_item['configurationItemStatus'] == "ResourceDeleted":
+        return {
+            "compliance_type": "NOT_APPLICABLE",
+            "annotation": "The configurationItem was deleted and therefore cannot be validated"
         }
 
     security_groups = configuration_item["configuration"].get("securityGroups")
@@ -85,6 +91,7 @@ def evaluate_compliance(configuration_item, rule_parameters):
 
 
 def lambda_handler(event, context):
+
     invoking_event = json.loads(event["invokingEvent"])
     configuration_item = invoking_event["configurationItem"]
     rule_parameters = json.loads(event["ruleParameters"])
