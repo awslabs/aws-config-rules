@@ -241,5 +241,5 @@ Description: Checks that all EC2 instances that have match a tag format (via reg
 
 Trigger Type: ```Change Triggered```
 Scope of Changes: ```EC2:Instance```
-Required Parameters: ```name```, ```secGroup```
+Required Parameters: ```namePattern```, ```securityGroupName```
 Example Value: ```^prod(us|eu|br)[lw]box[0-9]{3}$```, ```MyTestGroup```

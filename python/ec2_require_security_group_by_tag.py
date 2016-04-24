@@ -6,9 +6,9 @@
 #
 # Trigger Type: Change Triggered
 # Scope of Changes: EC2:Instance
-# Required Parameters: name
+# Required Parameters: namePattern
 # Example Value: ^prod(us|eu|br)[lw]box[0-9]{3}$ (which will match 'produslbox001')
-# Required Parameters: secGroup
+# Required Parameters: securityGroupName
 # Example Value: MySecGroup
 # 
 
@@ -28,10 +28,10 @@ def evaluate_compliance(config_item, rule_parameters):
     evaluation = 'NOT_APPLICABLE'
     configuration = config_item['configuration']
     tags = configuration['tags']
+    reg = re.compile(rule_parameters['namePattern'])
     # If the config item is for an EC2 instance, then iterate through the tags for that instance
     for tag in tags:
         # Check if this is the 'Name' tag, and that it matches the provided regex value
-        reg = re.compile(rule_parameters['name'])
         if (tag['key'] == 'Name') and (reg.match(tag['value']) != None):
             # if so, initialize to 'non-compliant'
             evaluation = 'NON_COMPLIANT'
@@ -39,7 +39,7 @@ def evaluate_compliance(config_item, rule_parameters):
             # iterate through the security groups and see if the provided secGroup name is in the list. 
             # if so, set compliance to 'compliant'
             for secGroup in secGroups:
-                if (secGroup['groupName'] == rule_parameters['secGroup']):
+                if (secGroup['groupName'] == rule_parameters['securityGroupName']):
                     evaluation = 'COMPLIANT'
     return evaluation
 
