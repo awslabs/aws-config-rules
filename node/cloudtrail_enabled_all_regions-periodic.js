@@ -54,58 +54,52 @@ function getAccountId(invokingEvent) {
     return accountIdPattern.exec(invokingEvent.s3ObjectKey)[1];
 }
 
-// readSnapshot Constructor for retrieving config s3 bucket region
-var readSnapshot = function(s3key, s3bucket, callback) {
-
-    s3.getBucketLocation({"Bucket": s3bucket}, function (err,data){
-        if(err){
-            callback(err,data);
-        } else {
-            var s3region = data.LocationConstraint ? data.LocationConstraint : 'us-east-1';
-            readSnapshot.returnConfig(s3key, s3bucket, s3region, callback);
-        }
-    });
-};
-
 // Reads and parses the ConfigurationSnapshot from the S3 bucket
 // where Config is set up to deliver
-readSnapshot.returnConfig = function(s3key, s3bucket, s3region, callback){
 
-    var s3client = new aws.S3({region: s3region});
+function readSnapshot(s3client, s3key, s3bucket, callback) {
 
-    var params = {
-        Key: s3key,
-        Bucket: s3bucket
-    };
-    var buffer = "";
-    s3client.getObject(params)
-        .createReadStream()
-        .pipe(zlib.createGunzip())
-        .on('data', function(chunk) {
-            buffer = buffer + chunk;
-        })
-        .on('end', function() {
-            callback(null, JSON.parse(buffer));
-        })
-        .on('error', function(err) {
-            callback(err, null);
-        });
+    s3client.getBucketLocation({"Bucket": s3bucket}, function (err,data){
+        if(err){
+            callback(err,data);
+        }
 
-};
+        // If no region is returned the bucket is "US Standard" (aka us-east-1)
+        s3client = new aws.S3({region: data.LocationConstraint ? data.LocationConstraint : 'us-east-1'});
+        var params = {
+            Key: s3key,
+            Bucket: s3bucket
+        };
+        var buffer = "";
+        s3client.getObject(params)
+            .createReadStream()
+            .pipe(zlib.createGunzip())
+            .on('data', function(chunk) {
+                buffer = buffer + chunk;
+            })
+            .on('end', function() {
+                callback(null, JSON.parse(buffer));
+            })
+            .on('error', function(err) {
+                callback(err, null);
+            });
+    });
+}
+
 
 // This is the handler that's invoked by Lambda
 // Most of this code is boilerplate; use as is
 
 exports.handler = function(event, context) {
     checkDefined(event, "event");
+
     var invokingEvent = JSON.parse(event.invokingEvent);
     var ruleParameters = JSON.parse(event.ruleParameters);
     var s3key = invokingEvent.s3ObjectKey;
     var s3bucket = invokingEvent.s3Bucket;
     var accountId = getAccountId(invokingEvent);
     var orderingTimestamp = invokingEvent.notificationCreationTime;
-
-    readSnapshot(s3key, s3bucket, function(err, snapshot) {
+    readSnapshot(s3, s3key, s3bucket, function(err, snapshot) {
         var evaluation, putEvaluationsRequest;
         if (err === null) {
             evaluation = {
