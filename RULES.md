@@ -243,3 +243,11 @@ Trigger Type: ```Change Triggered```
 Scope of Changes: ```EC2:Instance```
 Required Parameters: ```namePattern```, ```securityGroupName```
 Example Value: ```^prod(us|eu|br)[lw]box[0-9]{3}$```, ```MyTestGroup```
+
+### 28. Ensure MFA Enabled on Root Account
+Description: Checks that the Root Account has MFA Enabled
+
+	java/src/main/java/com/amazonaws/services/config/samplerules/RootAccountMFAEnabled.java
+
+Trigger Type: ```Periodic```
+Required Parameter: ```None```
