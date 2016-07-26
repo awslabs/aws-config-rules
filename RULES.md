@@ -251,3 +251,19 @@ Description: Checks that the Root Account has MFA Enabled
 
 Trigger Type: ```Periodic```
 Required Parameter: ```None```
+
+### 29. Required tags with multiple valid values
+Description: Checks that the required tags exist and has a value matching one in the comma-separated list
+
+	python/ec2_require_tags_with_valid_values.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```requiredTagKey1```, ```requiredTagValues1```, ```requiredTagKey2```, ...
+
+### 30. Verify that RDS DB Instances are encrypted
+Description: Checks that the RDS DB instance is encrypted. If an optional KMS key ARN is provided, then whether encryption was done with provided key
+
+	node/rds_db_instance_encrypted.js
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
