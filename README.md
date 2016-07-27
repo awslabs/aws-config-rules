@@ -2,6 +2,9 @@
 
 AWS Community repository of custom Config rules. [Here's the list](https://github.com/awslabs/aws-config-rules/blob/master/RULES.md). Contributions welcome. Instructions for leveraging these rules are below.
 
+With the latest release for AWS Config Rules (http://amzn.to/2aFZZw2), periodic rules can now be triggered without the need for a configuration snapshot. Please refer to http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_develop-rules_nodejs-sample.html for an example of a periodic rule triggered via scheduled notification. This is now the recommended way to author a periodic rule. 
+As such, we have moved all existing periodic rules in this repository that leverage the old configuration snapshot periodic trigger under the old-periodic/ directory. 
+
 **Please review each rule carefully and test within your dev/test environment before integrating into production**
 
 ## Adding a rule to AWS Config
