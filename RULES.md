@@ -3,7 +3,7 @@
 ### 1. Ensure an IAM password policy exists. 
 Description: Checks to see if there is a password policy section enabled in IAM.
 
-	node/iam_password_policy_enabled-periodic.js
+	old-periodic/iam_password_policy_enabled-periodic.js
 
 Trigger Type: ```Periodic```
 Required Paramters: ```None```
@@ -11,7 +11,7 @@ Required Paramters: ```None```
 ### 2. Ensure IAM password policy requires a minimum number of characters.
 Description: Checks that the IAM password policy requires minimum number of characters
 
-	node/iam_password_minimum_length-periodic.js
+	old-periodic/iam_password_minimum_length-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```MinimumPasswordLength```
@@ -20,7 +20,7 @@ Example Value: ```12```
 ### 3. Ensure IAM password policy sets maximum password age.
 Description: Checks that the IAM password policy enforces a maximum password age
 
-	node/iam_password_maximum_age-periodic.js
+	old-periodic/iam_password_maximum_age-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```MaxPasswordAge```
@@ -29,7 +29,7 @@ Example Value: ```90```
 ### 4. Ensure IAM password policy requires an uppercase character.
 Description: Checks that the IAM password policy requires an uppercase character
 
-	node/iam_password_require_uppercase-periodic.js
+	old-periodic/iam_password_require_uppercase-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```None```
@@ -37,7 +37,7 @@ Required Parameter: ```None```
 ### 5. Ensure IAM password policy requires a lowercase character.
 Description: Checks that the IAM password policy requires a lowercase character
 
-	node/iam_password_require_lowercase-periodic.js
+	old-periodic/iam_password_require_lowercase-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```None```
@@ -45,7 +45,7 @@ Required Parameter: ```None```
 ### 6. Ensure IAM password policy requires a number.
 Description: Checks that the IAM password policy requires a number
 
-	node/iam_password_require_number-periodic.js
+	old-periodic/iam_password_require_number-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```None```
@@ -53,7 +53,7 @@ Required Parameter: ```None```
 ### 7. Ensure IAM password policy requires a symbol.
 Description: Checks that the IAM password policy requires a symbol
 
-	node/iam_password_require_symbol-periodic.js
+	old-periodic/iam_password_require_symbol-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```None```
@@ -61,7 +61,7 @@ Required Parameter: ```None```
 ### 8. Ensure IAM password policy prevents password reuse.
 Description: Checks that the IAM password policy prevents password reuse
 
-	node/iam_password_require_reuse-periodic.js
+	old-periodic/iam_password_require_reuse-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```PasswordReusePrevention```
@@ -80,7 +80,7 @@ Example Value: ```dedicated```
 ### 10. Ensure CloudTrail is enabled in all regions.
 Description: Checks that CloudTrail is enabled in all regions. Use this rule only in your home region 
 
-	node/cloudtrail_enabled_all_regions-periodic.js
+	old-periodic/cloudtrail_enabled_all_regions-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```None```
@@ -98,7 +98,7 @@ Example Value: ```90```
 ### 12. Ensure Access Key Disabled on Root Account
 Description: Checks that the Root Account's Access Keys have been disabled.
 
-	node/iam_access_key_root_disabled-periodic.js
+	old-periodic/iam_access_key_root_disabled-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```None```
@@ -106,7 +106,7 @@ Required Parameter: ```None```
 ### 13. Ensure MFA Enabled on Root Account
 Description: Checks that the Root Account has MFA Enabled
 
-	node/iam_mfa_require_root-periodic.js
+	old-periodic/iam_mfa_require_root-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```None```
@@ -123,7 +123,7 @@ Required Parameter: ```None```
 ### 15. Ensure CloudTrail Log Validation is Enabled in All Regions
 Description: Checks that CloudTrail Log Validation is Enabled in All Regions
 
-	node/cloudtrail_validation_all_regions-periodic.js
+	old-periodic/cloudtrail_validation_all_regions-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```None```
@@ -131,7 +131,7 @@ Required Parameter: ```None```
 ### 16. Ensure AWS Config is Enabled in All Regions
 Description: Checks that AWS Config is Enabled in All Regions
 
-	node/config_enabled_in_region-periodic.js
+	old-periodic/config_enabled_in_region-periodic.js
 
 Trigger Type: ```Periodic```
 Required Parameter: ```None```
@@ -151,7 +151,7 @@ See https://aws.amazon.com/ec2/instance-types/ for more instance types
 ### 18. Ensure fewer resources than provided count for  a Given Type
 Description: Checks that the number of resources that are active is lower than specified count for a given resource type.
 
-	python/resource_type_max_count-periodic.py
+	old-periodic/resource_type_max_count-periodic.py
 
 Trigger Type: ```Periodic```
 Required Parameters: ```applicableResourceType```, ```maxCount```
@@ -250,4 +250,20 @@ Description: Checks that the Root Account has MFA Enabled
 	java/src/main/java/com/amazonaws/services/config/samplerules/RootAccountMFAEnabled.java
 
 Trigger Type: ```Periodic```
+Required Parameter: ```None```
+
+### 29. Required tags with multiple valid values
+Description: Checks that the required tags exist and has a value matching one in the comma-separated list
+
+	python/ec2_require_tags_with_valid_values.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```requiredTagKey1```, ```requiredTagValues1```, ```requiredTagKey2```, ...
+
+### 30. Verify that RDS DB Instances are encrypted
+Description: Checks that the RDS DB instance is encrypted. If an optional KMS key ARN is provided, then whether encryption was done with provided key
+
+	node/rds_db_instance_encrypted.js
+
+Trigger Type: ```Change Triggered```
 Required Parameter: ```None```

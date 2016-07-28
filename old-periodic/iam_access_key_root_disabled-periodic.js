@@ -1,12 +1,11 @@
 //
 // This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 //
-// Ensure IAM password policy requires a number.
-// Description: Checks that the IAM password policy requires a number
-// 
+// Ensure Access Key Disabled on Root Account
+// Description: Checks that the Root Account's Access Keys have been disabled.
+//
 // Trigger Type: Periodic
 // Required Parameter: None
-
 
 var aws  = require('aws-sdk');
 var s3 = new aws.S3();
@@ -36,18 +35,19 @@ exports.handler = function(event, context) {
  
     checkDefined(event, "event");
     var invokingEvent = JSON.parse(event.invokingEvent);
+    var ruleParameters = JSON.parse(event.ruleParameters);
     var s3key = invokingEvent.s3ObjectKey;
     var s3bucket = invokingEvent.s3Bucket;
     var accountId = getAccountId(invokingEvent);
     var orderingTimestamp = invokingEvent.notificationCreationTime;
     
-    iam.getAccountPasswordPolicy(function(err, iamdata) {
+    iam.getAccountSummary(function(err, iamdata) {
 
         if (!err) {
     
             var compliance = 'NON_COMPLIANT';
             
-            if (iamdata.PasswordPolicy.RequireNumbers == 'true') { compliance = 'COMPLIANT'; }
+            if (iamdata.SummaryMap['AccountAccessKeysPresent'] == 0) { compliance = 'COMPLIANT'; }
             
             evaluation = {
                 ComplianceResourceType: 'AWS::::Account',

@@ -1,9 +1,18 @@
+#
+# This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
+#
+# RDS DB Instances are encrypted and if an optional KMS Key ARN parameter is provided, we check whether the DB Instances were encrypted using the specified key 
+#
+# Trigger Type: Change Triggered
+# Scope of Changes: RDS:Instance
+# Accepted Parameters: KMSKeyARN (optional)
+# Example Values: 'arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab'
+
 'use strict';
 let aws = require('aws-sdk');
 let config = new aws.ConfigService();
 
 // This is where it's determined whether the resource is compliant or not.
-// In this example, we check whether RDS DB Instances are encrypted and if an optional KMS Key ARN parameter is provided, we check whether the DB Instances were encrypted using the specified key 
 function evaluateCompliance(configurationItem, ruleParameters) {
     checkDefined(configurationItem, 'configurationItem');
     checkDefined(configurationItem.configuration, 'configurationItem.configuration');
