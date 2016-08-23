@@ -7,6 +7,7 @@
 # Scope of Changes: EC2:Instance
 # Accepted Parameters: requiredTagKey1, requiredTagValues1, requiredTagKey2, ...
 # Example Values: 'CostCenter', 'R&D,Ops', 'Environment', 'Stage,Dev,Prod', ...
+#                 An asterisk '*' as the value will just check that any value is set for that key
 
 
 import json
@@ -20,18 +21,27 @@ APPLICABLE_RESOURCES = ["AWS::EC2::Instance"]
 # Iterate through required tags ensureing each required tag is present, 
 # and value is one of the given valid values
 def find_violation(current_tags, required_tags):
-    required_tag_count = len(required_tags) / 2
-    for x in range(1, required_tag_count + 1):
+    violation = ""
+    for rtag,rvalues in required_tags.iteritems():
         tag_present = False
         for tag in current_tags:
-            if tag["key"] == required_tags["requiredTagKey"+str(x)]:
+            if tag['key'] == rtag:
+                value_match = False
                 tag_present = True
-                if not tag["value"] in required_tags["requiredTagValues"+str(x)].split(','):
-                    return "Tag '" + required_tags["requiredTagKey"+str(x)] + "' value '" + tag["value"] + "' is not a valid value."
+                rvaluesplit = rvalues.split(",")
+                for rvalue in rvaluesplit:
+                    if tag['value'] == rvalue:
+                        value_match = True
+                    if tag['value'] != "":
+                        if rvalue == "*":
+                            value_match = True
+                if value_match == False:
+                    violation = violation + "\n" + tag['value'] + " doesn't match any of " + required_tags[rtag] + "!"
         if not tag_present:
-            return "Tag '" + required_tags["requiredTagKey"+str(x)] + "' is not present."
-
-    return None
+            violation = violation + "\n" + "Tag " + str(rtag) + " is not present."
+    if violation == "":
+        return None
+    return  violation
 
 def evaluate_compliance(configuration_item, rule_parameters):
     if configuration_item["resourceType"] not in APPLICABLE_RESOURCES:
