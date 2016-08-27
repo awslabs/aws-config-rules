@@ -1,5 +1,9 @@
 package com.amazonaws.services.config.samplerules;
 
+import java.io.IOException;
+import java.util.Date;
+import java.util.function.Supplier;
+
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.config.AmazonConfig;
 import com.amazonaws.services.config.AmazonConfigClient;
@@ -13,13 +17,9 @@ import com.amazonaws.services.lambda.runtime.events.ConfigEvent;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.function.Supplier;
-
 /**
- * This Lambda function reports to AWS Config whether an AWS account is enabled for Multi-Factor
- * Authentication. The function is invoked when AWS Config publishes an event for periodic Config rules.
+ * This Lambda function reports to AWS Config whether an AWS account is enabled for Multi-Factor Authentication. The
+ * function is invoked when AWS Config publishes an event for periodic Config rules.
  */
 public class RootAccountMFAEnabled {
 
@@ -30,8 +30,11 @@ public class RootAccountMFAEnabled {
 
     /**
      * This handler function is executed when AWS Lambda passes the event and context objects.
-     * @param event Event object published by AWS Config to invoke the function.
-     * @param context Context object provided by AWS Lambda.
+     * 
+     * @param event
+     *            Event object published by AWS Config to invoke the function.
+     * @param context
+     *            Context object provided by AWS Lambda.
      * @throws IOException
      */
     public void handle(ConfigEvent event, Context context) throws IOException {
@@ -47,7 +50,7 @@ public class RootAccountMFAEnabled {
      * Handler interface used by the main handler function and test events.
      */
     public void doHandle(ConfigEvent event, Context context, AmazonConfig configClient,
-                         AmazonIdentityManagement iamClient, Supplier<Date> dateSupplier) throws IOException {
+            AmazonIdentityManagement iamClient, Supplier<Date> dateSupplier) throws IOException {
         JsonNode invokingEvent = new ObjectMapper().readTree(event.getInvokingEvent());
         failForIncompatibleEventTypes(invokingEvent);
         // Associates the evaluation result with the AWS account published in the event.
@@ -62,7 +65,7 @@ public class RootAccountMFAEnabled {
     // Ends the function execution if the event is not meant for periodic evaluations.
     private void failForIncompatibleEventTypes(JsonNode invokingEvent) {
         String messageType = invokingEvent.get(MESSAGE_TYPE_PROPERTY).asText();
-        if (!MessageType.ConfigurationSnapshotDeliveryCompleted.toString().equals(messageType)) {
+        if (!MessageType.ScheduledNotification.toString().equals(messageType)) {
             throw new FunctionExecutionException(String.format(
                     "Events with the message type '%s' are not evaluated for this Config rule.", messageType));
         }

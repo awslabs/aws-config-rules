@@ -1,6 +1,17 @@
 package com.amazonaws.services.config.samplerules;
 
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Date;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.amazonaws.services.config.AmazonConfig;
 import com.amazonaws.services.config.model.*;
@@ -9,15 +20,6 @@ import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
 import com.amazonaws.services.identitymanagement.model.GetAccountSummaryResult;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.ConfigEvent;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Date;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RootAccountMFAEnabledTest {
@@ -46,7 +48,7 @@ public class RootAccountMFAEnabledTest {
     @Before
     public void setup() {
         event = new ConfigEvent();
-        event.setInvokingEvent(String.format(INVOKING_EVENT_FORMAT, MessageType.ConfigurationSnapshotDeliveryCompleted));
+        event.setInvokingEvent(String.format(INVOKING_EVENT_FORMAT, MessageType.ScheduledNotification));
         event.setAccountId(ACCOUNT_ID);
         event.setResultToken(RESULT_TOKEN);
         accountSummary = new GetAccountSummaryResult();
