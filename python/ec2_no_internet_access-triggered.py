@@ -10,7 +10,6 @@
 # Example Value: N/A
 #
 # Requires additional AWS Config permissions for GetResourceConfigHistory
-# Requires permission to publish to coresponding SNS topic if configured below
 
 from __future__ import print_function
 
@@ -19,11 +18,6 @@ import boto3
 
 aws_config = boto3.client('config')
 aws_ec2 = boto3.client('ec2')
-aws_sns = boto3.client('sns')
-
-# configure a topic ARN to get evaluation results published via SNS
-# you can use that to trigger actions (e.g. delete non-compliant resources)
-SNS_TOPIC = 'INSERT_SNS_TOPIC_ARN'
 
 # this is a utility class for parsing config rules events. RaiseInternetConnectivity inherhits from it
 class ConfigRule:
@@ -176,10 +170,3 @@ def lambda_handler(event, context):
  
   # inform config rules about our evaluation result
   rule.put_evaluations(compliance, event['resultToken'])
-
-  event_detail = configurationItem
-  event_detail['evaluationResult'] = compliance
-
-  # publish a message with the evaluation result to SNS if a topic has been configured
-  if SNS_TOPIC != 'INSERT_SNS_TOPIC_ARN':
-    aws_sns.publish(TargetArn=SNS_TOPIC, Message=json.dumps(event_detail))
