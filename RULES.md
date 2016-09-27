@@ -267,3 +267,11 @@ Description: Checks that the RDS DB instance is encrypted. If an optional KMS ke
 
 Trigger Type: ```Change Triggered```
 Required Parameter: ```None```
+
+### 31. Verify that EC2 Security Group Ingress rules are correct
+Description: Checks that that the ingress permissions on an EC2 Security Group are correct and adjusts them if they are incorrect.
+
+	python/ec2_security_group_ingress.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
