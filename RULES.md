@@ -275,3 +275,11 @@ Description: Checks that that the ingress permissions on an EC2 Security Group a
 
 Trigger Type: ```Change Triggered```
 Required Parameter: ```None```
+
+### 32. Ensure that no EC2 is publicly accessible except 80 and 443.
+Description: Check that no security groups allow public access to the ports other then 80 and 443.
+
+	python/ec2_sg_public_ingress_excluding_80_443.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
