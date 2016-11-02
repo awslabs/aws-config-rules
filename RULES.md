@@ -291,3 +291,11 @@ Description: Check that no EC2 are in Public Subnet.
 
 Trigger Type: ```Change Triggered```
 Required Parameter: ```None```
+
+### 34. Check that no RDS are in Public Subnet.
+Description: Check that no RDS are in Public Subnet.
+
+	python/rds_vpc_public_subnet.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
