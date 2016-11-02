@@ -284,7 +284,7 @@ Description: Check that no security groups allow public access to the ports othe
 Trigger Type: ```Change Triggered```
 Required Parameter: ```None```
 
-### 32. Check that no EC2 are in Public Subnet.
+### 33. Check that no EC2 are in Public Subnet.
 Description: Check that no EC2 are in Public Subnet.
 
 	python/ec2_vpc_public_subnet.py
