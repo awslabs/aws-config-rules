@@ -1,7 +1,7 @@
 #
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 # 
-# Ensure that no EC2 is publicly accessible except 80 and 443.
+# Ensure that no EC2 Instances is publicly accessible except 80 and 443.
 # Description: Check that no security groups allow public access to the ports other then 80 and 443.
 #
 # Trigger Type: Change Triggered
