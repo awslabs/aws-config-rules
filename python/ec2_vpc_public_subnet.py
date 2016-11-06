@@ -47,7 +47,14 @@ def evaluate_compliance(configuration_item):
     client      = boto3.client("ec2");
     private     = True
 
-    response    = client.describe_route_tables()
+    response    = client.describe_route_tables(
+        Filters = [
+            {
+                'Name': 'route.destination-cidr-block',
+                'Values': [ '0.0.0.0/0' ]
+            }
+        ]
+    )
     # If default route table i.e. only 1 route table for the VPC
     # All subnets are automatically attached to this route table
     # Public/Private subnet will be checked against Route destination CIDR 0.0.0.0/0
