@@ -55,20 +55,22 @@ def evaluate_compliance(configuration_item):
             }
         ]
     )
-    # If default route table i.e. only 1 route table for the VPC
-    # All subnets are automatically attached to this route table
-    # Public/Private subnet will be checked against Route destination CIDR 0.0.0.0/0
+    # If only default route table exists then
+    # all subnets are automatically attached to this route table
+    # Otherwise check if subnet is explicitly attached to another route table
+    # Private subnet condition applies only when route doesn't contains
+    # destination CIDR block = 0.0.0.0/0 or no Internet Gateway is attached
     for i in response['RouteTables']:
         if i['VpcId'] == vpc_id:
             for j in i['Associations']:
                 if j['Main'] == True:
                     for k in i['Routes']:
-                        if k['DestinationCidrBlock'] == '0.0.0.0/0':
+                        if k['DestinationCidrBlock'] == '0.0.0.0/0' or k['GatewayId'].startswith('igw-'):
                             private = False
                 else:
                     if j['SubnetId'] == subnet_id:
                         for k in i['Routes']:
-                            if k['DestinationCidrBlock'] == '0.0.0.0/0':
+                            if k['DestinationCidrBlock'] == '0.0.0.0/0' or k['GatewayId'].startswith('igw-'):
                                 private = False
     
     if private:
