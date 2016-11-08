@@ -275,3 +275,27 @@ Description: Checks that that the ingress permissions on an EC2 Security Group a
 
 Trigger Type: ```Change Triggered```
 Required Parameter: ```None```
+
+### 32. Check that no EC2 Instances are publicly accessible except 80 and 443.
+Description: Check that no security groups allow public access to the ports other then 80 and 443.
+
+	python/ec2_sg_public_ingress_excluding_80_443.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
+
+### 33. Check that no EC2 Instances are in Public Subnet.
+Description: Check that no EC2 Instances are in Public Subnet.
+
+	python/ec2_vpc_public_subnet.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
+
+### 34. Check that no RDS Instances are in Public Subnet.
+Description: Check that no RDS Instances are in Public Subnet.
+
+	python/rds_vpc_public_subnet.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
