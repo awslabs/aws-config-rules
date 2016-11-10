@@ -47,14 +47,7 @@ def evaluate_compliance(configuration_item):
     client      = boto3.client("ec2");
     private     = True
 
-    response    = client.describe_route_tables(
-        Filters = [
-            {
-                'Name': 'route.destination-cidr-block',
-                'Values': [ '0.0.0.0/0' ]
-            }
-        ]
-    )
+    response    = client.describe_route_tables()
     # If only default route table exists then
     # all subnets are automatically attached to this route table
     # Otherwise check if subnet is explicitly attached to another route table
