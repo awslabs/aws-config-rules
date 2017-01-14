@@ -15,6 +15,8 @@
 # permissions.  Here is a policy that you can consider.  You should validate this for your own
 # environment
 #
+# 2017-01-13 - Added "Ipv6Ranges" key to REQUIRED_PERMISSIONS to accommodate IPv6 support in VPC
+#
 #{
 #   "Version": "2012-10-17",
 #   "Statement": [
@@ -61,7 +63,8 @@ REQUIRED_PERMISSIONS = [
     "ToPort" : 80,
     "UserIdGroupPairs" : [],
     "IpRanges" : [{"CidrIp" : "0.0.0.0/0"}],
-    "PrefixListIds" : []
+    "PrefixListIds" : [],
+    "Ipv6Ranges": []
 },
 {
     "IpProtocol" : "tcp",
@@ -69,7 +72,8 @@ REQUIRED_PERMISSIONS = [
     "ToPort" : 443,
     "UserIdGroupPairs" : [],
     "IpRanges" : [{"CidrIp" : "0.0.0.0/0"}],
-    "PrefixListIds" : []
+    "PrefixListIds" : [],
+    "Ipv6Ranges": []
 }]
 
 # normalize_parameters
