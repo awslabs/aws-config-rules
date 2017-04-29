@@ -55,3 +55,4 @@ def lambda_handler(event, context):
 		],
 		ResultToken=result_token
 	)
+	
