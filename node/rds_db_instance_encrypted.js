@@ -1,12 +1,12 @@
-#
-# This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
-#
-# RDS DB Instances are encrypted and if an optional KMS Key ARN parameter is provided, we check whether the DB Instances were encrypted using the specified key 
-#
-# Trigger Type: Change Triggered
-# Scope of Changes: RDS:Instance
-# Accepted Parameters: KMSKeyARN (optional)
-# Example Values: 'arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab'
+//
+// This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
+//
+// RDS DB Instances are encrypted and if an optional KMS Key ARN parameter is provided, we check whether the DB Instances were encrypted using the specified key 
+//
+// Trigger Type: Change Triggered
+// Scope of Changes: RDS:Instance
+// Accepted Parameters: KMSKeyARN (optional)
+// Example Values: 'arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab'
 
 'use strict';
 let aws = require('aws-sdk');
@@ -36,7 +36,7 @@ function evaluateCompliance(configurationItem, ruleParameters) {
             return 'NON_COMPLIANT';
         }
         // Encrypted, no specific key needed
-        return 'COMPLIANT’;
+        return 'COMPLIANT';
     }
     else {
         // Not encrypted
@@ -69,11 +69,11 @@ function isApplicable(configurationItem, event) {
 
 exports.handler = (event, context, callback) => {
     event = checkDefined(event, 'event');
+    console.log('Received event:' + JSON.stringify(event, null, 4));
     const invokingEvent = JSON.parse(event.invokingEvent);
-    const ruleParameters = JSON.parse(event.ruleParameters);
+    const ruleParameters =  "ruleParameters" in event ? JSON.parse(event.ruleParameters) : {};
     const configurationItem = checkDefined(invokingEvent.configurationItem, 'invokingEvent.configurationItem');
     let compliance = 'NOT_APPLICABLE';
-    const putEvaluationsRequest = {};
 
     if (isApplicable(invokingEvent.configurationItem, event)) {
         // Invoke the compliance checking function.
@@ -84,16 +84,18 @@ exports.handler = (event, context, callback) => {
     // Note that we're choosing to report this evaluation against the resource that was passed in.
     // You can choose to report this against any other resource type
 
-    putEvaluationsRequest.Evaluations = [
-        {
-            ComplianceResourceType: configurationItem.resourceType,
-            ComplianceResourceId: configurationItem.resourceId,
-            ComplianceType: compliance,
-            OrderingTimestamp: configurationItem.configurationItemCaptureTime
-        }
-    ];
-    putEvaluationsRequest.ResultToken = event.resultToken;
+    const evaluation = {
+        ComplianceResourceType: configurationItem.resourceType,
+        ComplianceResourceId: configurationItem.resourceId,
+        ComplianceType: compliance,
+        OrderingTimestamp: configurationItem.configurationItemCaptureTime
+    };
+    const putEvaluationsRequest = {
+        Evaluations : [ evaluation ],
+        ResultToken : event.resultToken
+    };
 
     // Invoke the Config API to report the result of the evaluation
+    console.log('Put Evaluation:' + JSON.stringify(evaluation, null, 4));
     config.putEvaluations(putEvaluationsRequest, callback);
 };
