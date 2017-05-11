@@ -43,6 +43,8 @@ exports.handler = function(event, context) {
     // Only call out Async if a User
     if (configurationItem.resourceType === 'AWS::IAM::User') {
 	   
+      if (/(.*).com$/.test(configurationItem.resourceName)) {
+
         iam.listMFADevices({ UserName: configurationItem.resourceName }, function(mfaerr, mfadata) {
 
             var ret = 'NON_COMPLIANT';
@@ -80,7 +82,7 @@ exports.handler = function(event, context) {
             });
 
 	    });
-	   
+	  }
     } else {
  
 	    // Put together the request that reports the evaluation status
