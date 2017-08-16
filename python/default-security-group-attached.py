@@ -36,6 +36,8 @@
 import boto3
 import json
 
+APPLICABLE_RESOURCES = ["AWS::EC2::NetworkInterfaces"]
+
 def lambda_handler(event, context):
 
     is_compliant = True
@@ -44,6 +46,15 @@ def lambda_handler(event, context):
     annotation = ''
 
     network_interface_id = invoking_event['configurationItem']['resourceId']
+    if configuration_item["resourceType"] not in APPLICABLE_RESOURCES:
+        return {
+            "compliance_type": "NOT_APPLICABLE",
+            "annotation": "The rule doesn't apply to resources of type " +
+            configuration_item["resourceType"] + "."
+               }
+    
+    
+
     network_interfaces = boto3.client('ec2').describe_network_interfaces()
     
     
