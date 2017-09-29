@@ -20,8 +20,12 @@ def evaluate_compliance(configuration_item):
         return "NOT_APPLICABLE"
 
     user_name = configuration_item["configuration"]["userName"]
-
+    
     iam = boto3.client("iam")
+    try:
+        iam.get_login_profile(UserName=user_name)
+    except:
+        return "COMPLIANT"
     mfa = iam.list_mfa_devices(UserName=user_name)
 
     if len(mfa["MFADevices"]) > 0:
