@@ -10,7 +10,7 @@
 
 import json
 import boto3
-
+from botocore.exceptions import ClientError
 
 APPLICABLE_RESOURCES = ["AWS::IAM::User"]
 
@@ -24,8 +24,11 @@ def evaluate_compliance(configuration_item):
     iam = boto3.client("iam")
     try:
         iam.get_login_profile(UserName=user_name)
-    except:
-        return "COMPLIANT"
+    except ClientError as e:
+        if 'NoSuchEntity' in e.response['Error']['Code']:
+            return "COMPLIANT"
+        else:
+            raise e
     mfa = iam.list_mfa_devices(UserName=user_name)
 
     if len(mfa["MFADevices"]) > 0:
