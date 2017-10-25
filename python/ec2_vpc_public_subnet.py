@@ -47,22 +47,30 @@ def evaluate_compliance(configuration_item):
     client      = boto3.client("ec2");
     private     = True
 
-    response    = client.describe_route_tables()
+    response    = client.describe_route_tables(
+        Filters = [
+            {
+                'Name': 'route.destination-cidr-block',
+                'Values': [ '0.0.0.0/0' ]
+            }
+        ]
+    )
     # If only default route table exists then
     # all subnets are automatically attached to this route table
     # Otherwise check if subnet is explicitly attached to another route table
-    # Private subnet condition applies only when route doesn't contains internet gateway
+    # Private subnet condition applies only when route doesn't contains
+    # destination CIDR block = 0.0.0.0/0 or no Internet Gateway is attached
     for i in response['RouteTables']:
         if i['VpcId'] == vpc_id:
             for j in i['Associations']:
                 if j['Main'] == True:
                     for k in i['Routes']:
-                        if k['GatewayId'].startswith('igw-'):
+                        if k['DestinationCidrBlock'] == '0.0.0.0/0' or k['GatewayId'].startswith('igw-'):
                             private = False
                 else:
                     if j['SubnetId'] == subnet_id:
                         for k in i['Routes']:
-                            if k['GatewayId'].startswith('igw-'):
+                            if k['DestinationCidrBlock'] == '0.0.0.0/0' or k['GatewayId'].startswith('igw-'):
                                 private = False
     
     if private:
