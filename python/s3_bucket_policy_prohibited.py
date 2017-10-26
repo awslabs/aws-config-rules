@@ -38,9 +38,24 @@ import logging
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
+APPLICABLE_RESOURCES = ["AWS::S3::Bucket"]
 
 
 def evaluate_compliance(configuration_item):
+    if configuration_item["resourceType"] not in APPLICABLE_RESOURCES:
+        return {
+            "compliance_type": "NOT_APPLICABLE",
+            "annotation": "The rule doesn't apply to resources of type " +
+            configuration_item["resourceType"] + "."
+        }
+
+    if configuration_item['configurationItemStatus'] == "ResourceDeleted":
+        return {
+            "compliance_type": "NOT_APPLICABLE",
+            "annotation": "The configurationItem was deleted " +
+                          "and therefore cannot be validated"
+        }
+
     bucket_policy = configuration_item["supplementaryConfiguration"].get("BucketPolicy")
     if bucket_policy['policyText'] is None:
         return {
