@@ -1,6 +1,6 @@
 # AWS Config Rules
 
-### 1. Ensure an IAM password policy exists. 
+### 1. Ensure an IAM password policy exists.
 Description: Checks to see if there is a password policy section enabled in IAM.
 
 	old-periodic/iam_password_policy_enabled-periodic.js
@@ -78,7 +78,7 @@ Required Parameter: ```DesiredTenancy```
 Example Value: ```dedicated```
 
 ### 10. Ensure CloudTrail is enabled in all regions.
-Description: Checks that CloudTrail is enabled in all regions. Use this rule only in your home region 
+Description: Checks that CloudTrail is enabled in all regions. Use this rule only in your home region
 
 	old-periodic/cloudtrail_enabled_all_regions-periodic.js
 
@@ -296,6 +296,14 @@ Required Parameter: ```None```
 Description: Check that no RDS Instances are in Public Subnet.
 
 	python/rds_vpc_public_subnet.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
+
+### 35. Check that SGs prefixed with "launch-wizard" are not associated with ENIs.
+Description: Check that security groups prefixed with "launch-wizard" are not associated with network interfaces.
+
+	python/ec2_launch_wizard_security_group_prohibited.py
 
 Trigger Type: ```Change Triggered```
 Required Parameter: ```None```
