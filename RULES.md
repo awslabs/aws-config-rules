@@ -307,3 +307,19 @@ Description: Check that security groups prefixed with "launch-wizard" are not as
 
 Trigger Type: ```Change Triggered```
 Required Parameter: ```None```
+
+### 36. Check that inbound rules for SGs do not have a protocol of "All".
+Description: Check that security groups do not have an inbound rule with protocol of "All".
+
+	python/ec2_security_group_protocol_all_prohibited.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
+
+### 37. Check that inbound rules for SGs do not have a port range of "All".
+Description: Check that security groups do not have an inbound rule with port range of "All".
+
+	python/ec2_security_group_port_range_all_prohibited.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
