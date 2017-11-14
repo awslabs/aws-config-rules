@@ -18,6 +18,9 @@ APPLICABLE_RESOURCES = ["AWS::IAM::User"]
 def evaluate_compliance(configuration_item):
     if configuration_item["resourceType"] not in APPLICABLE_RESOURCES:
         return "NOT_APPLICABLE"
+    
+    if not configuration_item["configuration"]:
+        return "NOT_APPLICABLE"
 
     user_name = configuration_item["configuration"]["userName"]
     
