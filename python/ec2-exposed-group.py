@@ -29,8 +29,12 @@ def find_exposed_ports(ip_permissions):
     for permission in ip_permissions or []:
         for ip in permission["ipRanges"]:
             if "0.0.0.0/0" in ip:
-                exposed_ports.extend(range(permission["fromPort"],
-                                           permission["toPort"]+1))
+                if "fromPort" in permission:
+                        exposed_ports.extend(range(permission["fromPort"],
+                                                   permission["toPort"]+1))
+                # if "fromPort" does not exist, port range is "All"
+                else:
+                    exposed_ports.extend(range(0,65535+1))
 
     return exposed_ports
 
@@ -52,6 +56,13 @@ def evaluate_compliance(configuration_item, rule_parameters):
             "compliance_type": "NOT_APPLICABLE",
             "annotation": "The rule doesn't apply to resources of type " +
             configuration_item["resourceType"] + "."
+        }
+
+    # Check if resource was deleted
+    if configuration_item['configurationItemStatus'] == "ResourceDeleted":
+        return {
+            "compliance_type": "NOT_APPLICABLE",
+            "annotation": "This resource was deleted."
         }
 
     violation = find_violation(
