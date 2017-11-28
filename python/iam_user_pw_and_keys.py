@@ -4,6 +4,9 @@ Checks if users comply to the following.
 
 1. All active access keys have been used within the last ## days.
 2. If console access is enabled check if login within the last ## days.
+
+## is defined as an AWS Config rule parameter named "maxInactiveDays"
+
 """
 # Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
@@ -21,6 +24,7 @@ Checks if users comply to the following.
 # AWS Config
 # Trigger Type: Change Triggered and schedule (at least once every 24 hours)
 # Scope of Changes: IAM:User
+# Parameters: maxInactiveDays (integer)
 ###############################################################################
 #   Annotation explanation
 #       "COMPLIANT" annotations
@@ -88,7 +92,7 @@ def check_access_keys(user_name, iam, max_inactive_days):
     try:
         user = iam.get_user(UserName=user_name)
     except ClientError as error:
-        if error.response['Error']['Code'] is 'NoSuchEntity':
+        if error.response['Error']['Code'] == 'NoSuchEntity':
             # User was provided to the function but does not exist, nothing to do!
             print("Username '%s' was passed by config service but is not found, exiting gracefully." % user_name)
             sys.exit(0)
@@ -102,7 +106,7 @@ def check_access_keys(user_name, iam, max_inactive_days):
     if len(access_keys["AccessKeyMetadata"]) is not 0:
         # has access keys
         for access_key in access_keys["AccessKeyMetadata"]:
-            if access_key["Status"] is "Active":
+            if access_key["Status"] == "Active":
                 # only check active keys, deactivated are fine
                 access_key_last_used = iam.get_access_key_last_used(AccessKeyId=access_key["AccessKeyId"])
                 if access_key_last_used["AccessKeyLastUsed"].get("LastUsedDate") is None:
@@ -122,7 +126,7 @@ def check_console_password(iam, user, user_name, max_inactive_days):
     try:
         iam.get_login_profile(UserName=user_name)
     except ClientError as error:
-        if error.response['Error']['Code'] is 'NoSuchEntity':
+        if error.response['Error']['Code'] == 'NoSuchEntity':
             return "COMPLIANT", "Compliant, console login is disabled."
         else:
             print('Error getting IAM user login profile details, error text follows:\n%s' % error)
