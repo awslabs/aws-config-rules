@@ -1,7 +1,7 @@
 #
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 #
-# Description: Checks that all EC2 instances are launched as Spot Instances
+# Description: Checks that all EC2 instances are launched as Spot Instances for maximum cost savings
 #
 # Trigger Type: Change Triggered
 # Scope of Changes: EC2:Instance
