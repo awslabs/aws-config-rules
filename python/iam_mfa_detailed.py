@@ -35,7 +35,7 @@ from botocore.exceptions import ClientError
 
 
 print('Loading function...')
-DEBUG_MODE = True  # Manually change when debugging
+DEBUG_MODE = False  # Manually change when debugging
 try:
     IAM_CLIENT = boto3.client('iam')
     CONFIG_CLIENT = boto3.client('config')
