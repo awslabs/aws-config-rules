@@ -4,9 +4,7 @@ Checks if users comply to the following.
 
 1. All active access keys have been used within the last ## days.
 2. If console access is enabled check if login within the last ## days.
-
 ## is defined as an AWS Config rule parameter named "maxInactiveDays"
-
 """
 # Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
@@ -21,29 +19,147 @@ Checks if users comply to the following.
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 ###############################################################################
-# AWS Config
-# Trigger Type: Change Triggered and schedule (at least once every 24 hours)
-# Scope of Changes: IAM:User
-# Parameters: maxInactiveDays (integer)
+# Use Case:
+#    Check if users password and access keys have recently been used
+#    Return non-compliant when one of them has not been used within ## days
+#    Where ## is specified by the parameter 'maxInactiveDays'
+#
+# Possible Results:
+#    Result        - Annotation                             - Explanation
+#    -----------------------------------------------------------------------------------------------------------------------------------
+#    Compliant     - Compliant.                             - User has console access, has logged in recently, and access keys are good.
+#    Compliant     - Compliant, console login is disabled.  - User does not have console access and access keys are good.
+#    Non-Compliant - Access key has never been used.        - User has an access key generated but it has never been used.
+#    Non-Compliant - Access key has not been used recently. - User has an access key but it has not been used recently.
+#    Non-Compliant - Password has not been used recently.   - User has console access and has not logged in recently.
+#    Non-Compliant - User has never logged in.              - User has console access but has never logged in.
+#
+# Lambda Function Details:
+#    Runtime: python 2.7
+#    Memory: 128 MB
+#    Timeout: 30 seconds
+#
+# Expected Input (Only to be ran from AWS Config, this is a sample event):
+#    {
+#        "invokingEvent": {
+#            "configurationItemDiff": null,
+#            "configurationItem": {
+#                "relatedEvents": [],
+#                "relationships": [],
+#                "configuration": {
+#                    "path": "/",
+#                    "userName": "config-test-user1",
+#                    "userId": "AIDAIEJCNPAE4EONMASRY",
+#                    "arn": "arn:aws:iam::123456789012:user/config-test-user1",
+#                    "createDate": "2017-03-22T18:29:26.000Z",
+#                    "userPolicyList": [],
+#                    "groupList": [],
+#                    "attachedManagedPolicies": [{
+#                        "policyName": "IAMUserChangePassword",
+#                        "policyArn": "arn:aws:iam::aws:policy/IAMUserChangePassword"
+#                    }]
+#                },
+#                "supplementaryConfiguration": {},
+#                "tags": {},
+#                "configurationItemVersion": "1.2",
+#                "configurationItemCaptureTime": "2017-07-27T20:07:35.770Z",
+#                "configurationStateId": 1501186055770,
+#                "awsAccountId": "123456789012",
+#                "configurationItemStatus": "OK",
+#                "resourceType": "AWS::IAM::User",
+#                "resourceId": "AIDAIEJCNPAE4EONMASRY",
+#                "resourceName": "config-test-user1",
+#                "ARN": "arn:aws:iam::123456789012:user/config-test-user1",
+#                "awsRegion": "global",
+#                "availabilityZone": "Not Applicable",
+#                "configurationStateMd5Hash": "4a51983c20f27f28c58011a5547d6cd3",
+#                "resourceCreationTime": "2017-03-22T18:29:26.000Z"
+#            },
+#            "notificationCreationTime": "2017-12-19T04:52:22.933Z",
+#            "messageType": "ConfigurationItemChangeNotification",
+#            "recordVersion": "1.2"
+#        }
+#    }
+#
+# Expected Output:
+#    None, sends all compliance data directly to AWS Config
+#
+# IAM Role Policy Example:
+#    {
+#        "Version": "2012-10-17",
+#        "Statement": [{
+#            "Effect": "Allow",
+#            "Action": ["s3:GetObject"],
+#            "Resource": "arn:aws:s3:::*/AWSLogs/*/Config/*"
+#        }, {
+#            "Effect": "Allow",
+#            "Action": [
+#                "config:Put*",
+#                "config:Get*",
+#                "config:List*",
+#                "config:Describe*"
+#            ],
+#            "Resource": "*"
+#        }, {
+#            "Effect": "Allow",
+#            "Action": [
+#                "iam:GetUser",
+#                "iam:ListAccessKeys",
+#                "iam:GetAccessKeyLastUsed",
+#                "iam:GetLoginProfile"
+#            ],
+#            "Resource": "*"
+#        }, {
+#            "Effect": "Allow",
+#            "Action": [
+#                "logs:CreateLogStream",
+#                "logs:PutLogEvents",
+#                "logs:CreateLogGroup"
+#            ],
+#            "Resource": "*"
+#        }]
+#    }
+#
+# Example AWS Lambda Function Permission:
+#    aws lambda add-permission \
+#        --function-name <<YOUR_LAMBDA_NAME>> \
+#        --statement-id 1 \
+#        --principal config.amazonaws.com \
+#        --action lambda:InvokeFunction \
+#        --source-account <<YOUR_ACCOUNT_NUMBER>>
+#
+# Example AWS Config Rule Creation CLI Command:
+#    aws configservice put-config-rule --config-rule file://rule.json
+#
+# Example AWS Config Rule Creation JSON for CLI Command:
+#    {
+#        "ConfigRuleName": "User-Password-And-Keys-Age",
+#        "Description": "Evaluates whether IAM users have used their login and access keys recently.",
+#        "Scope": {
+#            "ComplianceResourceTypes": [
+#                "AWS::IAM::User"
+#            ]
+#        },
+#        "Source": {
+#            "Owner": "CUSTOM_LAMBDA",
+#            "SourceIdentifier": "<<YOUR_LAMBDA_ARN_HERE>>",
+#            "SourceDetails": [{
+#                "EventSource": "aws.config",
+#                "MessageType": "ConfigurationItemChangeNotification"
+#            },{
+#                "EventSource": "aws.config",
+#                "MaximumExecutionFrequency": "TwentyFour_Hours",
+#                "MessageType": "ScheduledNotification"
+#            }]
+#        },
+#        "InputParameters": "{\"maxInactiveDays\":\"60\"}"
+#    }
 ###############################################################################
-#   Annotation explanation
-#       "COMPLIANT" annotations
-#           Compliant.
-#               This means the user has console access, has logged in recently, and access keys are good.
-#           Compliant, console login is disabled.
-#               This means the user does not have console access and access keys are good.
-#       NON_COMPLIANT
-#           Access key has never been used.
-#               This means the user has an access key generated but it has never been used.
-#           Access key has not been used recently.
-#               This means the user has an access key but it has not been used recently.
-#           Password has not been used recently.
-#               This means the user has console access and has not logged in recently.
-#           User has never logged in.
-#               This means the user has console access but has never logged in.
-###############################################################################
+# 1.1.1 -- 2017/12/18
+#   Fixed some comparisons to literals
+#   Added more verbose instructions to comments
 # 1.1.0
-#   Written by AWS Professional Services Consultant Levi Romandine
+#   Written by AWS Professional Services Sr. Consultant Levi Romandine
 #       Based on https://github.com/awslabs/aws-config-rules/tree/master/python
 #       Combines iam-unused-user.py and iam-unused-keys.py
 #   The annotation for failures and passes is now far more descriptive
