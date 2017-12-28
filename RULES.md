@@ -323,3 +323,11 @@ Description: Check that security groups do not have an inbound rule with port ra
 
 Trigger Type: ```Change Triggered```
 Required Parameter: ```None```
+
+### 38. Check that S3 buckets have default encryption enabled.
+Description: Check that S3 buckets have default encryption enabled.
+
+	python/s3_bucket_default_encryption_enabled.py
+
+Trigger Type: ```Change Triggered```
+Required Parameter: ```None```
