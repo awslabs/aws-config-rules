@@ -45,7 +45,6 @@ def evaluate_compliance(configuration_item):
     subnet_id   = configuration_item["configuration"]["subnetId"]
     vpc_id      = configuration_item["configuration"]["vpcId"]
     client      = boto3.client("ec2");
-    private     = True
 
     response    = client.describe_route_tables()
 

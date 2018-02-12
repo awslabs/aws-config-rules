@@ -43,11 +43,10 @@ log.setLevel(logging.INFO)
 
 def evaluate_compliance(configuration_item):
     vpc_id      = configuration_item["configuration"]['dBSubnetGroup']["vpcId"]
-    subnet_id   = []
+    subnet_ids   = []
     for i in configuration_item["configuration"]['dBSubnetGroup']['subnets']:
-        subnet_id.append(i['subnetIdentifier'])
+        subnet_ids.append(i['subnetIdentifier'])
     client      = boto3.client("ec2");
-    private     = True
 
     response    = client.describe_route_tables()
 
@@ -56,26 +55,27 @@ def evaluate_compliance(configuration_item):
     # route table has a public route.
 
     private = True
-    mainTableIsPublic = False
-    noExplicitAssociationFound = True
-    explicitAssocationIsPublic = False
 
-    for i in response['RouteTables']:
-        if i['VpcId'] == vpc_id:
-            for j in i['Associations']:
-                if j['Main'] == True:
-                    for k in i['Routes']:
-                        if k['DestinationCidrBlock'] == '0.0.0.0/0' or k['GatewayId'].startswith('igw-'):
-                            mainTableIsPublic = True
-                else:
-                    if j['SubnetId'] == subnet_id:
-                        noExplicitAssociationFound = False
+    for subnet_id in subnet_ids:
+        mainTableIsPublic = False
+        noExplicitAssociationFound = True
+        explicitAssocationIsPublic = False
+        for i in response['RouteTables']:
+            if i['VpcId'] == vpc_id:
+                for j in i['Associations']:
+                    if j['Main'] == True:
                         for k in i['Routes']:
                             if k['DestinationCidrBlock'] == '0.0.0.0/0' or k['GatewayId'].startswith('igw-'):
-                                explicitAssocationIsPublic = True
+                                mainTableIsPublic = True
+                    else:
+                        if j['SubnetId'] == subnet_id:
+                            noExplicitAssociationFound = False
+                            for k in i['Routes']:
+                                if k['DestinationCidrBlock'] == '0.0.0.0/0' or k['GatewayId'].startswith('igw-'):
+                                    explicitAssocationIsPublic = True
 
-    if (mainTableIsPublic and noExplicitAssociationFound) or explicitAssocationIsPublic:
-        private = False
+        if (mainTableIsPublic and noExplicitAssociationFound) or explicitAssocationIsPublic:
+            private = False
 
     if private:
         return {
