@@ -1,0 +1,12 @@
+{
+  "invokingEvent": "{\"configurationItemDiff\":null,\"configurationItem\":{\"relatedEvents\":[],\"relationships\":[],\"configuration\":{\"name\":\"Test\",\"s3BucketName\":\"cloudtrail-123456789012-us-east-1\",\"s3KeyPrefix\":null,\"snsTopicName\":null,\"snsTopicARN\":null,\"includeGlobalServiceEvents\":true,\"isMultiRegionTrail\":true,\"homeRegion\":\"us-east-1\",\"trailARN\":\"arn:aws:cloudtrail:us-east-1:123456789012:trail/Test\",\"logFileValidationEnabled\":true,\"cloudWatchLogsLogGroupArn\":null,\"cloudWatchLogsRoleArn\":null,\"kmsKeyId\":\"arn:aws:kms:us-east-1:123456789012:key/d235821b-47e7-41e3-a1ae-80ed225d2466\",\"hasCustomEventSelectors\":false},\"supplementaryConfiguration\":{},\"tags\":{},\"configurationItemVersion\":\"1.3\",\"configurationItemCaptureTime\":\"2018-02-11T02:34:43.438Z\",\"configurationStateId\":1518316483438,\"awsAccountId\":\"123456789012\",\"configurationItemStatus\":\"ResourceDiscovered\",\"resourceType\":\"AWS::CloudTrail::Trail\",\"resourceId\":\"Test\",\"resourceName\":null,\"ARN\":\"arn:aws:cloudtrail:us-east-1:123456789012:trail/Test\",\"awsRegion\":\"us-east-1\",\"availabilityZone\":\"Regional\",\"configurationStateMd5Hash\":\"\",\"resourceCreationTime\":null},\"notificationCreationTime\":\"2018-02-11T02:37:00.059Z\",\"messageType\":\"ConfigurationItemChangeNotification\",\"recordVersion\":\"1.3\"}",
+  "ruleParameters": "{}",
+  "resultToken": "myResultToken",
+  "eventLeftScope": false,
+  "executionRoleArn": "arn:aws:iam::123456789012:role/config-role",
+  "configRuleArn": "arn:aws:config:us-east-2:123456789012:config-rule/config-rule-0123456",
+  "configRuleName": "change-triggered-config-rule",
+  "configRuleId": "config-rule-0123456",
+  "accountId": "123456789012",
+  "version": "1.0"
+}

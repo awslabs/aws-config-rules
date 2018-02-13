@@ -1,0 +1,9 @@
+{
+  "MFADevices": [
+    {
+      "UserName": "Bob",
+      "SerialNumber": "arn:aws:iam::123456789012:mfa/BobsMFADevice",
+      "EnableDate": "2015-06-16T22:36:37Z"
+    }
+  ]
+}
