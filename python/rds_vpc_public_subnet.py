@@ -1,6 +1,6 @@
 #
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
-# 
+#
 # Description: Check that no RDS Instances are in Public Subnet
 #
 # Trigger Type: Change Triggered
@@ -43,31 +43,40 @@ log.setLevel(logging.INFO)
 
 def evaluate_compliance(configuration_item):
     vpc_id      = configuration_item["configuration"]['dBSubnetGroup']["vpcId"]
-    subnet_id   = []
+    subnet_ids   = []
     for i in configuration_item["configuration"]['dBSubnetGroup']['subnets']:
-        subnet_id.append(i['subnetIdentifier'])
+        subnet_ids.append(i['subnetIdentifier'])
     client      = boto3.client("ec2");
-    private     = True
 
     response    = client.describe_route_tables()
-    # If only default route table exists then
-    # all subnets are automatically attached to this route table
-    # Otherwise check if subnet is explicitly attached to another route table
-    # Private subnet condition applies only when route doesn't contains
-    # destination CIDR block = 0.0.0.0/0 or no Internet Gateway is attached
-    for i in response['RouteTables']:
-        if i['VpcId'] == vpc_id:
-            for j in i['Associations']:
-                if j['Main'] == True:
-                    for k in i['Routes']:
-                        if k['DestinationCidrBlock'] == '0.0.0.0/0' or k['GatewayId'].startswith('igw-'):
-                            private = False
-                else:
-                    if j['SubnetId'] in subnet_id:
+
+    # If the subnet is explicitly associated to a route table, check if there
+    # is a public route. If no explicit association exists, check if the main
+    # route table has a public route.
+
+    private = True
+
+    for subnet_id in subnet_ids:
+        mainTableIsPublic = False
+        noExplicitAssociationFound = True
+        explicitAssocationIsPublic = False
+        for i in response['RouteTables']:
+            if i['VpcId'] == vpc_id:
+                for j in i['Associations']:
+                    if j['Main'] == True:
                         for k in i['Routes']:
                             if k['DestinationCidrBlock'] == '0.0.0.0/0' or k['GatewayId'].startswith('igw-'):
-                                private = False
-    
+                                mainTableIsPublic = True
+                    else:
+                        if j['SubnetId'] == subnet_id:
+                            noExplicitAssociationFound = False
+                            for k in i['Routes']:
+                                if k['DestinationCidrBlock'] == '0.0.0.0/0' or k['GatewayId'].startswith('igw-'):
+                                    explicitAssocationIsPublic = True
+
+        if (mainTableIsPublic and noExplicitAssociationFound) or explicitAssocationIsPublic:
+            private = False
+
     if private:
         return {
             "compliance_type": "COMPLIANT",
