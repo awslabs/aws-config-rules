@@ -1,37 +1,37 @@
 """
-    This file made available under CC0 1.0 Universal
-    (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
+ This file made available under CC0 1.0 Universal
+ (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 
-    Description: Check that no RDS Instances are in Public Subnet
+ Description: Check that no RDS Instances are in Public Subnet
 
-    Trigger Type: Change Triggered
-    Scope of Changes: RDS:DBInstance
-    Accepted Parameters: None
-    Your Lambda function execution role will need to have a policy that provides the appropriate
-    permissions.  Here is a policy that you can consider.  You should validate this for your own
-    environment
-    {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "logs:CreateLogGroup",
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents"
-                ],
-                "Resource": "arn:aws:logs:*:*:*"
-            },
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "config:PutEvaluations",
-                    "ec2:DescribeRouteTables"
-                ],
-                "Resource": "*"
-            }
-        ]
-    }
+ Trigger Type: Change Triggered
+ Scope of Changes: RDS:DBInstance
+ Accepted Parameters: None
+ Your Lambda function execution role will need to have a policy that provides the appropriate
+ permissions.  Here is a policy that you can consider.  You should validate this for your own
+ environment
+ {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:*:*:*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "config:PutEvaluations",
+                "ec2:DescribeRouteTables"
+            ],
+            "Resource": "*"
+        }
+    ]
+ }
 """
 
 import logging
