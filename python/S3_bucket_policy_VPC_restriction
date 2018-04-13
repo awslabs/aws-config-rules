@@ -3,7 +3,7 @@
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 #
 # Trigger Type: Change Triggered
-# Scope of Changes: N/A
+# Scope of Changes: S3 bucket changes
 # Required Parameters: None
 #
 # Description: Evaluates the bucket policy on S3 bucket to determine if the policy allows access to the bucket only from a VPC in the same account where the bucket is created.
