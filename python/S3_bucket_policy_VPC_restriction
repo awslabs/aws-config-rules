@@ -1,0 +1,123 @@
+################################################################################################################
+#
+# This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
+#
+# Trigger Type: Periodic
+# Scope of Changes: N/A
+# Required Parameters: None
+#
+# Description: Evaluates the bucket policy on S3 bucket to determine if the policy allows access to the bucket only from a VPC in the same account where the bucket is created.
+# The output would be "COMPLIANT" if bucket policy condition denies the access if the request did not originate from a VPC in the same account
+# The output would be "NON_COMPLIANT" if there is no bucket policy, or the bucket policy does not have an appropriate condition applied.
+#
+# Your Lambda function execution role will need to have a policy that provides the appropriate
+# permissions.  Here is a policy that you can consider.  You should validate this for your own
+# environment
+#{
+#    "Version": "2012-10-17",
+#    "Statement": [
+#        {
+#            "Effect": "Allow",
+#           "Action": [
+#                "logs:CreateLogGroup",
+#                "logs:CreateLogStream",
+#                "logs:PutLogEvents"
+#            ],
+#            "Resource": "arn:aws:logs:*:*:*"
+#        },
+#        {
+#            "Effect": "Allow",
+#            "Action": [
+#                "config:Put*",
+#                "config:Get*",
+#                "config:List*",
+#                "config:Describe*",
+#                "ec2:DescribeVpcs",
+#                "s3:GetBucketPolicy"
+#            ],
+#            "Resource": "*"
+#        }
+#    ]
+#}
+################################################################################################################
+
+import boto3, json
+from botocore.exceptions import ClientError
+
+def vpc_evaluate (cond):
+    ec2_client = boto3.client('ec2')
+    vpcs = ec2_client.describe_vpcs()
+    for vpc in vpcs['Vpcs']:
+        if cond == vpc['VpcId']:
+            return {
+            'compliance_type': "COMPLIANT",
+            'annotation': "The bucket is only accessible from a VPC in this account"
+            }
+    return {
+    'compliance_type': "NON_COMPLIANT",
+    'annotation': "The bucket policy allows the bucket access from a VPC in another account"
+    }
+
+def evaluate_compliance(config_item, r_id):
+    s3 = boto3.client ('s3')
+    temp_result = {
+    'compliance_type': "NON_COMPLIANT",
+    'annotation': "Policy has no condition defined"
+    }
+    try:
+        policy = s3.get_bucket_policy(Bucket = r_id)
+        policy_doc = json.loads (policy['Policy'])
+        for statement in policy_doc['Statement']:
+            if statement['Effect'] == "Deny":
+                try:
+                    cond = statement['Condition']
+                    try:
+                        cond_key = cond['StringNotEquals']['aws:sourceVpc']
+                        result = vpc_evaluate (cond_key)
+                        return {
+                        'compliance_type': result['compliance_type'],
+                        'annotation': result['annotation']
+                        }
+                    except:
+                        return {
+                        'compliance_type': "NON_COMPLIANT",
+                        'annotation': "Policy conditions dont restrict access from a specific VPC"
+                        }
+                except KeyError as e:
+                    if e == 'Condition':
+                        pass
+            else:
+                return {
+                'compliance_type': "NON_COMPLIANT",
+                'annotation': "The bucket policy does not deny requests not originating from a VPC"
+                }
+
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchBucketPolicy':
+            return {
+            'compliance_type': "NON_COMPLIANT",
+            'annotation': "Bucket has no bucket policy defined"
+            }
+    return (temp_result)
+
+def lambda_handler(event, context):
+
+    # Create AWS SDK clients & initialize custom rule parameters
+    config = boto3.client('config')
+    invoking_event = json.loads(event['invokingEvent'])
+    compliance_value = 'NOT_APPLICABLE'
+    resource_id = invoking_event['configurationItem']['resourceId']
+
+    compliance_value = evaluate_compliance(invoking_event['configurationItem'], resource_id)
+
+    response = config.put_evaluations(
+       Evaluations=[
+            {
+                'ComplianceResourceType': invoking_event['configurationItem']['resourceType'],
+                'ComplianceResourceId': resource_id,
+                'ComplianceType': compliance_value ['compliance_type'],
+                'Annotation': compliance_value ['annotation'],
+                'OrderingTimestamp': invoking_event['notificationCreationTime']
+            },
+       ],
+       ResultToken=event['resultToken'])
