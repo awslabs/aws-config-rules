@@ -1,0 +1,112 @@
+################################################################################################################
+#
+# This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
+#
+# Trigger Type: Change Triggered
+# Scope of Changes: S3 Bucket Changes
+# Required Parameters: 'Key' - KMSKeyArn
+#
+# Description: Evaluates the bucket encryption configuration to verify if the bucket has been encrypted using an "authorized" AWS KMS CMK
+# The output would be "COMPLIANT" if bucket is encrypted using the authorized key
+# The output would be "NON_COMPLIANT" if the bucket is not encrypted at all; or bucket is encrypted using any other configuration
+#
+# Your Lambda function execution role will need to have a policy that provides the appropriate
+# permissions.  Here is a policy that you can consider.  You should validate this for your own
+# environment
+#{
+#    "Version": "2012-10-17",
+#    "Statement": [
+#        {
+#            "Effect": "Allow",
+#           "Action": [
+#                "logs:CreateLogGroup",
+#                "logs:CreateLogStream",
+#                "logs:PutLogEvents"
+#            ],
+#            "Resource": "arn:aws:logs:*:*:*"
+#        },
+#        {
+#            "Effect": "Allow",
+#            "Action": [
+#                "config:Put*",
+#                "config:Get*",
+#                "config:List*",
+#                "config:Describe*",
+#                "s3:GetEncryptionConfiguration"
+#            ],
+#            "Resource": "*"
+#        }
+#    ]
+#}
+################################################################################################################
+
+
+import boto3, json
+from botocore.exceptions import ClientError
+
+APPLICABLE_RESOURCES = ["AWS::S3::Bucket"]
+
+def evaluate_compliance(config_item, r_id, key_arn):
+    print (config_item)
+    if config_item['resourceType'] not in APPLICABLE_RESOURCES:
+        return {
+            'compliance_type': "NOT_APPLICABLE",
+            'annotation': "The rule doesn't apply to resources of type " +
+            config_item["resourceType"] + "."
+        }
+
+    try:
+            s3client = boto3.client ('s3')
+            response = s3client.get_bucket_encryption(Bucket = r_id)
+            encryptionstatus = json.dumps(response['ServerSideEncryptionConfiguration']['Rules'][0]['ApplyServerSideEncryptionByDefault'])
+            encryptiontype = json.loads(encryptionstatus)
+            if encryptiontype['SSEAlgorithm'] == 'AES256':
+                return {
+                'compliance_type': "NON_COMPLIANT",
+                'annotation': "Bucket uses S3 default encryption"
+                }
+            elif encryptiontype['KMSMasterKeyID'] == key_arn:
+                return {
+                'compliance_type': "COMPLIANT",
+                'annotation': "Bucket uses authorized KMS Key"
+                }
+            else:
+                return {
+                'compliance_type': "NON_COMPLIANT",
+                'annotation': "Bucket uses unauthorized KMS Key"
+                }
+    except ClientError as e:
+            if e.response['Error']['Code'] == 'ServerSideEncryptionConfigurationNotFoundError':
+                return {
+                'compliance_type': "NON_COMPLIANT",
+                'annotation': "Bucket is not encrypted"
+                }
+            else:
+                return {
+                'compliance_type': "NON_COMPLIANT",
+                'annotation': "Something is Wrong"
+                }
+
+def lambda_handler(event, context):
+
+    # Create AWS SDK clients & initialize custom rule parameters
+    config = boto3.client('config')
+    invoking_event = json.loads(event['invokingEvent'])
+    compliance_value = 'NOT_APPLICABLE'
+    resource_id = invoking_event['configurationItem']['resourceId']
+    parameter = json.loads(event['ruleParameters'])
+    kms_key_arn = parameter['Key']
+
+    compliance_value = evaluate_compliance(invoking_event['configurationItem'], resource_id, kms_key_arn)
+
+    response = config.put_evaluations(
+       Evaluations=[
+            {
+                'ComplianceResourceType': invoking_event['configurationItem']['resourceType'],
+                'ComplianceResourceId': resource_id,
+                'ComplianceType': compliance_value['compliance_type'],
+                'Annotation': compliance_value['annotation'],
+                'OrderingTimestamp': invoking_event['notificationCreationTime']
+            },
+       ],
+       ResultToken=event['resultToken'])
