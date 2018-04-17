@@ -1,0 +1,12 @@
+{
+  "invokingEvent": "{\"configurationItemDiff\":null,\"configurationItem\":{\"relatedEvents\":[],\"relationships\":[],\"configuration\":{\"name\":\"bucket-123456789012-us-east-1\",\"owner\":{\"displayName\":\"test-account\",\"id\":\"48f2615deadf0dc72bd6153a750fef4890e838b35538fad5d8010c93b849fe3c\"},\"creationDate\":\"2018-02-11T14:32:52.000Z\"},\"supplementaryConfiguration\":{\"AccessControlList\":\"{\\\"grantSet\\\":null,\\\"grantList\\\":[{\\\"grantee\\\":{\\\"id\\\":\\\"48f2615deadf0dc72bd6153a750fef4890e838b35538fad5d8010c93b849fe3c\\\",\\\"displayName\\\":\\\"kddejong+burnerGuardDuty-Master1\\\"},\\\"permission\\\":\\\"FullControl\\\"},{\\\"grantee\\\":\\\"AllUsers\\\",\\\"permission\\\":\\\"Read\\\"}],\\\"owner\\\":{\\\"displayName\\\":\\\"kddejong+burnerGuardDuty-Master1\\\",\\\"id\\\":\\\"48f2615deadf0dc72bd6153a750fef4890e838b35538fad5d8010c93b849fe3c\\\"},\\\"isRequesterCharged\\\":false}\",\"BucketAccelerateConfiguration\":{\"status\":null},\"BucketLoggingConfiguration\":{\"destinationBucketName\":null,\"logFilePrefix\":null},\"BucketNotificationConfiguration\":{\"configurations\":{}},\"BucketPolicy\":{\"policyText\":null},\"BucketVersioningConfiguration\":{\"status\":\"Off\",\"isMfaDeleteEnabled\":null},\"IsRequesterPaysEnabled\":false},\"tags\":{},\"configurationItemVersion\":\"1.3\",\"configurationItemCaptureTime\":\"2018-02-11T14:35:00.150Z\",\"configurationStateId\":1518359700150,\"awsAccountId\":\"123456789012\",\"configurationItemStatus\":\"ResourceDiscovered\",\"resourceType\":\"AWS::S3::Bucket\",\"resourceId\":\"bucket-123456789012-us-east-1\",\"resourceName\":\"bucket-123456789012-us-east-1\",\"ARN\":\"arn:aws:s3:::bucket-123456789012-us-east-1\",\"awsRegion\":\"us-east-1\",\"availabilityZone\":\"Regional\",\"configurationStateMd5Hash\":\"\",\"resourceCreationTime\":\"2018-02-11T14:32:52.000Z\"},\"notificationCreationTime\":\"2018-02-11T14:40:04.568Z\",\"messageType\":\"ConfigurationItemChangeNotification\",\"recordVersion\":\"1.3\"}",
+  "ruleParameters": "{}",
+  "resultToken": "myResultToken",
+  "eventLeftScope": false,
+  "executionRoleArn": "arn:aws:iam::123456789012:role/config-role",
+  "configRuleArn": "arn:aws:config:us-east-2:123456789012:config-rule/config-rule-0123456",
+  "configRuleName": "change-triggered-config-rule",
+  "configRuleId": "config-rule-0123456",
+  "accountId": "123456789012",
+  "version": "1.0"
+}

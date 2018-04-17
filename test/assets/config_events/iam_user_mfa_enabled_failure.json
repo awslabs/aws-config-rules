@@ -1,0 +1,12 @@
+{
+  "invokingEvent": "{\"configurationItemDiff\": null,\"configurationItem\":{\"relatedEvents\":[],\"relationships\": [],\"configuration\": {\"path\": \"/\",\"userName\": \"Jason\",\"userId\": \"AIDAIEJCNPAE4EONMASRY\",\"arn\": \"arn:aws:iam::123456789012:user/Jason\",\"createDate\": \"2017-03-22T18:29:26.000Z\",\"userPolicyList\": [],\"groupList\": [],\"attachedManagedPolicies\": [{\"policyName\": \"IAMUserChangePassword\",\"policyArn\": \"arn:aws:iam::aws:policy/IAMUserChangePassword\"}]},\"supplementaryConfiguration\": {},\"tags\": {},\"configurationItemVersion\": \"1.2\",\"configurationItemCaptureTime\": \"2017-07-27T20:07:35.770Z\",\"configurationStateId\": 1501186055770,\"awsAccountId\": \"123456789012\",\"configurationItemStatus\": \"OK\",\"resourceType\": \"AWS::IAM::User\",\"resourceId\": \"AIDAIEJCNPAE4EONMASRY\",\"resourceName\": \"Jason\",\"ARN\": \"arn:aws:iam::123456789012:user/Jason\",\"awsRegion\": \"global\",\"availabilityZone\": \"Not Applicable\",\"configurationStateMd5Hash\": \"4a51983c20f27f28c58011a5547d6cd3\",\"resourceCreationTime\": \"2017-03-22T18:29:26.000Z\"},\"notificationCreationTime\": \"2017-12-19T04:52:22.933Z\",\"messageType\": \"ConfigurationItemChangeNotification\",\"recordVersion\": \"1.2\"}",
+  "ruleParameters": "{}",
+  "resultToken": "myResultToken",
+  "eventLeftScope": false,
+  "executionRoleArn": "arn:aws:iam::123456789012:role/config-role",
+  "configRuleArn": "arn:aws:config:us-east-2:123456789012:config-rule/config-rule-0123456",
+  "configRuleName": "change-triggered-config-rule",
+  "configRuleId": "config-rule-0123456",
+  "accountId": "123456789012",
+  "version": "1.0"
+}
