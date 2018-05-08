@@ -1,15 +1,14 @@
 #
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 #
-# Ensure all EC2 Instances are of a Given Type
-# Description: Checks that all EC2 instances are of the type specified
+# Description: Checks that all EC2 instances are launched as Spot Instances for maximum cost savings
 #
 # Trigger Type: Change Triggered
 # Scope of Changes: EC2:Instance
-# Required Parameter: desiredInstanceType
-# Example Value: t2.small
+# Required Parameter: desiredLifecycle
+# Required Value: spot
 # 
-# See https://aws.amazon.com/ec2/instance-types/ for more instance types
+# See https://aws.amazon.com/ec2/spot/ to learn more about EC2 Spot Instances
 
 import boto3
 import json
@@ -21,17 +20,15 @@ def is_applicable(config_item, event):
             event_left_scope == False)
     return test
 
-
 def evaluate_compliance(config_item, rule_parameters):
     if (config_item['resourceType'] != 'AWS::EC2::Instance'):
         return 'NOT_APPLICABLE'
 
-    elif (config_item['configuration']['instanceType'] ==
-            rule_parameters['desiredInstanceType']):
+    elif (config_item['configuration']['instanceLifecycle'] ==
+            rule_parameters['desiredLifecycle']):
         return 'COMPLIANT'
     else:
         return 'NON_COMPLIANT'
-
 
 def lambda_handler(event, context):
     invoking_event = json.loads(event['invokingEvent'])

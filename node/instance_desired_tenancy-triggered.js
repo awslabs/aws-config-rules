@@ -1,6 +1,14 @@
 //
 // This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 //
+// Ensure EC2 Instances have desired tenancy
+// Description: Checks that EC2 Instances have desired tenancy
+//
+// Trigger Type: Change Triggered
+// Scope of Changes: EC2:Instance
+// Required Parameter: DesiredTenancy
+// Example Value: dedicated
+
 var aws = require('aws-sdk');
 var config = new aws.ConfigService();
 // This is where it's determined whether the resource is compliant or not.
