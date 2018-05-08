@@ -52,13 +52,16 @@ def evaluate_compliance(configuration_item):
         annotation = "The rule doesn't apply to resources of type " \
                      + configuration_item["resourceType"] + "."
 
+    # Check if the resource has been deleted
+    elif configuration_item["configurationItemStatus"] == "ResourceDeleted":
+        compliance_type = 'NOT_APPLICABLE'
+        annotation = "The resource " + configuration_item["resourceId"] + " has been deleted."
     # Iterate over security groups
-    for sg in configuration_item['configuration']['groups']:
-        if "launch-wizard" in sg['groupName']:
-            compliance_type = 'NON_COMPLIANT'
-            annotation = 'A launch-wizard security group ' \
-                         'is attached to ' \
-                         + configuration_item['configuration']['privateIpAddress']
+    else:
+        for sg in configuration_item['configuration']['groups']:
+            if "launch-wizard" in sg['groupName']:
+                compliance_type = 'NON_COMPLIANT'
+                annotation = 'A launch-wizard security group is attached to ' + configuration_item['configuration']['privateIpAddress']
             break
 
     return {
