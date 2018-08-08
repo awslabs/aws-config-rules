@@ -331,3 +331,11 @@ Description: Check that S3 buckets have default encryption enabled.
 
 Trigger Type: ```Change Triggered```
 Required Parameter: ```None```
+
+### 38. Check the patch compliance of a set of instances based on their tag and SSM 
+Description: Check the patch compliance of a set of instances based on their tags
+
+	python/ssm_patch_compliance.py
+
+Trigger Type: ```Periodic```
+Required Parameter: ```Tag Key: Tag Value```
