@@ -12,21 +12,38 @@
 
 import json
 import boto3
-import datetime
+from datetime import datetime, timezone
 
 
 APPLICABLE_RESOURCES = ["AWS::IAM::User"]
 
 
 def calculate_age(date):
-    now = datetime.datetime.utcnow().date()
+    now = datetime.utcnow().date()
     then = date.date()
     age = now - then
 
     return age.days
 
+def list_users():
+    users = []
+    ldr_pagination_token = ""
+    config = boto3.client('config')
 
-def evaluate_compliance(configuration_item, rule_parameters):
+    while True:
+        discovered_users_response = config.list_discovered_resources(
+            resourceType="AWS::IAM::User",
+            nextToken=ldr_pagination_token
+        )
+        users.extend(discovered_users_response["resourceIdentifiers"])
+        if "nextToken" in discovered_users_response:
+            ldr_pagination_token = discovered_users_response["nextToken"]
+        else:
+            break
+
+    return users
+
+def evaluate_configuration_change_compliance(configuration_item, rule_parameters):
     if configuration_item["resourceType"] not in APPLICABLE_RESOURCES:
         return "NOT_APPLICABLE"
 
@@ -44,14 +61,55 @@ def evaluate_compliance(configuration_item, rule_parameters):
 
     if last_used is not None and calculate_age(last_used) > max_inactive_days:
         return "NON_COMPLIANT"
-
     return "COMPLIANT"
 
+def evaluate_scheduled_compliance(invoking_event, rule_parameters):
+    evaluations = []
+    users = list_users()
+    iam = boto3.client("iam")
+    max_inactive_days = int(rule_parameters["maxInactiveDays"])
+
+    for user in users:
+        user_name = user["resourceName"]
+        user_iam = iam.get_user(UserName=user_name)
+        last_used = user_iam["User"].get("PasswordLastUsed")
+
+        if last_used is not None and calculate_age(last_used) > max_inactive_days:
+            compliance = "NON_COMPLIANT"
+        else:
+            compliance = 'COMPLIANT'
+
+        evaluations.append(
+            {
+                'ComplianceResourceType': user["resourceType"],
+                'ComplianceResourceId': user["resourceId"],
+                'ComplianceType': compliance,
+                'OrderingTimestamp': datetime.now(timezone.utc)
+            }
+        )
+
+    return evaluations
 
 def lambda_handler(event, context):
     invoking_event = json.loads(event["invokingEvent"])
-    configuration_item = invoking_event["configurationItem"]
     rule_parameters = json.loads(event["ruleParameters"])
+
+    if invoking_event["messageType"] == "ConfigurationItemChangeNotification":
+        evaluations = []
+        configuration_item = invoking_event["configurationItem"]
+        compliance = evaluate_configuration_change_compliance(configuration_item, rule_parameters)
+        evaluations.append(
+            {
+                'ComplianceResourceType': configuration_item["resourceType"],
+                'ComplianceResourceId': configuration_item["resourceId"],
+                'ComplianceType': compliance,
+                'OrderingTimestamp': configuration_item["configurationItemCaptureTime"]
+            }
+        )
+    elif invoking_event["messageType"] == "ScheduledNotification":
+        evaluations = evaluate_scheduled_compliance(invoking_event, rule_parameters)
+    else:
+        raise Exception("Unexpected message type " + str(invoking_event))
 
     result_token = "No token found."
     if "resultToken" in event:
@@ -59,19 +117,6 @@ def lambda_handler(event, context):
 
     config = boto3.client("config")
     config.put_evaluations(
-        Evaluations=[
-            {
-                "ComplianceResourceType":
-                    configuration_item["resourceType"],
-                "ComplianceResourceId":
-                    configuration_item["resourceId"],
-                "ComplianceType":
-                    evaluate_compliance(configuration_item, rule_parameters),
-                "Annotation":
-                    "The user has never logged in.",
-                "OrderingTimestamp":
-                    configuration_item["configurationItemCaptureTime"]
-            },
-        ],
+        Evaluations=evaluations,
         ResultToken=result_token
     )
