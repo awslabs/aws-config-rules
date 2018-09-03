@@ -1,0 +1,9 @@
+{
+  "Parameters": {
+    "RuleName": "EMR_KERBEROS_ENABLED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "EMR_KERBEROS_ENABLED.zip",
+    "InputParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "CLOUDTRAIL_ENABLED_V2",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "CLOUDTRAIL_ENABLED_V2.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  }
+}

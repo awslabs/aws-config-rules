@@ -1,0 +1,9 @@
+{
+  "Parameters": {
+    "RuleName": "API_GW_NOT_EDGE_OPTIMISED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "API_GW_NOT_EDGE_OPTIMISED.zip",
+    "InputParameters": "{\"ExceptionList\":\"somegatewayid\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  }
+}

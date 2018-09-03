@@ -1,0 +1,11 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "ELB_ALB_LOGGING_ENABLED.zip", 
+    "SourceRuntime": "python3.6", 
+    "RuleName": "ELB_ALB_LOGGING_ENABLED", 
+    "SourceEvents": "AWS::ElasticLoadBalancingV2::LoadBalancer", 
+    "OptionalParameters": "{\"s3BucketName\":\"\"}", 
+    "InputParameters": "{}"
+  }
+}

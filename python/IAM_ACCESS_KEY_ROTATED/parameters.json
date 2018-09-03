@@ -1,0 +1,11 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "IAM_ACCESS_KEY_ROTATED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "IAM_ACCESS_KEY_ROTATED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"WhitelistedUserList\":\"\",\"ActiveTimeOutInDays\":\"\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  }
+}
