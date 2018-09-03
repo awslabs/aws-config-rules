@@ -1,0 +1,9 @@
+{
+  "Parameters": {
+    "RuleName": "VPC_DEFAULT_SECURITY_GROUP_BLOCKED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "VPC_DEFAULT_SECURITY_GROUP_BLOCKED.zip",
+    "InputParameters": "{}",
+    "SourceEvents": "AWS::EC2::SecurityGroup"
+  }
+}

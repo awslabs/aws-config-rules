@@ -1,0 +1,9 @@
+{
+  "Parameters": {
+    "RuleName": "EC2_TAG_MATCHES_INSTANCE_PROFILE_NAME",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "EC2_TAG_MATCHES_INSTANCE_PROFILE_NAME.zip",
+    "InputParameters": "{}",
+    "SourceEvents": "AWS::EC2::Instance"
+  }
+}

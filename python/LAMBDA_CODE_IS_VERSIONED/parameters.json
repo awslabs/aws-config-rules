@@ -1,0 +1,9 @@
+{
+  "Parameters": {
+    "RuleName": "LAMBDA_CODE_IS_VERSIONED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "LAMBDA_CODE_IS_VERSIONED.zip",
+    "InputParameters": "{}",
+    "SourceEvents": "AWS::Lambda::Function"
+  }
+}
