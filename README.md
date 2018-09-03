@@ -1,13 +1,15 @@
 # AWS Config Rules Repository
 
-AWS Community repository of custom Config rules. [Here's the list](https://github.com/awslabs/aws-config-rules/blob/master/RULES.md). Contributions welcome. Instructions for leveraging these rules are below.
-
-With the latest release for AWS Config Rules (http://amzn.to/2aFZZw2), periodic rules can now be triggered without the need for a configuration snapshot. Please refer to http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_develop-rules_nodejs-sample.html for an example of a periodic rule triggered via scheduled notification. This is now the recommended way to author a periodic rule.
-As such, we have moved all existing periodic rules in this repository that leverage the old configuration snapshot periodic trigger under the old-periodic/ directory.
+AWS Community repository of custom Config rules. Contributions welcome. Instructions for leveraging these rules are below.
 
 **Please review each rule carefully and test within your dev/test environment before integrating into production**
 
-## Adding a rule to AWS Config
+## Use the Rule Development Kit (recommended)
+You can use the RDK (Rule Development Kit) to author Config Rules. It is available here: https://github.com/awslabs/aws-config-rdk
+
+Blog post: https://aws.amazon.com/blogs/mt/how-to-develop-custom-aws-config-rules-using-the-rule-development-kit/
+
+## Adding manually a Rule to AWS Config (not recommended)
 You can use the sample functions in this repository to create Config rules that evaluate the configuration settings of your AWS resources. First, you use AWS Lambda to create a function that is based on the sample code. Then, you use AWS Config to create a rule that is associated with the function. When the rule’s trigger occurs, AWS Config invokes your function to evaluate your AWS resources.
 
 Add a rule to AWS Config by completing the following steps. For more detailed steps, see [Developing a Custom Rule for AWS Config](http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_develop-rules_nodejs.html) in the *AWS Config Developer Guide*.
@@ -32,3 +34,7 @@ Add a rule to AWS Config by completing the following steps. For more detailed st
 	- **Note**: When you create a custom rule with the AWS Config console, the appropriate permissions for invoking the Lambda are automatically created for you. If you create a custom rule with the AWS CLI, you need to give AWS Config permission to invoke your Lambda function, using the `aws lambda add-permission` command.
 
 After you create the rule, it displays on the **Rules** page, and AWS Config invokes its Lambda function. A summary of the evaluation results appears after several minutes.
+
+## Related Projects
+RDK (Rule Development Kit) - https://github.com/awslabs/aws-config-rdk
+Config Rules Engine (Deploy and manage Rules at scale) - https://github.com/awslabs/aws-config-engine-for-compliance-as-code
