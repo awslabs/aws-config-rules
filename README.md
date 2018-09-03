@@ -2,7 +2,7 @@
 
 AWS Community repository of custom Config rules. Contributions welcome. Instructions for leveraging these rules are below.
 
-**Please review each rule carefully and test within your dev/test environment before integrating into production**
+**Please review each rule carefully and test within your dev/test environment before integrating into production.**
 
 ## Getting started with the developement of Rules
 We recommend to use the RDK (Rule Development Kit) to author Config Rules. It is available here: https://github.com/awslabs/aws-config-rdk
@@ -11,6 +11,7 @@ Blog post: https://aws.amazon.com/blogs/mt/how-to-develop-custom-aws-config-rule
 
 ## Related Projects
 RDK (Rule Development Kit) - https://github.com/awslabs/aws-config-rdk
+
 Config Rules Engine (Deploy and manage Rules at scale) - https://github.com/awslabs/aws-config-engine-for-compliance-as-code
 
 ## Adding a Rule to AWS Config
