@@ -20,28 +20,36 @@ def evaluate_compliance(configuration_item):
     for v in configuration_item["supplementaryConfiguration"]["DBSnapshotAttributes"][0]["attributeValues"]:
         if v == "all":
             public = True
-            continue
+            break
     if public:
         return {
             "compliance_type" : "NON_COMPLIANT",
-            "annotation" : 'Snapshot shared publicly'
+            "annotation" : 'The RDS snapshot is shared publicly.'
         }
     else:
         return {
             "compliance_type": "COMPLIANT",
-            "annotation": 'Snapshot not shared publicly'
+            "annotation": 'The RDS snapshot is not shared publicly.'
         }
     
+# Check whether the resource has been deleted. If it has, then the evaluation is unnecessary.
+def is_applicable(configurationItem, event):
+    status = configurationItem['configurationItemStatus']
+    eventLeftScope = event['eventLeftScope']
+    return (status == 'OK' or status == 'ResourceDiscovered') and eventLeftScope == False
+
 
 def lambda_handler(event, context):
     log.debug('Event %s', event) 
     invoking_event      = json.loads(event['invokingEvent'])
     configuration_item  = invoking_event["configurationItem"]
-    evaluation          = evaluate_compliance(configuration_item)
+    if is_applicable(configuration_item,event):
+      evaluation        = evaluate_compliance(configuration_item)
+    else:
+      evaluation	= {"compliance_type":"NOT_APPLICABLE","annotation":"The RDS Snapshot has been deleted."}
     config              = boto3.client('config')
-
     response = config.put_evaluations(
-       Evaluations=[
+      Evaluations=[
            {
                'ComplianceResourceType':    invoking_event['configurationItem']['resourceType'],
                'ComplianceResourceId':      invoking_event['configurationItem']['resourceId'],
@@ -50,4 +58,4 @@ def lambda_handler(event, context):
                'OrderingTimestamp':         invoking_event['configurationItem']['configurationItemCaptureTime']
            },
        ],
-       ResultToken=event['resultToken'])
+    ResultToken=event['resultToken'])
