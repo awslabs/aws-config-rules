@@ -23,33 +23,36 @@ def evaluate_compliance(configuration_item):
             break
     if public:
         return {
-            "compliance_type" : "NON_COMPLIANT",
-            "annotation" : 'The RDS snapshot is shared publicly.'
+            "compliance_type":"NON_COMPLIANT",
+            "annotation":'The RDS snapshot is shared publicly.'
         }
     else:
         return {
-            "compliance_type": "COMPLIANT",
-            "annotation": 'The RDS snapshot is not shared publicly.'
+            "compliance_type":"COMPLIANT",
+            "annotation":'The RDS snapshot is not shared publicly.'
         }
     
 # Check whether the resource has been deleted. If it has, then the evaluation is unnecessary.
 def is_applicable(configurationItem, event):
-    status = configurationItem['configurationItemStatus']
-    eventLeftScope = event['eventLeftScope']
+    status              = configurationItem['configurationItemStatus']
+    eventLeftScope      = event['eventLeftScope']
     return (status == 'OK' or status == 'ResourceDiscovered') and eventLeftScope == False
-
 
 def lambda_handler(event, context):
     log.debug('Event %s', event) 
     invoking_event      = json.loads(event['invokingEvent'])
     configuration_item  = invoking_event["configurationItem"]
     if is_applicable(configuration_item,event):
-      evaluation        = evaluate_compliance(configuration_item)
+        evaluation      = evaluate_compliance(configuration_item)
     else:
-      evaluation	= {"compliance_type":"NOT_APPLICABLE","annotation":"The RDS Snapshot has been deleted."}
+        evaluation      = {
+            "compliance_type":"NOT_APPLICABLE",
+            "annotation":"The RDS Snapshot has been deleted."
+        }
     config              = boto3.client('config')
-    response = config.put_evaluations(
-      Evaluations=[
+
+    response            = config.put_evaluations(
+       Evaluations=[
            {
                'ComplianceResourceType':    invoking_event['configurationItem']['resourceType'],
                'ComplianceResourceId':      invoking_event['configurationItem']['resourceId'],
@@ -58,4 +61,4 @@ def lambda_handler(event, context):
                'OrderingTimestamp':         invoking_event['configurationItem']['configurationItemCaptureTime']
            },
        ],
-    ResultToken=event['resultToken'])
+       ResultToken      = event['resultToken'])
