@@ -43,7 +43,7 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-rule = __import__('CLOUTRAIL_ENABLED_V2')
+rule = __import__('CLOUDTRAIL_ENABLED_V2')
 
 class ComplianceTest(unittest.TestCase):
 
