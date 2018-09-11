@@ -13,15 +13,16 @@ Rule Name:
 Description:
   Checks that listener of Application Load Balancer has configured applicable SSL policy.
 Trigger:
-  Configuration change
+  Configuration change on AWS::LoadBalancingV2::LoadBalancer.
 Resource Type to report on:
   AWS::LoadBalancingV2::LoadBalancer
 Rule Parameters:
   | ---------------------- | --------- | -------------------------------------------------------------------------------------- |
   | Parameter Name         | Type      | Description                                                                            |
   | ---------------------- | --------- | -------------------------------------------------------------------------------------- |
-  | COMPLIANT_POLICY       | Constant  | The list of ssl policy name which check whether lister configred                       |
+  | ValidPolicies          | Constant  | The list of ssl policy name which check whether lister configred with comma separated  |
   | ---------------------- | --------- | -------------------------------------------------------------------------------------- |
+
 Feature:
   In order to: apply ssl policy to listers
   As: a Security Officer
@@ -32,14 +33,13 @@ Scenarios:
      Then: Return COMPLIANT
   Scenario 2:
     Given: SslPolicy is not in COMPLIANT_POLICY
-     Then: Return NON_COMPLIANT
+     Then: Return COMPLIANT
   Scenario 3:
     Given: CompliantPolicies has not been defined.
-     Then: Return NOT_APPLICABLE
+     Then: Return NON_COMPLIANT
   Scenario 4:
     Given: Listner has not been used in a application load balancer.
-     Then: Return NOT_APPLICABLE
-  
+     Then: Return NOT_COMPLIANT
 '''
 # Python packages
 import json
@@ -51,12 +51,9 @@ import botocore
 # Parameters #
 ##############
 
-# Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = ['AWS::LoadBalancingV2::LoadBalancer']
-# Pre defined policy name
-COMPLIANT_POLICY = ['ELBSecurityPolicy-2016-08','ELBSecurityPolicy-FS-2018-06']
-# for Assume Role parametor
-ASSUME_ROLE_MODE = ''
+# for Assume Role parameter
+ASSUME_ROLE_MODE = False
+DEFAULT_RESOURCE_TYPE = ''
 
 #############
 # Main Code #
@@ -85,24 +82,22 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
     # Add your custom logic here. #
     ###############################
+    alb_client = get_client("elbv2", event)
 
-	alb_arn = configuration_item['arn']
-	alb_client = get_client('elbv2' , event)
+    listeners = alb_client.describe_listeners( LoadBalancerArn = configuration_item['configuration']['loadBalancerArn'] )
 
-	listeners = alb_client.describe_listeners( LoadBalancerArns = [alb_arn ,],)
+    if len(valid_rule_parameters) == 0:
+        return 'NON_COMPLIANT'
 
-	if len(COMPLIANT_POLICY) == 0:
-		return 'NOT_APPLICABLE'
+    if 'Listeners' not in listeners.keys():
+         return 'NON_COMPLIANT'
+    else:
+        for l in listeners['Listeners']:
+            if 'SslPolicy' in l.keys():
+                if l['SslPolicy'] not in valid_rule_parameters['ValidPolicies']:
+                    return 'NON_COMPLIANT'
 
-	if 'Listeners' not in listners.keys():
-		return 'NOT_APPLICABLE'
-	else:
-		for l in listeners['Listeners']:
-			if 'SslPolicy' in l.keys():
-				if l['SslPolicy'] not in validated_rule_parameters['ValidPolicies']:
-					return 'NON_COMPLIANT'
-
-	return 'COMPLIANT'
+    return 'COMPLIANT'
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
@@ -113,9 +108,17 @@ def evaluate_parameters(rule_parameters):
     Keyword arguments:
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
-    valid_rule_parameters = rule_parameters
-    return valid_rule_parameters
 
+    param_list = rule_parameters['ValidPolicies']
+    param_list = param_list.split(',')
+
+    for index, item in enumerate(param_list):
+         param_list[index] = param_list[index].strip()
+
+    valid_rule_parameters = {}
+    valid_rule_parameters['ValidPolicies'] = param_list
+
+    return valid_rule_parameters
 ####################
 # Helper Functions #
 ####################
