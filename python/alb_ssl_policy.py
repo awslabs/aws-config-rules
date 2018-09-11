@@ -25,14 +25,21 @@ Rule Parameters:
 Feature:
   In order to: apply ssl policy to listers
   As: a Security Officer
-  I want: to chaging configuration of applicatio loac balancer.
+  I want: to chase configuration of listener ssl policy of an application load balancer.
 Scenarios:
   Scenario 1:
     Given: SslPolicy is in COMPLIANT_POLICY 
      Then: Return COMPLIANT
   Scenario 2:
     Given: SslPolicy is not in COMPLIANT_POLICY
-     THEN: RETURN NON_COMPLIANT
+     Then: Return NON_COMPLIANT
+  Scenario 3:
+    Given: CompliantPolicies has not been defined.
+     Then: Return NOT_APPLICABLE
+  Scenario 4:
+    Given: Listner has not been used in a application load balancer.
+     Then: Return NOT_APPLICABLE
+  
 '''
 # Python packages
 import json
@@ -48,6 +55,8 @@ import botocore
 DEFAULT_RESOURCE_TYPE = ['AWS::LoadBalancingV2::LoadBalancer']
 # Pre defined policy name
 COMPLIANT_POLICY = ['ELBSecurityPolicy-2016-08','ELBSecurityPolicy-FS-2018-06']
+# for Assume Role parametor
+ASSUME_ROLE_MODE = ''
 
 #############
 # Main Code #
@@ -78,14 +87,20 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
 
 	alb_arn = configuration_item['arn']
-	alb_client = get_client('elbv2',event);
+	alb_client = get_client('elbv2' , event)
 
-	listeners = alb_client.describe_listeners( LoadBalancerArns = [alb_arn,], )
+	listeners = alb_client.describe_listeners( LoadBalancerArns = [alb_arn ,],)
 
-	for l in listeners['Listeners']:
-		if ( 'SslPolicy' in l.keys()):
-			if(l['SslPolicy'] not in COMPLIANT_POLICY):
-				return 'NON_COMPLIANT'
+	if len(COMPLIANT_POLICY) == 0:
+		return 'NOT_APPLICABLE'
+
+	if 'Listeners' not in listners.keys():
+		return 'NOT_APPLICABLE'
+	else:
+		for l in listeners['Listeners']:
+			if 'SslPolicy' in l.keys():
+				if l['SslPolicy'] not in validated_rule_parameters['ValidPolicies']:
+					return 'NON_COMPLIANT'
 
 	return 'COMPLIANT'
 
