@@ -20,7 +20,7 @@ Rule Parameters:
   | ---------------------- | --------- | -------------------------------------------------------------------------------------- |
   | Parameter Name         | Type      | Description                                                                            |
   | ---------------------- | --------- | -------------------------------------------------------------------------------------- |
-  | ValidPolicies          | Constant  | The list of ssl policy name which check whether lister configred with comma separated  |
+  | ValidPolicies          | Optional  | The list of ssl policy name which check whether lister configred with comma separated  |
   | ---------------------- | --------- | -------------------------------------------------------------------------------------- |
 
 Feature:
@@ -29,17 +29,30 @@ Feature:
   I want: to chase configuration of listener ssl policy of an application load balancer.
 Scenarios:
   Scenario 1:
-    Given: SslPolicy is in COMPLIANT_POLICY 
-     Then: Return COMPLIANT
+    Given: the ALB has one or more HTTP listeners
+     then: Return NON_COMPLIANT
+
   Scenario 2:
-    Given: SslPolicy is not in COMPLIANT_POLICY
-     Then: Return COMPLIANT
+    Given: the ALB has no HTTPS listeners
+     then: Return NON_COMPLIANT
+
   Scenario 3:
-    Given: CompliantPolicies has not been defined.
-     Then: Return NON_COMPLIANT
+    Given: the ALB has no HTTP listener
+      And: the ALB has at least 1 HTTPS listener
+      And: the ValidPolicies parameter is not defined
+     then: Return COMPLIANT
+
   Scenario 4:
-    Given: Listner has not been used in a application load balancer.
-     Then: Return NOT_COMPLIANT
+    Given: the ALB has no HTTP listener
+      And: the ALB has at least 1 HTTPS listener
+      And: At least 1 listener has not their SSL Policy name listed in the ValidPolicies parameter
+     then: Return NON_COMPLIANT
+
+  Scenario 5:
+    Given: the ALB has no HTTP listener
+      And: the ALB has at least 1 HTTPS listener
+      And: All listeners have their SSL Policy name listed in the ValidPolicies parameter
+     then: Return COMPLIANT
 '''
 # Python packages
 import json
@@ -53,12 +66,11 @@ import botocore
 
 # for Assume Role parameter
 ASSUME_ROLE_MODE = False
-DEFAULT_RESOURCE_TYPE = ''
+DEFAULT_RESOURCE_TYPE = 'AWS::LoadBalancingV2::LoadBalancer'
 
 #############
 # Main Code #
 #############
-
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     """Form the evaluation(s) to be return to Config Rules
 
@@ -86,17 +98,26 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     listeners = alb_client.describe_listeners( LoadBalancerArn = configuration_item['configuration']['loadBalancerArn'] )
 
-    if len(valid_rule_parameters) == 0:
-        return 'NON_COMPLIANT'
+    is_https_listener = False
+    for l in listeners['Listeners']:
+        if 'SslPolicy' in l.keys():
+            is_https_listener = True
+            # This is for Scenario 3
+            if not valid_rule_parameters['ValidPolicies']:
+                continue
+            # This is for Scenario 4
+            if l['SslPolicy'] not in valid_rule_parameters['ValidPolicies']:
+                # This is for Scenario 4
+                return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'This ALB has a listener which is not configured using a SSL policy in the ValidPolicies parameter.')
+        else:
+            # This is for Scenario 1
+            return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'The ALB has one or more HTTP listeners')
 
-    if 'Listeners' not in listeners.keys():
-         return 'NON_COMPLIANT'
-    else:
-        for l in listeners['Listeners']:
-            if 'SslPolicy' in l.keys():
-                if l['SslPolicy'] not in valid_rule_parameters['ValidPolicies']:
-                    return 'NON_COMPLIANT'
+    # This is for Scenario 2
+    if not is_https_listener:
+        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'The ALB has no HTTPS listeners')
 
+    # This is for Scenario 5
     return 'COMPLIANT'
 
 def evaluate_parameters(rule_parameters):
@@ -108,14 +129,18 @@ def evaluate_parameters(rule_parameters):
     Keyword arguments:
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
+    valid_rule_parameters = {}
 
+    if 'ValidPolicies' not in rule_parameters.keys():
+        valid_rule_parameters['ValidPolicies'] = []
+        return valid_rule_parameters
+    
     param_list = rule_parameters['ValidPolicies']
     param_list = param_list.split(',')
 
     for index, item in enumerate(param_list):
          param_list[index] = param_list[index].strip()
 
-    valid_rule_parameters = {}
     valid_rule_parameters['ValidPolicies'] = param_list
 
     return valid_rule_parameters
