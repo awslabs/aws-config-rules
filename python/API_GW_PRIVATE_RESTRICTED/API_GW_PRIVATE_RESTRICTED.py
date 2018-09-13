@@ -525,9 +525,11 @@ def lambda_handler(event, context):
         # Used solely for RDK test to skip actual put_evaluation API call
         testMode = True
     # Invoke the Config API to report the result of the evaluation
-    while(evaluations):
-        AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluations[:100], ResultToken=resultToken, TestMode=testMode)
-        del evaluations[:100]
+    evaluation_copy = []
+    evaluation_copy = evaluations[:]
+    while(evaluation_copy):
+        AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluation_copy[:100], ResultToken=resultToken, TestMode=testMode)
+        del evaluation_copy[:100]
     # Used solely for RDK test to be able to test Lambda function
     return evaluations
 
