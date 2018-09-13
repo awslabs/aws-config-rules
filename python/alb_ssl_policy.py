@@ -8,14 +8,19 @@
 #####################################
 ##           Gherkin               ##
 #####################################
+
 Rule Name:
   alb_ssl_policy_check
+
 Description:
   Checks that listener of Application Load Balancer has configured applicable SSL policy.
+
 Trigger:
   Configuration change on AWS::LoadBalancingV2::LoadBalancer.
+
 Resource Type to report on:
   AWS::LoadBalancingV2::LoadBalancer
+
 Rule Parameters:
   | ---------------------- | --------- | -------------------------------------------------------------------------------------- |
   | Parameter Name         | Type      | Description                                                                            |
@@ -24,9 +29,10 @@ Rule Parameters:
   | ---------------------- | --------- | -------------------------------------------------------------------------------------- |
 
 Feature:
-  In order to: apply ssl policy to listers
+  In order to: ensure that the traffic is encrypted in transit with the proper method
   As: a Security Officer
-  I want: to chase configuration of listener ssl policy of an application load balancer.
+  I want: to verify that the configuration of listener ssl policy of an application load balancer is correct.
+
 Scenarios:
   Scenario 1:
     Given: the ALB has one or more HTTP listeners
@@ -96,7 +102,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
     alb_client = get_client("elbv2", event)
 
-    listeners = alb_client.describe_listeners( LoadBalancerArn = configuration_item['configuration']['loadBalancerArn'] )
+    listeners = alb_client.describe_listeners(LoadBalancerArn=configuration_item['configuration']['loadBalancerArn'])
 
     is_https_listener = False
     for l in listeners['Listeners']:
@@ -134,12 +140,12 @@ def evaluate_parameters(rule_parameters):
     if 'ValidPolicies' not in rule_parameters.keys():
         valid_rule_parameters['ValidPolicies'] = []
         return valid_rule_parameters
-    
+
     param_list = rule_parameters['ValidPolicies']
     param_list = param_list.split(',')
 
     for index, item in enumerate(param_list):
-         param_list[index] = param_list[index].strip()
+        param_list[index] = item.strip()
 
     valid_rule_parameters['ValidPolicies'] = param_list
 
