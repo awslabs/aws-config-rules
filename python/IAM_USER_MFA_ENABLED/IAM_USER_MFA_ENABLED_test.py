@@ -62,8 +62,8 @@ class Scenario_TestDeletedUser(unittest.TestCase):
         response = rule.lambda_handler(build_lambda_scheduled_event(), {})
         resp_expected = []
         resp_expected.append(build_expected_response('NOT_APPLICABLE', 'AIDAIDFOUX2OSRO6DO7XL'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM', annotation='No MFA Device detected'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN', annotation='No MFA Device detected'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM', annotation='The user (user-name-1) has no MFA Device detected.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN', annotation='The user (user-name-2) has no MFA Device detected.'))
         assert_successful_evaluation(self, response, resp_expected, 3)
     
     def test_no_user(self):
@@ -112,15 +112,17 @@ class Scenario_2_TestWhitelistedUser(unittest.TestCase):
 
     def test_Scenario_2_user_is_whitelisted(self):
         user_list = {'Users': [
-            {'UserId': 'AIDAIDFOUX2OSRO6DO7XN'},
-            {'UserId': 'AIDAIDFOUX2OSRO6DO7XM'}]}
+            {'UserId': 'AIDAIDFOUX2OSRO6DO7XN',
+             'UserName': 'user-name-1'},
+            {'UserId': 'AIDAIDFOUX2OSRO6DO7XM',
+             'UserName': 'user-name-2'}]}
         iam_client_mock.list_users = MagicMock(return_value=user_list)
         ruleParam = '{ "WhitelistedUserList" : "AIDAIDFOUX2OSRO6DO7XM, AIDAIDFOUX2OSRO6DO7XN"}'
         lambda_event = build_lambda_scheduled_event(rule_parameters=ruleParam)
         response = rule.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN', annotation='User is whitelisted'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM', annotation='User is whitelisted'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN', annotation='The user (user-name-1) is whitelisted.'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM', annotation='The user (user-name-2) is whitelisted.'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
 
@@ -154,8 +156,8 @@ class Scenario_3_to_6_TestMFA(unittest.TestCase):
         lambda_event = build_lambda_scheduled_event(rule_parameters=ruleParam)
         response = rule.lambda_handler(lambda_event,{})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM', annotation='No MFA Device detected'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN', annotation='No MFA Device detected'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM', annotation='The user (user-name-1) has no MFA Device detected.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN', annotation='The user (user-name-2) has no MFA Device detected.'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_Scenario_5_Compliant_User(self):
@@ -174,8 +176,8 @@ class Scenario_3_to_6_TestMFA(unittest.TestCase):
         lambda_event = build_lambda_scheduled_event()
         response = rule.lambda_handler(lambda_event,{})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM', annotation='No MFA Device detected'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN', annotation='No MFA Device detected'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM', annotation='The user (user-name-1) has no MFA Device detected.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN', annotation='The user (user-name-2) has no MFA Device detected.'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
 ####################
