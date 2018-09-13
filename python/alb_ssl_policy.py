@@ -19,7 +19,7 @@ Trigger:
   Configuration change on AWS::LoadBalancingV2::LoadBalancer.
 
 Resource Type to report on:
-  AWS::LoadBalancingV2::LoadBalancer
+  AWS::ElasticLoadBalancingV2::LoadBalancer
 
 Rule Parameters:
   | ---------------------- | --------- | -------------------------------------------------------------------------------------- |
@@ -72,7 +72,7 @@ import botocore
 
 # for Assume Role parameter
 ASSUME_ROLE_MODE = False
-DEFAULT_RESOURCE_TYPE = 'AWS::LoadBalancingV2::LoadBalancer'
+DEFAULT_RESOURCE_TYPE = 'AWS::ElasticLoadBalancingV2::LoadBalancer'
 
 #############
 # Main Code #
@@ -96,10 +96,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
     3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
     """
-
-    ###############################
-    # Add your custom logic here. #
-    ###############################
     alb_client = get_client("elbv2", event)
 
     listeners = alb_client.describe_listeners(LoadBalancerArn=configuration_item['configuration']['loadBalancerArn'])
