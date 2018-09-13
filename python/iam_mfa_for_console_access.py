@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""This Lambda function will be invoked from AWS Config and check if all given IAM users have at least one MFA device."""
+"""This Lambda function will be invoked from AWS Config and check if all given IAM users have MFA device, if they have console access."""
 # Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You
