@@ -96,7 +96,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
     alb_client = get_client("elbv2", event)
 
-    listeners = alb_client.describe_listeners( LoadBalancerArn = configuration_item['configuration']['loadBalancerArn'] )
+    listeners = alb_client.describe_listeners(LoadBalancerArn=configuration_item['configuration']['loadBalancerArn'])
 
     is_https_listener = False
     for l in listeners['Listeners']:
@@ -134,12 +134,12 @@ def evaluate_parameters(rule_parameters):
     if 'ValidPolicies' not in rule_parameters.keys():
         valid_rule_parameters['ValidPolicies'] = []
         return valid_rule_parameters
-    
+
     param_list = rule_parameters['ValidPolicies']
     param_list = param_list.split(',')
 
     for index, item in enumerate(param_list):
-         param_list[index] = param_list[index].strip()
+        param_list[index] = item.strip()
 
     valid_rule_parameters['ValidPolicies'] = param_list
 
