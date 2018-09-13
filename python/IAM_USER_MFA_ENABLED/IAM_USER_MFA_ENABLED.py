@@ -115,7 +115,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     evaluations = []
     for user in all_users_list:
         if user['UserId'] in valid_rule_parameters:
-            evaluations.append(build_evaluation(user['UserId'], 'COMPLIANT', event, annotation='User is whitelisted'))
+            evaluations.append(build_evaluation(user['UserId'], 'COMPLIANT', event, annotation='The user ({}) is whitelisted.'.format(user['UserName'])))
             continue
 
         mfa_device_details = iam_client.list_mfa_devices(UserName=user['UserName'])
@@ -123,7 +123,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             evaluations.append(build_evaluation(user['UserId'], 'COMPLIANT', event))
             continue
 
-        evaluations.append(build_evaluation(user['UserId'], 'NON_COMPLIANT', event, annotation='No MFA Device detected'))
+        evaluations.append(build_evaluation(user['UserId'], 'NON_COMPLIANT', event, annotation='The user ({}) has no MFA Device detected.'.format(user['UserName'])))
 
     return evaluations
 
