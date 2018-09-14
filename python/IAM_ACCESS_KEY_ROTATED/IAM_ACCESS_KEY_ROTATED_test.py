@@ -61,11 +61,11 @@ class test_invalid_parameters(unittest.TestCase):
                     '{"WhitelistedUserList":"AIDAJYPPIFB65RVYU7CCW,,AIDAJYPPILP90RVYU7WWC"}']
     }
 
-    invalid_expiry_params = ['{"ActiveTimeOutInDays":"-1"}',
-    '{"ActiveTimeOutInDays":"9999999999"}',
-    '{"ActiveTimeOutInDays":"5.6"}',
-    '{"ActiveTimeOutInDays":"ABC"}',
-    '{"ActiveTimeOutInDays":"*&^"}']
+    invalid_expiry_params = ['{"KeyActiveTimeOutInDays":"-1"}',
+    '{"KeyActiveTimeOutInDays":"9999999999"}',
+    '{"KeyActiveTimeOutInDays":"5.6"}',
+    '{"KeyActiveTimeOutInDays":"ABC"}',
+    '{"KeyActiveTimeOutInDays":"*&^"}']
 
     def test_scenario2_user_whitelist_parameters_incorrect_entry(self):
         for invalid_param in self.invalid_user_whiteList_params['invalidEntry']:
@@ -77,7 +77,7 @@ class test_invalid_parameters(unittest.TestCase):
             response = rule.lambda_handler(build_lambda_scheduled_event(rule_parameters=invalid_param), {})
             assert_customer_error_response(self, response, 'InvalidParameterValueException')
 
-    def test_scenario3_ActiveTimeOutInDays_parameters_incorrect_entry(self):
+    def test_scenario3_KeyActiveTimeOutInDays_parameters_incorrect_entry(self):
         for invalid_param in self.invalid_expiry_params:
             response = {}
             response = rule.lambda_handler(build_lambda_scheduled_event(rule_parameters=invalid_param), {})
@@ -139,7 +139,7 @@ class test_compliance(unittest.TestCase):
         list_access_keys_response = self.construct_list_access_keys_response(90)
         iam_client_mock.list_users = MagicMock(return_value=self.user_list)
         iam_client_mock.list_access_keys = MagicMock(return_value = list_access_keys_response)
-        response = rule.lambda_handler(build_lambda_scheduled_event('{"ActiveTimeOutInDays":' + str(custom_timeout) + '}'), {})
+        response = rule.lambda_handler(build_lambda_scheduled_event('{"KeyActiveTimeOutInDays":' + str(custom_timeout) + '}'), {})
         resp_expected = []
         resp_expected.append(build_expected_response("NON_COMPLIANT", "AIDAJYPPIFB65RV8YYLDU", annotation='This user (AIDAJYPPIFB65RV8YYLDU) has an expired active access key (AKIAIPPNIMKJA2N7SJRA). The key is older than 90 days. It must be no older than 20 days.'))
         resp_expected.append(build_expected_response("NON_COMPLIANT", "AIDAJYPPIFB65RV8YYLDV", annotation='This user (AIDAJYPPIFB65RV8YYLDV) has an expired active access key (AKIAIPPNIMKJA2N7SJRA). The key is older than 90 days. It must be no older than 20 days.'))
@@ -170,7 +170,7 @@ class test_compliance(unittest.TestCase):
         custom_timeout = 20
         iam_client_mock.list_users = MagicMock(return_value=self.user_list)
         iam_client_mock.list_access_keys = MagicMock(return_value = list_access_keys_response)
-        response = rule.lambda_handler(build_lambda_scheduled_event('{"ActiveTimeOutInDays":' + str(custom_timeout) + '}'), {})
+        response = rule.lambda_handler(build_lambda_scheduled_event('{"KeyActiveTimeOutInDays":' + str(custom_timeout) + '}'), {})
         resp_expected = []
         resp_expected.append(build_expected_response("COMPLIANT", "AIDAJYPPIFB65RV8YYLDU"))
         resp_expected.append(build_expected_response("COMPLIANT", "AIDAJYPPIFB65RV8YYLDV"))

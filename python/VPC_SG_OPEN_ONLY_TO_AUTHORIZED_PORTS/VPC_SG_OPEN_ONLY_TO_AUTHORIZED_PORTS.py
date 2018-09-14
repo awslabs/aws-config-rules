@@ -14,10 +14,10 @@
  #####################################
 
  Rule Name:
- 	VPC_OPEN_SECURITY_GROUP_ONLY_TO_AUTHORIZED_PORTS
+ 	VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
 
  Description:
- 	Checks that the open security group of any VPCs allows only certain TCP or UDP traffic (Inbound)
+ 	Checks that the open security group of any VPCs allows only certain TCP or UDP traffic (Inbound).
 
  Trigger:
     Configuration Changes on AWS::EC2::SecurityGroup

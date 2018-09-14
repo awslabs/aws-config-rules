@@ -5,7 +5,8 @@
     "SourceRuntime": "python3.6",
     "CodeKey": "CLOUDTRAIL_ENABLED_V2.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{}",
+    "OptionalParameters": "{\"S3BucketName\":\"\",\"EncryptedBoolean\":\"True\",\"KMSKeyArn\":\"\",\"GlobalResourcesBoolean\":\"True\",\"MultiRegionBoolean\":\"True\",\"ManagementEventBoolean\":\"True\",\"S3DataEventBoolean\":\"True\",\"LambdaEventBoolean\":\"True\",\"LFIBoolean\":\"True\"}",
     "SourcePeriodic": "TwentyFour_Hours"
   }
 }
+

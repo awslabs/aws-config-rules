@@ -23,18 +23,17 @@
    AWS::IAM::User
 
  Rule Parameters:
-   | ------------------- | --------- | -------------------------------------------------------- |
-   | Parameter Name      | Type      | Description                                              |
-   | ------------------- | --------- | -------------------------------------------------------- |
-   | WhitelistedUserList | Optional  | Represents the IAM users which are exempted from the IAM |
-   |                     |           | Config rule. The valid users in this list will be        |
-   |                     |           | compliant by default.                                    |
-   |                     |           | List of all the UniqueID (user ID) separated by a comma. |
-   | ------------------- | --------- | -------------------------------------------------------- |
-   | ActiveTimeOutInDays | Optional  | A user defined positive numeric variable representing the|
-   |                     |           | maximum time in days, where a user can be active to      |
-   |                     |           | be marked as compliant. The default value is 90.         |
-   | ------------------- | --------- | -------------------------------------------------------- |
+   | ---------------------- | --------- | -------------------------------------------------------- |
+   | Parameter Name         | Type      | Description                                              |
+   | ---------------------- | --------- | -------------------------------------------------------- |
+   | WhitelistedUserList    | Optional  | Represents the IAM users which are exempted from the IAM |
+   |                        |           | Config rule. The valid users in this list will be        |
+   |                        |           | compliant by default.                                    |
+   |                        |           | List of all the UniqueID (user ID) separated by a comma. |
+   | ---------------------- | --------- | -------------------------------------------------------- |
+   | KeyKeyActiveTimeOutInDays | Optional  | Numeric variable representing the maximum age in days of |
+   |                        |           | access key. The default value is 90.                     |
+   | ---------------------- | --------- | -------------------------------------------------------- |
 
 
  Feature:
@@ -54,8 +53,8 @@
       Then: Return an error
 
    Scenario: 3
-     Given: KeyActiveTimeOutInDays is configured
-       And: KeyActiveTimeOutInDays is not a positive integer smaller than 999999999
+     Given: KeyKeyActiveTimeOutInDays is configured
+       And: KeyKeyActiveTimeOutInDays is not a positive integer smaller than 999999999
       Then: Return an error
 
    Scenario: 4
@@ -78,14 +77,14 @@
      Given: An IAM user
        And: The IAM user is not listed on the WhitelistedUserList, if configured
        And: The IAM user has one or more active access keys
-       And: The oldest key age is more or equal than KeyActiveTimeOutInDays, if configured (or default, if not configured)
+       And: The oldest key age is more or equal than KeyKeyActiveTimeOutInDays, if configured (or default, if not configured)
       Then: return NON_COMPLIANT
 
    Scenario: 8
      Given: An IAM user
        And: The IAM user is not listed on the WhitelistedUserList, if configured
        And: The IAM user has one or more active access keys
-       And: The oldest key age is less than KeyActiveTimeOutInDays, if configured (or default, if not configured)
+       And: The oldest key age is less than KeyKeyActiveTimeOutInDays, if configured (or default, if not configured)
       Then: return COMPLIANT
 '''
 
@@ -148,9 +147,9 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         for key in keys_list['AccessKeyMetadata']:
             if key['Status'] == 'Inactive':
                 continue
-            if not is_key_still_valid(key['CreateDate'], valid_rule_parameters['ActiveTimeOutInDays']):
+            if not is_key_still_valid(key['CreateDate'], valid_rule_parameters['KeyActiveTimeOutInDays']):
                 expired_key = True
-                evaluations.append(build_evaluation(user['UserId'], 'NON_COMPLIANT', event, annotation='This user ({}) has an expired active access key ({}). The key is older than {}. It must be no older than {} days.'.format(user['UserId'], key['AccessKeyId'], str(key_age(key['CreateDate'])).split(',')[0], valid_rule_parameters['ActiveTimeOutInDays'])))
+                evaluations.append(build_evaluation(user['UserId'], 'NON_COMPLIANT', event, annotation='This user ({}) has an expired active access key ({}). The key is older than {}. It must be no older than {} days.'.format(user['UserId'], key['AccessKeyId'], str(key_age(key['CreateDate'])).split(',')[0], valid_rule_parameters['KeyActiveTimeOutInDays'])))
                 break
         if not expired_key:
             evaluations.append(build_evaluation(user['UserId'], 'COMPLIANT', event))
@@ -202,18 +201,18 @@ def evaluate_parameters(rule_parameters):
             valid_whitelist.append(whitelisted_user)
         valid_rule_parameters['WhitelistedUserList'] = valid_whitelist
 
-    valid_rule_parameters['ActiveTimeOutInDays'] = DEFAULT_NUMBER_OF_DAYS
-    if 'ActiveTimeOutInDays' in rule_parameters:
+    valid_rule_parameters['KeyActiveTimeOutInDays'] = DEFAULT_NUMBER_OF_DAYS
+    if 'KeyActiveTimeOutInDays' in rule_parameters:
         try:
-            valid_rule_parameters['ActiveTimeOutInDays'] = int(str(rule_parameters['ActiveTimeOutInDays']))
+            valid_rule_parameters['KeyActiveTimeOutInDays'] = int(str(rule_parameters['KeyActiveTimeOutInDays']))
         except:
-            raise ValueError("Invalid Parameter ActiveTimeOutInDays: not an integer.")
+            raise ValueError("Invalid Parameter KeyActiveTimeOutInDays: not an integer.")
 
-    if valid_rule_parameters['ActiveTimeOutInDays'] < 0:
-        raise ValueError("Invalid Parameter ActiveTimeOutInDays: use a positive value.")
+    if valid_rule_parameters['KeyActiveTimeOutInDays'] < 0:
+        raise ValueError("Invalid Parameter KeyActiveTimeOutInDays: use a positive value.")
 
-    if valid_rule_parameters['ActiveTimeOutInDays'] > 999999999:
-        raise ValueError("Invalid Parameter ActiveTimeOutInDays: use a value less than 999999999.")
+    if valid_rule_parameters['KeyActiveTimeOutInDays'] > 999999999:
+        raise ValueError("Invalid Parameter KeyActiveTimeOutInDays: use a value less than 999999999.")
 
     return valid_rule_parameters
 
