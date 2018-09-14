@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.6",
     "CodeKey": "IAM_ACCESS_KEY_ROTATED.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{\"WhitelistedUserList\":\"\",\"ActiveTimeOutInDays\":\"\"}",
+    "OptionalParameters": "{\"WhitelistedUserList\":\"\",\"KeyActiveTimeOutInDays\":\"\"}",
     "SourcePeriodic": "TwentyFour_Hours"
   }
 }

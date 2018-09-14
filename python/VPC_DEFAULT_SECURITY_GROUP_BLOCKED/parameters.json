@@ -1,4 +1,5 @@
 {
+  "Version": "1.0",
   "Parameters": {
     "RuleName": "VPC_DEFAULT_SECURITY_GROUP_BLOCKED",
     "SourceRuntime": "python3.6",
