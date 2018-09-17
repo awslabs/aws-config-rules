@@ -1,0 +1,11 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ELB_ALB_PREDEFINED_SSL_CHECK",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "ELB_ALB_PREDEFINED_SSL_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"ValidPolicies\":\"\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  }
+}

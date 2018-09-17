@@ -48,7 +48,7 @@ rule = __import__('EC2_TAG_MATCHES_INSTANCE_PROFILE_NAME')
 class SampleTest(unittest.TestCase):
 
     # Scenario 1 : EC2 instance has no tag with key equal to TAG_KEY.
-    def test_rule_scenario1(self):        
+    def test_rule_scenario1(self):
         invoking_event = build_invoking_event("",None)
         response = rule.lambda_handler(build_lambda_event(ruleParameters='{}', invoking_event=invoking_event), "")
         expected_response = []
