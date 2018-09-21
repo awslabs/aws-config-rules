@@ -8,8 +8,95 @@
 # or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
+"""
+#####################################
+##           Gherkin               ##
+#####################################
+ Rule Name:
+   IAM_POLICY_REQUIRED
+ Description:
+   To check IAM users and roles have a given policy attached directly or through a group.
+ Trigger:
+   Configuration Change on AWS::IAM::User/AWS::IAM::Role
+ Reports on:
+   AWS::IAM::User,AWS::IAM::Role
+ Rule Parameters:
+   | ---------------------- | --------- | -------------------------------------------------------- |
+   | Parameter Name         | Type      | Description                                              |
+   | ---------------------- | --------- | -------------------------------------------------------- |
+   | policyArns             | Required  | ARNs of the policies which should be attached to all     |
+   |                        |           | users and roles.                                         |
+   | ---------------------- | --------- | -------------------------------------------------------- |
+   | exceptionList          | Optional  | Represents the IAM users and roles which are exempted    |
+   |                        |           | from the IAM Config rule. The valid users in this list   |
+   |                        |           | will be compliant by default.                            |
+   |                        |           | List of all the User Names separated by a comma          |
+   | ---------------------- | --------- | -------------------------------------------------------- |
+ Feature:
+   As: a Security Officer
+   I want: To ensure that IAM roles and users have mandatory policies attached
+   In order to: enforce mandatory permissions for IAM entities
+ Scenarios:
+  Scenario: 1
+     Given: No IAM Users or Roles exist
+      When: Evaluation occurs
+      Then: Return "NOT_APPLICABLE"
+   Scenario: 2
+     Given: exceptionList is configured
+       And: A user listed in the exceptionList is not an alphanumerical string
+      When: Evaluation occurs
+      Then: Return an error
+   Scenario: 3
+     Given: exceptionList is configured
+       And: A role listed in the exceptionList is not an alphanumerical string
+      When: Evaluation occurs
+      Then: Return an error
+   Scenario: 4
+     Given: policyArns is configured
+       And: policyArns does not contain valid ARNs
+      Then: Return an error
+   Scenario: 5
+     Given: An IAM user exists
+       And: exceptionList is configured and valid
+       And: The IAM user is listed in the exceptionList
+      When: Evaluation occurs
+      Then: Return COMPLIANT
+   Scenario: 6
+     Given: An IAM role exists
+       And: exceptionList is configured and valid
+       And: The IAM role is listed in the exceptionList
+      When: Evaluation occurs
+      Then: Return COMPLIANT
+   Scenario: 7
+     Given: An IAM user exists
+       And: The user has all the policies listed in policyArns attached
+      When: Evaluation occurs
+      Then: Return COMPLIANT
+   Scenario: 8
+     Given: An IAM user exists
+       And: The IAM user groups combined have the policies listed in policyArns attached
+      When: Evaluation occurs
+      Then: Return COMPLIANT
+   Scenario: 9
+     Given: An IAM role exists
+       And: The role has all the policies listed in policyArns attached
+      When: Evaluation occurs
+      Then: Return COMPLIANT
+   Scenario: 10
+     Given: An IAM user
+       And: The IAM user does not have all the polciies listed in policyArns attached
+       And: The IAM user's groups combined do not have all the policy listed in policyArns attached
+      When: Evaluation occurs
+      Then: return NON_COMPLIANT
+   Scenario: 11
+     Given: An IAM role
+       And: The IAM role does not have all the policies listed in policyArns attached
+      When: Evaluation occurs
+      Then: return NON_COMPLIANT
+"""
 
 import json
+import re
 import datetime
 import boto3
 import botocore
@@ -35,35 +122,45 @@ def should_ignore_config_item(config_item, ignored_roles, ignored_users):
             or (config_item['ARN'].rsplit("/")[1] == 'aws-service-role')
 
 
-def get_user_policies(username, client):
+def get_attached_policies(configuration_item):
     # Get the users managed policies
-    policies = [
-        policy['PolicyName'] for policy in client.list_attached_user_policies(UserName=username)['AttachedPolicies']
-    ]
-    # Get the policies from the users groups
-    groups = [
-        group['GroupName'] for group in client.list_groups_for_user(UserName=username)['Groups']
-    ]
-    for group in groups:
-        policies.extend([
-            policy['PolicyName'] for policy in client.list_attached_group_policies(GroupName=group)['AttachedPolicies']
-        ])
-
-    return policies
-
-
-def get_role_policies(role_name, client):
-    # Get the users managed policies
-    return [
-        policy['PolicyName'] for policy in client.list_attached_role_policies(RoleName=role_name)['AttachedPolicies']
+    attach_policies = [
+        policy["policyArn"] for policy in configuration_item["configuration"].get("attachedManagedPolicies")
     ]
 
+    return attach_policies
 
-def has_policy_attached(resource_name, resource_type, policy_name, client):
+
+def list_contains_all(source_list, items):
+    return all(policy in source_list for policy in items)
+
+
+def paginate(client, method, **kwargs):
+    paginator = client.get_paginator(method.__name__)
+    for page in paginator.paginate(**kwargs).result_key_iters():
+        for result in page:
+            yield result
+
+
+def has_policy_attached(event, configuration_item, policy_arns):
+    resource_type = configuration_item['resourceType']
     if resource_type == 'AWS::IAM::User':
-        return policy_name in get_user_policies(resource_name, client)
+        managed_policies = get_attached_policies(configuration_item)
+        if list_contains_all(managed_policies, policy_arns):
+            return True
+        # Additively check the users groups to see if they have the required policies
+        client = get_client('iam', event)
+        groups = configuration_item["configuration"].get("groupList", [])
+        for group in groups:
+            attached_policies = paginate(client, client.list_attached_group_policies, **{'GroupName': group})
+            for policy in attached_policies:
+                managed_policies.append(policy['PolicyArn'])
+                if list_contains_all(managed_policies, policy_arns):
+                    return True
+
+        return False
     elif resource_type == 'AWS::IAM::Role':
-        return policy_name in get_role_policies(resource_name, client)
+        return list_contains_all(get_attached_policies(configuration_item), policy_arns)
     else:
         raise ValueError('Unable to handle resource type {}'.format(resource_type))
 
@@ -87,17 +184,31 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
     3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
     """
-    ignored_roles = valid_rule_parameters["ignoredRoles"]
-    ignored_users = valid_rule_parameters["ignoredUsers"]
-    policy_name = valid_rule_parameters['policyName']
-    client = get_client('iam', event)
+    policy_arns = valid_rule_parameters['policyArns']
+    exception_list = valid_rule_parameters["exceptionList"]
+    ignored_roles = exception_list["roles"]
+    ignored_users = exception_list["users"]
 
     if should_ignore_config_item(configuration_item, ignored_roles, ignored_users):
-        return 'COMPLIANT'
-    elif has_policy_attached(configuration_item['resourceName'], configuration_item['resourceType'], policy_name, client):
-        return 'COMPLIANT'
+        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT', 'Ignored IAM entity')
+    elif has_policy_attached(event, configuration_item, policy_arns):
+        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT', 'All expected policies attached')
     else:
-        return 'NON_COMPLIANT'
+        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'IAM entity missing policies')
+
+
+def is_valid_arn(arn):
+    pattern = re.compile("arn:(aws[a-zA-Z-]*)?:iam::(aws|\d{12}):policy\/[a-zA-Z0-9-_\/]+")
+    return pattern.match(arn)
+
+
+def extract_entities_from_exception_list(entity_type, exception_list):
+    pattern = re.compile("{Type}:\s?\[([a-zA-Z0-9-_,]+)\]".format(Type=entity_type))
+    matches = pattern.search(exception_list)
+    if matches:
+        return matches.group(1).split(",")
+    else:
+        return []
 
 
 def evaluate_parameters(rule_parameters):
@@ -109,8 +220,20 @@ def evaluate_parameters(rule_parameters):
     Keyword arguments:
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
-    valid_rule_parameters = rule_parameters
-    return valid_rule_parameters
+    policy_arns = rule_parameters["policyArns"]
+    parsed_policy_arns = policy_arns if isinstance(policy_arns, list) else policy_arns.split(",")
+    if not all(is_valid_arn(arn) for arn in parsed_policy_arns):
+        raise ValueError('Invalid policy ARNs specified in policyArns')
+
+    exception_list = rule_parameters.get("exceptionList", "")
+
+    return {
+        'policyArns': parsed_policy_arns,
+        'exceptionList': {
+            'users': extract_entities_from_exception_list('users', exception_list),
+            'roles': extract_entities_from_exception_list('roles', exception_list),
+        }
+    }
 
 ####################
 # Helper Functions #
