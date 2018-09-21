@@ -30,14 +30,12 @@ ASSUME_ROLE_MODE = False
 
 
 def should_ignore_config_item(config_item, ignored_roles, ignored_users):
-    return (config_item['configurationItemStatus'] == 'ResourceDeleted')\
-            or (config_item['resourceType'] == 'AWS::IAM::Role' and config_item['resourceName'] in ignored_roles)\
-            or (config_item['resourceType'] == 'AWS::IAM::User' and config_item['resourceName'] in ignored_users)\
+    return (config_item['resourceType'] == 'AWS::IAM::Role' and config_item['resourceName'] in ignored_roles) \
+            or (config_item['resourceType'] == 'AWS::IAM::User' and config_item['resourceName'] in ignored_users) \
             or (config_item['ARN'].rsplit("/")[1] == 'aws-service-role')
 
 
-def get_user_policies(username):
-    client = boto3.client('iam')
+def get_user_policies(username, client):
     # Get the users managed policies
     policies = [
         policy['PolicyName'] for policy in client.list_attached_user_policies(UserName=username)['AttachedPolicies']
@@ -54,19 +52,18 @@ def get_user_policies(username):
     return policies
 
 
-def get_role_policies(role_name):
-    client = boto3.client('iam')
+def get_role_policies(role_name, client):
     # Get the users managed policies
     return [
         policy['PolicyName'] for policy in client.list_attached_role_policies(RoleName=role_name)['AttachedPolicies']
     ]
 
 
-def has_policy_attached(resource_name, resource_type, policy_name):
+def has_policy_attached(resource_name, resource_type, policy_name, client):
     if resource_type == 'AWS::IAM::User':
-        return policy_name in get_user_policies(resource_name)
+        return policy_name in get_user_policies(resource_name, client)
     elif resource_type == 'AWS::IAM::Role':
-        return policy_name in get_role_policies(resource_name)
+        return policy_name in get_role_policies(resource_name, client)
     else:
         raise ValueError('Unable to handle resource type {}'.format(resource_type))
 
@@ -93,10 +90,11 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ignored_roles = valid_rule_parameters["ignored_roles"]
     ignored_users = valid_rule_parameters["ignored_users"]
     policy_name = valid_rule_parameters['policy_name']
+    client = get_client('iam', event)
 
     if should_ignore_config_item(configuration_item, ignored_roles, ignored_users):
         return 'NOT_APPLICABLE'
-    elif has_policy_attached(configuration_item['resourceName'], configuration_item['resourceType'], policy_name):
+    elif has_policy_attached(configuration_item['resourceName'], configuration_item['resourceType'], policy_name, client):
         return 'COMPLIANT'
     else:
         return 'NON_COMPLIANT'
