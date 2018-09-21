@@ -40,7 +40,7 @@ rule = __import__('IAM_POLICY_REQUIRED')
 
 class TestPolicyRequired(unittest.TestCase):
 
-    rule_parameters = '{"policy_name":"TestPolicy", "ignored_users": "test-user", "ignored_roles": "test-role"}'
+    rule_parameters = '{"policyName":"TestPolicy", "ignoredUsers": "test-user", "ignoredRoles": "test-role"}'
 
     invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"arn:aws:iam::123456789012:role/some-resource-name"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
     invoking_event_iam_user_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::User","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"arn:aws:iam::123456789012:user/some-resource-name"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
@@ -55,7 +55,7 @@ class TestPolicyRequired(unittest.TestCase):
                                                                                                "role/aws-service-role/"),
                                                    self.rule_parameters), {})
 
-        resp_expected = [build_expected_response('NOT_APPLICABLE',
+        resp_expected = [build_expected_response('COMPLIANT',
                                                  unittest.mock.ANY,
                                                  'AWS::IAM::Role')]
         assert_successful_evaluation(self, response, resp_expected)

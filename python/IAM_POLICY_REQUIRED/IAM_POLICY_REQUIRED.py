@@ -87,13 +87,13 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
     3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
     """
-    ignored_roles = valid_rule_parameters["ignored_roles"]
-    ignored_users = valid_rule_parameters["ignored_users"]
-    policy_name = valid_rule_parameters['policy_name']
+    ignored_roles = valid_rule_parameters["ignoredRoles"]
+    ignored_users = valid_rule_parameters["ignoredUsers"]
+    policy_name = valid_rule_parameters['policyName']
     client = get_client('iam', event)
 
     if should_ignore_config_item(configuration_item, ignored_roles, ignored_users):
-        return 'NOT_APPLICABLE'
+        return 'COMPLIANT'
     elif has_policy_attached(configuration_item['resourceName'], configuration_item['resourceType'], policy_name, client):
         return 'COMPLIANT'
     else:

@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.6", 
     "RuleName": "IAM_POLICY_REQUIRED",
     "SourceEvents": "AWS::IAM::Role,AWS::IAM::User", 
-    "OptionalParameters": "{}", 
-    "InputParameters": "{\"policy_name\": \"\", \"ignored_users\": \"\", \"ignored_roles\": \"\"}"
+    "OptionalParameters": "{\"ignoredUsers\": \"\", \"ignoredRoles\": \"\"}",
+    "InputParameters": "{\"policyName\": \"\"}"
   }
 }
