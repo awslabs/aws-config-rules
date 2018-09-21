@@ -206,7 +206,7 @@ def extract_entities_from_exception_list(entity_type, exception_list):
     pattern = re.compile("{Type}:\s?\[([a-zA-Z0-9-_,]+)\]".format(Type=entity_type))
     matches = pattern.search(exception_list)
     if matches:
-        return matches.group(1).split(",")
+        return matches.group(1).replace(' ', '').split(",")
     else:
         return []
 
