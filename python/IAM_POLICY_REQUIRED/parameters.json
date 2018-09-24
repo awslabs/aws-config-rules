@@ -6,6 +6,6 @@
     "RuleName": "IAM_POLICY_REQUIRED",
     "SourceEvents": "AWS::IAM::Role,AWS::IAM::User", 
     "OptionalParameters": "{\"exceptionList\": \"\"}",
-    "InputParameters": "{\"policyArns\": \"\"}"
+    "InputParameters": "{\"policyArns\": [\"\"]}"
   }
 }

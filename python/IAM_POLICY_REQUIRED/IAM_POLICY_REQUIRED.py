@@ -26,11 +26,12 @@
    | ---------------------- | --------- | -------------------------------------------------------- |
    | policyArns             | Required  | ARNs of the policies which should be attached to all     |
    |                        |           | users and roles.                                         |
+   |                        |           | Example: ["arn:aws:iam::012345678912:policy/MyPolicy"]   |
    | ---------------------- | --------- | -------------------------------------------------------- |
    | exceptionList          | Optional  | Represents the IAM users and roles which are exempted    |
-   |                        |           | from the IAM Config rule. The valid users in this list   |
+   |                        |           | from the IAM Config rule. The valid entities in this list|
    |                        |           | will be compliant by default.                            |
-   |                        |           | List of all the User Names separated by a comma          |
+   |                        |           | Example: users:[userName1,userName2],roles:[roleName]    |
    | ---------------------- | --------- | -------------------------------------------------------- |
  Feature:
    As: a Security Officer
@@ -43,53 +44,49 @@
       Then: Return "NOT_APPLICABLE"
    Scenario: 2
      Given: exceptionList is configured
-       And: A user listed in the exceptionList is not an alphanumerical string
+       And: An <entity> listed in the exceptionList is not an alphanumerical string
       When: Evaluation occurs
       Then: Return an error
+  Examples:
+      |  entity  |
+      | IAM User |
+      | IAM Role |
    Scenario: 3
-     Given: exceptionList is configured
-       And: A role listed in the exceptionList is not an alphanumerical string
-      When: Evaluation occurs
-      Then: Return an error
-   Scenario: 4
      Given: policyArns is configured
        And: policyArns does not contain valid ARNs
       Then: Return an error
+   Scenario: 4
+     Given: An <entity> exists
+       And: exceptionList is configured and valid
+       And: The <entity> is listed in the exceptionList
+      When: Evaluation occurs
+      Then: Return COMPLIANT
+  Examples:
+      |  entity  |
+      | IAM User |
+      | IAM Role |
    Scenario: 5
-     Given: An IAM user exists
-       And: exceptionList is configured and valid
-       And: The IAM user is listed in the exceptionList
+     Given: An <entity> exists
+       And: The <entity> has all the policies listed in policyArns attached
       When: Evaluation occurs
       Then: Return COMPLIANT
+  Examples:
+      |  entity  |
+      | IAM User |
+      | IAM Role |
    Scenario: 6
-     Given: An IAM role exists
-       And: exceptionList is configured and valid
-       And: The IAM role is listed in the exceptionList
-      When: Evaluation occurs
-      Then: Return COMPLIANT
-   Scenario: 7
-     Given: An IAM user exists
-       And: The user has all the policies listed in policyArns attached
-      When: Evaluation occurs
-      Then: Return COMPLIANT
-   Scenario: 8
      Given: An IAM user exists
        And: The IAM user groups combined have the policies listed in policyArns attached
       When: Evaluation occurs
       Then: Return COMPLIANT
-   Scenario: 9
-     Given: An IAM role exists
-       And: The role has all the policies listed in policyArns attached
-      When: Evaluation occurs
-      Then: Return COMPLIANT
-   Scenario: 10
-     Given: An IAM user
+   Scenario: 7
+     Given: An IAM user exists
        And: The IAM user does not have all the polciies listed in policyArns attached
        And: The IAM user's groups combined do not have all the policy listed in policyArns attached
       When: Evaluation occurs
       Then: return NON_COMPLIANT
-   Scenario: 11
-     Given: An IAM role
+   Scenario: 8
+     Given: An IAM role exists
        And: The IAM role does not have all the policies listed in policyArns attached
       When: Evaluation occurs
       Then: return NON_COMPLIANT
@@ -161,8 +158,8 @@ def has_policy_attached(event, configuration_item, policy_arns):
         return False
     elif resource_type == 'AWS::IAM::Role':
         return list_contains_all(get_attached_policies(configuration_item), policy_arns)
-    else:
-        raise ValueError('Unable to handle resource type {}'.format(resource_type))
+
+    raise ValueError('Unable to handle resource type {}'.format(resource_type))
 
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
@@ -193,8 +190,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT', 'Ignored IAM entity')
     elif has_policy_attached(event, configuration_item, policy_arns):
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT', 'All expected policies attached')
-    else:
-        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'IAM entity missing policies')
+
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'IAM entity missing policies')
 
 
 def is_valid_arn(arn):
@@ -207,8 +204,7 @@ def extract_entities_from_exception_list(entity_type, exception_list):
     matches = pattern.search(exception_list)
     if matches:
         return matches.group(1).replace(' ', '').split(",")
-    else:
-        return []
+    return []
 
 
 def evaluate_parameters(rule_parameters):
@@ -221,14 +217,15 @@ def evaluate_parameters(rule_parameters):
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
     policy_arns = rule_parameters["policyArns"]
-    parsed_policy_arns = policy_arns if isinstance(policy_arns, list) else policy_arns.split(",")
-    if not all(is_valid_arn(arn) for arn in parsed_policy_arns):
+    if not isinstance(policy_arns, list):
+        raise ValueError('Invalid policyArns. Must be a list')
+    if not all(is_valid_arn(arn) for arn in policy_arns):
         raise ValueError('Invalid policy ARNs specified in policyArns')
 
     exception_list = rule_parameters.get("exceptionList", "")
 
     return {
-        'policyArns': parsed_policy_arns,
+        'policyArns': policy_arns,
         'exceptionList': {
             'users': extract_entities_from_exception_list('users', exception_list),
             'roles': extract_entities_from_exception_list('roles', exception_list),
