@@ -81,7 +81,7 @@
       Then: Return COMPLIANT
    Scenario: 7
      Given: An IAM user exists
-       And: The IAM user does not have all the polciies listed in policyArns attached
+       And: The IAM user does not have all the policies listed in policyArns attached
        And: The IAM user's groups combined do not have all the policy listed in policyArns attached
       When: Evaluation occurs
       Then: return NON_COMPLIANT
