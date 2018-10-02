@@ -24,9 +24,9 @@
    | ---------------------- | --------- | -------------------------------------------------------- |
    | Parameter Name         | Type      | Description                                              |
    | ---------------------- | --------- | -------------------------------------------------------- |
-   | policyArns             | Required  | ARNs of the policies which should be attached to all     |
-   |                        |           | users and roles.                                         |
-   |                        |           | Example: ["arn:aws:iam::012345678912:policy/MyPolicy"]   |
+   | policyArns             | Required  | Comma separated list of policy ARNs which should be      |
+   |                        |           | attached to users and roles.                             |
+   |                        |           | Example: "arn:aws:iam::012345678912:policy/MyPolicy"     |
    | ---------------------- | --------- | -------------------------------------------------------- |
    | exceptionList          | Optional  | Represents the IAM users and roles which are exempted    |
    |                        |           | from the IAM Config rule. The valid entities in this list|
@@ -216,9 +216,7 @@ def evaluate_parameters(rule_parameters):
     Keyword arguments:
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
-    policy_arns = rule_parameters["policyArns"]
-    if not isinstance(policy_arns, list):
-        raise ValueError('Invalid policyArns. Must be a list')
+    policy_arns = rule_parameters.get("policyArns", "").split(",")
     if not all(is_valid_arn(arn) for arn in policy_arns):
         raise ValueError('Invalid policy ARNs specified in policyArns')
 

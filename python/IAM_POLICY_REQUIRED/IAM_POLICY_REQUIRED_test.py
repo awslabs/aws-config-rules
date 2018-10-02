@@ -146,7 +146,7 @@ rule = __import__('IAM_POLICY_REQUIRED')
 
 class TestPolicyRequired(unittest.TestCase):
 
-    rule_parameters = '{"policyArns":["arn:aws:iam::aws:policy/AdministratorAccess"], "exceptionList": ""}'
+    rule_parameters = '{"policyArns":"arn:aws:iam::aws:policy/AdministratorAccess", "exceptionList": ""}'
     invoking_event_iam_role_sample = json.dumps(build_role_configuration_item(['arn:aws:iam::aws:policy/AdministratorAccess']))
     invoking_event_iam_user_sample = json.dumps(build_user_configuration_item([
         'arn:aws:iam::aws:policy/AdministratorAccess'], {'group1': [{'PolicyArn':'arn:aws:iam::aws:policy/AdministratorAccess'}]}))
@@ -159,7 +159,7 @@ class TestPolicyRequired(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_it_marks_ignored_roles_as_compliant(self):
-        rule_parameters = '{"policyArns":["arn:aws:iam::aws:policy/AdministratorAccess"], "exceptionList": "users:[test-user],roles:[test-role]"}'
+        rule_parameters = '{"policyArns":"arn:aws:iam::aws:policy/AdministratorAccess", "exceptionList": "users:[test-user],roles:[test-role]"}'
         rule.ASSUME_ROLE_MODE = False
         response = rule.lambda_handler(build_lambda_configurationchange_event(
             self.invoking_event_iam_role_sample, rule_parameters), {})
@@ -167,7 +167,7 @@ class TestPolicyRequired(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_it_marks_ignored_users_as_compliant(self):
-        rule_parameters = '{"policyArns":["arn:aws:iam::aws:policy/AdministratorAccess"], "exceptionList": "users:[test-user]"}'
+        rule_parameters = '{"policyArns":"arn:aws:iam::aws:policy/AdministratorAccess", "exceptionList": "users:[test-user]"}'
         rule.ASSUME_ROLE_MODE = False
         response = rule.lambda_handler(build_lambda_configurationchange_event(
             self.invoking_event_iam_user_sample, rule_parameters), {})
@@ -234,7 +234,7 @@ class TestPolicyRequired(unittest.TestCase):
     def test_it_handles_customer_managed_policy_arns(self):
         invoking_event = json.dumps(build_role_configuration_item(
             ['arn:aws:iam::012345678912:policy/my-policy']))
-        rule_parameters = '{"policyArns":["arn:aws:iam::012345678912:policy/my-policy"], "exceptionList": ""}'
+        rule_parameters = '{"policyArns":"arn:aws:iam::012345678912:policy/my-policy", "exceptionList": ""}'
         rule.ASSUME_ROLE_MODE = False
         response = rule.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
@@ -245,7 +245,7 @@ class TestPolicyRequired(unittest.TestCase):
     def test_it_handles_customer_managed_policy_arns_with_paths(self):
         invoking_event = json.dumps(build_role_configuration_item(
             ['arn:aws:iam::012345678912:policy/my-path/my-policy']))
-        rule_parameters = '{"policyArns":["arn:aws:iam::012345678912:policy/my-path/my-policy"], "exceptionList": ""}'
+        rule_parameters = '{"policyArns":"arn:aws:iam::012345678912:policy/my-path/my-policy", "exceptionList": ""}'
         rule.ASSUME_ROLE_MODE = False
         response = rule.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
