@@ -12,10 +12,6 @@
 
 import json
 import boto3
-import logging
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 
 # Specify desired resource types to validate
@@ -25,20 +21,14 @@ APPLICABLE_RESOURCES = ["AWS::Lambda::Function"]
 # Iterate through required tags ensureing each required tag is present, 
 # and value is one of the given valid values
 def find_violation(current_tags, required_tags):
-    logger.info('find_violation')
-    logger.info('current_tags:[{}]'.format(current_tags))
-    logger.info('required_tags:[{}]'.format(required_tags))
     violation = ""
     for rtag,rvalues in required_tags.items():
-        logger.info('rtag[{}]'.format(rtag))
-        logger.info('rvalues[{}]'.format(rvalues))
         tag_present = False
         for tag in current_tags:
             logger.info('key[{}]'.format(tag))
             if tag == rtag:
                 tag_present = True
                 value_match = False
-                logger.info('value][{}]'.format(current_tags[tag]))
                 rvaluesplit = rvalues.split(",")
                 for rvalue in rvaluesplit:
                     if current_tags[tag] == rvalue:
@@ -48,21 +38,14 @@ def find_violation(current_tags, required_tags):
                             value_match = True
                 if value_match == False:
                     violation = violation + "\n" + current_tags[tag] + " doesn't match any of " + required_tags[rtag] + "!"
-                    logger.info('violation: [{}]'.format(violation))
         if not tag_present:
             violation = violation + "\n" + "Tag " + str(rtag) + " is not present."
-            logger.info('violation: [{}]'.format(violation))
     if violation == "":
-        print ('No violation')
         return None
     return  violation
 
 
 def evaluate_compliance(configuration_item, rule_parameters):
-    logger.info('inside evaluate_compliance')
-    logger.info('configuration_item:[{}]'.format(configuration_item))
-    logger.info('resourceType:[{}]'.format(configuration_item["resourceType"]))
-    logger.info('ARN:[{}]'.format(configuration_item["ARN"]))
     
     if configuration_item["resourceType"] not in APPLICABLE_RESOURCES:
         return {
@@ -82,7 +65,6 @@ def evaluate_compliance(configuration_item, rule_parameters):
         client = boto3.client('lambda')
         all_tags = client.list_tags(Resource=configuration_item["ARN"])
         current_tags = all_tags['Tags']  # get only user  tags.  
-        logger.info('Lambda: current_tags:[{}]'.format(current_tags))
 
 
     violation = find_violation(current_tags, rule_parameters)        
@@ -99,16 +81,11 @@ def evaluate_compliance(configuration_item, rule_parameters):
     }
 
 def lambda_handler(event, context):
-    logger.info('inside lambda_handler')
-    logger.info('got event[{}]'.format(event))
     invoking_event = json.loads(event["invokingEvent"])
-    logger.info('invoking_event[{}]'.format(invoking_event))
 
     configuration_item = invoking_event["configurationItem"]
-    logger.info('configuration_item[{}]'.format(configuration_item))
     
     rule_parameters = json.loads(event["ruleParameters"])
-    logger.info('rule_parameters[{}]'.format(rule_parameters))
     
     result_token = "No token found."
     if "resultToken" in event:
