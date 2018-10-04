@@ -25,7 +25,6 @@ def find_violation(current_tags, required_tags):
     for rtag,rvalues in required_tags.items():
         tag_present = False
         for tag in current_tags:
-            logger.info('key[{}]'.format(tag))
             if tag == rtag:
                 tag_present = True
                 value_match = False
