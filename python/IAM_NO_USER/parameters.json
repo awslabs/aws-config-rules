@@ -1,0 +1,11 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "IAM_NO_USER",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "IAM_NO_USER.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"WhitelistedUserList\": \"\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  }
+}
