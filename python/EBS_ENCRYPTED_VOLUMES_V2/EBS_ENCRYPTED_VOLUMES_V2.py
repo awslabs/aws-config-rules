@@ -147,19 +147,25 @@ ASSUME_ROLE_MODE = False
 
 # Compliance Evaluation Helper Functions
 def get_subnet_id(instance_id, event):
+    subnet_id_list = []
     ec2_client = get_client('ec2', event)
     all_instances = ec2_client.describe_instances(InstanceIds=[instance_id])
     for reservation in all_instances['Reservations']:
         for instance in reservation['Instances']:
-            return instance['SubnetId']
+            if 'NetworkInterfaces' in instance:
+                for network in instance['NetworkInterfaces']:
+                    subnet_id_list.append(network['SubnetId'])
+    return subnet_id_list
 
 def is_in_subnet_exception_list(configuration_item, subnet_exception_list, event):
     if 'attachments' in configuration_item['configuration']:
         for attachment in configuration_item['configuration']['attachments']:
             if 'instanceId' in attachment:
-                subnet_id = get_subnet_id(attachment['instanceId'], event)
-                if subnet_id in subnet_exception_list:
-                    return True
+                subnet_id_list = get_subnet_id(attachment['instanceId'], event)
+                if subnet_id_list:
+                    for subnet_id in subnet_id_list:
+                        if subnet_id in subnet_exception_list:
+                            return True
     return False
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):

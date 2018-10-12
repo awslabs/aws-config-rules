@@ -216,7 +216,7 @@ class ComplianceTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_Scenario_9_volumeSubnetinSubnetExceptionList(self):
-        ec2_mock.describe_instances = MagicMock(return_value={"Reservations":[{"Instances":[{"SubnetId":"subnet-02"}]}]})
+        ec2_mock.describe_instances = MagicMock(return_value={"Reservations":[{"Instances":[{"NetworkInterfaces":[{"SubnetId":"subnet-02"}]}]}]})
         rule_parameters = {
             "VolumeExceptionList": "vol-0003",
             "SubnetExceptionList": "subnet-02",
