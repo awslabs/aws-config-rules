@@ -1,9 +1,3 @@
-#
-# This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
-#
-# Created with the Rule Development Kit: https://github.com/awslabs/aws-config-rdk
-# Can be used stand-alone or with the Rule Compliance Engine: https://github.com/awslabs/aws-config-engine-for-compliance-as-code
-#
 import sys
 import json
 import unittest
@@ -216,7 +210,7 @@ class ComplianceTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_Scenario_9_volumeSubnetinSubnetExceptionList(self):
-        ec2_mock.describe_instances = MagicMock(return_value={"Reservations":[{"Instances":[{"SubnetId":"subnet-02"}]}]})
+        ec2_mock.describe_instances = MagicMock(return_value={"Reservations":[{"Instances":[{"NetworkInterfaces":[{"SubnetId":"subnet-02"}]}]}]})
         rule_parameters = {
             "VolumeExceptionList": "vol-0003",
             "SubnetExceptionList": "subnet-02",
