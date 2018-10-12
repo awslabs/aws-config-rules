@@ -1,3 +1,9 @@
+#
+# This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
+#
+# Created with the Rule Development Kit: https://github.com/awslabs/aws-config-rdk
+# Can be used stand-alone or with the Rule Compliance Engine: https://github.com/awslabs/aws-config-engine-for-compliance-as-code
+#
 import sys
 import json
 import unittest
