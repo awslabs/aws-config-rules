@@ -112,7 +112,7 @@ def evaluate_port(ports_string):
     port_list = []
     if ',' in ports_string:
         for port_string in ports_string.split(','):
-            port_list = port_string.strip()
+            port_list.append(port_string.strip())
     else:
         port_list.append(ports_string)
 
@@ -166,7 +166,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
     3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
     """
-
+  
     # Scenario 1: Security group in exception list
     if 'exceptionList' in valid_rule_parameters:
         if configuration_item['configuration']['groupId'] in valid_rule_parameters['exceptionList']:
