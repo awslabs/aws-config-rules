@@ -6,6 +6,13 @@
     "CodeKey": "INTERNET_GATEWAY_AUTHORIZED_ONLY.zip",
     "InputParameters": "{}",
     "OptionalParameters": "{\"AuthorizedVpcIds\":\"\"}",
-    "SourceEvents": "AWS::EC2::InternetGateway"
+    "SourceEvents": "AWS::EC2::InternetGateway",
+    "RuleSets": [
+      "accountclassification:secret",
+      "accountclassification:confidential",
+      "rulecriticity:high",
+      "pci"
+    ]
   }
 }
+

@@ -1,9 +1,0 @@
-{
-  "Parameters": {
-    "RuleName": "KMS_KEY_ROTATION_ENABLED",
-    "SourceRuntime": "python3.6",
-    "CodeKey": "KMS_KEY_ROTATION_ENABLED.zip",
-    "InputParameters": "{}",
-    "SourcePeriodic": "TwentyFour_Hours"
-  }
-}

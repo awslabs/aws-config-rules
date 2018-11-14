@@ -1,0 +1,16 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "RDS_INSTANCE_PUBLIC_ACCESS_CHECK",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "SourceEvents": "AWS::RDS::DBInstance",
+    "SourceIdentifier": "RDS_INSTANCE_PUBLIC_ACCESS_CHECK",   
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:critical", 
+      "pci"
+    ]
+  }
+}

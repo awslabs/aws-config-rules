@@ -1,9 +1,0 @@
-{
-  "Parameters": {
-    "RuleName": "RDS_NOT_PUBLIC",
-    "SourceRuntime": "python3.6",
-    "CodeKey": "RDS_NOT_PUBLIC.zip",
-    "InputParameters": "{}",
-    "SourceEvents": "AWS::RDS::DBInstance"
-  }
-}

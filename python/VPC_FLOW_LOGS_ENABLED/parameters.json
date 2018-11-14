@@ -3,7 +3,14 @@
     "RuleName": "VPC_FLOW_LOGS_ENABLED",
     "SourceRuntime": "python3.6",
     "CodeKey": "VPC_FLOW_LOGS_ENABLED.zip",
-    "InputParameters": "{}",
-    "SourcePeriodic": "TwentyFour_Hours"
+    "InputParameters": "{\"trafficType\":\"\",\"LogGroupName\":\"\",\"WhiteListedVPC\":\"\"}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "RuleSets": [
+      "accountclassification:secret",
+      "accountclassification:confidential",
+      "accountclassification:restricted",
+      "rulecriticity:medium",
+      "pci"
+    ]
   }
 }
