@@ -313,7 +313,7 @@ def is_applicable(configurationItem, event):
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
 def get_client(service, event=None):
-    if not event:
+    if not ASSUME_ROLE_MODE:
         return boto3.client(service)
     credentials = get_assume_role_credentials(event["executionRoleArn"])
     return boto3.client(service, aws_access_key_id=credentials['AccessKeyId'],
