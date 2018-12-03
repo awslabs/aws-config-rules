@@ -54,7 +54,7 @@ class SampleTest(unittest.TestCase):
             "distributionConfig": {
                 "logging": {
                     "bucket": "",
-                    "enabled": "false"
+                    "enabled": False
                 },
             },
         },
@@ -72,7 +72,7 @@ class SampleTest(unittest.TestCase):
             "distributionConfig": {
                 "logging": {
                     "bucket":"cloudfrontlogs" + '.s3.amazonaws.com',
-                    "enabled":"True"
+                    "enabled": True
                 },
             },
         },
@@ -90,7 +90,7 @@ class SampleTest(unittest.TestCase):
             "distributionConfig": {
                 "logging": {
                     "bucket":"im-different-bucket" + '.s3.amazonaws.com',
-                    "enabled":"True"
+                    "enabled": True
                 },
             },
         },
@@ -107,23 +107,23 @@ class SampleTest(unittest.TestCase):
         invoking_event = '{"awsAccountId":"123456789012","messageType":"ConfigurationItemChangeNotification","configurationItem":'+json.dumps(self.cf_distribution_log_enabled)+'}'
         response = rule.lambda_handler(build_lambda_configurationchange_event(invoking_event, self.rule_parameters), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'arn:aws:cloudfront::123456789012:distribution/E1NFJOWF2FZVA6', 'AWS::CloudFront::Distribution', 'distribution is configured to store logs in authorized bucket'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    def test_cf_distribution_log_enabled_wrong_bucket(self):
-        invoking_event = '{"awsAccountId":"123456789012","messageType":"ConfigurationItemChangeNotification","configurationItem":'+json.dumps(self.cf_distribution_log_enabled_wrong_bucket)+'}'
-        response = rule.lambda_handler(build_lambda_configurationchange_event(invoking_event, self.rule_parameters), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:cloudfront::123456789012:distribution/E1NFJOWF2FZVA6', 'AWS::CloudFront::Distribution', 'distribution is configured to store logs in an unauthorized bucket'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'arn:aws:cloudfront::123456789012:distribution/E1NFJOWF2FZVA6', 'AWS::CloudFront::Distribution'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_cf_distribution_log_disabled(self):
         resp_expected = []
         invoking_event = '{"awsAccountId":"123456789012","messageType":"ConfigurationItemChangeNotification","configurationItem":'+json.dumps(self.cf_distribution_log_disabled)+'}'
         response = rule.lambda_handler(build_lambda_configurationchange_event(invoking_event, self.rule_parameters), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:cloudfront::123456789012:distribution/E1NFJOWF2FZVA6', 'AWS::CloudFront::Distribution', 'distribution is not configured to store logs'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:cloudfront::123456789012:distribution/E1NFJOWF2FZVA6', 'AWS::CloudFront::Distribution', 'Distribution is not configured to store logs.'))
         assert_successful_evaluation(self, response, resp_expected)
-   
+
+    def test_cf_distribution_log_enabled_wrong_bucket(self):
+        invoking_event = '{"awsAccountId":"123456789012","messageType":"ConfigurationItemChangeNotification","configurationItem":'+json.dumps(self.cf_distribution_log_enabled_wrong_bucket)+'}'
+        response = rule.lambda_handler(build_lambda_configurationchange_event(invoking_event, self.rule_parameters), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:cloudfront::123456789012:distribution/E1NFJOWF2FZVA6', 'AWS::CloudFront::Distribution', 'Distribution is configured to store logs in an unauthorized bucket.'))
+        assert_successful_evaluation(self, response, resp_expected)
+        
 ####################
 # Helper Functions #
 ####################
