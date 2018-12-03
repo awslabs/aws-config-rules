@@ -176,7 +176,6 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
     eval_ci['ComplianceResourceId'] = configuration_item['resourceId']
     eval_ci['ComplianceType'] = compliance_type
     eval_ci['OrderingTimestamp'] = configuration_item['configurationItemCaptureTime']
-    print ("Evaluated Configuration Item", eval_ci)
     return eval_ci
 
 ####################
