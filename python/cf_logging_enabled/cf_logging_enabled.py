@@ -93,7 +93,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Distribution is not configured to store logs.')
     else:
         if configuration_item['configuration']['distributionConfig']['logging']['bucket'] == logging_bucket:
-            return build_evaluation_from_config_item(configuration_item, 'COMPLIANT', annotation='Distribution is configured to store logs in authorized bucket.')
+            return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
         else:
             return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Distribution is configured to store logs in an unauthorized bucket.')
 
