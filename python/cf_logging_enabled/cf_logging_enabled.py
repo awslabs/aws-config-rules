@@ -91,11 +91,10 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     logging_bucket = valid_rule_parameters ['CentralLoggingBucket'] + '.s3.amazonaws.com'
     if not configuration_item['configuration']['distributionConfig']['logging']['enabled']:
         return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Distribution is not configured to store logs.')
-    else:
-        if configuration_item['configuration']['distributionConfig']['logging']['bucket'] == logging_bucket:
-            return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-        else:
-            return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Distribution is configured to store logs in an unauthorized bucket.')
+    if configuration_item['configuration']['distributionConfig']['logging']['bucket'] == logging_bucket:
+        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
+    if not configuration_item['configuration']['distributionConfig']['logging']['bucket'] == logging_bucket:
+        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Distribution is configured to store logs in an unauthorized bucket.')
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
