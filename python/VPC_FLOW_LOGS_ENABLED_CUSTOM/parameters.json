@@ -1,0 +1,10 @@
+{
+  "Parameters": {
+    "RuleName": "VPC_FLOW_LOGS_ENABLED_CUSTOM",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "VPC_FLOW_LOGS_ENABLED_CUSTOM.zip",
+    "InputParameters": "{\"trafficType\":\"\",\"LogGroupName\":\"\",\"WhiteListedVPC\":\"\"}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "RuleSets": []
+  }
+}

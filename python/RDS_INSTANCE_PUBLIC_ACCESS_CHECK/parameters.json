@@ -10,7 +10,9 @@
     "RuleSets": [
       "baseline",
       "rulecriticity:critical", 
-      "pci"
+      "pci",
+      "pci:1.2",
+      "rds"
     ]
   }
 }

@@ -42,7 +42,7 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-rule = __import__('VPC_FLOW_LOGS_ENABLED')
+rule = __import__('VPC_FLOW_LOGS_ENABLED_CUSTOM')
 
 class ParameterTests(unittest.TestCase):
     # Check for any invalid parameter (such as "traffictype" instead of "TrafficType")

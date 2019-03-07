@@ -10,7 +10,11 @@
     "RuleSets": [
       "baseline",
       "rulecriticity:critical",
-      "pci"
+      "pci",
+      "pci:10.1",
+      "pci:10.2",
+      "pci:10.5",
+      "cloudtrail"
     ]
   }
 }
