@@ -347,17 +347,23 @@ def sts_mock():
 class TestStsErrors(unittest.TestCase):
 
     def test_sts_unknown_error(self):
+        invoking_event = json.dumps(build_role_configuration_item(
+            ['arn:aws:iam::012345678912:policy/my-policy']))
+        rule_parameters = '{"policyArns":"arn:aws:iam::012345678912:policy/my-policy", "exceptionList": ""}'
         rule.ASSUME_ROLE_MODE = True
         sts_client_mock.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
-        response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        response = rule.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         assert_customer_error_response(
             self, response, 'InternalError', 'InternalError')
 
     def test_sts_access_denied(self):
+        invoking_event = json.dumps(build_role_configuration_item(
+            ['arn:aws:iam::012345678912:policy/my-policy']))
+        rule_parameters = '{"policyArns":"arn:aws:iam::012345678912:policy/my-policy", "exceptionList": ""}'
         rule.ASSUME_ROLE_MODE = True
         sts_client_mock.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
-        response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        response = rule.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         assert_customer_error_response(
             self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')

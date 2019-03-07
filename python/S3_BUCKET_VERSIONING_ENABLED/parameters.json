@@ -1,0 +1,18 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "RuleName": "S3_BUCKET_VERSIONING_ENABLED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"isMfaDeleteEnabled\":\"\"}",
+    "SourceEvents": "AWS::S3::Bucket",
+    "SourceIdentifier": "S3_BUCKET_VERSIONING_ENABLED",
+    "RuleSets": [
+      "rulecriticity:high",
+      "pci",
+      "pci:12.10",
+      "s3"
+    ]
+  }
+}

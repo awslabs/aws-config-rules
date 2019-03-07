@@ -7,6 +7,13 @@
     "InputParameters": "{}",
     "OptionalParameters": "{\"WhitelistedUserList\": \"\", \"NotUsedTimeOutInDays\": \"\", \"NewUserCooldownInDays\": \"\"}",
     "SourceEvents": "AWS::IAM::User",
-    "SourcePeriodic": "TwentyFour_Hours"
+    "SourcePeriodic": "TwentyFour_Hours",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:8.1",
+      "iam"
+    ]
   }
 }
