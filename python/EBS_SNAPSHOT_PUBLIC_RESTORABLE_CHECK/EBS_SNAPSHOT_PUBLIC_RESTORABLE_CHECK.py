@@ -54,9 +54,35 @@ def generate_eval_list(snapshots):
     for snapshot in snapshots:
         # resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None)
         snapshot_id = snapshot['SnapshotId']
-        evaluation = build_evaluation(build_evaluation(snapshot_id, "NON_COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="Snapshot is public"))
+        evaluation = build_evaluation(snapshot_id, "NON_COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="Snapshot: {} is public".format(snapshot_id))
         evaluations.append(evaluation)
     return(evaluations)
+
+def get_public_snapshots(ec2_client, owner_id):
+    snapshots = []
+    next_marker_flag = True
+    next_token = None
+    snapshots_result = {}
+    while(next_marker_flag is True):
+        try:
+            if(next_token is None):
+                snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'])
+            else:
+                snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'], NextToken=next_token)
+            if(snapshots_result['ResponseMetadata']['HTTPStatusCode'] != 200):
+                return(False, [])
+        except Exception as e:
+            return(False, [])
+        snapshots = snapshots.extend(snapshots_result['Snapshots'])
+        if(not snapshots):
+            return(True, snapshots)
+        if(snapshots_result['NextToken']):
+            next_marker_flag = True
+            next_token = snapshots_result['NextToken']
+        else:
+            next_marker_flag = False
+            next_token = None
+    return(True, snapshots)
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     """Form the evaluation(s) to be return to Config Rules
@@ -85,17 +111,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     owner_id = configuration_item['awsAccountId'] # Obtaining the AWS account ID
     ec2_client = get_client(service, event) # Generating EC2 boto3 client
     snapshots_result = {}
-    try:
-        snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'])
-    except Exception as e:
-        return(build_evaluation("N/A", "NOT_APPLICABLE", event, annotation="Unable to reach EC2 service"))
-    if(snapshots_result['ResponseMetadata']['HTTPStatusCode'] != 200): # Checking if network call was successful
-        return(build_evaluation("N/A", "NOT_APPLICABLE", event, annotation="Unable to reach EC2 service"))
-    # Proceeding with evalation since network call was successful
-    public_snapshots_list = snapshots_result['Snapshots']
-    if(not public_snapshots_list['Snapshots']): # Check if snapshot list is empty
-        return(build_evaluation("N/A", "COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="All EBS volumes compliant"))
-    else:
+    public_snapshots_list = []
+    public_snapshots_result = get_public_snapshots(ec2_client, owner_id)
+    if(public_snapshots_result[0] is False):
+        # return(build_evaluation("N/A", "NOT_APPLICABLE", event, annotation="Unable to reach EC2 service"))
+        return(build_internal_error_response())
+    public_snapshots_list = public_snapshots_result[1]
+    if(public_snapshots_result[0] is True):
+        if(not public_snapshots_list):
+            return(build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="All EBS volumes compliant"))
         return(generate_eval_list(snapshots))
 
 def evaluate_parameters(rule_parameters):
