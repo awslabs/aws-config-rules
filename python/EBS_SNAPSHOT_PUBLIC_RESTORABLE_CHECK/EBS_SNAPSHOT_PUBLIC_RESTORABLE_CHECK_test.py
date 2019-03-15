@@ -7,6 +7,8 @@ except ImportError:
     from mock import MagicMock, patch, ANY
 import botocore
 from botocore.exceptions import ClientError
+import datetime
+from dateutil.tz import tzutc
 
 ##############
 # Parameters #
@@ -52,9 +54,7 @@ class SampleTest(unittest.TestCase):
         describe_snapshots_result = {}
         self.assertTrue(True)
 
-    def describe_snapshots_side_effect(NextToken=None, RestorableByUserIds, OwnerIds):
-        if((RestorableByUserIds != 'all') or (OwnerIds != '123456789012')):
-            return(False)
+    def describe_snapshots_side_effect(self, OwnerIds=None, RestorableByUserIds=None, MaxResults=None, NextToken=None):
         next_token = "eyJ2IjoiMiIsImMiOiI4KzJzMnlVaU13WVRJdUJpSC91TjVwcFVhRmwyd3FzMFo2V3lOWTNPRi9tL3JUcVl2b3VIb2lZQ2tZNVJTWWc4c0lSWTRQVFdEbXdpY2tkWmRTRzViVElBT1RGQURQVG0rZ2FzcGVRMUJHQis3cG9RSEFNKy9rVWJ0Rnkyall4Qlg1N3ljWUs4ZDNCVnlvT0pud1NxR2d0RHJIMFZhYmJBTzRBc2NsRnowZEJhamRiYitHUmphUi9Jc3pEK04vS1ZDcnBaNjJDSzN4Rkw3QT09IiwicyI6IjEifQ=="
         first_response = {'NextToken': '{}'.format(next_token),
                           'ResponseMetadata': {'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8',
@@ -93,7 +93,7 @@ class SampleTest(unittest.TestCase):
                                         'VolumeId': 'vol-ffffffff',
                                         'VolumeSize': 99}]
                           }
-        if(NextToken is None):
+        if((NextToken is None) and (OwnerIds[0]=='123456789012') and (RestorableByUserIds[0]=='all') and (MaxResults==1000)):
             return(first_response)
         elif(NextToken == next_token):
             return(final_response)
@@ -109,9 +109,10 @@ class SampleTest(unittest.TestCase):
         self.assertEqual(expected_result, lambda_result)
 
     def test_all_noncompliant_resources_with_pagination(self):
-        ec2_client.describe_snapshots.side_effect = describe_snapshots_side_effect
-        
-        self.assertTrue(True)
+        ec2_client_mock.describe_snapshots.side_effect = self.describe_snapshots_side_effect
+        lambda_result = rule.lambda_handler(self.lambda_event, {})
+        expected_result = [{'Annotation': 'EBS Snapshot: snap-9a0a02f7 is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-9a0a02f7', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}, {'Annotation': 'EBS Snapshot: snap-0daeb11514fba831a is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-0daeb11514fba831a', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
+        self.assertTrue(expected_result, lambda_result)
 
     def test_all_noncompliant_resources_without_pagination(self):
         describe_snapshots_result = {}

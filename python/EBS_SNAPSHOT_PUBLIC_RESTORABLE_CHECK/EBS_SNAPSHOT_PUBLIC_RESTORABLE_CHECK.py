@@ -64,7 +64,6 @@ def get_public_snapshots(ec2_client, owner_id):
     next_token = None
     snapshots_result = {}
     while(next_marker_flag is True):
-        print("Inside marker while")
         try:
             if(next_token is None):
                 snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'], MaxResults=1000)
@@ -74,7 +73,6 @@ def get_public_snapshots(ec2_client, owner_id):
                 return(False, [])
         except Exception as e:
             return(False, [])
-        print("snapshots_result.keys(): {}".format(snapshots_result.keys()))
         if(snapshots):
             snapshots.extend(snapshots_result['Snapshots'])
         else:
