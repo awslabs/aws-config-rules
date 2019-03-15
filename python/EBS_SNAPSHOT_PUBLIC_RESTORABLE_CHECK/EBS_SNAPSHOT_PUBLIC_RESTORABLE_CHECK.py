@@ -67,24 +67,18 @@ def get_public_snapshots(ec2_client, owner_id):
         print("Inside marker while")
         try:
             if(next_token is None):
-                print("next token is none") # chirag: debugging
-                snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'])
-                print(snapshots_result) # chirag: debugging
+                snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'], MaxResults=1000)
             else:
-                print("next token is not none") # chirag: debugging
-                snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'], NextToken=next_token)
-                print(snapshots_result) # chirag: debugging
+                snapshots_result = ec2_client.describe_snapshots(NextToken=next_token)
             if(snapshots_result['ResponseMetadata']['HTTPStatusCode'] != 200):
                 return(False, [])
         except Exception as e:
             return(False, [])
-        print("snapshots_result") # chirag: debugging
-        print(snapshots_result) # chirag: debugging
+        print("snapshots_result.keys(): {}".format(snapshots_result.keys()))
         if(snapshots):
-            snapshots = snapshots.extend(snapshots_result['Snapshots'])
+            snapshots.extend(snapshots_result['Snapshots'])
         else:
             snapshots = snapshots_result['Snapshots']
-        print("snapshots: {}".format(snapshots))
         if(not snapshots):
             return(True, snapshots)
         if('NextToken' in snapshots_result):

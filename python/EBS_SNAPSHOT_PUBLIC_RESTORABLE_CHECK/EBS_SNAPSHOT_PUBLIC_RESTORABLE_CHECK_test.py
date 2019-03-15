@@ -52,6 +52,11 @@ class SampleTest(unittest.TestCase):
         describe_snapshots_result = {}
         self.assertTrue(True)
 
+    def describe_snapshots_side_effect(NextToken=None, RestorableByUserIds=None, OwnerIds=None):
+        first_response = 
+        if(NextToken is None):
+            return()
+
     def test_compliant_resources(self):
         describe_snapshots_result = {'ResponseMetadata': {'HTTPHeaders': {'content-length': '227',
                                      'content-type': 'text/xml;charset=UTF-8', 'date': 'Thu, 14 Mar 2019 12:36:41 GMT',
@@ -64,7 +69,7 @@ class SampleTest(unittest.TestCase):
         self.assertEqual(expected_result, lambda_result)
 
     def test_all_noncompliant_resources_with_pagination(self):
-        describe_snapshots_result = {}
+
         self.assertTrue(True)
 
     def test_all_noncompliant_resources_without_pagination(self):
