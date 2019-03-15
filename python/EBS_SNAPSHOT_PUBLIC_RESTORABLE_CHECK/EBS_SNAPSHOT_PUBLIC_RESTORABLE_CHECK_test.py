@@ -52,7 +52,10 @@ class SampleTest(unittest.TestCase):
 
     def test_boto3_error(self):
         describe_snapshots_result = {}
-        self.assertTrue(True)
+        ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
+        lambda_result = rule.lambda_handler(self.lambda_event, {})
+        expected_response = []
+        self.assertEqual(expected_response, lambda_result)
 
     def describe_snapshots_side_effect(self, OwnerIds=None, RestorableByUserIds=None, MaxResults=None, NextToken=None):
         next_token = "eyJ2IjoiMiIsImMiOiI4KzJzMnlVaU13WVRJdUJpSC91TjVwcFVhRmwyd3FzMFo2V3lOWTNPRi9tL3JUcVl2b3VIb2lZQ2tZNVJTWWc4c0lSWTRQVFdEbXdpY2tkWmRTRzViVElBT1RGQURQVG0rZ2FzcGVRMUJHQis3cG9RSEFNKy9rVWJ0Rnkyall4Qlg1N3ljWUs4ZDNCVnlvT0pud1NxR2d0RHJIMFZhYmJBTzRBc2NsRnowZEJhamRiYitHUmphUi9Jc3pEK04vS1ZDcnBaNjJDSzN4Rkw3QT09IiwicyI6IjEifQ=="
