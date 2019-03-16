@@ -56,30 +56,31 @@ def generate_eval_list(snapshots, event):
         snapshot_id = snapshot['SnapshotId']
         evaluation = build_evaluation(snapshot_id, "NON_COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="EBS Snapshot: {} is public".format(snapshot_id))
         evaluations.append(evaluation)
-    return(evaluations)
+    return evaluations
 
 def get_public_snapshots(ec2_client, owner_id):
     snapshots = []
     next_marker_flag = True
     next_token = None
     snapshots_result = {}
-    while(next_marker_flag is True):
+    while next_marker_flag is True:
         try:
-            if(next_token is None):
+            if next_token is None:
                 snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'], MaxResults=1000)
             else:
                 snapshots_result = ec2_client.describe_snapshots(NextToken=next_token)
-            if(snapshots_result['ResponseMetadata']['HTTPStatusCode'] != 200):
+            if snapshots_result['ResponseMetadata']['HTTPStatusCode'] != 200:
                 return(False, [])
-        except Exception as e:
+        except Exception as boto3_exception:
+            print(boto3_exception)
             return(False, [])
-        if(snapshots):
+        if snapshots:
             snapshots.extend(snapshots_result['Snapshots'])
         else:
             snapshots = snapshots_result['Snapshots']
-        if(not snapshots):
+        if not snapshots:
             return(True, snapshots)
-        if('NextToken' in snapshots_result):
+        if 'NextToken' in snapshots_result:
             next_marker_flag = True
             next_token = snapshots_result['NextToken']
         else:
@@ -119,18 +120,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     print(valid_rule_parameters)
     owner_id = json.loads(event['invokingEvent'])['awsAccountId'] # Obtaining the AWS account ID
     ec2_client = get_client(service, event) # Generating EC2 boto3 client
-    snapshots_result = {}
     public_snapshots_list = []
     public_snapshots_result = get_public_snapshots(ec2_client, owner_id)
-    print(public_snapshots_result) # chirag: debugging
-    if(public_snapshots_result[0] is False):
-        # return(build_evaluation("N/A", "NOT_APPLICABLE", event, annotation="Unable to reach EC2 service"))
-        return(build_internal_error_response("Unexpected error while completing API request"))
+    if public_snapshots_result[0] is False:
+        return build_internal_error_response("Unexpected error while completing API request")
     public_snapshots_list = public_snapshots_result[1]
-    if(public_snapshots_result[0] is True):
-        if(not public_snapshots_list):
-            return(build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="All EBS volumes compliant"))
-        return(generate_eval_list(public_snapshots_list, event))
+    if public_snapshots_result[0] is True:
+        if not public_snapshots_list:
+            return build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="All EBS volumes compliant")
+        return generate_eval_list(public_snapshots_list, event)
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
@@ -358,8 +356,6 @@ def lambda_handler(event, context):
             configuration_item = get_configuration_item(invoking_event)
             if is_applicable(configuration_item, event):
                 compliance_result = evaluate_compliance(event, configuration_item, valid_rule_parameters)
-                print("compliance_result") # chirag: debugging
-                print(compliance_result) # chirag: debugging
             else:
                 compliance_result = "NOT_APPLICABLE"
         else:
