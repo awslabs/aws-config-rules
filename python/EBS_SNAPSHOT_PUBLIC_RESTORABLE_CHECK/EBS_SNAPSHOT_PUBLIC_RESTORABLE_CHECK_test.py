@@ -40,22 +40,12 @@ sys.modules['boto3'] = Boto3Mock()
 
 rule = __import__('EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK')
 
-class SampleTest(unittest.TestCase):
-
-    # rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
-    # invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
+class NonCompliantResourcesTest(unittest.TestCase):
     lambda_event = {}
 
     def setUp(self):
         self.lambda_event = build_lambda_scheduled_event()
         pass
-
-    def test_boto3_error(self):
-        describe_snapshots_result = {}
-        ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
-        lambda_result = rule.lambda_handler(self.lambda_event, {})
-        expected_response = []
-        self.assertEqual(expected_response, lambda_result)
 
     def describe_snapshots_side_effect(self, OwnerIds=None, RestorableByUserIds=None, MaxResults=None, NextToken=None):
         next_token = "eyJ2IjoiMiIsImMiOiI4KzJzMnlVaU13WVRJdUJpSC91TjVwcFVhRmwyd3FzMFo2V3lOWTNPRi9tL3JUcVl2b3VIb2lZQ2tZNVJTWWc4c0lSWTRQVFdEbXdpY2tkWmRTRzViVElBT1RGQURQVG0rZ2FzcGVRMUJHQis3cG9RSEFNKy9rVWJ0Rnkyall4Qlg1N3ljWUs4ZDNCVnlvT0pud1NxR2d0RHJIMFZhYmJBTzRBc2NsRnowZEJhamRiYitHUmphUi9Jc3pEK04vS1ZDcnBaNjJDSzN4Rkw3QT09IiwicyI6IjEifQ=="
@@ -101,16 +91,6 @@ class SampleTest(unittest.TestCase):
         elif(NextToken == next_token):
             return(final_response)
 
-    def test_compliant_resources(self):
-        describe_snapshots_result = {'ResponseMetadata': {'HTTPHeaders': {'content-length': '227',
-                                     'content-type': 'text/xml;charset=UTF-8', 'date': 'Thu, 14 Mar 2019 12:36:41 GMT',
-                                     'server': 'AmazonEC2'}, 'HTTPStatusCode': 200, 'RequestId': 'example09-ecb6-407e-9053-e8sample5f',
-                                     'RetryAttempts': 0},'Snapshots': []}
-        ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
-        lambda_result = rule.lambda_handler(self.lambda_event, {})
-        expected_response = [{'Annotation': 'All EBS volumes compliant', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'N/A', 'ComplianceType': 'NOT_APPLICABLE', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
-        self.assertEqual(expected_response, lambda_result)
-
     def test_all_noncompliant_resources_with_pagination(self):
         ec2_client_mock.describe_snapshots.side_effect = self.describe_snapshots_side_effect
         lambda_result = rule.lambda_handler(self.lambda_event, {})
@@ -140,6 +120,29 @@ class SampleTest(unittest.TestCase):
         lambda_result = rule.lambda_handler(self.lambda_event, {})
         expected_response = [{'Annotation': 'EBS Snapshot: snap-0daeb11514fba831a is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-0daeb11514fba831a', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
         self.assertEqual(expected_response, lambda_result)
+
+
+class CompliantResourcesTest(unittest.TestCase):
+
+    # rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
+    # invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
+    lambda_event = {}
+
+    def setUp(self):
+        self.lambda_event = build_lambda_scheduled_event()
+        pass
+
+    def test_compliant_resources(self):
+        describe_snapshots_result = {'ResponseMetadata': {'HTTPHeaders': {'content-length': '227',
+                                     'content-type': 'text/xml;charset=UTF-8', 'date': 'Thu, 14 Mar 2019 12:36:41 GMT',
+                                     'server': 'AmazonEC2'}, 'HTTPStatusCode': 200, 'RequestId': 'example09-ecb6-407e-9053-e8sample5f',
+                                     'RetryAttempts': 0},'Snapshots': []}
+        ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
+        lambda_result = rule.lambda_handler(self.lambda_event, {})
+        expected_response = [{'Annotation': 'All EBS volumes compliant', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'N/A', 'ComplianceType': 'NOT_APPLICABLE', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
+        self.assertEqual(expected_response, lambda_result)
+
+
 
     #def test_sample_2(self):
     #    rule.ASSUME_ROLE_MODE = False
