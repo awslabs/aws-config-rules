@@ -7,6 +7,8 @@ except ImportError:
     from mock import MagicMock, patch, ANY
 import botocore
 from botocore.exceptions import ClientError
+import datetime
+from dateutil.tz import tzutc
 
 ##############
 # Parameters #
@@ -50,26 +52,94 @@ class SampleTest(unittest.TestCase):
 
     def test_boto3_error(self):
         describe_snapshots_result = {}
-        self.assertTrue(True)
+        ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
+        lambda_result = rule.lambda_handler(self.lambda_event, {})
+        expected_response = []
+        self.assertEqual(expected_response, lambda_result)
+
+    def describe_snapshots_side_effect(self, OwnerIds=None, RestorableByUserIds=None, MaxResults=None, NextToken=None):
+        next_token = "eyJ2IjoiMiIsImMiOiI4KzJzMnlVaU13WVRJdUJpSC91TjVwcFVhRmwyd3FzMFo2V3lOWTNPRi9tL3JUcVl2b3VIb2lZQ2tZNVJTWWc4c0lSWTRQVFdEbXdpY2tkWmRTRzViVElBT1RGQURQVG0rZ2FzcGVRMUJHQis3cG9RSEFNKy9rVWJ0Rnkyall4Qlg1N3ljWUs4ZDNCVnlvT0pud1NxR2d0RHJIMFZhYmJBTzRBc2NsRnowZEJhamRiYitHUmphUi9Jc3pEK04vS1ZDcnBaNjJDSzN4Rkw3QT09IiwicyI6IjEifQ=="
+        first_response = {'NextToken': '{}'.format(next_token),
+                          'ResponseMetadata': {'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8',
+                            'date': 'Fri, 15 Mar 2019 16:58:27 GMT',
+                            'server': 'AmazonEC2',
+                            'transfer-encoding': 'chunked',
+                            'vary': 'Accept-Encoding'},
+                           'HTTPStatusCode': 200,
+                           'RequestId': '9d292dca-1d15-48aa-886f-5821e15691f2',
+                           'RetryAttempts': 0},
+                           'Snapshots': [{'Description': 'hvm-ssd/ubuntu-tsample151007',
+                                          'Encrypted': False,
+                                          'OwnerId': '123456789012',
+                                          'Progress': '100%',
+                                          'SnapshotId': 'snap-9a0a02f7',
+                                          'StartTime': datetime.datetime(2015, 10, 8, 0, 46, 39, tzinfo=tzutc()),
+                                          'State': 'completed',
+                                          'VolumeId': 'vol-503ab6b0',
+                                          'VolumeSize': 8}]
+                         }
+        final_response = {'ResponseMetadata': {'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8',
+                          'date': 'Fri, 15 Mar 2019 16:55:26 GMT',
+                          'server': 'AmazonEC2',
+                          'transfer-encoding': 'chunked',
+                          'vary': 'Accept-Encoding'},
+                          'HTTPStatusCode': 200,
+                          'RequestId': 'fa2f8132-c8eb-46c3-b242-4example42a',
+                          'RetryAttempts': 0},
+                          'Snapshots': [{'Description': 'Copied for DestinationAmi ami.',
+                                        'Encrypted': False,
+                                        'OwnerId': '123456789012',
+                                        'Progress': '100%',
+                                        'SnapshotId': 'snap-0daeb11514fba831a',
+                                        'StartTime': datetime.datetime(2019, 3, 15, 14, 58, 48, 662000, tzinfo=tzutc()),
+                                        'State': 'completed',
+                                        'VolumeId': 'vol-ffffffff',
+                                        'VolumeSize': 99}]
+                          }
+        if((NextToken is None) and (OwnerIds[0]=='123456789012') and (RestorableByUserIds[0]=='all') and (MaxResults==1000)):
+            return(first_response)
+        elif(NextToken == next_token):
+            return(final_response)
 
     def test_compliant_resources(self):
         describe_snapshots_result = {'ResponseMetadata': {'HTTPHeaders': {'content-length': '227',
                                      'content-type': 'text/xml;charset=UTF-8', 'date': 'Thu, 14 Mar 2019 12:36:41 GMT',
                                      'server': 'AmazonEC2'}, 'HTTPStatusCode': 200, 'RequestId': 'example09-ecb6-407e-9053-e8sample5f',
                                      'RetryAttempts': 0},'Snapshots': []}
-        print("lambda_event: \n{}".format(self.lambda_event))
         ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
         lambda_result = rule.lambda_handler(self.lambda_event, {})
-        expected_result = [{'Annotation': 'All EBS volumes compliant', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'N/A', 'ComplianceType': 'NOT_APPLICABLE', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
-        self.assertEqual(expected_result, lambda_result)
+        expected_response = [{'Annotation': 'All EBS volumes compliant', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'N/A', 'ComplianceType': 'NOT_APPLICABLE', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
+        self.assertEqual(expected_response, lambda_result)
 
     def test_all_noncompliant_resources_with_pagination(self):
-        describe_snapshots_result = {}
-        self.assertTrue(True)
+        ec2_client_mock.describe_snapshots.side_effect = self.describe_snapshots_side_effect
+        lambda_result = rule.lambda_handler(self.lambda_event, {})
+        expected_result = [{'Annotation': 'EBS Snapshot: snap-9a0a02f7 is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-9a0a02f7', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}, {'Annotation': 'EBS Snapshot: snap-0daeb11514fba831a is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-0daeb11514fba831a', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
+        self.assertEqual(expected_result, lambda_result)
 
     def test_all_noncompliant_resources_without_pagination(self):
-        describe_snapshots_result = {}
-        self.assertTrue(True)
+        describe_snapshots_result = {'ResponseMetadata': {'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8',
+                                      'date': 'Fri, 15 Mar 2019 16:55:26 GMT',
+                                      'server': 'AmazonEC2',
+                                      'transfer-encoding': 'chunked',
+                                      'vary': 'Accept-Encoding'},
+                                      'HTTPStatusCode': 200,
+                                      'RequestId': 'fa2f8132-c8eb-46c3-b242-4example42a',
+                                      'RetryAttempts': 0},
+                                      'Snapshots': [{'Description': 'Copied for DestinationAmi ami.',
+                                                    'Encrypted': False,
+                                                    'OwnerId': '123456789012',
+                                                    'Progress': '100%',
+                                                    'SnapshotId': 'snap-0daeb11514fba831a',
+                                                    'StartTime': datetime.datetime(2019, 3, 15, 14, 58, 48, 662000, tzinfo=tzutc()),
+                                                    'State': 'completed',
+                                                    'VolumeId': 'vol-ffffffff',
+                                                    'VolumeSize': 99}]
+                          }
+        ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
+        lambda_result = rule.lambda_handler(self.lambda_event, {})
+        expected_response = [{'Annotation': 'EBS Snapshot: snap-0daeb11514fba831a is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-0daeb11514fba831a', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
+        self.assertEqual(expected_response, lambda_result)
 
     #def test_sample_2(self):
     #    rule.ASSUME_ROLE_MODE = False
