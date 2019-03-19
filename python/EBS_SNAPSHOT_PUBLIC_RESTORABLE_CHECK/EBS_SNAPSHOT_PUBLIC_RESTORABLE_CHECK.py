@@ -75,7 +75,7 @@ def get_public_snapshots(ec2_client, owner_id):
             next_token = snapshots_result['NextToken']
         else:
             next_token = None
-            return(True, snapshots) 
+            return(True, snapshots)
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     """Form the evaluation(s) to be return to Config Rules
@@ -100,10 +100,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
     # Add your custom logic here. #
     ###############################
-    owner_id = json.loads(event['invokingEvent'])['awsAccountId'] # Obtaining the AWS account ID
     ec2_client = get_client("ec2", event)
-    public_snapshots_list = []
-    public_snapshots_result = get_public_snapshots(ec2_client, owner_id)
+    public_snapshots_result = get_public_snapshots(ec2_client, json.loads(event['invokingEvent'])['awsAccountId'])
     if public_snapshots_result[0] is False:  # Error making API call
         return build_internal_error_response("Unexpected error while completing API request")
     public_snapshots_list = public_snapshots_result[1]
