@@ -1,0 +1,11 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "CLOUDFRONT_LOGGING_ENABLED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "CLOUDFRONT_LOGGING_ENABLED.zip",
+    "InputParameters": "{\"CentralLoggingBucket\": \"cloudfront-logs-bucket-here\"}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::CloudFront::Distribution"
+  }
+}

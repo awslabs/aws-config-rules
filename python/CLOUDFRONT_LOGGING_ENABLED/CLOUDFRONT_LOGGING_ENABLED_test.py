@@ -40,11 +40,11 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-rule = __import__('cf_logging_enabled')
+rule = __import__('CLOUDFRONT_LOGGING_ENABLED')
 
 class SampleTest(unittest.TestCase):
 
-    rule_parameters = '{\"CentralLoggingBucket\": \"cloudfrontlogs\"}'
+    rule_parameters = '{\"CentralLoggingBucket\": \"cloudfront-logs-bucket-here\"}'
 
     def setUp(self):
         pass
@@ -71,7 +71,7 @@ class SampleTest(unittest.TestCase):
         "configuration": {
             "distributionConfig": {
                 "logging": {
-                    "bucket":"cloudfrontlogs" + '.s3.amazonaws.com',
+                    "bucket":"cloudfront-logs-bucket-here" + '.s3.amazonaws.com',
                     "enabled": True
                 },
             },
@@ -123,7 +123,7 @@ class SampleTest(unittest.TestCase):
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:cloudfront::123456789012:distribution/E1NFJOWF2FZVA6', 'AWS::CloudFront::Distribution', 'Distribution is configured to store logs in an unauthorized bucket.'))
         assert_successful_evaluation(self, response, resp_expected)
-        
+
 ####################
 # Helper Functions #
 ####################
