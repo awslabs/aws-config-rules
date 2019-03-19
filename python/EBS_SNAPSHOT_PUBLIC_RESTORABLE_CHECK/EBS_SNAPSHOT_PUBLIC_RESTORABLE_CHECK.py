@@ -75,7 +75,6 @@ def get_public_snapshots(ec2_client, owner_id):
         if 'NextToken' in snapshots_result:  # If NextToken is present in snapshots_result, assign NextToken for next API call
             next_token = snapshots_result['NextToken']
         else:
-            next_token = None
             return(True, snapshots)
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
@@ -108,7 +107,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     public_snapshots_list = public_snapshots_result[1]
     if public_snapshots_result[0] is True:  # DescribeSnapshots API call successful
         if not public_snapshots_list:
-            return build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="All EBS volumes compliant")
+            return build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE)
         return generate_eval_list(public_snapshots_list, event)  # If public_snapshots_list is not empty, generate non-compliant response
 
 def evaluate_parameters(rule_parameters):
