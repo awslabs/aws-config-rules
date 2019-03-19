@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "iam-user-without-character-string",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "iam-user-without-character-string.zip",
+    "InputParameters": "{\"patternLst\":[\".*admin.*\"]}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::IAM::User"
+  },
+  "Tags": "[]"
+}
