@@ -59,6 +59,7 @@ def generate_eval_list(snapshots, event):
 def get_public_snapshots(ec2_client, owner_id):
     snapshots = []
     next_token = None
+    snapshots_result = {}
     while next_token is None or next_token:  # Checking if there is another token or its the first invocation
         try:
             if next_token is None:  # If next_token is None; make first call
