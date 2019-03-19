@@ -139,7 +139,7 @@ class CompliantResourcesTest(unittest.TestCase):
                                      'RetryAttempts': 0},'Snapshots': []}
         ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
         lambda_result = rule.lambda_handler(self.lambda_event, {})
-        expected_response = [{'Annotation': 'All EBS volumes compliant', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'N/A', 'ComplianceType': 'NOT_APPLICABLE', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
+        expected_response = [{'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'N/A', 'ComplianceType': 'NOT_APPLICABLE', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
         self.assertEqual(expected_response, lambda_result)
 
 
