@@ -65,7 +65,7 @@ def get_public_snapshots(ec2_client, owner_id):
             if next_token is None:  # If next_token is None; make first call
                 snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'], MaxResults=1000)
             else:  # Else use the NextToken to obtain next set of snapshots
-                snapshots_result = ec2_client.describe_snapshots(NextToken=next_token)
+                snapshots_result = ec2_client.describe_snapshots(NextToken=next_token, MaxResults=1000)
             if snapshots_result['ResponseMetadata']['HTTPStatusCode'] != 200:  # Check if API call was unsuccessful
                 return(False, snapshots)
         except Exception as boto3_exception:
