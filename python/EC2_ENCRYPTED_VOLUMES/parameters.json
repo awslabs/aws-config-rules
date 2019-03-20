@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.6",
     "CodeKey": "EC2_ENCRYPTED_VOLUMES.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{\"SubnetExceptionList\": \"\", \"InstanceExceptionList\": \"\", \"KmsIdList\": \"\"}",
+    "OptionalParameters": "{\"SubnetExceptionList\": \"\",\"KmsIdList\": \"\"}",
     "SourceEvents": "AWS::EC2::Instance"
   },
   "Tags": "[]"

@@ -8,6 +8,74 @@
 # or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
+'''
+#####################################
+##           Gherkin               ##
+#####################################
+
+Rule Name:
+  ec2-encrypted-volumes
+
+Description:
+  Check that all EBS volumes attached to an instance are encrypted.
+
+Trigger:
+  Configuration Change on AWS::EC2::Instance
+
+Reports on:
+  AWS::EC2::Instance
+
+Parameters:
+  | ----------------------|-----------|-----------------------------------------------|
+  | Parameter Name        | Type      | Description                                   |
+  |-----------------------|-----------|-----------------------------------------------|
+  | SubnetExceptionList   | Optional  | List the subnets exempted of encryption,      |
+  |                       |           | separated by comma (,).                       |
+  |-----------------------|-----------|-----------------------------------------------|
+
+Feature:
+    In order to: to protect the data confidentiality
+             As: a Security Officer
+         I want: To ensure that EBS volumes attached to Instances are encrypted.
+
+Scenarios:
+    Scenario 1:
+      Given: the SubnetExceptionList parameter is not starting with "subnet-" and followed by alphanumerical lower case
+       Then: return an Error
+
+    Scenario 2:
+      Given: the Instance has one or more volumes attached which are not encrypted.
+        And: the EC2 instance's subnet is not in SubnetExceptionList.
+       Then: return NON_COMPLIANT
+
+    Scenario 3:
+      Given: the Instance has one or more volumes attached which are encrypted.
+        And: the EC2 instance's subnet is not in SubnetExceptionList.
+       Then: return COMPLIANT
+
+    Scenario 4:
+      Given: the Instance has one or more volumes attached which are encrypted.
+        And: the Instance has one or more volumes attached which are not encrypted.
+        And: the EC2 instance's subnet is not in SubnetExceptionList.
+       Then: return NON_COMPLIANT
+
+    Scenario 5:
+      Given: the Instance has one or more volumes attached which are not encrypted.
+        And: the EC2 instance's subnet is in SubnetExceptionList.
+       Then: return COMPLIANT
+
+    Scenario 6:
+      Given: the Instance has one or more volumes attached which are encrypted.
+        And: the EC2 instance's subnet is in SubnetExceptionList.
+       Then: return COMPLIANT
+
+    Scenario 7:
+      Given: the Instance has one or more volumes attached which are encrypted.
+        And: the Instance has one or more volumes attached which are not encrypted.
+        And: the EC2 instance's subnet is in SubnetExceptionList.
+       Then: return COMPLIANT
+
+'''
 
 import json
 import sys
@@ -38,41 +106,37 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 # Compliance Evaluation Helper Functions
-def get_subnet_id(instance_id, event):
+def get_subnet_id(configuration_item):
     subnet_id_list = []
-    ec2_client = get_client('ec2', event)
-    all_instances = ec2_client.describe_instances(InstanceIds=[instance_id])
-    for reservation in all_instances['Reservations']:
-        for instance in reservation['Instances']:
-            if 'NetworkInterfaces' in instance:
-                for network in instance['NetworkInterfaces']:
-                    subnet_id_list.append(network['SubnetId'])
+    for relationship in configuration_item['relationships']:
+        if relationship['resourceType'] == 'AWS::EC2::Subnet':
+            subnet_id_list.append(relationship['resourceId'])
     return subnet_id_list
 
 def is_in_subnet_exception_list(configuration_item, subnet_exception_list, event):
-    if 'attachments' in configuration_item['configuration']:
-        for attachment in configuration_item['configuration']['attachments']:
-            if 'instanceId' in attachment:
-                subnet_id_list = get_subnet_id(attachment['instanceId'], event)
-                if subnet_id_list:
-                    for subnet_id in subnet_id_list:
-                        if subnet_id in subnet_exception_list:
-                            return True
+    subnet_id_list = get_subnet_id(configuration_item)
+    for subnet_id in subnet_id_list:
+        if subnet_id in subnet_exception_list:
+            return True
     return False
 
-def get_ebs_volumes(event):
-    invoking_event = json.loads(event['invokingEvent'])
+def get_ebs_volumes(configuration_item, event):
     volumeIds = []
-    for relationship in invoking_event['configurationItem']['relationships']:
+    for relationship in configuration_item['relationships']:
         if relationship['resourceType'] == 'AWS::EC2::Volume':
             volumeIds.append(relationship['resourceId'])
-    return volumeIds
-
-def is_ebs_volume_encrypted(volumeIds, event):
     ec2_client = get_client('ec2', event)
-    volumes = ec2_client.describe_volumes(VolumeIds=volumeIds)['Volumes']
+    return ec2_client.describe_volumes(VolumeIds=volumeIds)['Volumes']
+
+def is_ebs_volume_encrypted(volumes):
     for volume in volumes:
         if volume['Encrypted'] == False:
+            return False
+    return True
+
+def is_in_kmsid_list(volumes, kmsIdList):
+    for volume in volumes:
+        if volume['KmsKeyId'].split('/')[1] not in kmsIdList:
             return False
     return True
 
@@ -101,17 +165,23 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             return build_evaluation_from_config_item(
                 configuration_item,
                 'COMPLIANT',
-                'This EBS volume is attached to an EC2 instance in a subnet which is part the exception list.')
+                'The instance is attached to a subnet which is listed in the parameter SubnetExceptionList.')
 
-    volumeIds = get_ebs_volumes(event)
+    volumes = get_ebs_volumes(configuration_item, event)
 
-    if is_ebs_volume_encrypted(volumeIds, event):
+    if is_ebs_volume_encrypted(volumes):
+        if 'KmsIdList' in valid_rule_parameters:
+            if is_in_kmsid_list(volumes, valid_rule_parameters['KmsIdList']) == False:
+                return build_evaluation_from_config_item(
+                    configuration_item,
+                    'NON_COMPLIANT',
+                    'EBS volumes attached to this instance are encrypted, but not with a KMS Key listed in the parameter KmsIdList.')
         return build_evaluation_from_config_item(
             configuration_item,
             'COMPLIANT',
             'The EBS volumes attached to this instance are encrypted.')
 
-    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT')
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'One or more EBS volumes attached to this instance are unencrypted.')
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
@@ -132,6 +202,9 @@ def evaluate_parameters(rule_parameters):
             raise ValueError('Invalid Subnet ID specified: {}'.format(sub_exception_list_check[1]))
         valid_rule_parameters['SubnetExceptionList'] = sub_exception_list
 
+    if 'KmsIdList' in rule_parameters:
+        kmsid_exception_list = rule_parameters['KmsIdList'].split(',')
+        valid_rule_parameters['KmsIdList'] = kmsid_exception_list
     return valid_rule_parameters
 
 ####################
@@ -350,7 +423,6 @@ def lambda_handler(event, context):
     rule_parameters = {}
     if 'ruleParameters' in event:
         rule_parameters = json.loads(event['ruleParameters'])
-
     try:
         valid_rule_parameters = evaluate_parameters(rule_parameters)
     except ValueError as ex:
