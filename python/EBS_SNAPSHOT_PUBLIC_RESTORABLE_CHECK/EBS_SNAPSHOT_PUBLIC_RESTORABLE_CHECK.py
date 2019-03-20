@@ -106,9 +106,9 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         return build_internal_error_response("Unexpected error while completing API request")
     public_snapshots_list = public_snapshots_result[1]
     if public_snapshots_result[0] is True:  # DescribeSnapshots API call successful
-        if not public_snapshots_list:
+        if not public_snapshots_result[1]:
             return build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE)
-        return generate_eval_list(public_snapshots_list, event)  # If public_snapshots_list is not empty, generate non-compliant response
+        return generate_eval_list(public_snapshots_result[1], event)  # If public_snapshots_list is not empty, generate non-compliant response
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
