@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "AMI_NOT_PUBLIC_CHECK",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "AMI_NOT_PUBLIC_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "Six_Hours"
+  },
+  "Tags": "[]"
+}
