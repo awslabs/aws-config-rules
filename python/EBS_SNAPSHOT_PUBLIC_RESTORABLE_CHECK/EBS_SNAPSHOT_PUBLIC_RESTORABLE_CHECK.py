@@ -49,6 +49,7 @@ ASSUME_ROLE_MODE = False
 # Main Code #
 #############
 
+# Function to generate evaluations for all non compliant resources
 def generate_eval_list(snapshots, event):
     evaluations = []
     for snapshot in snapshots:  # Looping through all available snapshots
@@ -56,6 +57,7 @@ def generate_eval_list(snapshots, event):
         evaluations.append(evaluation)
     return evaluations
 
+# Function to obtain all public snapshots
 def get_public_snapshots(ec2_client, owner_id):
     snapshots = []
     next_token = None

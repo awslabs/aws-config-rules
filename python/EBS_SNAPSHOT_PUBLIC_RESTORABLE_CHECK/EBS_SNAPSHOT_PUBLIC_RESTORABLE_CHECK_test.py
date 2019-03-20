@@ -40,7 +40,7 @@ sys.modules['boto3'] = Boto3Mock()
 
 rule = __import__('EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK')
 
-
+# Checks for scenario wherein non-compliant resources are present
 class NonCompliantResourcesTest(unittest.TestCase):
     lambda_event = {}
 
@@ -92,41 +92,15 @@ class NonCompliantResourcesTest(unittest.TestCase):
         elif(NextToken == next_token):
             return(final_response)
 
+# Checks for scenario wherein non-compliant resources are present and pagination exists
     def test_all_noncompliant_resources_with_pagination(self):
         ec2_client_mock.describe_snapshots.side_effect = self.describe_snapshots_side_effect
         lambda_result = rule.lambda_handler(self.lambda_event, {})
         expected_result = [{'Annotation': 'EBS Snapshot: snap-9a0a02f7 is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-9a0a02f7', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}, {'Annotation': 'EBS Snapshot: snap-0daeb11514fba831a is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-0daeb11514fba831a', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
         self.assertEqual(expected_result, lambda_result)
 
-    # def test_all_noncompliant_resources_without_pagination(self):
-    #     describe_snapshots_result = {'ResponseMetadata': {'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8',
-    #                                   'date': 'Fri, 15 Mar 2019 16:55:26 GMT',
-    #                                   'server': 'AmazonEC2',
-    #                                   'transfer-encoding': 'chunked',
-    #                                   'vary': 'Accept-Encoding'},
-    #                                   'HTTPStatusCode': 200,
-    #                                   'RequestId': 'fa2f8132-c8eb-46c3-b242-4example42a',
-    #                                   'RetryAttempts': 0},
-    #                                   'Snapshots': [{'Description': 'Copied for DestinationAmi ami.',
-    #                                                 'Encrypted': False,
-    #                                                 'OwnerId': '123456789012',
-    #                                                 'Progress': '100%',
-    #                                                 'SnapshotId': 'snap-0daeb11514fba831a',
-    #                                                 'StartTime': datetime.datetime(2019, 3, 15, 14, 58, 48, 662000, tzinfo=tzutc()),
-    #                                                 'State': 'completed',
-    #                                                 'VolumeId': 'vol-ffffffff',
-    #                                                 'VolumeSize': 99}]
-    #                       }
-    #     ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
-    #     lambda_result = rule.lambda_handler(self.lambda_event, {})
-    #     expected_response = [{'Annotation': 'EBS Snapshot: snap-0daeb11514fba831a is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-0daeb11514fba831a', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
-    #     self.assertEqual(expected_response, lambda_result)
-
-
+# Checks for scenario wherein no non-compliant resources are present
 class CompliantResourcesTest(unittest.TestCase):
-
-    # rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
-    # invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
     lambda_event = {}
 
     def setUp(self):
@@ -143,6 +117,7 @@ class CompliantResourcesTest(unittest.TestCase):
         expected_response = [{'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'N/A', 'ComplianceType': 'NOT_APPLICABLE', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
         self.assertEqual(expected_response, lambda_result)
 
+# Checks for scenario wherein API call returns an error
 class APIErrorTest(unittest.TestCase):
     lambda_event = {}
 
