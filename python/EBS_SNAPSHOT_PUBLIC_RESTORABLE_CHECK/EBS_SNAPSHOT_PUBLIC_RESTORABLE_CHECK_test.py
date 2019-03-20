@@ -96,8 +96,12 @@ class NonCompliantResourcesTest(unittest.TestCase):
     def test_all_noncompliant_resources_with_pagination(self):
         ec2_client_mock.describe_snapshots.side_effect = self.describe_snapshots_side_effect
         lambda_result = rule.lambda_handler(self.lambda_event, {})
-        expected_result = [{'Annotation': 'EBS Snapshot: snap-9a0a02f7 is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-9a0a02f7', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}, {'Annotation': 'EBS Snapshot: snap-0daeb11514fba831a is public', 'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'snap-0daeb11514fba831a', 'ComplianceType': 'NON_COMPLIANT', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
-        self.assertEqual(expected_result, lambda_result)
+        expected_response = [build_expected_response(compliance_type='NON_COMPLIANT',
+                                                    compliance_resource_id='snap-9a0a02f7',
+                                                    compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='EBS Snapshot: snap-9a0a02f7 is public'),
+                            build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='snap-0daeb11514fba831a',
+                                                    compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='EBS Snapshot: snap-0daeb11514fba831a is public')]
+        assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
 # Checks for scenario wherein no non-compliant resources are present
 class CompliantResourcesTest(unittest.TestCase):
@@ -114,8 +118,9 @@ class CompliantResourcesTest(unittest.TestCase):
                                      'RetryAttempts': 0},'Snapshots': []}
         ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
         lambda_result = rule.lambda_handler(self.lambda_event, {})
-        expected_response = [{'ComplianceResourceType': 'AWS::::Account', 'ComplianceResourceId': 'N/A', 'ComplianceType': 'NOT_APPLICABLE', 'OrderingTimestamp': '2017-12-23T22:11:18.158Z'}]
-        self.assertEqual(expected_response, lambda_result)
+        expected_response = [build_expected_response(compliance_type='NOT_APPLICABLE',
+                                                    compliance_resource_id='N/A', compliance_resource_type=DEFAULT_RESOURCE_TYPE)]
+        assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
 # Checks for scenario wherein API call returns an error
 class APIErrorTest(unittest.TestCase):
