@@ -1,5 +1,6 @@
 import sys
 import unittest
+import json
 try:
     from unittest.mock import MagicMock
 except ImportError:
@@ -13,7 +14,7 @@ from botocore.exceptions import ClientError
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::EC2::Instance'
 
 #############
 # Main Code #
@@ -21,6 +22,7 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
+EC2_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
@@ -28,12 +30,14 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         elif client_name == 'sts':
             return STS_CLIENT_MOCK
+        elif client_name == 'ec2':
+            return EC2_CLIENT_MOCK
         else:
             raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('EC2_ENCRYPTED_VOLUMES')
+rule = __import__('EC2_ENCRYPTED_VOLUMES')
 
 def getRuleParameters(validity, paramName=None):
     validParameters = {
@@ -59,35 +63,69 @@ def getRuleParameters(validity, paramName=None):
             return invalidKmsKeyIdParams
     return validParameters
 
-def constructConfiguration(encrypted, volumeId, kmsKeyId=None, attachments=''):
+def constructConfiguration(instanceId):
     return {
-        "encrypted":encrypted,
-        "kmsKeyId":kmsKeyId,
-        "volumeId":volumeId,
-        "attachments":attachments
+        # "encrypted":encrypted,
+        # "kmsKeyId":kmsKeyId,
+        "instanceId":instanceId,
+        # "relationships":relationships
     }
 
-def constructConfigItem(configuration, volumeId):
+def constructConfigItem(configuration, instanceId, subnet):
     configItem = {
-        'relatedEvents': [],
-        'relationships': [],
-        'configuration': configuration,
-        'configurationItemVersion': "1.3",
-        'configurationItemCaptureTime': "2018-07-02T03:37:52.418Z",
-        'supplementaryConfiguration': {},
-        'configurationStateId': 1532049940079,
-        'awsAccountId': "SAMPLE",
-        'configurationItemStatus': "ResourceDiscovered",
-        'resourceType': "AWS::EC2::Volume",
-        'resourceId': volumeId,
-        'resourceName': None,
-        'ARN': "arn:aws:ec2:ap-south-1:822333706:volume/{}".format(volumeId),
-        'awsRegion': "ap-south-1",
-        'configurationStateMd5Hash': "",
-        'resourceCreationTime': "2018-07-19T06:27:28.289Z",
-        'tags': {}
+        "relatedEvents": [],
+        "relationships": [
+            {
+              "resourceId": "vol-123",
+              "resourceName": "vol-123",
+              "resourceType": "AWS::EC2::Volume",
+              "name": "Is attached to Volume"
+            },
+            {
+              "resourceId": "vol-234",
+              "resourceName": "vol-234",
+              "resourceType": "AWS::EC2::Volume",
+              "name": "Is attached to Volume"
+            },
+            {
+              "resourceId": subnet,
+              "resourceName": subnet,
+              "resourceType": "AWS::EC2::Subnet",
+              "name": "Is attached to Volume"
+            }],
+        "configuration": configuration,
+        "configurationItemVersion": "1.3",
+        "configurationItemCaptureTime": "2018-07-02T03:37:52.418Z",
+        "supplementaryConfiguration": {},
+        "configurationStateId": 1532049940079,
+        "awsAccountId": "SAMPLE",
+        "configurationItemStatus": "ResourceDiscovered",
+        "resourceType": "AWS::EC2::Instance",
+        "resourceId": instanceId,
+        "resourceName": None,
+        "ARN": "arn:aws:ec2:us-east-1:822333706:instance/{}".format(instanceId),
+        "awsRegion": "us-east-1",
+        "configurationStateMd5Hash": "",
+        "resourceCreationTime": "2018-07-19T06:27:28.289Z",
+        "tags": {}
     }
     return configItem
+
+def constructEbsResponse(encrypted):
+    ebsConfig = {
+        'Volumes': [
+            {
+                'Encrypted': encrypted,
+                'KmsKeyId': 'arn:aws:kms:region-all-1:123456798877:key/415ee9cc-9beb-4217-bec8-45cabmfrbee6f',
+                'VolumeId': 'vol-123'
+            },
+            {
+                'Encrypted': True,
+                'KmsKeyId': 'arn:aws:kms:region-all-1:123456798877:key/415ee9cc-9beb-4217-bec8-45cabmfrbee6f',
+                'VolumeId': 'vol-234'
+            }
+            ]}
+    return ebsConfig
 
 def constructInvokingEvent(configItem):
     invokingEvent = {
@@ -97,22 +135,22 @@ def constructInvokingEvent(configItem):
         "messageType": "ConfigurationItemChangeNotification",
         "recordVersion": "SAMPLE"
     }
-    return invokingEvent
+    return json.dumps(invokingEvent)
 
 class InvalidParametersTest(unittest.TestCase):
 
     def test_Scenario_1_invalid_subnetParameters(self):
-        params = {"SubnetExceptionList": "aaasssubnet-02,subnet03edfy45,dhu47dh-subnet"}
-        configuration = constructConfiguration(encrypted=True, kmsKeyId='sdf434-dsvfb3-4545-dfvfdv', volumeId="vol-w4t4434")
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "volumeId"))
+        params = json.dumps({"SubnetExceptionList": "aaasssubnet-02,subnet03edfy45,dhu47dh-subnet"})
+        configuration = constructConfiguration(instanceId="instance-1234")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "instance-1234", "subnet-1"))
         lambdaEvent = build_lambda_configurationchange_event(invoking_event=invoking_event, rule_parameters=params)
         response = rule.lambda_handler(lambdaEvent, {})
         assert_customer_error_response(self, response, 'InvalidParameterValueException')
 
     def test_Scenario_2_invalid_kmsKeyParameters(self):
-        params = {"KmsIdList": "-1,s30c-du4-3erdft-"}
-        configuration = constructConfiguration(encrypted=True, kmsKeyId='sdf434-dsvfb3-4545-dfvfdv', volumeId="vol-w4t4434")
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "volumeId"))
+        params = json.dumps({"KmsIdList": "-1,s30c-du4-3erdft-"})
+        configuration = constructConfiguration(instanceId="instance-1234")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "instance-1234", "subnet-1"))
         lambdaEvent = build_lambda_configurationchange_event(invoking_event=invoking_event, rule_parameters=params)
         response = rule.lambda_handler(lambdaEvent, {})
         assert_customer_error_response(self, response, 'InvalidParameterValueException')
@@ -120,160 +158,111 @@ class InvalidParametersTest(unittest.TestCase):
 
 class ComplianceTest(unittest.TestCase):
 
-    def test_Scenario_3_volumeencrypted_noSubnetListparam(self):
-        rule_parameters = {"VolumeExceptionList": "vol-0003", "SubnetExceptionList": "subnet-01"}
-        configuration = constructConfiguration(encrypted=True, kmsKeyId='sdf434-dsvfb3-4545-dfvfdv', volumeId="vol-01")
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-01"))
-        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
-        response = rule.lambda_handler(event, {})
-        resp_expected = []
-        resp_expected.append(build_expected_response(
-            'COMPLIANT',
-            'vol-01'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-
-    def test_Scenario_4_volumeencrypted_noKMSparam(self):
-        rule_parameters = {"VolumeExceptionList": "vol-0003", "SubnetExceptionList": "subnet-01"}
-        configuration = constructConfiguration(encrypted=True, kmsKeyId='sdf434-dsvfb3-4545-dfvfdv', volumeId="vol-01")
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-01"))
-        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
-        response = rule.lambda_handler(event, {})
-        resp_expected = []
-        resp_expected.append(build_expected_response(
-            'COMPLIANT',
-            'vol-01'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    def test_Scenario_5_volumeNOTencrypted_noKMSparam(self):
-        rule_parameters = {"VolumeExceptionList": "vol-0003", "SubnetExceptionList": "subnet-01"}
-        configuration = constructConfiguration(encrypted=False, volumeId="vol-01")
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-01"))
-        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
+    def test_Scenario_3_volumeNOTencrypted_noParams(self):
+        EC2_CLIENT_MOCK.describe_volumes = MagicMock(return_value=constructEbsResponse(encrypted=False))
+        rule_parameters = {}
+        configuration = constructConfiguration(instanceId="instance-1234")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "instance-1234", "subnet-1"))
+        event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_parameters)
         response = rule.lambda_handler(event, {})
         resp_expected = []
         resp_expected.append(build_expected_response(
             'NON_COMPLIANT',
-            'vol-01'))
+            'instance-1234',
+            'AWS::EC2::Instance',
+            'One or more EBS volumes attached to this instance are unencrypted.'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_Scenario_7_volumeencrypted_KMSKeyInvalid(self):
-        rule_parameters = getRuleParameters(True, '')
-        configuration = constructConfiguration(
-            encrypted=True,
-            kmsKeyId='arn:aws:kms:region-all-1:123456798877:key/sdf434-dsvfb3-4545-dfvfdv',
-            volumeId="vol-02")
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-02"))
-        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
+
+    def test_Scenario_4_volumesencrypted_noParams(self):
+        EC2_CLIENT_MOCK.describe_volumes = MagicMock(return_value=constructEbsResponse(encrypted=True))
+        rule_parameters = {}
+        configuration = constructConfiguration(instanceId="instance-1234")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "instance-1234", "subnet-1"))
+        event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_parameters)
+        response = rule.lambda_handler(event, {})
+        resp_expected = []
+        resp_expected.append(build_expected_response(
+            'COMPLIANT',
+            'instance-1234',
+            'AWS::EC2::Instance',
+            'The EBS volumes attached to this instance are encrypted.'))
+        assert_successful_evaluation(self, response, resp_expected)
+
+
+    def test_Scenario_5_volumeNOTencrypted_notInParams(self):
+        EC2_CLIENT_MOCK.describe_volumes = MagicMock(return_value=constructEbsResponse(encrypted=False))
+        rule_parameters = json.dumps({"SubnetExceptionList": "subnet-2"})
+        configuration = constructConfiguration(instanceId="instance-1234")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "instance-1234", "subnet-1"))
+        event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_parameters)
         response = rule.lambda_handler(event, {})
         resp_expected = []
         resp_expected.append(build_expected_response(
             'NON_COMPLIANT',
-            'vol-02',
-            annotation='This EBS volume is encrypted, but not with a KMS Key listed in the parameter KmsIdList.'))
+            'instance-1234',
+            'AWS::EC2::Instance',
+            'One or more EBS volumes attached to this instance are unencrypted.'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_Scenario_8_volumeencrypted_KMSKeyValid(self):
-        rule_parameters = getRuleParameters(True, '')
-        configuration = constructConfiguration(
-            encrypted=True,
-            kmsKeyId='arn:aws:kms:region-all-1:123456798877:key/415ee9cc-9beb-4217-bec8-45cabmfrbee6f',
-            volumeId="vol-02")
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-02"))
-        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
+    def test_Scenario_6_volumeNOTencrypted_inSubnetList(self):
+        EC2_CLIENT_MOCK.describe_volumes = MagicMock(return_value=constructEbsResponse(encrypted=False))
+        rule_parameters = json.dumps({"SubnetExceptionList": "subnet-1"})
+        configuration = constructConfiguration(instanceId="instance-1234")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "instance-1234", "subnet-1"))
+        event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_parameters)
         response = rule.lambda_handler(event, {})
         resp_expected = []
         resp_expected.append(build_expected_response(
             'COMPLIANT',
-            'vol-02'))
+            'instance-1234',
+            'AWS::EC2::Instance',
+            'The instance is attached to a subnet which is listed in the parameter SubnetExceptionList.'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_Scenario_9_volumeSubnetinSubnetExceptionList(self):
-        ec2_mock.describe_instances = MagicMock(return_value={"Reservations":[{"Instances":[{"NetworkInterfaces":[{"SubnetId":"subnet-02"}]}]}]})
-        rule_parameters = {
-            "VolumeExceptionList": "vol-0003",
-            "SubnetExceptionList": "subnet-02",
-            "KmsIdList": "115ff9cc-9beb-4517-bec8-45cabmfrbee6f"
-        }
-        configuration = constructConfiguration(encrypted=False, volumeId="vol-01", attachments=[{"instanceId":"i-02"}])
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-01"))
-        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
-        response = rule.lambda_handler(event, {})
-        resp_expected = []
-        resp_expected.append(build_expected_response(
-            'COMPLIANT',
-            'vol-01',
-            annotation='This EBS volume is attached to an EC2 instance in a subnet which is part the exception list.'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    def test_Scenario_10_volumeNotEncrSubnetNotinSubnetList(self):
-        ec2_mock.describe_instances = MagicMock(return_value={"Reservations":[{"Instances":[{"SubnetId":"subnet-02"}]}]})
-        rule_parameters = getRuleParameters(True, '')
-        configuration = constructConfiguration(encrypted=False, volumeId="vol-02", attachments=[{"instanceId":"i-02"}])
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-02"))
-        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
+    def test_Scenario_7_volumeencrypted_notInKmsIdList(self):
+        EC2_CLIENT_MOCK.describe_volumes = MagicMock(return_value=constructEbsResponse(encrypted=True))
+        rule_parameters = json.dumps({"KmsIdList": "515ee9cc-9beb-4217-bec8-45cabmfrbee66"})
+        configuration = constructConfiguration(instanceId="instance-1234")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "instance-1234", "subnet-1"))
+        event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_parameters)
         response = rule.lambda_handler(event, {})
         resp_expected = []
         resp_expected.append(build_expected_response(
             'NON_COMPLIANT',
-            'vol-02'))
+            'instance-1234',
+            'AWS::EC2::Instance',
+            'EBS volumes attached to this instance are encrypted, but not with a KMS Key listed in the parameter KmsIdList.'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_Scenario_11_volumeEncryptedNoKMSNoSubnetExceptionNoVolumeException(self):
-        ec2_mock.describe_instances = MagicMock(return_value={"Reservations":[{"Instances":[{"SubnetId":"subnet-02"}]}]})
-        rule_parameters = {"VolumeExceptionList": "vol-0003", "SubnetExceptionList": "subnet-01"}
-        configuration = constructConfiguration(
-            encrypted=True,
-            kmsKeyId='arn:aws:kms:region-all-1:123456798877:key/415ee9cc-9beb-4217-bec8-45cabmfrbee6f',
-            volumeId="vol-02",
-            attachments=[{"instanceId":"i-02"}])
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-02"))
-        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
+    def test_Scenario_8_volumeencrypted_inSubnetList(self):
+        EC2_CLIENT_MOCK.describe_volumes = MagicMock(return_value=constructEbsResponse(encrypted=True))
+        rule_parameters = json.dumps({"SubnetExceptionList": "subnet-1", "KmsIdList": "515ee9cc-9beb-4217-bec8-45cabmfrbee66"})
+        configuration = constructConfiguration(instanceId="instance-1234")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "instance-1234", "subnet-1"))
+        event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_parameters)
         response = rule.lambda_handler(event, {})
         resp_expected = []
         resp_expected.append(build_expected_response(
             'COMPLIANT',
-            'vol-02'))
+            'instance-1234',
+            'AWS::EC2::Instance',
+            'The instance is attached to a subnet which is listed in the parameter SubnetExceptionList.'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_Scenario_12_volumeEncryptedNotWithProperKMSNoSubnetExceptionNoVolumeException(self):
-        ec2_mock.describe_instances = MagicMock(return_value={"Reservations":[{"Instances":[{"SubnetId":"subnet-02"}]}]})
-        rule_parameters = {
-            "VolumeExceptionList": "vol-0003",
-            "SubnetExceptionList": "subnet-01",
-            "KmsIdList": "115ff9cc-9beb-4517-bec8-45cabmfrbee6f"
-        }
-        configuration = constructConfiguration(
-            encrypted=True,
-            kmsKeyId='arn:aws:kms:region-all-1:123456798877:key/415ee9cc-9beb-4217-bec8-45cabmfrbee6f',
-            volumeId="vol-02",
-            attachments=[{"instanceId":"i-02"}])
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-02"))
-        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
-        response = rule.lambda_handler(event, {})
-        resp_expected = []
-        resp_expected.append(build_expected_response(
-            'NON_COMPLIANT',
-            'vol-02',
-            annotation='This EBS volume is encrypted, but not with a KMS Key listed in the parameter KmsIdList.'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    def test_Scenario_13_volumeEncryptedWithProperKMSNoSubnetExceptionNoVolumeException(self): #Scenario13
-        ec2_mock.describe_instances = MagicMock(return_value={"Reservations":[{"Instances":[{"SubnetId":"subnet-02"}]}]})
-        rule_parameters = getRuleParameters(True, '')
-        configuration = constructConfiguration(
-            encrypted=True,
-            kmsKeyId='arn:aws:kms:region-all-1:123456798877:key/415ee9cc-9beb-4217-bec8-45cabmfrbee6f',
-            volumeId="vol-02",
-            attachments=[{"instanceId":"i-02"}]
-        )
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-02asd"))
-        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
+    def test_Scenario_9_volumeencrypted_inKmsIdList(self):
+        EC2_CLIENT_MOCK.describe_volumes = MagicMock(return_value=constructEbsResponse(encrypted=True))
+        rule_parameters = json.dumps({"KmsIdList": "415ee9cc-9beb-4217-bec8-45cabmfrbee6f"})
+        configuration = constructConfiguration(instanceId="instance-1234")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "instance-1234", "subnet-1"))
+        event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_parameters)
         response = rule.lambda_handler(event, {})
         resp_expected = []
         resp_expected.append(build_expected_response(
             'COMPLIANT',
-            'vol-02asd'))
+            'instance-1234',
+            'AWS::EC2::Instance',
+            'The EBS volumes attached to this instance are encrypted.'))
         assert_successful_evaluation(self, response, resp_expected)
 
 ####################
@@ -369,17 +358,17 @@ def sts_mock():
 class TestStsErrors(unittest.TestCase):
 
     def test_sts_unknown_error(self):
-        RULE.ASSUME_ROLE_MODE = True
+        rule.ASSUME_ROLE_MODE = True
         STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
-        response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
             self, response, 'InternalError', 'InternalError')
 
     def test_sts_access_denied(self):
-        RULE.ASSUME_ROLE_MODE = True
+        rule.ASSUME_ROLE_MODE = True
         STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
-        response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
             self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')
