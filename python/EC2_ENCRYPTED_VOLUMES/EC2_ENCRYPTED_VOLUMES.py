@@ -32,6 +32,9 @@ Parameters:
   | SubnetExceptionList   | Optional  | List the subnets exempted of encryption,      |
   |                       |           | separated by comma (,).                       |
   |-----------------------|-----------|-----------------------------------------------|
+  | KmsIdList             | Optional  | List of ID of the KMS keys that is used to    |
+  |                       |           | encrypt the volume, separated by comma (,).   |
+  | ----------------------|-----------|---------------------------------------------- |
 
 Feature:
     In order to: to protect the data confidentiality
@@ -44,36 +47,50 @@ Scenarios:
        Then: return an Error
 
     Scenario 2:
-      Given: the Instance has one or more volumes attached which are not encrypted.
-        And: the EC2 instance's subnet is not in SubnetExceptionList.
-       Then: return NON_COMPLIANT
+      Given: the KmsIdList parameter contains values which are not valid
+       Then: return an Error
 
     Scenario 3:
-      Given: the Instance has one or more volumes attached which are encrypted.
-        And: the EC2 instance's subnet is not in SubnetExceptionList.
-       Then: return COMPLIANT
+      Given: the Instance has one or more volumes attached which are not encrypted.
+        And: the SubnetExceptionList parameter is not defined.
+        And: the KmsIdList parameter is not defined.
+       Then: return NON_COMPLIANT
 
     Scenario 4:
-      Given: the Instance has one or more volumes attached which are encrypted.
-        And: the Instance has one or more volumes attached which are not encrypted.
-        And: the EC2 instance's subnet is not in SubnetExceptionList.
-       Then: return NON_COMPLIANT
+      Given: all volumes attached to the Instance are encrypted.
+        And: the SubnetExceptionList parameter is not defined.
+        And: the KmsIdList parameter is not defined.
+       Then: return COMPLIANT
 
     Scenario 5:
       Given: the Instance has one or more volumes attached which are not encrypted.
-        And: the EC2 instance's subnet is in SubnetExceptionList.
-       Then: return COMPLIANT
+        And: the EC2 instance's subnet is not in SubnetExceptionList parameter.
+        And: the EBS volumes KMS ID is not in the KmsIdList.
+       Then: return NON_COMPLIANT
 
     Scenario 6:
-      Given: the Instance has one or more volumes attached which are encrypted.
-        And: the EC2 instance's subnet is in SubnetExceptionList.
+      Given: the Instance has one or more volumes attached which are not encrypted.
+        And: the EC2 instance's subnet is in SubnetExceptionList parameter.
+        And: the EBS volumes KMS ID is not in the KmsIdList.
        Then: return COMPLIANT
 
     Scenario 7:
-      Given: the Instance has one or more volumes attached which are encrypted.
-        And: the Instance has one or more volumes attached which are not encrypted.
-        And: the EC2 instance's subnet is in SubnetExceptionList.
-       Then: return COMPLIANT
+     Given: all volumes attached to the Instance are encrypted.
+       And: the EC2 instance's subnet is not in SubnetExceptionList parameter.
+       And: the EBS volumes KMS ID is not in the KmsIdList.
+      Then: return NON_COMPLIANT
+
+    Scenario 8:
+     Given: all volumes attached to the Instance are encrypted.
+       And: the EC2 instance's subnet is in SubnetExceptionList parameter.
+       And: the EBS volumes KMS ID is not in the KmsIdList.
+      Then: return COMPLIANT
+
+    Scenario 9:
+     Given: all volumes attached to the Instance are encrypted.
+       And: the EC2 instance's subnet is not in SubnetExceptionList parameter.
+       And: the EBS volumes KMS ID is in the KmsIdList.
+      Then: return COMPLIANT
 
 '''
 

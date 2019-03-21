@@ -101,15 +101,7 @@ def constructInvokingEvent(configItem):
 
 class InvalidParametersTest(unittest.TestCase):
 
-    def test_Scenario_1_invalid_kmsKeyParameters(self):
-        params = {"KmsIdList": "-1,s30c-du4-3erdft-"}
-        configuration = constructConfiguration(encrypted=True, kmsKeyId='sdf434-dsvfb3-4545-dfvfdv', volumeId="vol-w4t4434")
-        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "volumeId"))
-        lambdaEvent = build_lambda_configurationchange_event(invoking_event=invoking_event, rule_parameters=params)
-        response = rule.lambda_handler(lambdaEvent, {})
-        assert_customer_error_response(self, response, 'InvalidParameterValueException')
-
-    def test_Scenario_3_invalid_subnetParameters(self):
+    def test_Scenario_1_invalid_subnetParameters(self):
         params = {"SubnetExceptionList": "aaasssubnet-02,subnet03edfy45,dhu47dh-subnet"}
         configuration = constructConfiguration(encrypted=True, kmsKeyId='sdf434-dsvfb3-4545-dfvfdv', volumeId="vol-w4t4434")
         invoking_event = constructInvokingEvent(constructConfigItem(configuration, "volumeId"))
@@ -117,9 +109,31 @@ class InvalidParametersTest(unittest.TestCase):
         response = rule.lambda_handler(lambdaEvent, {})
         assert_customer_error_response(self, response, 'InvalidParameterValueException')
 
+    def test_Scenario_2_invalid_kmsKeyParameters(self):
+        params = {"KmsIdList": "-1,s30c-du4-3erdft-"}
+        configuration = constructConfiguration(encrypted=True, kmsKeyId='sdf434-dsvfb3-4545-dfvfdv', volumeId="vol-w4t4434")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "volumeId"))
+        lambdaEvent = build_lambda_configurationchange_event(invoking_event=invoking_event, rule_parameters=params)
+        response = rule.lambda_handler(lambdaEvent, {})
+        assert_customer_error_response(self, response, 'InvalidParameterValueException')
+
+
 class ComplianceTest(unittest.TestCase):
 
-    def test_Scenario_6_volumeencrypted_noKMSparam(self):
+    def test_Scenario_3_volumeencrypted_noSubnetListparam(self):
+        rule_parameters = {"VolumeExceptionList": "vol-0003", "SubnetExceptionList": "subnet-01"}
+        configuration = constructConfiguration(encrypted=True, kmsKeyId='sdf434-dsvfb3-4545-dfvfdv', volumeId="vol-01")
+        invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-01"))
+        event = build_lambda_configurationchange_event(invoking_event, rule_parameters)
+        response = rule.lambda_handler(event, {})
+        resp_expected = []
+        resp_expected.append(build_expected_response(
+            'COMPLIANT',
+            'vol-01'))
+        assert_successful_evaluation(self, response, resp_expected)
+
+
+    def test_Scenario_4_volumeencrypted_noKMSparam(self):
         rule_parameters = {"VolumeExceptionList": "vol-0003", "SubnetExceptionList": "subnet-01"}
         configuration = constructConfiguration(encrypted=True, kmsKeyId='sdf434-dsvfb3-4545-dfvfdv', volumeId="vol-01")
         invoking_event = constructInvokingEvent(constructConfigItem(configuration, "vol-01"))
