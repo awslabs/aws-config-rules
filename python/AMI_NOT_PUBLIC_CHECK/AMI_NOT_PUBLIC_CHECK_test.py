@@ -21,6 +21,7 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 config_client_mock = MagicMock()
 sts_client_mock = MagicMock()
+ec2_client_mock = MagicMock()
 
 class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
@@ -28,6 +29,8 @@ class Boto3Mock():
             return config_client_mock
         elif client_name == 'sts':
             return sts_client_mock
+        elif client_name == 'ec2':
+            return ec2_client_mock
         else:
             raise Exception("Attempting to create an unknown client")
 
@@ -35,24 +38,42 @@ sys.modules['boto3'] = Boto3Mock()
 
 rule = __import__('AMI_NOT_PUBLIC_CHECK')
 
-class SampleTest(unittest.TestCase):
-
-    rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
-
-    invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
+# Checks for scenario wherein no non-compliant resources are present
+class CompliantResourcesTest(unittest.TestCase):
+    lambda_event = {}
 
     def setUp(self):
+        self.lambda_event = build_lambda_scheduled_event()
         pass
 
-    def test_sample(self):
-        self.assertTrue(True)
+    def test_compliant_resources(self):
+        describe_images_result = {'Images': [], 'ResponseMetadata': {'RequestId': 'c9e93cf7-7503-4d7a-a012-4b9f0461de31', 'HTTPStatusCode': 200, 'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8', 'content-length': '219', 'date': 'Thu, 21 Mar 2019 10:33:35 GMT', 'server': 'AmazonEC2'}, 'RetryAttempts': 0}}
+        ec2_client_mock.describe_images = MagicMock(return_value=describe_images_result)
+        lambda_result = rule.lambda_handler(self.lambda_event, {})
+        expected_response = [build_expected_response(compliance_type='NOT_APPLICABLE',
+                                                    compliance_resource_id='N/A', compliance_resource_type=DEFAULT_RESOURCE_TYPE)]
+        assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
-    #def test_sample_2(self):
-    #    rule.ASSUME_ROLE_MODE = False
-    #    response = rule.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
-    #    resp_expected = []
-    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-    #    assert_successful_evaluation(self, response, resp_expected)
+
+class NonCompliantResourcesTest(unittest.TestCase):
+    lambda_event = {}
+
+    def setUp(self):
+        self.lambda_event = build_lambda_scheduled_event()
+        pass
+
+    def test_non_compliant_resources(self):
+        describe_images_result = {'Images': [{'Architecture': 'x86_64', 'CreationDate': '2019-03-19T11:00:35.000Z', 'ImageId': 'ami-040574eaefd6dc6d4', 'ImageLocation': '123456789012/test', 'ImageType': 'machine', 'Public': True, 'OwnerId': '123456789012', 'State': 'available', 'BlockDeviceMappings': [{'DeviceName': '/dev/xvda', 'Ebs': {'Encrypted': False, 'DeleteOnTermination': True, 'SnapshotId': 'snap-00b7f5d9fddd9da32', 'VolumeSize': 20, 'VolumeType': 'gp2'}}], 'Description': '', 'EnaSupport': True, 'Hypervisor': 'xen', 'Name': 'test', 'RootDeviceName': '/dev/xvda', 'RootDeviceType': 'ebs', 'SriovNetSupport': 'simple', 'VirtualizationType': 'hvm'}, {'Architecture': 'x86_64', 'CreationDate': '2019-03-20T11:53:34.000Z', 'ImageId': 'ami-0a1402bb0642906aa', 'ImageLocation': '123456789012/test1w', 'ImageType': 'machine', 'Public': True, 'OwnerId': '123456789012', 'State': 'available', 'BlockDeviceMappings': [{'DeviceName': '/dev/xvda', 'Ebs': {'Encrypted': False, 'DeleteOnTermination': True, 'SnapshotId': 'snap-0ce92a96e9d15bd87', 'VolumeSize': 20, 'VolumeType': 'gp2'}}], 'Description': '[Copied ami-040574eaefd6dc6d4 from us-east-1] test', 'EnaSupport': True, 'Hypervisor': 'xen', 'Name': 'test1w', 'RootDeviceName': '/dev/xvda', 'RootDeviceType': 'ebs', 'SriovNetSupport': 'simple', 'VirtualizationType': 'hvm'}], 'ResponseMetadata': {'RequestId': 'e09cf188-6d51-4507-afb0-9d4cb1ac2751', 'HTTPStatusCode': 200, 'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8', 'content-length': '2942', 'vary': 'Accept-Encoding', 'date': 'Thu, 21 Mar 2019 10:37:58 GMT', 'server': 'AmazonEC2'}, 'RetryAttempts': 0}}
+        ec2_client_mock.describe_images = MagicMock(return_value=describe_images_result)
+        lambda_result = rule.lambda_handler(self.lambda_event, {})
+        expected_response = [build_expected_response(compliance_type='NON_COMPLIANT',
+                                                    compliance_resource_id='ami-040574eaefd6dc6d4', compliance_resource_type=DEFAULT_RESOURCE_TYPE,
+                                                    annotation="AMI Id: ami-040574eaefd6dc6d4 is public"),
+                                                    build_expected_response(compliance_type='NON_COMPLIANT',
+                                                    compliance_resource_id='ami-0a1402bb0642906aa', compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation="AMI Id: ami-0a1402bb0642906aa is public")]
+        assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
+
+#build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
 
 ####################
 # Helper Functions #
@@ -73,7 +94,7 @@ def build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
     return event_to_return
 
 def build_lambda_scheduled_event(rule_parameters=None):
-    invoking_event = '{"messageType":"ScheduledNotification","notificationCreationTime":"2017-12-23T22:11:18.158Z"}'
+    invoking_event = '{"messageType":"ScheduledNotification","notificationCreationTime":"2017-12-23T22:11:18.158Z","awsAccountId":"123456789012"}'
     event_to_return = {
         'configRuleName':'myrule',
         'executionRoleArn':'roleArn',

@@ -76,12 +76,13 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
 
     ec2_client = get_client('ec2', event)
-    public_ami = ec2_client.describe_images(Filters=[{'Name': 'is-public', 'Values': ['true']}], Owners=[json.loads(event['invokingEvent'])['awsAccountId']])
-    print(public_ami)
-    if len(public_ami['Images']) == 0:
+    public_ami_result = ec2_client.describe_images(Filters=[{'Name': 'is-public', 'Values': ['true']}], Owners=[json.loads(event['invokingEvent'])['awsAccountId']])
+    if public_ami_result['ResponseMetadata']['HTTPStatusCode'] != 200:  # Check if API call was unsuccessful
+        return build_internal_error_response("Unexpected error while completing API request")
+    if not public_ami_result['Images']:
         return build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE) # If public_ami_list is empty, generate non-applicable response
     else:
-        return generate_evaluation_list(public_ami['Images'], event)  # If public_ami_list is not empty, generate non-compliant response
+        return generate_evaluation_list(public_ami_result['Images'], event)  # If public_ami_list is not empty, generate non-compliant response
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
