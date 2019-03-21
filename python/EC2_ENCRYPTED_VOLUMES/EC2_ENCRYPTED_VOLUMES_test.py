@@ -39,8 +39,8 @@ sys.modules['boto3'] = Boto3Mock()
 
 rule = __import__('EC2_ENCRYPTED_VOLUMES')
 
-def getRuleParameters(validity, paramName=None):
-    validParameters = {
+def get_rule_parameters(validity, param_name=None):
+    valid_parameters = {
         "SubnetExceptionList": "subnet-01",
         "KmsIdList": "415ee9cc-9beb-4217-bec8-45cabmfrbee6f"
     }
@@ -57,11 +57,11 @@ def getRuleParameters(validity, paramName=None):
         'd2cd14ba-subnet'
     ]
     if not validity:
-        if paramName == 'SubnetExceptionList':
+        if param_name == 'SubnetExceptionList':
             return invalidSubnetParams
-        if paramName == 'KmsIdList':
+        if param_name == 'KmsIdList':
             return invalidKmsKeyIdParams
-    return validParameters
+    return valid_parameters
 
 def constructConfiguration(instanceId):
     return {
@@ -76,22 +76,22 @@ def constructConfigItem(configuration, instanceId, subnet):
         "relatedEvents": [],
         "relationships": [
             {
-              "resourceId": "vol-123",
-              "resourceName": "vol-123",
-              "resourceType": "AWS::EC2::Volume",
-              "name": "Is attached to Volume"
+                "resourceId": "vol-123",
+                "resourceName": "vol-123",
+                "resourceType": "AWS::EC2::Volume",
+                "name": "Is attached to Volume"
             },
             {
-              "resourceId": "vol-234",
-              "resourceName": "vol-234",
-              "resourceType": "AWS::EC2::Volume",
-              "name": "Is attached to Volume"
+                "resourceId": "vol-234",
+                "resourceName": "vol-234",
+                "resourceType": "AWS::EC2::Volume",
+                "name": "Is attached to Volume"
             },
             {
-              "resourceId": subnet,
-              "resourceName": subnet,
-              "resourceType": "AWS::EC2::Subnet",
-              "name": "Is attached to Volume"
+                "resourceId": subnet,
+                "resourceName": subnet,
+                "resourceType": "AWS::EC2::Subnet",
+                "name": "Is attached to Volume"
             }],
         "configuration": configuration,
         "configurationItemVersion": "1.3",
@@ -137,7 +137,7 @@ def constructInvokingEvent(configItem):
     }
     return json.dumps(invokingEvent)
 
-class InvalidParametersTest(unittest.TestCase):
+class Invalid_parametersTest(unittest.TestCase):
 
     def test_Scenario_1_invalid_subnetParameters(self):
         params = json.dumps({"SubnetExceptionList": "aaasssubnet-02,subnet03edfy45,dhu47dh-subnet"})

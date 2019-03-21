@@ -138,22 +138,22 @@ def is_in_subnet_exception_list(configuration_item, subnet_exception_list, event
     return False
 
 def get_ebs_volumes(configuration_item, event):
-    volumeIds = []
+    volume_ids = []
     for relationship in configuration_item['relationships']:
         if relationship['resourceType'] == 'AWS::EC2::Volume':
-            volumeIds.append(relationship['resourceId'])
+            volume_ids.append(relationship['resourceId'])
     ec2_client = get_client('ec2', event)
-    return ec2_client.describe_volumes(VolumeIds=volumeIds)['Volumes']
+    return ec2_client.describe_volumes(volume_ids=volume_ids)['Volumes']
 
 def is_ebs_volume_encrypted(volumes):
     for volume in volumes:
-        if volume['Encrypted'] == False:
+        if not volume['Encrypted']:
             return False
     return True
 
-def is_in_kmsid_list(volumes, kmsIdList):
+def is_in_kmsid_list(volumes, kms_id_list):
     for volume in volumes:
-        if volume['KmsKeyId'].split('/')[1] not in kmsIdList:
+        if volume['KmsKeyId'].split('/')[1] not in kms_id_list:
             return False
     return True
 
@@ -188,7 +188,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     if is_ebs_volume_encrypted(volumes):
         if 'KmsIdList' in valid_rule_parameters:
-            if is_in_kmsid_list(volumes, valid_rule_parameters['KmsIdList']) == False:
+            if not is_in_kmsid_list(volumes, valid_rule_parameters['KmsIdList']):
                 return build_evaluation_from_config_item(
                     configuration_item,
                     'NON_COMPLIANT',
