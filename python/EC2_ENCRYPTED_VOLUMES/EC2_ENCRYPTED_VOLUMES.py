@@ -143,7 +143,7 @@ def get_ebs_volumes(configuration_item, event):
         if relationship['resourceType'] == 'AWS::EC2::Volume':
             volume_ids.append(relationship['resourceId'])
     ec2_client = get_client('ec2', event)
-    return ec2_client.describe_volumes(volume_ids=volume_ids)['Volumes']
+    return ec2_client.describe_volumes(VolumeIds=volume_ids)['Volumes']
 
 def is_ebs_volume_encrypted(volumes):
     for volume in volumes:
