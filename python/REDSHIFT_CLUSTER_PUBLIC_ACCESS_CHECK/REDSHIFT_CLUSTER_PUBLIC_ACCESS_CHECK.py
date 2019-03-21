@@ -8,7 +8,29 @@
 # or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
+"""
+#####################################
+##           Gherkin               ##
+#####################################
+Rule Name:
+    REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
+Description:
+    Check whether the Amazon Redshift clusters are not publicly accessible. The rule is NON_COMPLIANT if the publiclyAccessible field is true in the cluster configuration item.
+Trigger:
+    Configuration Change on AWS::Redshift::Cluster
+Reports on:
+    AWS::Redshift::Cluster
+Rule Parameters:
+    None
 
+Scenarios:
+  Scenario: 1
+    Given: The publiclyAccessible field is true in the cluster configuration item.
+    Then: Return NON_COMPLIANT
+  Scenario: 2
+    Given: The publiclyAccessible field is false in the cluster configuration item.
+    Then: Return COMPLIANT
+"""
 import json
 import sys
 import datetime
@@ -38,44 +60,18 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
 
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
 
     ###############################
     # Add your custom logic here. #
     ###############################
-    if configuration_item['resourceType'] != 'AWS::Redshift::Cluster':
-        return 'NOT_APPLICABLE'
     if not configuration_item['configuration']['publiclyAccessible']:
-        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT', annotation='Cluster does not allow public access')
-    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Cluster allows public access')
+        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Amazon Redshift Cluster allows public access')
 
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
 
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
@@ -85,11 +81,7 @@ def evaluate_parameters(rule_parameters):
 
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
-    """Return an error dictionary when the evaluate_parameters() raises a ValueError.
 
-    Keyword arguments:
-    ex -- Exception text
-    """
     return  build_error_response(internal_error_message="Parameter value is invalid",
                                  internal_error_details="An ValueError was raised during the validation of the Parameter value",
                                  customer_error_code="InvalidParameterValueException",
@@ -98,12 +90,7 @@ def build_parameters_value_error_response(ex):
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
 def get_client(service, event):
-    """Return the service boto client. It should be used instead of directly calling the client.
 
-    Keyword arguments:
-    service -- the service name used for calling the boto.client()
-    event -- the event variable given in the lambda handler
-    """
     if not ASSUME_ROLE_MODE:
         return boto3.client(service)
     credentials = get_assume_role_credentials(event["executionRoleArn"])
@@ -114,15 +101,7 @@ def get_client(service, event):
 
 # This generate an evaluation for config
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
-    """Form an evaluation as a dictionary. Usually suited to report on scheduled rules.
 
-    Keyword arguments:
-    resource_id -- the unique id of the resource to report
-    compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    event -- the event variable given in the lambda handler
-    resource_type -- the CloudFormation resource type (or AWS::::Account) to report on the rule (default DEFAULT_RESOURCE_TYPE)
-    annotation -- an annotation to be added to the evaluation (default None)
-    """
     eval_cc = {}
     if annotation:
         eval_cc['Annotation'] = annotation
@@ -133,13 +112,8 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     return eval_cc
 
 def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
-    """Form an evaluation as a dictionary. Usually suited to report on configuration change rules.
 
-    Keyword arguments:
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    annotation -- an annotation to be added to the evaluation (default None)
-    """
+
     eval_ci = {}
     if annotation:
         eval_ci['Annotation'] = annotation

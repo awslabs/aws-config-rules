@@ -14,11 +14,6 @@ from botocore.exceptions import ClientError
 
 # Define the default resource to report to Config Rules
 DEFAULT_RESOURCE_TYPE = 'AWS::Redshift::Cluster'
-
-#############
-# Main Code #
-#############
-
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
 
@@ -40,17 +35,17 @@ class SampleTest(unittest.TestCase):
     invoking_event_redshift_public_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{"publiclyAccessible": true},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Redshift::Cluster","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
     invoking_event_redshift_not_public_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{"publiclyAccessible": false},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Redshift::Cluster","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
 
-    def test_is_public(self):
+    def test_scenario_1_is_public(self):
         response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_redshift_public_sample), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', 'AWS::Redshift::Cluster', 'Cluster allows public access'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', 'AWS::Redshift::Cluster', 'Amazon Redshift Cluster allows public access'))
         assert_successful_evaluation(self, response, resp_expected)
 
 
-    def test_isnot_public(self):
+    def test_scenario_2_isnot_public(self):
         response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_redshift_not_public_sample), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'some-resource-id', 'AWS::Redshift::Cluster', 'Cluster does not allow public access'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'some-resource-id', 'AWS::Redshift::Cluster'))
         assert_successful_evaluation(self, response, resp_expected)
 
 
