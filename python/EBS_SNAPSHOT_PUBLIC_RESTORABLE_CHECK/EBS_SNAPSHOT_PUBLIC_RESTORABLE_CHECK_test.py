@@ -49,38 +49,13 @@ class NonCompliantResourcesTest(unittest.TestCase):
         pass
 
     def describe_snapshots_side_effect(self, OwnerIds=None, RestorableByUserIds=None, MaxResults=None, NextToken=None):
-        next_token = "eyJ2IjoiMiIsImMiOiI4KzJzMnlVaU13WVRJdUJpSC91TjVwcFVhRmwyd3FzMFo2V3lOWTNPRi9tL3JUcVl2b3VIb2lZQ2tZNVJTWWc4c0lSWTRQVFdEbXdpY2tkWmRTRzViVElBT1RGQURQVG0rZ2FzcGVRMUJHQis3cG9RSEFNKy9rVWJ0Rnkyall4Qlg1N3ljWUs4ZDNCVnlvT0pud1NxR2d0RHJIMFZhYmJBTzRBc2NsRnowZEJhamRiYitHUmphUi9Jc3pEK04vS1ZDcnBaNjJDSzN4Rkw3QT09IiwicyI6IjEifQ=="
+        next_token = "ABC=="
         first_response = {'NextToken': '{}'.format(next_token),
-                          'ResponseMetadata': {'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8',
-                            'date': 'Fri, 15 Mar 2019 16:58:27 GMT',
-                            'server': 'AmazonEC2',
-                            'transfer-encoding': 'chunked',
-                            'vary': 'Accept-Encoding'},
-                           'HTTPStatusCode': 200,
-                           'RequestId': '9d292dca-1d15-48aa-886f-5821e15691f2',
-                           'RetryAttempts': 0},
-                           'Snapshots': [{'Description': 'hvm-ssd/ubuntu-tsample151007',
-                                          'Encrypted': False,
-                                          'OwnerId': '123456789012',
-                                          'Progress': '100%',
-                                          'SnapshotId': 'snap-9a0a02f7',
-                                          'StartTime': datetime.datetime(2015, 10, 8, 0, 46, 39, tzinfo=tzutc()),
-                                          'State': 'completed',
-                                          'VolumeId': 'vol-503ab6b0',
-                                          'VolumeSize': 8}]
-                         }
-        final_response = {'ResponseMetadata': {'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8',
-                          'date': 'Fri, 15 Mar 2019 16:55:26 GMT',
-                          'server': 'AmazonEC2',
-                          'transfer-encoding': 'chunked',
-                          'vary': 'Accept-Encoding'},
-                          'HTTPStatusCode': 200,
-                          'RequestId': 'fa2f8132-c8eb-46c3-b242-4example42a',
-                          'RetryAttempts': 0},
-                          'Snapshots': [{'Description': 'Copied for DestinationAmi ami.',
-                                        'Encrypted': False,
-                                        'OwnerId': '123456789012',
-                                        'Progress': '100%',
+                          'ResponseMetadata': {'HTTPStatusCode': 200},
+                          'Snapshots': [{'OwnerId': '123456789012',
+                                         'SnapshotId': 'snap-9a0a02f7'}]}
+        final_response = {'ResponseMetadata': {'HTTPStatusCode': 200},
+                          'Snapshots': [{'OwnerId': '123456789012',
                                         'SnapshotId': 'snap-0daeb11514fba831a',
                                         'StartTime': datetime.datetime(2019, 3, 15, 14, 58, 48, 662000, tzinfo=tzutc()),
                                         'State': 'completed',
