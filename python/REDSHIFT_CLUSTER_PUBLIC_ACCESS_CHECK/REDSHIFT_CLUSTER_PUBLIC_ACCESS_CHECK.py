@@ -67,7 +67,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
     if not configuration_item['configuration']['publiclyAccessible']:
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Amazon Redshift Cluster allows public access')
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Amazon Redshift Cluster allows public access.')
 
 
 def evaluate_parameters(rule_parameters):

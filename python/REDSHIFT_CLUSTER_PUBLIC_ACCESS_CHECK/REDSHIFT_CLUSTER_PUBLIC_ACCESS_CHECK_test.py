@@ -38,7 +38,7 @@ class SampleTest(unittest.TestCase):
     def test_scenario_1_is_public(self):
         response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_redshift_public_sample), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', 'AWS::Redshift::Cluster', 'Amazon Redshift Cluster allows public access'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', 'AWS::Redshift::Cluster', 'Amazon Redshift Cluster allows public access.'))
         assert_successful_evaluation(self, response, resp_expected)
 
 
