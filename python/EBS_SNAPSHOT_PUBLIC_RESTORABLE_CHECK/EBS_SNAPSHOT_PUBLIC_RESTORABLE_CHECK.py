@@ -52,29 +52,32 @@ ASSUME_ROLE_MODE = False
 # Function to generate evaluations for all non compliant resources
 def generate_eval_list(snapshots, event):
     evaluations = []
-    for snapshot in snapshots:  # Looping through all available snapshots
+    for snapshot in snapshots:  # Looping through all available Amazon EBS snapshots
         evaluation = build_evaluation(snapshot['SnapshotId'], "NON_COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="EBS Snapshot: {} is public".format(snapshot['SnapshotId']))
         evaluations.append(evaluation)
     return evaluations
 
-# Function to obtain all public snapshots
+# Function to obtain all public Amazon EBS snapshots
 def get_public_snapshots(ec2_client, owner_id):
     snapshots = []
     next_token = None
     snapshots_result = {}
-    while next_token is None or next_token:  # Checking if there is another token or its the first invocation
+    # Initiating while loop to cycle through describe_snapshots() function calls
+    while True:
         try:
-            if next_token is None:  # If next_token is None; make first call
+            # If next_token is None; make first call
+            if not next_token:
                 snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'], MaxResults=1000)
-            else:  # Else use the NextToken to obtain next set of snapshots
+            else:
                 snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], NextToken=next_token, MaxResults=1000)
-            if snapshots_result['ResponseMetadata']['HTTPStatusCode'] != 200:  # Check if API call was unsuccessful
+            if snapshots_result['ResponseMetadata']['HTTPStatusCode'] != 200:
                 return(False, snapshots)
         except Exception as boto3_exception:
             print(boto3_exception)
             return(False, snapshots)
         snapshots.extend(snapshots_result['Snapshots'])
-        if 'NextToken' in snapshots_result:  # If NextToken is present in snapshots_result, assign NextToken for next API call
+        # If NextToken is present in snapshots_result, assign NextToken for next API call
+        if 'NextToken' in snapshots_result:
             next_token = snapshots_result['NextToken']
         else:
             return(True, snapshots)
@@ -104,13 +107,13 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
     ec2_client = get_client("ec2", event)
     public_snapshots_result = get_public_snapshots(ec2_client, json.loads(event['invokingEvent'])['awsAccountId'])
-    if public_snapshots_result[0] is False:  # Error making API call
+    # Check for possible error making API call
+    if not public_snapshots_result[0]:
         return build_internal_error_response("Unexpected error while completing API request")
-    public_snapshots_list = public_snapshots_result[1]
-    if public_snapshots_result[0] is True:  # DescribeSnapshots API call successful
+    if public_snapshots_result[0]:
         if not public_snapshots_result[1]:
             return build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE)
-        return generate_eval_list(public_snapshots_result[1], event)  # If public_snapshots_list is not empty, generate non-compliant response
+        return generate_eval_list(public_snapshots_result[1], event)
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
