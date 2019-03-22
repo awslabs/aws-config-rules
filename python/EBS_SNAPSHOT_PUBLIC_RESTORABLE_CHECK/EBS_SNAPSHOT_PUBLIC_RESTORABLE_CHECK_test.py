@@ -1,5 +1,6 @@
 import sys
 import unittest
+import datetime
 try:
     from unittest.mock import MagicMock, patch, ANY
 except ImportError:
@@ -7,7 +8,6 @@ except ImportError:
     from mock import MagicMock, patch, ANY
 import botocore
 from botocore.exceptions import ClientError
-import datetime
 from dateutil.tz import tzutc
 
 ##############
@@ -40,6 +40,7 @@ sys.modules['boto3'] = Boto3Mock()
 
 rule = __import__('EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK')
 
+
 # Checks for scenario wherein non-compliant resources are present
 class NonCompliantResourcesTest(unittest.TestCase):
     lambda_event = {}
@@ -56,27 +57,27 @@ class NonCompliantResourcesTest(unittest.TestCase):
                                          'SnapshotId': 'snap-9a0a02f7'}]}
         final_response = {'ResponseMetadata': {'HTTPStatusCode': 200},
                           'Snapshots': [{'OwnerId': '123456789012',
-                                        'SnapshotId': 'snap-0daeb11514fba831a',
-                                        'StartTime': datetime.datetime(2019, 3, 15, 14, 58, 48, 662000, tzinfo=tzutc()),
-                                        'State': 'completed',
-                                        'VolumeId': 'vol-ffffffff',
-                                        'VolumeSize': 99}]
-                          }
-        if((NextToken is None) and (OwnerIds[0]=='123456789012') and (RestorableByUserIds[0]=='all') and (MaxResults==1000)):
-            return(first_response)
-        elif(NextToken == next_token):
-            return(final_response)
+                                         'SnapshotId': 'snap-0daeb11514fba831a',
+                                         'StartTime': datetime.datetime(2019, 3, 15, 14, 58, 48, 662000, tzinfo=tzutc()),
+                                         'State': 'completed',
+                                         'VolumeId': 'vol-ffffffff',
+                                         'VolumeSize': 99}]}
+        if NextToken is None and OwnerIds[0] == '123456789012' and RestorableByUserIds[0] == 'all' and MaxResults == 1000:
+            return first_response
+        elif NextToken == next_token:
+            return final_response
 
 # Checks for scenario wherein non-compliant resources are present and pagination exists
     def test_all_noncompliant_resources_with_pagination(self):
         ec2_client_mock.describe_snapshots.side_effect = self.describe_snapshots_side_effect
         lambda_result = rule.lambda_handler(self.lambda_event, {})
         expected_response = [build_expected_response(compliance_type='NON_COMPLIANT',
-                                                    compliance_resource_id='snap-9a0a02f7',
-                                                    compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='EBS Snapshot: snap-9a0a02f7 is public'),
-                            build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='snap-0daeb11514fba831a',
-                                                    compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='EBS Snapshot: snap-0daeb11514fba831a is public')]
+                                                     compliance_resource_id='snap-9a0a02f7',
+                                                     compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='EBS Snapshot: snap-9a0a02f7 is public'),
+                             build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='snap-0daeb11514fba831a',
+                                                     compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='EBS Snapshot: snap-0daeb11514fba831a is public')]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
+
 
 # Checks for scenario wherein no non-compliant resources are present
 class CompliantResourcesTest(unittest.TestCase):
@@ -87,15 +88,15 @@ class CompliantResourcesTest(unittest.TestCase):
         pass
 
     def test_compliant_resources(self):
-        describe_snapshots_result = {'ResponseMetadata': {'HTTPHeaders': {'content-length': '227',
-                                     'content-type': 'text/xml;charset=UTF-8', 'date': 'Thu, 14 Mar 2019 12:36:41 GMT',
-                                     'server': 'AmazonEC2'}, 'HTTPStatusCode': 200, 'RequestId': 'example09-ecb6-407e-9053-e8sample5f',
-                                     'RetryAttempts': 0},'Snapshots': []}
+        describe_snapshots_result = {'ResponseMetadata': {'HTTPStatusCode': 200,
+                                                          'RetryAttempts': 0},
+                                     'Snapshots': []}
         ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
         lambda_result = rule.lambda_handler(self.lambda_event, {})
         expected_response = [build_expected_response(compliance_type='NOT_APPLICABLE',
-                                                    compliance_resource_id='N/A', compliance_resource_type=DEFAULT_RESOURCE_TYPE)]
+                                                     compliance_resource_id='N/A', compliance_resource_type=DEFAULT_RESOURCE_TYPE)]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
+
 
 # Checks for scenario wherein API call returns an error
 class APIErrorTest(unittest.TestCase):
@@ -106,34 +107,14 @@ class APIErrorTest(unittest.TestCase):
         pass
 
     def test_api_error(self):
-        error_response = {'ResponseMetadata': {'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8',
-                                                                'date': 'Fri, 15 Mar 2019 16:55:26 GMT',
-                                                                'server': 'AmazonEC2',
-                                                                'transfer-encoding': 'chunked',
-                                                                'vary': 'Accept-Encoding'},
-                                                                'HTTPStatusCode': 403,
-                           'RequestId': 'fa2f8132-c8eb-46c3-b242-4example42a',
-                           'RetryAttempts': 0},
-                           'Snapshots': [{'Description': 'Copied for DestinationAmi ami.',
-                                        'Encrypted': False,
-                                        'OwnerId': '123456789012',
-                                        'Progress': '100%',
-                                        'SnapshotId': 'snap-0daeb11514fba831a',
-                                        'StartTime': datetime.datetime(2019, 3, 15, 14, 58, 48, 662000, tzinfo=tzutc()),
-                                        'State': 'completed',
-                                        'VolumeId': 'vol-ffffffff',
-                                        'VolumeSize': 99}]}
+        error_response = {'ResponseMetadata': {'HTTPStatusCode': 403},
+                          'Snapshots': [{'OwnerId': '123456789012',
+                                         'VolumeId': 'vol-ffffffff'}]}
         ec2_client_mock.describe_snapshots = MagicMock(return_value=error_response)
         lambda_result = rule.lambda_handler(self.lambda_event, {})
         expected_result = []
         self.assertEqual(expected_result, lambda_result)
 
-    #def test_sample_2(self):
-    #    rule.ASSUME_ROLE_MODE = False
-    #    response = rule.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
-    #    resp_expected = []
-    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-    #    assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #
