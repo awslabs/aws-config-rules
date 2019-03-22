@@ -30,8 +30,8 @@ Scenarios:
 
 import json
 import datetime
-import boto3
 import botocore
+import boto3
 
 ##############
 # Parameters #
@@ -47,10 +47,13 @@ ASSUME_ROLE_MODE = False
 # Main Code #
 #############
 
+# Generates non-compliant response
 def generate_evaluation_list(images, event):
     evaluations = []
-    for image in images:  # Looping through all available images
-        evaluation = build_evaluation(image['ImageId'], "NON_COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="AMI Id: {} is public".format(image['ImageId']))
+    # Looping through all available images
+    for image in images:
+        evaluation = build_evaluation(image['ImageId'], "NON_COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE,
+                                      annotation="Amazon Machine Image Id: {} is public".format(image['ImageId']))
         evaluations.append(evaluation)
     return evaluations
 
@@ -76,13 +79,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
 
     ec2_client = get_client('ec2', event)
-    public_ami_result = ec2_client.describe_images(Filters=[{'Name': 'is-public', 'Values': ['true']}], Owners=[json.loads(event['invokingEvent'])['awsAccountId']])
-    if public_ami_result['ResponseMetadata']['HTTPStatusCode'] != 200:  # Check if API call was unsuccessful
+    public_ami_result = ec2_client.describe_images(Filters=[{'Name': 'is-public', 'Values': ['true']}],
+                                                   Owners=[json.loads(event['invokingEvent'])['awsAccountId']])
+    # Check if API call was unsuccessful
+    if public_ami_result['ResponseMetadata']['HTTPStatusCode'] != 200:
         return build_internal_error_response("Unexpected error while completing API request")
+    # If public_ami_list is empty, generate non-applicable response
     if not public_ami_result['Images']:
-        return build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE) # If public_ami_list is empty, generate non-applicable response
-    else:
-        return generate_evaluation_list(public_ami_result['Images'], event)  # If public_ami_list is not empty, generate non-compliant response
+        return build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE)
+    return generate_evaluation_list(public_ami_result['Images'], event)
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
