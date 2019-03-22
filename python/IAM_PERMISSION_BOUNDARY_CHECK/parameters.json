@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "IAM_PERMISSION_BOUNDARY_CHECK.zip", 
+    "SourceRuntime": "python3.6", 
+    "RuleName": "IAM_PERMISSION_BOUNDARY_CHECK", 
+    "SourceEvents": "AWS::IAM::User", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{\"PermissionBoundaryName\":\"AdminAccess\"}"
+  }, 
+  "Tags": "[]"
+}
