@@ -53,15 +53,9 @@ class NonCompliantResourcesTest(unittest.TestCase):
         next_token = "ABC=="
         first_response = {'NextToken': '{}'.format(next_token),
                           'ResponseMetadata': {'HTTPStatusCode': 200},
-                          'Snapshots': [{'OwnerId': '123456789012',
-                                         'SnapshotId': 'snap-9a0a02f7'}]}
+                          'Snapshots': [{'SnapshotId': 'snap-9a0a02f7'}]}
         final_response = {'ResponseMetadata': {'HTTPStatusCode': 200},
-                          'Snapshots': [{'OwnerId': '123456789012',
-                                         'SnapshotId': 'snap-0daeb11514fba831a',
-                                         'StartTime': datetime.datetime(2019, 3, 15, 14, 58, 48, 662000, tzinfo=tzutc()),
-                                         'State': 'completed',
-                                         'VolumeId': 'vol-ffffffff',
-                                         'VolumeSize': 99}]}
+                          'Snapshots': [{'SnapshotId': 'snap-0daeb11514fba831a'}]}
         if NextToken is None and OwnerIds[0] == '123456789012' and RestorableByUserIds[0] == 'all' and MaxResults == 1000:
             return first_response
         elif NextToken == next_token:
@@ -73,9 +67,9 @@ class NonCompliantResourcesTest(unittest.TestCase):
         lambda_result = rule.lambda_handler(self.lambda_event, {})
         expected_response = [build_expected_response(compliance_type='NON_COMPLIANT',
                                                      compliance_resource_id='snap-9a0a02f7',
-                                                     compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='EBS Snapshot: snap-9a0a02f7 is public'),
+                                                     compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='Amazon EBS Snapshot: snap-9a0a02f7 is public'),
                              build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='snap-0daeb11514fba831a',
-                                                     compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='EBS Snapshot: snap-0daeb11514fba831a is public')]
+                                                     compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='Amazon EBS Snapshot: snap-0daeb11514fba831a is public')]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
 
@@ -88,8 +82,7 @@ class CompliantResourcesTest(unittest.TestCase):
         pass
 
     def test_scenario_1_compliant_resources(self):
-        describe_snapshots_result = {'ResponseMetadata': {'HTTPStatusCode': 200,
-                                                          'RetryAttempts': 0},
+        describe_snapshots_result = {'ResponseMetadata': {'HTTPStatusCode': 200},
                                      'Snapshots': []}
         ec2_client_mock.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
         lambda_result = rule.lambda_handler(self.lambda_event, {})
@@ -107,9 +100,7 @@ class APIErrorTest(unittest.TestCase):
         pass
 
     def test_api_error(self):
-        error_response = {'ResponseMetadata': {'HTTPStatusCode': 403},
-                          'Snapshots': [{'OwnerId': '123456789012',
-                                         'VolumeId': 'vol-ffffffff'}]}
+        error_response = {'ResponseMetadata': {'HTTPStatusCode': 403}}
         ec2_client_mock.describe_snapshots = MagicMock(return_value=error_response)
         lambda_result = rule.lambda_handler(self.lambda_event, {})
         expected_result = []
