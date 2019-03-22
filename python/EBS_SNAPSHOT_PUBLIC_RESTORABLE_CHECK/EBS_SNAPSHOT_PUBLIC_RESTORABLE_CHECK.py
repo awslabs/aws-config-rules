@@ -54,7 +54,7 @@ def generate_eval_list(snapshots, event):
     evaluations = []
     # Looping through all available Amazon EBS snapshots
     for snapshot in snapshots:
-        evaluation = build_evaluation(snapshot['SnapshotId'], "NON_COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="EBS Snapshot: {} is public".format(snapshot['SnapshotId']))
+        evaluation = build_evaluation(snapshot['SnapshotId'], "NON_COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="Amazon EBS Snapshot: {} is public".format(snapshot['SnapshotId']))
         evaluations.append(evaluation)
     return evaluations
 
