@@ -111,7 +111,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     # Check for possible error making API call
     if not public_snapshots_result[0]:
         return build_internal_error_response("Unexpected error while completing API request")
-    if public_snapshots_result[0]:
+    else:
         if not public_snapshots_result[1]:
             return build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE)
         return generate_eval_list(public_snapshots_result[1], event)
