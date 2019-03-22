@@ -46,20 +46,20 @@ class CompliantResourcesTest(unittest.TestCase):
         self.lambda_event = build_lambda_scheduled_event()
         pass
 
-    def test_compliant_resources(self):
-        describe_images_result = {'Images': [],
-                                  'ResponseMetadata': {'RequestId': 'c9e93cf7-7503-4d7a-a012-4b9f0461de31',
-                                                       'HTTPStatusCode': 200,
-                                                       'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8',
-                                                                       'content-length': '219',
-                                                                       'date': 'Thu, 21 Mar 2019 10:33:35 GMT',
-                                                                       'server': 'AmazonEC2'},
-                                                       'RetryAttempts': 0}}
+    def test_scenario_1_compliant_resources(self):
+        describe_images_result = {
+                    'Images': [],
+                    'ResponseMetadata': {'HTTPStatusCode': 200}
+        }
         ec2_client_mock.describe_images = MagicMock(return_value=describe_images_result)
         lambda_result = rule.lambda_handler(self.lambda_event, {})
-        expected_response = [build_expected_response(compliance_type='NOT_APPLICABLE',
-                                                     compliance_resource_id='N/A',
-                                                     compliance_resource_type=DEFAULT_RESOURCE_TYPE)]
+        expected_response = [
+                		build_expected_response(
+                    			compliance_type='NOT_APPLICABLE',
+                    			compliance_resource_id='N/A',
+                    			compliance_resource_type=DEFAULT_RESOURCE_TYPE
+                		)
+        ]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
 # Checks for scenario wherein non-compliant resources are present (Two Public Amazon Machine Image)
@@ -70,37 +70,41 @@ class NonCompliantResourcesTest(unittest.TestCase):
         self.lambda_event = build_lambda_scheduled_event()
         pass
 
-    def test_non_compliant_resources(self):
-        describe_images_result = {'Images': [{'Architecture': 'x86_64', 'CreationDate': '2019-03-19T11:00:35.000Z', 'ImageId': 'ami-040574eaefd6dc6d4',
-                                              'ImageLocation': '123456789012/test', 'ImageType': 'machine', 'Public': True, 'OwnerId': '123456789012', 'State': 'available',
-                                              'BlockDeviceMappings': [{'DeviceName': '/dev/xvda',
-                                                                       'Ebs': {'Encrypted': False, 'DeleteOnTermination': True, 'SnapshotId': 'snap-00b7f5d9fddd9da32',
-                                                                               'VolumeSize': 20, 'VolumeType': 'gp2'}}],
-                                              'Description': '', 'EnaSupport': True, 'Hypervisor': 'xen', 'Name': 'test', 'RootDeviceName': '/dev/xvda',
-                                              'RootDeviceType': 'ebs', 'SriovNetSupport': 'simple', 'VirtualizationType': 'hvm'},
-                                             {'Architecture': 'x86_64', 'CreationDate': '2019-03-20T11:53:34.000Z', 'ImageId': 'ami-0a1402bb0642906aa',
-                                              'ImageLocation': '123456789012/test1w', 'ImageType': 'machine', 'Public': True, 'OwnerId': '123456789012', 'State': 'available',
-                                              'BlockDeviceMappings': [{'DeviceName': '/dev/xvda',
-                                                                       'Ebs': {'Encrypted': False, 'DeleteOnTermination': True, 'SnapshotId': 'snap-0ce92a96e9d15bd87',
-                                                                               'VolumeSize': 20, 'VolumeType': 'gp2'}}],
-                                              'Description': '[Copied ami-040574eaefd6dc6d4 from us-east-1] test', 'EnaSupport': True, 'Hypervisor': 'xen',
-                                              'Name': 'test1w', 'RootDeviceName': '/dev/xvda', 'RootDeviceType': 'ebs', 'SriovNetSupport': 'simple',
-                                              'VirtualizationType': 'hvm'}],
-                                  'ResponseMetadata': {'RequestId': 'e09cf188-6d51-4507-afb0-9d4cb1ac2751', 'HTTPStatusCode': 200,
-                                                       'HTTPHeaders': {'content-type': 'text/xml;charset=UTF-8', 'content-length': '2942',
-                                                                       'vary': 'Accept-Encoding', 'date': 'Thu, 21 Mar 2019 10:37:58 GMT', 'server': 'AmazonEC2'},
-                                                       'RetryAttempts': 0}}
-        ec2_client_mock.describe_images = MagicMock(return_value=describe_images_result)
-        lambda_result = rule.lambda_handler(self.lambda_event, {})
-        expected_response = [build_expected_response(compliance_type='NON_COMPLIANT',
-                                                     compliance_resource_id='ami-040574eaefd6dc6d4',
-                                                     compliance_resource_type=DEFAULT_RESOURCE_TYPE,
-                                                     annotation="Amazon Machine Image Id: ami-040574eaefd6dc6d4 is public"),
-                             build_expected_response(compliance_type='NON_COMPLIANT',
-                                                     compliance_resource_id='ami-0a1402bb0642906aa',
-                                                     compliance_resource_type=DEFAULT_RESOURCE_TYPE,
-                                                     annotation="Amazon Machine Image Id: ami-0a1402bb0642906aa is public")]
-        assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
+    def test_scenario_2_non_compliant_resources(self):
+            describe_images_result = {
+                'Images': [
+                    {
+                      'ImageId': 'ami-040574eaefd6dc6d4',
+                      'Public': True,
+                      'OwnerId': '123456789012',
+                      'State': 'available'
+                    },
+                    {
+                      'ImageId': 'ami-0a1402bb0642906aa',
+                      'Public': True,
+                      'OwnerId': '123456789012',
+                      'State': 'available'
+                     }
+                ],
+                'ResponseMetadata': {'HTTPStatusCode': 200}
+            }
+            ec2_client_mock.describe_images = MagicMock(return_value=describe_images_result)
+            lambda_result = rule.lambda_handler(self.lambda_event, {})
+            expected_response = [
+                        build_expected_response(
+                                compliance_type='NON_COMPLIANT',
+                                compliance_resource_id='ami-040574eaefd6dc6d4',
+                                compliance_resource_type=DEFAULT_RESOURCE_TYPE,
+                                annotation="Amazon Machine Image Id: ami-040574eaefd6dc6d4 is public"
+                        ),
+                        build_expected_response(
+                                compliance_type='NON_COMPLIANT',
+                                compliance_resource_id='ami-0a1402bb0642906aa',
+                                compliance_resource_type=DEFAULT_RESOURCE_TYPE,
+                                annotation="Amazon Machine Image Id: ami-0a1402bb0642906aa is public"
+                        )
+            ]
+            assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
 ####################
 # Helper Functions #
@@ -209,3 +213,4 @@ class TestStsErrors(unittest.TestCase):
         response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
             self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')
+

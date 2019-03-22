@@ -52,8 +52,13 @@ def generate_evaluation_list(images, event):
     evaluations = []
     # Looping through all available images
     for image in images:
-        evaluation = build_evaluation(image['ImageId'], "NON_COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE,
-                                      annotation="Amazon Machine Image Id: {} is public".format(image['ImageId']))
+        evaluation = build_evaluation(
+                    		image['ImageId'],
+                    		"NON_COMPLIANT",
+                    		event,
+                    		resource_type=DEFAULT_RESOURCE_TYPE,
+                    		annotation="Amazon Machine Image Id: {} is public".format(image['ImageId'])
+                	)
         evaluations.append(evaluation)
     return evaluations
 
@@ -387,3 +392,4 @@ def build_error_response(internalErrorMessage, internalErrorDetails=None, custom
     }
     print(error_response)
     return error_response
+
