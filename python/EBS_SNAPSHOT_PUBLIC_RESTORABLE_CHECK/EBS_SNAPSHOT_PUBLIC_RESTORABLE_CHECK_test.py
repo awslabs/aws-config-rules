@@ -68,7 +68,7 @@ class NonCompliantResourcesTest(unittest.TestCase):
             return final_response
 
 # Checks for scenario wherein non-compliant resources are present and pagination exists
-    def test_all_noncompliant_resources_with_pagination(self):
+    def test_all_noncompliant_resources(self):
         ec2_client_mock.describe_snapshots.side_effect = self.describe_snapshots_side_effect
         lambda_result = rule.lambda_handler(self.lambda_event, {})
         expected_response = [build_expected_response(compliance_type='NON_COMPLIANT',
