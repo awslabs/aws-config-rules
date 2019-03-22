@@ -11,14 +11,18 @@
 #####################################
 Rule Name:
   AMI_NOT_PUBLIC_CHECK
+
 Description:
   Check whether the Amazon Machine Images are not publicly accessible. The rule is NON_COMPLIANT if one or more Amazon Machine Images are publicly accessible.
+
 Trigger:
   Periodic
+
 Reports on:
   AWS::::Account
 Rule Parameters:
   None
+
 Scenarios:
   Scenario: 1
     Given: No AMIs with "is-public" parameter set to True
@@ -53,12 +57,12 @@ def generate_evaluation_list(images, event):
     # Looping through all available images
     for image in images:
         evaluation = build_evaluation(
-                    		image['ImageId'],
-                    		"NON_COMPLIANT",
-                    		event,
-                    		resource_type=DEFAULT_RESOURCE_TYPE,
-                    		annotation="Amazon Machine Image Id: {} is public".format(image['ImageId'])
-                	)
+            image['ImageId'],
+            "NON_COMPLIANT",
+            event,
+            resource_type=DEFAULT_RESOURCE_TYPE,
+            annotation="Amazon Machine Image Id: {} is public".format(image['ImageId'])
+        )
         evaluations.append(evaluation)
     return evaluations
 
@@ -84,8 +88,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
 
     ec2_client = get_client('ec2', event)
-    public_ami_result = ec2_client.describe_images(Filters=[{'Name': 'is-public', 'Values': ['true']}],
-                                                   Owners=[json.loads(event['invokingEvent'])['awsAccountId']])
+    public_ami_result = ec2_client.describe_images(
+                            Filters=[
+                                {
+                                    'Name': 'is-public',
+                                    'Values': ['true']
+                                }
+                            ],
+                            Owners=[json.loads(event['invokingEvent'])['awsAccountId']]
+                        )
     # Check if API call was unsuccessful
     if public_ami_result['ResponseMetadata']['HTTPStatusCode'] != 200:
         return build_internal_error_response("Unexpected error while completing API request")

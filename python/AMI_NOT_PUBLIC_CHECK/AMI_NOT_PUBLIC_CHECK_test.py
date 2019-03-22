@@ -54,11 +54,11 @@ class CompliantResourcesTest(unittest.TestCase):
         ec2_client_mock.describe_images = MagicMock(return_value=describe_images_result)
         lambda_result = rule.lambda_handler(self.lambda_event, {})
         expected_response = [
-                		build_expected_response(
-                    			compliance_type='NOT_APPLICABLE',
-                    			compliance_resource_id='N/A',
-                    			compliance_resource_type=DEFAULT_RESOURCE_TYPE
-                		)
+                	build_expected_response(
+                    		compliance_type='NOT_APPLICABLE',
+                    		compliance_resource_id='N/A',
+                    	    compliance_resource_type=DEFAULT_RESOURCE_TYPE
+                	)
         ]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
