@@ -52,7 +52,8 @@ ASSUME_ROLE_MODE = False
 # Function to generate evaluations for all non compliant resources
 def generate_eval_list(snapshots, event):
     evaluations = []
-    for snapshot in snapshots:  # Looping through all available Amazon EBS snapshots
+    # Looping through all available Amazon EBS snapshots
+    for snapshot in snapshots:
         evaluation = build_evaluation(snapshot['SnapshotId'], "NON_COMPLIANT", event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="EBS Snapshot: {} is public".format(snapshot['SnapshotId']))
         evaluations.append(evaluation)
     return evaluations
