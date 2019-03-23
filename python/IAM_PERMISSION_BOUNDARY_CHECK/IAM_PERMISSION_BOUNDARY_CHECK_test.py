@@ -13,6 +13,7 @@ from botocore.exceptions import ClientError
 ##############
 
 # Define the default resource to report to Config Rules
+
 DEFAULT_RESOURCE_TYPE = 'AWS::IAM::User'
 
 #############
@@ -44,6 +45,7 @@ class Scenario_3_to_7(unittest.TestCase):
              'UserName': 'user-name-1'},
             {'UserId': 'AIDAIDFOUX2OSRO6DO7XN',
              'UserName': 'user-name-2'}]}
+
     def construct_PermissionList(self, UserName):
         user_info_list = {
     "User": {
@@ -57,7 +59,9 @@ class Scenario_3_to_7(unittest.TestCase):
     }
 }
         return user_info_list
-    
+
+    # Premission Boudary is present in the Account but IAM user does dont have it attached.
+
     def test_Scenario_3_Non_Compliant_User(self):
         iam_client_mock.list_users = MagicMock(return_value=self.user_list)
         iam_client_mock.get_user = MagicMock(return_value={'User':{}})
@@ -67,6 +71,8 @@ class Scenario_3_to_7(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM'))
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN'))
         assert_successful_evaluation(self, response, resp_expected, 2)
+
+    # Premission Boudary is present in the Account and IAM user does have it attached.
 
     def test_Scenario_4_Compliant_User(self):
         iam_client_mock.list_users = MagicMock(return_value=self.user_list)
@@ -78,6 +84,8 @@ class Scenario_3_to_7(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
+    # Premission Boudary Name is provided as the input but IAM user does dont have it attached.
+
     def test_Scenario_5_With_Parameter_Non_Compliant_User(self):
         iam_client_mock.list_users = MagicMock(return_value=self.user_list)
         iam_client_mock.get_user = MagicMock(return_value={'User':{}})
@@ -88,6 +96,8 @@ class Scenario_3_to_7(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM'))
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN'))
         assert_successful_evaluation(self, response, resp_expected, 2)
+
+    # Premission Boudary Name is provided as the input and IAM user does have it attached.
 
     def test_Scenario_7_With_Parameter_Compliant_User(self):
         iam_client_mock.list_users = MagicMock(return_value=self.user_list)
@@ -106,7 +116,9 @@ class Scenario_TestInvalidPermissionBoundry(unittest.TestCase):
              'UserName': 'user-name-1'},
             {'UserId': 'AIDAIDFOUX2OSRO6DO7XN',
              'UserName': 'user-name-2'}]}
-             
+
+    # Premission Boudary Name is provided as the input but policy name is in invalid format.
+
     def test_Scenario_7_With_Parameter_Incorrect_Policy(self):
         iam_client_mock.list_users = MagicMock(return_value=self.user_list)
         iam_client_mock.get_user = MagicMock(return_value={'User':{}})
@@ -126,13 +138,6 @@ class SampleTest(unittest.TestCase):
 
     def test_sample(self):
         self.assertTrue(True)
-
-    #def test_sample_2(self):
-    #    rule.ASSUME_ROLE_MODE = False
-    #    response = rule.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
-    #    resp_expected = []
-    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-    #    assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #
