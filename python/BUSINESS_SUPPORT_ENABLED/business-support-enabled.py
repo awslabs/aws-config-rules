@@ -27,15 +27,15 @@
   Rule Parameters:
   None
   
-  Scenarios: 
+  Scenarios:
   Scenario: 1
-    Given: AWS Account has ability to use Support API
+    Given: AWS Account has ability to use Support API's DescribeCases call with results returned without ClientError Exception
      Then: Return COMPLIANT
   Scenario: 2
-    Given: AWS Support API call errors out with AccessDenied exception
+    Given: AWS Support API errors out with AccessDenied exception while using the DescribeCases API call. This means the role use by Config is not allowed to use the Support API.
      Then: Return NON_COMPLIANT
   Scenario: 3
-    Given: AWS Support API call errors out with SubscriptionRequired exception
+    Given: AWS Support API call errors out with SubscriptionRequired exception while using the DescribeCases API call. This error means Business Plan is not currently used for the account
      Then: Return NON_COMPLIANT
   Scenario: 4
     Given: AWS Support API call errors out with any other boto3.client exceptions
