@@ -49,13 +49,14 @@ ASSUME_ROLE_MODE = False
 # Main Code #
 #############
 
+
 # Function to generate evaluations for all non compliant resources
 def generate_snapshot_id_list(snapshots, event):
     snapshot_ids = []
-    # Looping through all available Amazon EBS snapshots
     for snapshot in snapshots:
         snapshot_ids.append(snapshot['SnapshotId'])
     return snapshot_ids
+
 
 # Function to obtain all public Amazon EBS snapshots
 def get_public_snapshots(ec2_client, owner_id):
@@ -63,13 +64,11 @@ def get_public_snapshots(ec2_client, owner_id):
     next_token = None
     snapshots_result = {}
     while True:
-        # If next_token is None; make first call
         if not next_token:
             snapshots_result = ec2_client.describe_snapshots(Filters=[{'Name':'owner-id', 'Values':[owner_id]}], OwnerIds=[owner_id], RestorableByUserIds=['all'], MaxResults=1000)
         else:
-            snapshots_result = ec2_client.describe_snapshots(Filters=[{'Name':'owner-id', 'Values':[owner_id]}], OwnerIds=[owner_id], NextToken=next_token, MaxResults=1000)
+            snapshots_result = ec2_client.describe_snapshots(Filters=[{'Name':'owner-id', 'Values':[owner_id]}], OwnerIds=[owner_id], RestorableByUserIds=['all'], NextToken=next_token, MaxResults=1000)
         snapshots.extend(snapshots_result['Snapshots'])
-        # If NextToken is present in snapshots_result, assign NextToken for next API call
         if 'NextToken' in snapshots_result:
             next_token = snapshots_result['NextToken']
         else:
