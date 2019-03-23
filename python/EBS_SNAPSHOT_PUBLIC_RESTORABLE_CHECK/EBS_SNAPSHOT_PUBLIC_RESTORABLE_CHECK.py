@@ -50,7 +50,7 @@ ASSUME_ROLE_MODE = False
 #############
 
 # Function to generate evaluations for all non compliant resources
-def generate_snapshot_list(snapshots, event):
+def generate_snapshot_id_list(snapshots, event):
     snapshot_ids = []
     # Looping through all available Amazon EBS snapshots
     for snapshot in snapshots:
@@ -65,11 +65,9 @@ def get_public_snapshots(ec2_client, owner_id):
     while True:
         # If next_token is None; make first call
         if not next_token:
-            snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], RestorableByUserIds=['all'], MaxResults=1000)
+            snapshots_result = ec2_client.describe_snapshots(Filters=[{'Name':'owner-id', 'Values':[owner_id]}], OwnerIds=[owner_id], RestorableByUserIds=['all'], MaxResults=1000)
         else:
-            snapshots_result = ec2_client.describe_snapshots(OwnerIds=[owner_id], NextToken=next_token, MaxResults=1000)
-        if snapshots_result['ResponseMetadata']['HTTPStatusCode'] != 200:
-            return(False, snapshots)
+            snapshots_result = ec2_client.describe_snapshots(Filters=[{'Name':'owner-id', 'Values':[owner_id]}], OwnerIds=[owner_id], NextToken=next_token, MaxResults=1000)
         snapshots.extend(snapshots_result['Snapshots'])
         # If NextToken is present in snapshots_result, assign NextToken for next API call
         if 'NextToken' in snapshots_result:
@@ -102,10 +100,11 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
     ec2_client = get_client("ec2", event)
     public_snapshots_result = get_public_snapshots(ec2_client, event['accountId'])
-    snapshot_ids = generate_snapshot_list(public_snapshots_result[1], event)
-    # Check for possible error making API call
-        return build_evaluation("N/A", "NOT_APPLICABLE", event, resource_type=DEFAULT_RESOURCE_TYPE)
-        return generate_snapshot_list(public_snapshots_result[1], event)
+    snapshot_ids = generate_snapshot_id_list(public_snapshots_result[1], event)
+    if snapshot_ids:
+        return build_evaluation(event['accountId'], "NON_COMPLIANT", event, annotation="Public Amazon EBS Snapshots: {}".format(snapshot_ids))
+    return build_evaluation(event['accountId'], "COMPLIANT", event)
+
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
