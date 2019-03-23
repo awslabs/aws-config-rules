@@ -62,7 +62,7 @@ Then: Return NON_COMPLAINT
 Scenario 6:
 Given: Valid Rule paramter policyArns provided
 And: IAM users present in Account
-And: IAM user does have permission boundary attached 
+And: IAM user does have permission boundary attached
 And: The Permission Boundary attached to user is not the one listed in parameter.
 Then: Return NON_COMPLAINT
 
@@ -83,9 +83,10 @@ Then: Return ERROR
 import json
 import sys
 import datetime
+import re
 import boto3
 import botocore
-import re
+
 
 try:
     import liblogging
@@ -136,26 +137,25 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     iam_client = get_client('iam', event)
     compliance_results = []
     users_list = iam_client.list_users()
-    permission_boundary_list = iam_client.list_policies(OnlyAttached=True,PolicyUsageFilter='PermissionsBoundary')
+    permission_boundary_list = iam_client.list_policies(OnlyAttached=True, PolicyUsageFilter='PermissionsBoundary')
     if users_list and permission_boundary_list:
         for user in users_list['Users']:
-            compliance_type = evaluate_user(event,user['UserName'],valid_rule_parameters)
-            compliance_results.append(build_evaluation(user['UserId'],compliance_type,event,"AWS::IAM::User"))
-        return compliance_results 
+            compliance_type = evaluate_user(event, user['UserName'], valid_rule_parameters)
+            compliance_results.append(build_evaluation(user['UserId'], compliance_type, event, "AWS::IAM::User"))
+        return compliance_results
 
     return 'NOT_APPLICABLE'
 
-def evaluate_user(event, username,valid_rule_parameters):
-    
+def evaluate_user(event, username, valid_rule_parameters):
     iam_client = get_client('iam', event)
     user_details = iam_client.get_user(UserName=username)
     try:
         if user_details['User']['PermissionsBoundary']:
             try:
                 if valid_rule_parameters['policyArns']:
-                    permission_boundary_policy_names = valid_rule_parameters['policyArns'].replace(" ","")
+                    permission_boundary_policy_names = valid_rule_parameters['policyArns'].replace(" ", "")
                     permission_boundary_policy_name_list = permission_boundary_policy_names.split(",")
-                    boundary_name=user_details['User']['PermissionsBoundary']['PermissionsBoundaryArn']
+                    boundary_name = user_details['User']['PermissionsBoundary']['PermissionsBoundaryArn']
                     for permission_policy_name in permission_boundary_policy_name_list:
                         if permission_policy_name == boundary_name:
                             complaince_response = 'COMPLIANT'                  # the IAM user has the specific permission boundary attached
@@ -179,11 +179,11 @@ def evaluate_parameters(rule_parameters):
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
     valid_rule_parameters = rule_parameters
-    if(valid_rule_parameters):
-        permission_boundary_policy_names = valid_rule_parameters['policyArns'].replace(" ","")
+    if valid_rule_parameters:
+        permission_boundary_policy_names = valid_rule_parameters['policyArns'].replace(" ", "")
         permission_boundary_policy_name_list = permission_boundary_policy_names.split(",")
         for permission_policy_name in permission_boundary_policy_name_list:
-            if not re.match("^arn:aws:iam::(\d{12}|aws):policy\/.{1,128}",permission_policy_name):
+            if not re.match("^arn:aws:iam::(\d{12}|aws):policy\/.{1,128}", permission_policy_name):
                 raise ValueError('The parameter shoule be a valid ARN format of the policy')
             if len(permission_policy_name) > 161:
                 raise ValueError('The permission boundary policy name is greater than 128 characters')

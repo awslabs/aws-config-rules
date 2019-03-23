@@ -38,30 +38,16 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('IAM_USER_PERMISSION_BOUNDARY_CHECK')
 
-class Scenario_3_to_7(unittest.TestCase):
-    user_list = {'Users': [
-            {'UserId': 'AIDAIDFOUX2OSRO6DO7XM',
-             'UserName': 'user-name-1'},
-            {'UserId': 'AIDAIDFOUX2OSRO6DO7XN',
-             'UserName': 'user-name-2'}]}
+class TESTScenarios3to7(unittest.TestCase):
+    user_list = {'Users': [{'UserId': 'AIDAIDFOUX2OSRO6DO7XM', 'UserName': 'user-name-1'}, {'UserId': 'AIDAIDFOUX2OSRO6DO7XN', 'UserName': 'user-name-2'}]}
 
-    def construct_PermissionList(self, UserName):
-        user_info_list = {
-    "User": {
-        "UserName": "user-name-1", 
-        "PermissionsBoundary": {
-            "PermissionsBoundaryType": "Policy", 
-            "PermissionsBoundaryArn": "arn:aws:iam::aws:policy/AdministratorAccess"
-        }, 
-        "UserId": "AIDAJDTYJDDPUWJ7IR3G2",
-        "Arn": "arn:aws:iam::677885075477:user/ddbtest"
-    }
-}
+    def construct_permission_list(self, UserName):
+        user_info_list = {"User": {"UserName": "user-name-1", "PermissionsBoundary": {"PermissionsBoundaryType": "Policy", "PermissionsBoundaryArn": "arn:aws:iam::aws:policy/AdministratorAccess"}, "UserId": "AIDAJDTYJDDPUWJ7IR3G2", "Arn": "arn:aws:iam::677885075477:user/ddbtest"}}
         return user_info_list
 
     # Premission Boudary is present in the Account but IAM user does dont have it attached.
 
-    def test_Scenario_3_Non_Compliant_User(self):
+    def test_scenario3_non_compliant_user(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
         IAM_CLIENT_MOCK.get_user = MagicMock(return_value={'User':{}})
         lambda_event = build_lambda_scheduled_event()
@@ -73,9 +59,9 @@ class Scenario_3_to_7(unittest.TestCase):
 
     # Premission Boudary is present in the Account and IAM user does have it attached.
 
-    def test_Scenario_4_Compliant_User(self):
+    def test_scenario4_compliant_user(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        IAM_CLIENT_MOCK.get_user = MagicMock(side_effect=self.construct_PermissionList)
+        IAM_CLIENT_MOCK.get_user = MagicMock(side_effect=self.construct_permission_list)
         lambda_event = build_lambda_scheduled_event()
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
@@ -85,26 +71,12 @@ class Scenario_3_to_7(unittest.TestCase):
 
     # Premission Boudary Name is provided as the input but IAM user does dont have it attached.
 
-    def test_Scenario_5_With_Parameter_Non_Compliant_User(self):
+    def test_scenario5_with_parameter_non_compliant_user(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        IAM_CLIENT_MOCK.get_user = MagicMock(return_value={"User": {
-        "UserName": "user-name-2", 
-        "PermissionsBoundary": {
-            "PermissionsBoundaryType": "Policy", 
-            "PermissionsBoundaryArn": "arn:aws:iam::aws:policy/AdminAccess"
-        }, 
-        "UserId": "AIDAIDFOUX2OSRO6DO7XN",
-        "Arn": "arn:aws:iam::677885075477:user/ddbtest"}})
-        IAM_CLIENT_MOCK.get_user = MagicMock(return_value={"User": {
-        "UserName": "user-name-1", 
-        "PermissionsBoundary": {
-            "PermissionsBoundaryType": "Policy", 
-            "PermissionsBoundaryArn": "arn:aws:iam::aws:policy/AAccess"
-        }, 
-        "UserId": "AIDAIDFOUX2OSRO6DO7XN",
-        "Arn": "arn:aws:iam::677885075477:user/ddbtest"}})
-        ruleParam = "{\"policyArns\":\"arn:aws:iam::aws:policy/AdministratorAccess\"}"
-        lambda_event = build_lambda_scheduled_event(rule_parameters=ruleParam)
+        IAM_CLIENT_MOCK.get_user = MagicMock(return_value={"User": {"UserName": "user-name-2", "PermissionsBoundary": {"PermissionsBoundaryType": "Policy", "PermissionsBoundaryArn": "arn:aws:iam::aws:policy/AdminAccess"}, "UserId": "AIDAIDFOUX2OSRO6DO7XN", "Arn": "arn:aws:iam::677885075477:user/ddbtest"}})
+        IAM_CLIENT_MOCK.get_user = MagicMock(return_value={"User": {"UserName": "user-name-1", "PermissionsBoundary": {"PermissionsBoundaryType": "Policy", "PermissionsBoundaryArn": "arn:aws:iam::aws:policy/AAccess"}, "UserId": "AIDAIDFOUX2OSRO6DO7XN", "Arn": "arn:aws:iam::677885075477:user/ddbtest"}})
+        rule_param = "{\"policyArns\":\"arn:aws:iam::aws:policy/AdministratorAccess\"}"
+        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM'))
@@ -113,33 +85,29 @@ class Scenario_3_to_7(unittest.TestCase):
 
     # Premission Boudary Name is provided as the input and IAM user does have it attached.
 
-    def test_Scenario_7_With_Parameter_Compliant_User(self):
+    def test_scenario6_with_parameter_compliant_user(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        IAM_CLIENT_MOCK.get_user = MagicMock(side_effect=self.construct_PermissionList)
-        ruleParam = "{\"policyArns\":\"arn:aws:iam::aws:policy/AdministratorAccess\"}"
-        lambda_event = build_lambda_scheduled_event(rule_parameters=ruleParam)
+        IAM_CLIENT_MOCK.get_user = MagicMock(side_effect=self.construct_permission_list)
+        rule_param = "{\"policyArns\":\"arn:aws:iam::aws:policy/AdministratorAccess\"}"
+        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM'))
         resp_expected.append(build_expected_response('COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
-class Scenario_TestInvalidPermissionBoundry(unittest.TestCase):
-    user_list = {'Users': [
-            {'UserId': 'AIDAIDFOUX2OSRO6DO7XM',
-             'UserName': 'user-name-1'},
-            {'UserId': 'AIDAIDFOUX2OSRO6DO7XN',
-             'UserName': 'user-name-2'}]}
+class TESTInvalidpermissionboundry(unittest.TestCase):
+    user_list = {'Users': [{'UserId': 'AIDAIDFOUX2OSRO6DO7XM', 'UserName': 'user-name-1'}, {'UserId': 'AIDAIDFOUX2OSRO6DO7XN', 'UserName': 'user-name-2'}]}
 
     # Premission Boudary Name is provided as the input but policy name is in invalid format.
 
-    def test_Scenario_7_With_Parameter_Incorrect_Policy(self):
+    def test_scenario7_with_parameter_incorrect_policy(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
         IAM_CLIENT_MOCK.get_user = MagicMock(return_value={'User':{}})
-        ruleParam = "{\"policyArns\":\"arn:aws:iam::aws:/AdministratorAccess\"}"
-        lambda_event = build_lambda_scheduled_event(rule_parameters=ruleParam)
+        rule_param = "{\"policyArns\":\"arn:aws:iam::aws:/AdministratorAccess\"}"
+        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
-        assert_customer_error_response(self, response, 'InvalidParameterValueException',customer_error_message='The parameter shoule be a valid ARN format of the policy')
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', customer_error_message='The parameter shoule be a valid ARN format of the policy')
 
 ####################
 # Helper Functions #
