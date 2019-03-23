@@ -60,8 +60,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-
-
     ###############################
     # Add your custom logic here. #
     ###############################
@@ -71,7 +69,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
 
 def evaluate_parameters(rule_parameters):
-
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
@@ -81,7 +78,6 @@ def evaluate_parameters(rule_parameters):
 
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
-
     return  build_error_response(internal_error_message="Parameter value is invalid",
                                  internal_error_details="An ValueError was raised during the validation of the Parameter value",
                                  customer_error_code="InvalidParameterValueException",
@@ -90,7 +86,6 @@ def build_parameters_value_error_response(ex):
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
 def get_client(service, event):
-
     if not ASSUME_ROLE_MODE:
         return boto3.client(service)
     credentials = get_assume_role_credentials(event["executionRoleArn"])
@@ -101,7 +96,6 @@ def get_client(service, event):
 
 # This generate an evaluation for config
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
-
     eval_cc = {}
     if annotation:
         eval_cc['Annotation'] = annotation
@@ -112,8 +106,6 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     return eval_cc
 
 def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
-
-
     eval_ci = {}
     if annotation:
         eval_ci['Annotation'] = annotation
@@ -215,7 +207,6 @@ def get_assume_role_credentials(role_arn):
 
 # This removes older evaluation (usually useful for periodic rule not reporting on AWS::::Account).
 def clean_up_old_evaluations(latest_evaluations, event):
-
     cleaned_evaluations = []
 
     old_eval = AWS_CONFIG_CLIENT.get_compliance_details_by_config_rule(
