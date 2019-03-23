@@ -75,15 +75,12 @@ def get_public_snapshots(ec2_client, owner_id):
             return(True, snapshots)
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    ###############################
-    # Add your custom logic here. #
-    ###############################
     ec2_client = get_client('ec2', event)
     public_snapshots_result = get_public_snapshots(ec2_client, event['accountId'])
     snapshot_ids = generate_snapshot_id_list(public_snapshots_result[1], event)
     if snapshot_ids:
-        return build_evaluation(event['accountId'], "NON_COMPLIANT", event, annotation="Public Amazon EBS Snapshots: {}".format(snapshot_ids))
-    return build_evaluation(event['accountId'], "COMPLIANT", event)
+        return build_evaluation(event['accountId'], 'NON_COMPLIANT', event, annotation='Public Amazon EBS Snapshots: {}'.format(snapshot_ids))
+    return build_evaluation(event['accountId'], 'COMPLIANT', event, annotation='No public Amazon EBS Snapshots')
 
 
 def evaluate_parameters(rule_parameters):
