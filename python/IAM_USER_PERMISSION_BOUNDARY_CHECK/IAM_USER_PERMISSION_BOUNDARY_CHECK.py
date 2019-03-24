@@ -11,72 +11,71 @@
 
 """
 #####################################
-## Gherkin ##
+##           Gherkin               ##
 #####################################
 
 Rule Name:
-IAM_USER_PERMISSION_BOUNDARY_CHECK
+    IAM_USER_PERMISSION_BOUNDARY_CHECK
 
 Description:
-Check if all the IAM users have Permission boundary attached. The rule is NON_COMPLAINT if the PermissionBoundary is not attached to the IAM user.
+    Check if all the IAM users have permission boundary attached. The rule is NON_COMPLAINT if the permission boundary is not attached to the IAM user.
 
 Trigger:
-Periodic
+    Periodic
 
 Reports on:
-AWS::IAM::User
+    AWS::IAM::User
 
 Rule Parameters:
-policyArns
-(Optional) 
-Comma-separated list of permission boundary policy ARNs, that are expected to be attached to the IAM Users
+    policyArns (Optional) 
+    Comma-separated list of permission boundary policy ARNs, that are expected to be attached to the IAM Users
 
 Scenarios:
-Scenario 1:
-Given: No IAM users in Account
-Then: Return NOT_APPLICABLE
+    Scenario 1:
+    Given: No IAM users in Account
+    Then: Return NOT_APPLICABLE
 
-Scenario 2:
-Given: At least 1 IAM User is present in the AWS Account
-And: No permission boundary policy in the Account
-Then: Return NOT_APPLICABLE
+    Scenario 2:
+    Given: At least 1 IAM User is present in the AWS Account
+    And: No permission boundary policy in the Account
+    Then: Return NOT_APPLICABLE
 
-Scenario 3:
-Given: At least 1 IAM User is present in the AWS Account
-And: Permission boundary policies present in Account
-And: IAM user does not have permission boundary attached
-Then: Return NON_COMPLAINT
+    Scenario 3:
+    Given: At least 1 IAM User is present in the AWS Account
+    And: Permission boundary policies present in Account
+    And: IAM user does not have permission boundary attached
+    Then: Return NON_COMPLAINT
 
-Scenario 4:
-Given: At least 1 IAM User is present in the AWS Account
-And: Permission boundary policies present in Account
-And: IAM user does have permission boundary attached
-Then: Return COMPLAINT
+    Scenario 4:
+    Given: At least 1 IAM User is present in the AWS Account
+    And: Permission boundary policies present in Account
+    And: IAM user does have permission boundary attached
+    Then: Return COMPLAINT
 
-Scenario 5:
-Given: Valid Rule paramter policyArns provided
-And: IAM users present in Account
-And: IAM user does not have permission boundary attached
-Then: Return NON_COMPLAINT
+    Scenario 5:
+    Given: Valid Rule paramter policyArns provided
+    And: IAM users present in Account
+    And: IAM user does not have permission boundary attached
+    Then: Return NON_COMPLAINT
 
-Scenario 6:
-Given: Valid Rule paramter policyArns provided
-And: IAM users present in Account
-And: IAM user does have permission boundary attached
-And: The Permission Boundary attached to user is not the one listed in parameter.
-Then: Return NON_COMPLAINT
+    Scenario 6:
+    Given: Valid Rule paramter policyArns provided
+    And: IAM users present in Account
+    And: IAM user does have permission boundary attached
+    And: The Permission Boundary attached to user is not the one listed in parameter.
+    Then: Return NON_COMPLAINT
 
-Scenario 7:
-Given: Valid Rule paramter policyArns provided
-And: IAM users present in Account
-And: IAM user does have permission boundary attached
-And: The Permission Boundary attached to user is the one listed in parameter.
-Then: Return COMPLAINT
+    Scenario 7:
+    Given: Valid Rule paramter policyArns provided
+    And: IAM users present in Account
+    And: IAM user does have permission boundary attached
+    And: The Permission Boundary attached to user is the one listed in parameter.
+    Then: Return COMPLAINT
 
-Scenario 12:
-Given: Rule paramter policyArns provided
-And: Not Valid one
-Then: Return ERROR
+    Scenario 12:
+    Given: Rule paramter policyArns provided
+    And: Not Valid one
+    Then: Return ERROR
 
 """
 
@@ -98,7 +97,7 @@ except ImportError:
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::IAM::User'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
@@ -112,42 +111,19 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
-
-    ###############################
-    # Add your custom logic here. #
-    ###############################
     iam_client = get_client('iam', event)
     compliance_results = []
     users_list = iam_client.list_users()
     permission_boundary_list = iam_client.list_policies(OnlyAttached=True, PolicyUsageFilter='PermissionsBoundary')
     if users_list and permission_boundary_list:
         for user in users_list['Users']:
-            compliance_type = evaluate_user(event, user['UserName'], valid_rule_parameters)
-            compliance_results.append(build_evaluation(user['UserId'], compliance_type, event, "AWS::IAM::User"))
+            compliance_type = evaluate_user(event, user['UserName'], valid_rule_parameters, iam_client)
+            compliance_results.append(build_evaluation(user['UserId'], compliance_type, event, DEFAULT_RESOURCE_TYPE))
         return compliance_results
 
     return 'NOT_APPLICABLE'
 
-def evaluate_user(event, username, valid_rule_parameters):
-    iam_client = get_client('iam', event)
+def evaluate_user(event, username, valid_rule_parameters, iam_client):
     user_details = iam_client.get_user(UserName=username)
     try:
         if user_details['User']['PermissionsBoundary']:
@@ -158,16 +134,16 @@ def evaluate_user(event, username, valid_rule_parameters):
                     boundary_name = user_details['User']['PermissionsBoundary']['PermissionsBoundaryArn']
                     for permission_policy_name in permission_boundary_policy_name_list:
                         if permission_policy_name == boundary_name:
-                            complaince_response = 'COMPLIANT'                  # the IAM user has the specific permission boundary attached
+                            compliance_response = 'COMPLIANT'                  # the IAM user has the specific permission boundary attached
                             break
                         else:
-                            complaince_response = 'NON_COMPLIANT'              # the IAM user does not have the specific permission boundary attached
+                            compliance_response = 'NON_COMPLIANT'              # the IAM user does not have the specific permission boundary attached
             except:
-                complaince_response = 'COMPLIANT'                              # the IAM user has the permission boundary attached no specific input provided.
+                compliance_response = 'COMPLIANT'                              # the IAM user has the permission boundary attached no specific input provided.
     except:
-        complaince_response = 'NON_COMPLIANT'                                  # the IAM user has no permission boundary attached no specific input provided.
+        compliance_response = 'NON_COMPLIANT'                                  # the IAM user has no permission boundary attached no specific input provided.
 
-    return complaince_response
+    return compliance_response
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
@@ -178,15 +154,16 @@ def evaluate_parameters(rule_parameters):
     Keyword arguments:
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
-    valid_rule_parameters = rule_parameters
-    if valid_rule_parameters:
-        permission_boundary_policy_names = valid_rule_parameters['policyArns'].replace(" ", "")
+    if rule_parameters:
+        permission_boundary_policy_names = rule_parameters['policyArns'].replace(" ", "")
         permission_boundary_policy_name_list = permission_boundary_policy_names.split(",")
         for permission_policy_name in permission_boundary_policy_name_list:
             if not re.match("^arn:aws:iam::(\d{12}|aws):policy\/.{1,128}", permission_policy_name):
                 raise ValueError('The parameter shoule be a valid ARN format of the policy')
             if len(permission_policy_name) > 161:
                 raise ValueError('The permission boundary policy name is greater than 128 characters')
+
+    valid_rule_parameters = rule_parameters
 
     return valid_rule_parameters
 
