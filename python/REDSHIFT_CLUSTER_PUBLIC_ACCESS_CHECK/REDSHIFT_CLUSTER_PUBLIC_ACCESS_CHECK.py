@@ -55,26 +55,15 @@ ASSUME_ROLE_MODE = False
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
-#############
-# Main Code #
-#############
-
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    ###############################
-    # Add your custom logic here. #
-    ###############################
     if not configuration_item['configuration']['publiclyAccessible']:
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Amazon Redshift Cluster allows public access.')
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='This Amazon Redshift Cluster has the publiclyAccessible field set to True.')
 
 
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
-
-####################
-# Helper Functions #
-####################
 
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):

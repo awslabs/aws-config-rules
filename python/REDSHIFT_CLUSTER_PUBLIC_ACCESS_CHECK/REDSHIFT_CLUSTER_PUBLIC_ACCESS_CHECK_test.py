@@ -30,15 +30,15 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK')
 
-class SampleTest(unittest.TestCase):
+class ComplianceTest(unittest.TestCase):
 
-    invoking_event_redshift_public_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{"publiclyAccessible": true},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Redshift::Cluster","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-    invoking_event_redshift_not_public_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{"publiclyAccessible": false},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Redshift::Cluster","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
+    invoking_event_redshift_public_sample = '{"configurationItem":{"configuration":{"publiclyAccessible": true},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Redshift::Cluster","resourceId":"some-resource-id"},"messageType":"ConfigurationItemChangeNotification"}'
+    invoking_event_redshift_not_public_sample = '{"configurationItem":{"configuration":{"publiclyAccessible": false},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Redshift::Cluster","resourceId":"some-resource-id"},"messageType":"ConfigurationItemChangeNotification"}'
 
     def test_scenario_1_is_public(self):
         response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_redshift_public_sample), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', 'AWS::Redshift::Cluster', 'Amazon Redshift Cluster allows public access.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', 'AWS::Redshift::Cluster', 'This Amazon Redshift Cluster has the publiclyAccessible field set to True.'))
         assert_successful_evaluation(self, response, resp_expected)
 
 
