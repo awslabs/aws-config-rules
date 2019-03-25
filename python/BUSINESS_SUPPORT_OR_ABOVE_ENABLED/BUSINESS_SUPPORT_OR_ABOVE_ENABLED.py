@@ -13,27 +13,27 @@
   ##           Gherkin               ##
   #####################################  
   Rule Name:
-  BUSINESS_SUPPORT_OR_ABOVE_ENABLED
+    BUSINESS_SUPPORT_OR_ABOVE_ENABLED
   
   Description:
-  Check whether the AWS Account has Business or above(Enterprise) support plan  is enabled
+    Check whether the AWS Account is subscribed to the AWS Business Support Plan or above (i.e. Enterprise).
   
   Trigger:
-  Frequency every 3hours
+    Periodic
   
   Reports on:
-  AWS::::Account
+    AWS::::Account
   
   Rule Parameters:
-  None
+    None
   
   Scenarios:
-  Scenario: 1
-    Given: AWS Account has ability to use Support API's DescribeCases call with results returned without ClientError Exception
-     Then: Return COMPLIANT
-  Scenario: 2
-    Given: AWS Support API call errors out with SubscriptionRequired exception while using the DescribeCases API call. This error means Business Plan is not currently used for the account
-     Then: Return NON_COMPLIANT
+    Scenario: 1
+        Given: AWS Account has ability to use Support API's DescribeCases call with results returned without ClientError Exception
+        Then: Return COMPLIANT
+    Scenario: 2
+        Given: AWS Support API call errors out with SubscriptionRequired exception while using the DescribeCases API call. This error means Business Plan is not currently used for the account
+        Then: Return NON_COMPLIANT
   '''
 import json
 import sys
@@ -65,28 +65,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
-
-    ###############################
-    # Add your custom logic here. #
-    ###############################
     rule_evaluations = []
     support_client = boto3.client('support')
     account_id = event['accountId']
@@ -94,11 +72,10 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     try:
         support_client.describe_cases()
-        annotate = 'Account has business support plan subscribed'
-        rule_evaluations.append(build_evaluation(account_id, 'COMPLIANT', event, annotation=annotate))
+        rule_evaluations.append(build_evaluation(account_id, 'COMPLIANT', event))
     except ClientError as error:
         if error.response['Error']['Code'] == 'SubscriptionRequiredException':
-            annotate = 'Account does not have business support plan.'
+            annotate = 'This AWS Account is not subscribed to the AWS business Support plan or above.'
             rule_evaluations.append(build_evaluation(account_id, 'NON_COMPLIANT', event, annotation=annotate))
         else:
             raise

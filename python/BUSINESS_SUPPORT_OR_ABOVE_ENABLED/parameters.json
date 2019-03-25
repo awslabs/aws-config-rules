@@ -1,10 +1,10 @@
 {
   "Version": "1.0", 
   "Parameters": {
-    "CodeKey": "business-support-enabled.zip", 
+    "CodeKey": "BUSINESS_SUPPORT_OR_ABOVE_ENABLED.zip", 
     "SourceRuntime": "python3.6", 
-    "SourcePeriodic": "Three_Hours", 
-    "RuleName": "business-support-enabled", 
+    "SourcePeriodic": "TwentyFour_Hours", 
+    "RuleName": "BUSINESS_SUPPORT_OR_ABOVE_ENABLED", 
     "OptionalParameters": "{}", 
     "InputParameters": "{}"
   }, 

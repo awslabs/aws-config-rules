@@ -33,7 +33,7 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('business-support-enabled')
+RULE = __import__('BUSINESS_SUPPORT_OR_ABOVE_ENABLED')
 
 class SampleTest(unittest.TestCase):
 
