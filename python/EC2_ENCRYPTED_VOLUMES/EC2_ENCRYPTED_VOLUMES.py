@@ -138,22 +138,22 @@ def is_in_subnet_exception_list(configuration_item, subnet_exception_list, event
     return False
 
 def get_ebs_volumes(configuration_item, event):
-    volumeIds = []
+    volume_ids = []
     for relationship in configuration_item['relationships']:
         if relationship['resourceType'] == 'AWS::EC2::Volume':
-            volumeIds.append(relationship['resourceId'])
+            volume_ids.append(relationship['resourceId'])
     ec2_client = get_client('ec2', event)
-    return ec2_client.describe_volumes(VolumeIds=volumeIds)['Volumes']
+    return ec2_client.describe_volumes(VolumeIds=volume_ids)['Volumes']
 
 def is_ebs_volume_encrypted(volumes):
     for volume in volumes:
-        if volume['Encrypted'] == False:
+        if not volume['Encrypted']:
             return False
     return True
 
-def is_in_kmsid_list(volumes, kmsIdList):
+def is_in_kmsid_list(volumes, kms_id_list):
     for volume in volumes:
-        if volume['KmsKeyId'].split('/')[1] not in kmsIdList:
+        if volume['KmsKeyId'].split('/')[1] not in kms_id_list:
             return False
     return True
 
@@ -188,7 +188,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     if is_ebs_volume_encrypted(volumes):
         if 'KmsIdList' in valid_rule_parameters:
-            if is_in_kmsid_list(volumes, valid_rule_parameters['KmsIdList']) == False:
+            if not is_in_kmsid_list(volumes, valid_rule_parameters['KmsIdList']):
                 return build_evaluation_from_config_item(
                     configuration_item,
                     'NON_COMPLIANT',
@@ -220,8 +220,13 @@ def evaluate_parameters(rule_parameters):
         valid_rule_parameters['SubnetExceptionList'] = sub_exception_list
 
     if 'KmsIdList' in rule_parameters:
-        kmsid_exception_list = rule_parameters['KmsIdList'].split(',')
-        valid_rule_parameters['KmsIdList'] = kmsid_exception_list
+        kms_id_split = rule_parameters['KmsIdList'].split(',')
+        kms_id_list = [kms_id.strip() for kms_id in kms_id_split]
+        kms_id_list_check = verify_kms_id_list(kms_id_list)
+        if isinstance(kms_id_list_check, tuple) and not kms_id_list_check[0]:
+            raise ValueError('Invalid KMS ID specified: {}'.format(kms_id_list_check[1]))
+        valid_rule_parameters['KmsIdList'] = kms_id_list
+
     return valid_rule_parameters
 
 ####################
@@ -234,6 +239,23 @@ def verify_subnet_exception_list(subnet_ids):
         if subnet_id.startswith('subnet-') and subnet_id[7:].isalnum() and subnet_id.islower():
             continue
         return (False, subnet_id)
+    return True
+
+# KMS ID Validation
+def validate_kms_id(kms_id):
+    if '-' not in kms_id or kms_id[0] == '-' or kms_id[-1] == '-' or '--' in kms_id:
+        return False
+    kms_id_elements = kms_id.split('-')
+    for element in kms_id_elements:
+        if (element.isalnum() and element.islower()) or element.isdigit():
+            continue
+        return False
+    return True
+
+def verify_kms_id_list(kms_id_list):
+    for kms_id in kms_id_list:
+        if not validate_kms_id(kms_id):
+            return (False, kms_id)
     return True
 
 # Build an error to be displayed in the logs when the parameter is invalid.
