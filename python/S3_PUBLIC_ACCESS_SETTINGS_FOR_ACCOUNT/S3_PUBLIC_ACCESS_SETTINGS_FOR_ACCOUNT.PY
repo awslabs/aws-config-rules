@@ -4,7 +4,6 @@
 # Created with the Rule Development Kit: https://github.com/awslabs/aws-config-rdk
 #
 
-
 '''
 #####################################
 ##           Gherkin               ##
