@@ -13,7 +13,7 @@ Rule Name:
 Description:
   Checks whether your AWS S3 public access settings match the assigned parameters.
 Trigger:
-  Configuration change on AWS::::Account
+  Configuration change on Periodic : 1 hour
 Resource Type to report on:
   AWS::::Account
 Rule Parameters:
