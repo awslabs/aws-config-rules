@@ -114,6 +114,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     iam_client = get_client('iam', event)
     compliance_results = []
     users_list = get_all_iam_users(iam_client)
+    print(users_list)
     permission_boundary_list = iam_client.list_policies(OnlyAttached=True, PolicyUsageFilter='PermissionsBoundary')
     if users_list and permission_boundary_list:
         for user in users_list:
@@ -137,20 +138,18 @@ def get_all_iam_users(client):
 
 def evaluate_user(event, username, valid_rule_parameters, iam_client):
     user_details = iam_client.get_user(UserName=username)
-    if 'PermissionsBoundary' in user_details['User']:
-        if 'policyArns' in valid_rule_parameters:
-            permission_boundary_policy_names = valid_rule_parameters['policyArns'].replace(" ", "")
-            permission_boundary_policy_name_list = permission_boundary_policy_names.split(",")
-            boundary_name = user_details['User']['PermissionsBoundary']['PermissionsBoundaryArn']
-            for permission_policy_name in permission_boundary_policy_name_list:
-                if permission_policy_name == boundary_name:
-                    return 'COMPLIANT'                      # the IAM user has the specific permission boundary attached
-        else:
-            return 'COMPLIANT'                              # the IAM user has the permission boundary attached no specific input provided.
-    else:
-        return 'NON_COMPLIANT'                              # the IAM user has no permission boundary attached no specific input provided.
+    if not 'PermissionsBoundary' in user_details['User']:
+        return 'NON_COMPLIANT'                               # the IAM user has no permission boundary attached no specific input provided.
 
-    return 'NON_COMPLIANT'                                  # the IAM user does not have the specific permission boundary attached
+    if not'policyArns' in valid_rule_parameters:
+        return 'COMPLIANT'                                  # the IAM user has the permission boundary attached no specific input provided.
+        
+    boundary_name = user_details['User']['PermissionsBoundary']['PermissionsBoundaryArn']
+    for permission_policy_name in valid_rule_parameters['policyArns']:
+        if permission_policy_name == boundary_name:
+            return 'COMPLIANT'                      # the IAM user has the specific permission boundary attached              
+
+    return 'NON_COMPLIANT'                          # the IAM user does not have the specific permission boundary attached
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
@@ -169,6 +168,8 @@ def evaluate_parameters(rule_parameters):
                 raise ValueError('The parameter shoule be a valid ARN format of the policy')
             if len(permission_policy_name) > 161:
                 raise ValueError('The permission boundary policy name is greater than 128 characters')
+
+    rule_parameters['policyArns'] = permission_boundary_policy_name_list
 
     valid_rule_parameters = rule_parameters
 
