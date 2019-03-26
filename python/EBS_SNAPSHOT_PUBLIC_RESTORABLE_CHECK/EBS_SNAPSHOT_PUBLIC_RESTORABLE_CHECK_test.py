@@ -39,7 +39,6 @@ sys.modules['boto3'] = Boto3Mock()
 RULE = __import__('EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK')
 
 class NonCompliantResourcesTest(unittest.TestCase):
-    lambda_event = {}
 
     def describe_snapshots_side_effect(self, OwnerIds=None, RestorableByUserIds=None, MaxResults=None, NextToken=None, Filters=None):
         next_token = "ABC=="
@@ -55,13 +54,12 @@ class NonCompliantResourcesTest(unittest.TestCase):
 
 # Checks for scenario wherein non-compliant resources are present and pagination exists
     def test_scenario_2_all_noncompliant_resources(self):
-        self.lambda_event = build_lambda_scheduled_event()
         EC2_CLIENT_MOCK.describe_snapshots.side_effect = self.describe_snapshots_side_effect
-        lambda_result = RULE.lambda_handler(self.lambda_event, {})
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         expected_response = [build_expected_response(compliance_type='NON_COMPLIANT',
-                                                     compliance_resource_id='123456789012',
+                                                     compliance_resource_id='snap-9a0a02f7',
                                                      compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='Public Amazon EBS Snapshot: snap-9a0a02f7'),
-                             build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='123456789012',
+                             build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='snap-0daeb11514fba831a',
                                                      compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation='Public Amazon EBS Snapshot: snap-0daeb11514fba831a')]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
@@ -70,10 +68,9 @@ class CompliantResourcesTest(unittest.TestCase):
     lambda_event = {}
 
     def test_scenario_1_compliant_resources(self):
-        self.lambda_event = build_lambda_scheduled_event()
         describe_snapshots_result = {'Snapshots': []}
         EC2_CLIENT_MOCK.describe_snapshots = MagicMock(return_value=describe_snapshots_result)
-        lambda_result = RULE.lambda_handler(self.lambda_event, {})
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         expected_response = [build_expected_response(compliance_type='COMPLIANT',
                                                      compliance_resource_id='123456789012', compliance_resource_type=DEFAULT_RESOURCE_TYPE)]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
