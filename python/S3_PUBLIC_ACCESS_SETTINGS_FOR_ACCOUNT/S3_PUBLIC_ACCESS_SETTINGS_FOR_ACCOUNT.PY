@@ -4,6 +4,7 @@
 # Created with the Rule Development Kit: https://github.com/awslabs/aws-config-rdk
 #
 
+
 '''
 #####################################
 ##           Gherkin               ##
@@ -11,9 +12,9 @@
 Rule Name:
   S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT
 Description:
-  Checks whether your AWS S3 public access settings match the assigned parameters.
+  Checks whether AWS S3 public access account settings match the assigned parameters.
 Trigger:
-  Configuration change on Periodic : 1 hour
+  Periodic : 1 hour
 Resource Type to report on:
   AWS::::Account
 Rule Parameters:
@@ -32,11 +33,11 @@ Feature:
 Scenarios:
   Scenario 1:
     Given: config parameters are defined for the config rule
-      And: At least 1 S3 config parameter does not match the corresponding  value for the account
+      And: At least 1 S3 config parameter does not match the corresponding value for the account
      then: Return NON_COMPLIANT
   Scenario 2:
     Given: config parameters are defined for the config rule
-      And: All S3 config parameter match the corresponding  value for the account
+      And: All S3 config parameters match the corresponding value for the account
      then: Return COMPLIANT
 '''
 
