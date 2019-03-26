@@ -68,7 +68,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Generates non-compliant response
 def generate_evaluation_list(images, event):
     evaluations = []
-    # Looping through all available images
     for image in images:
         evaluation = build_evaluation(
             image['ImageId'],
@@ -80,11 +79,6 @@ def generate_evaluation_list(images, event):
     return evaluations
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-
-    ###############################
-    # Add your custom logic here. #
-    ###############################
-
     ec2_client = get_client('ec2', event)
     public_ami_result = ec2_client.describe_images(
                               Filters=[
@@ -98,17 +92,9 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     # If public_ami_list is not empty, generate non-compliant response
     if public_ami_result['Images']:
           return generate_evaluation_list(public_ami_result['Images'], event)
-    return None
+    return build_evaluation(event['accountId'], "COMPLIANT", event)
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
-
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 

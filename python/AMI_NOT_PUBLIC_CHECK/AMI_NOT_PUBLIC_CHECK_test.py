@@ -49,7 +49,7 @@ class CompliantResourcesTest(unittest.TestCase):
         response = RULE.lambda_handler(build_lambda_scheduled_event(),{})
         expected_response = [
                         build_expected_response(
-                                compliance_type='NOT_APPLICABLE',
+                                compliance_type='COMPLIANT',
                                 compliance_resource_id='123456789012'
                         )
         ]
