@@ -21,6 +21,7 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
+SUPPORT_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
@@ -28,6 +29,8 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         elif client_name == 'sts':
             return STS_CLIENT_MOCK
+        if client_name == 'support':
+            return SUPPORT_CLIENT_MOCK
         else:
             raise Exception("Attempting to create an unknown client")
 
@@ -35,24 +38,18 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('BUSINESS_SUPPORT_OR_ABOVE_ENABLED')
 
-class SampleTest(unittest.TestCase):
+class Compliance_Test(unittest.TestCase):
+    def test_scenario_1(self):
+        resp_expected = []
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        resp_expected.append(build_expected_response('NON_COMPLIANT', '0123456789012', DEFAULT_RESOURCE_TYPE, annotation='This AWS Account is not subscribed to the AWS business Support plan or above.'))
+        assert_successful_evaluation(self, response, resp_expected) 
 
-    rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
-
-    invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-
-    def setUp(self):
-        pass
-
-    def test_sample(self):
-        self.assertTrue(True)
-
-    #def test_sample_2(self):
-    #    RULE.ASSUME_ROLE_MODE = False
-    #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
-    #    resp_expected = []
-    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-    #    assert_successful_evaluation(self, response, resp_expected)
+    def test_scenario_2(self):
+        resp_expected = []
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        resp_expected.append(build_expected_response('COMPLIANT', '123456789012', DEFAULT_RESOURCE_TYPE))
+        assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #
