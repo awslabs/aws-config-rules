@@ -1,9 +1,9 @@
 {
   "Version": "1.0",
   "Parameters": {
-    "RuleName": "s3_public_access_settings_for_account",
+    "RuleName": "S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT",
     "SourceRuntime": "python3.6",
-    "CodeKey": "s3_public_access_settings_for_account.zip",
+    "CodeKey": "S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT.zip",
     "InputParameters": "{}",
     "OptionalParameters": "{\"BlockPublicAcls\": \"True\", \"IgnorePublicAcls\": \"True\", \"BlockPublicPolicy\": \"True\", \"RestrictPublicBuckets\": \"True\"}",
     "SourcePeriodic": "One_Hour"

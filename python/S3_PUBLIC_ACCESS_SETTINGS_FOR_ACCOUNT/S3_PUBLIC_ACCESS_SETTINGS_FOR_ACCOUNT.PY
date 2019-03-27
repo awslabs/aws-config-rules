@@ -67,8 +67,7 @@ ASSUME_ROLE_MODE = False
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
   
     client = boto3.client('s3control')
-    AWS_ACCOUNT_ID = boto3.client('sts').get_caller_identity().get('Account')
-    response = client.get_public_access_block(AccountId=AWS_ACCOUNT_ID)
+    response = client.get_public_access_block(AccountId=event['accountId'])
     evaluations = []
     annotationbuilder = ''
 
@@ -80,14 +79,14 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         'IgnorePublicAcls:' + str(response['PublicAccessBlockConfiguration']['IgnorePublicAcls']) + ' ' \
         'BlockPublicPolicy:' + str(response['PublicAccessBlockConfiguration']['BlockPublicPolicy']) + ' ' \
         'RestrictPublicBuckets:' + str(response['PublicAccessBlockConfiguration']['RestrictPublicBuckets'])
-        evaluations.append(build_evaluation(AWS_ACCOUNT_ID, 'COMPLIANT', event, annotation=annotationbuilder))
+        evaluations.append(build_evaluation(event['accountId'], 'COMPLIANT', event))
 
     else:
         annotationbuilder = 'BlockPublicAcls:' + str(response['PublicAccessBlockConfiguration']['BlockPublicAcls']) + ' ' \
         'IgnorePublicAcls:' + str(response['PublicAccessBlockConfiguration']['IgnorePublicAcls']) + ' ' \
         'BlockPublicPolicy:' + str(response['PublicAccessBlockConfiguration']['BlockPublicPolicy']) + ' ' \
         'RestrictPublicBuckets:' + str(response['PublicAccessBlockConfiguration']['RestrictPublicBuckets'])
-        evaluations.append(build_evaluation(AWS_ACCOUNT_ID, 'NON_COMPLIANT', event, annotation=annotationbuilder))
+        evaluations.append(build_evaluation(event['accountId'], 'NON_COMPLIANT', event, annotation=annotationbuilder))
     return evaluations
 
 def evaluate_parameters(rule_parameters):
