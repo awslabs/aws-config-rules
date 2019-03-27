@@ -101,7 +101,7 @@ class ComplianceTestScenarios(unittest.TestCase):
         RULE.ASSUME_ROLE_MODE = False
         response = RULE.lambda_handler(build_lambda_scheduled_event(self.rule_valid_parameters), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'fs-123456ab', 'AWS::EFS::FileSystem', 'EFS is not encryprted'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'fs-123456ab', 'AWS::EFS::FileSystem', 'This EFS File System is not encrypted.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     # Scenario 3
@@ -115,11 +115,11 @@ class ComplianceTestScenarios(unittest.TestCase):
 
     # Scenario 4
     def test_efs_encrypted_no_match(self):
-        EFS_CLIENT_MOCK.describe_file_systems = MagicMock(return_value=self.efs_not_encrypted)
+        EFS_CLIENT_MOCK.describe_file_systems = MagicMock(return_value=self.efs_encrypted_different_kms_key)
         RULE.ASSUME_ROLE_MODE = False
         response = RULE.lambda_handler(build_lambda_scheduled_event(self.rule_valid_parameters), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'fs-123456ab', 'AWS::EFS::FileSystem', 'EFS is not encryprted'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'fs-123456ab', 'AWS::EFS::FileSystem', 'This EFS File System is not encrypted with the KMS key specified in "KmsKeyId" input parameter.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     # Scenario 5

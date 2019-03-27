@@ -13,8 +13,10 @@
 #####################################
 ##           Gherkin               ##
 #####################################
+
 Rule Name:
     EFS_ENCRYPTED_CHECK
+
 Description:
     Check whether Amazon EFS Filesytems are configured to encrypt the file data using AWS Key Management Service (AWS KMS).
 
@@ -26,8 +28,7 @@ Reports on:
 
 Rule Parameters:
     KmsKeyId
-     Optional
-     ARN of the KMS key that is used to encrypt the EFS filesystem
+     (Optional) ARN of the KMS key that is used to encrypt the EFS filesystem
 
 Scenarios:
   Scenario 1:
@@ -104,7 +105,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     for each_efs in all_file_systems:
         # check if file system is encrypted
         if not each_efs['Encrypted']:
-            evaluations.append(build_evaluation(each_efs['FileSystemId'], 'NON_COMPLIANT', event, annotation='EFS is not encryprted'))
+            evaluations.append(build_evaluation(each_efs['FileSystemId'], 'NON_COMPLIANT', event, annotation='This EFS File System is not encrypted.'))
             continue
 
         # if there is no parameter, return COMPLIANT
@@ -116,7 +117,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         if each_efs['KmsKeyId'] == valid_rule_parameters:
             evaluations.append(build_evaluation(each_efs['FileSystemId'], 'COMPLIANT', event))
         else:
-            evaluations.append(build_evaluation(each_efs['FileSystemId'], 'NON_COMPLIANT', event, annotation='KMS key used to encrypt the EFS is not mathcing the KMS Key provided in the parameter'))
+            evaluations.append(build_evaluation(each_efs['FileSystemId'], 'NON_COMPLIANT', event, annotation='This EFS File System is not encrypted with the KMS key specified in "KmsKeyId" input parameter.'))
 
     return evaluations
 
