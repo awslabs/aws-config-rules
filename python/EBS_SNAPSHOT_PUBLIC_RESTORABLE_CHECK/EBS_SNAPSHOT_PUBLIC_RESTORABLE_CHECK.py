@@ -59,6 +59,12 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 
+def build_annotation(annotation_string):
+    if len(annotation_string) > 256:
+        return annotation_string[0:242] + "[...truncated]"
+    return annotation_string
+
+
 # Function to get IDs for all non compliant resources
 def generate_snapshot_id_list(snapshots, event):
     snapshot_ids = []
@@ -90,9 +96,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     public_snapshots_result = get_public_snapshots(ec2_client, event['accountId'])
     if not public_snapshots_result:
         return build_evaluation(event['accountId'], 'COMPLIANT', event)
-    snapshot_ids = generate_snapshot_id_list(public_snapshots_result, event)
-    for snapshot_id in snapshot_ids:
-        evaluations.append(build_evaluation(snapshot_id, 'NON_COMPLIANT', event, annotation='Public Amazon EBS Snapshot: {}'.format(snapshot_id)))
+    evaluations.append(build_evaluation(event['accountId'], 'NON_COMPLIANT', event, annotation=build_annotation('Public Amazon EBS Snapshot: {}'.format(",".join([snapshot_id for snapshot_id in generate_snapshot_id_list(public_snapshots_result, event)])))))
     return evaluations
 
 
