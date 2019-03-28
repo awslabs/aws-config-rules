@@ -78,13 +78,8 @@ class NonCompliantResourcesTest(unittest.TestCase):
             expected_response = [
                         build_expected_response(
                                 compliance_type='NON_COMPLIANT',
-                                compliance_resource_id='ami-040574eaefd6dc6d4',
-                                annotation="Amazon Machine Image Id: ami-040574eaefd6dc6d4 is public."
-                        ),
-                        build_expected_response(
-                                compliance_type='NON_COMPLIANT',
-                                compliance_resource_id='ami-0a1402bb0642906aa',
-                                annotation="Amazon Machine Image Id: ami-0a1402bb0642906aa is public."
+                                compliance_resource_id='123456789012',
+                                annotation="Amazon Machine Image Id: ['ami-040574eaefd6dc6d4', 'ami-0a1402bb0642906aa'] is public."
                         )
             ]
             assert_successful_evaluation(self, response, expected_response, len(response))

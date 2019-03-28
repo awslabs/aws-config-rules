@@ -48,10 +48,6 @@ try:
 except ImportError:
     pass
 
-##############
-# Parameters #
-##############
-
 # Define the default resource to report to Config Rules
 DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
@@ -61,22 +57,12 @@ ASSUME_ROLE_MODE = False
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
-#############
-# Main Code #
-#############
-
-# Generates non-compliant response
-def generate_evaluation_list(images, event):
-    evaluations = []
+# Generates list of image_id's of public images
+def generate_image_id_list(images, event):
+    image_ids = []
     for image in images:
-        evaluation = build_evaluation(
-            image['ImageId'],
-            "NON_COMPLIANT",
-            event,
-            annotation="Amazon Machine Image Id: {} is public.".format(image['ImageId'])
-        )
-        evaluations.append(evaluation)
-    return evaluations
+        image_ids.append(image['ImageId'])
+    return image_ids
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ec2_client = get_client('ec2', event)
@@ -91,7 +77,13 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                         )
     # If public_ami_list is not empty, generate non-compliant response
     if public_ami_result['Images']:
-          return generate_evaluation_list(public_ami_result['Images'], event)
+                image_ids = generate_image_id_list(public_ami_result['Images'], event)
+                return build_evaluation(
+                            event['accountId'],
+                            "NON_COMPLIANT",
+                            event,
+                            annotation="Amazon Machine Image Id: {} is public.".format(image_ids)[:256]
+                        )
     return build_evaluation(event['accountId'], "COMPLIANT", event)
 
 def evaluate_parameters(rule_parameters):
@@ -104,11 +96,6 @@ def evaluate_parameters(rule_parameters):
 
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
-    """Return an error dictionary when the evaluate_parameters() raises a ValueError.
-
-    Keyword arguments:
-    ex -- Exception text
-    """
     return  build_error_response(internal_error_message="Parameter value is invalid",
                                  internal_error_details="An ValueError was raised during the validation of the Parameter value",
                                  customer_error_code="InvalidParameterValueException",
@@ -117,12 +104,6 @@ def build_parameters_value_error_response(ex):
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
 def get_client(service, event):
-    """Return the service boto client. It should be used instead of directly calling the client.
-
-    Keyword arguments:
-    service -- the service name used for calling the boto.client()
-    event -- the event variable given in the lambda handler
-    """
     if not ASSUME_ROLE_MODE:
         return boto3.client(service)
     credentials = get_assume_role_credentials(event["executionRoleArn"])
@@ -133,15 +114,6 @@ def get_client(service, event):
 
 # This generate an evaluation for config
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
-    """Form an evaluation as a dictionary. Usually suited to report on scheduled rules.
-
-    Keyword arguments:
-    resource_id -- the unique id of the resource to report
-    compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    event -- the event variable given in the lambda handler
-    resource_type -- the CloudFormation resource type (or AWS::::Account) to report on the rule (default DEFAULT_RESOURCE_TYPE)
-    annotation -- an annotation to be added to the evaluation (default None)
-    """
     eval_cc = {}
     if annotation:
         eval_cc['Annotation'] = annotation
@@ -152,13 +124,6 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     return eval_cc
 
 def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
-    """Form an evaluation as a dictionary. Usually suited to report on configuration change rules.
-
-    Keyword arguments:
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    annotation -- an annotation to be added to the evaluation (default None)
-    """
     eval_ci = {}
     if annotation:
         eval_ci['Annotation'] = annotation
