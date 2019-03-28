@@ -27,7 +27,7 @@ Reports on:
     AWS::IAM::User
 
 Rule Parameters:
-    policyArns (Optional) 
+    policyArns (Optional)
     Comma-separated list of permission boundary policy ARNs, that are expected to be attached to the IAM Users
 
 Scenarios:
@@ -114,20 +114,16 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     iam_client = get_client('iam', event)
     evaluations = []
     users_list = get_all_iam_users(iam_client)
+    if not users_list:
+        return 'NOT_APPLICABLE'
     #To check if atleast 1 permission boundary exists.
     permission_boundary_list = iam_client.list_policies(OnlyAttached=True, PolicyUsageFilter='PermissionsBoundary')
-
-    if not users_list :
-        return 'NOT_APPLICABLE'
-
     if not permission_boundary_list:
         for user in users_list:
-            return evaluations.append(build_evaluation(user['UserId'], 'NON_COMPLIANT', Annotation='No permission boundary attached to the IAM User'))
-
+            return evaluations.append(build_evaluation(user['UserId'], 'NON_COMPLIANT', event, annotation='No permission boundary is attached to this IAM User'))
     for user in users_list:
-        compliance_type = evaluate_user(event, user['UserName'], valid_rule_parameters, iam_client)
-        evaluations.append(build_evaluation(user['UserId'], compliance_type, event, DEFAULT_RESOURCE_TYPE))
-
+        compliance_type = evaluate_user(user['UserName'], valid_rule_parameters, iam_client)
+        evaluations.append(build_evaluation(user['UserId'], compliance_type, event))
     return evaluations
 
 def get_all_iam_users(client):
@@ -140,24 +136,20 @@ def get_all_iam_users(client):
             user_list = client.list_users(Marker=user_list['Marker'])
         else:
             return list_to_return
-            
 #This function checks the IAM user for permission boundary policy and declares COMPLAINT and NON_COMPLAINT accordingly.
-def evaluate_user(event, username, valid_rule_parameters, iam_client):
+def evaluate_user(username, valid_rule_parameters, iam_client):
     user_details = iam_client.get_user(UserName=username)
     if not 'PermissionsBoundary' in user_details['User']:
-        return 'NON_COMPLIANT'                               
+        return 'NON_COMPLIANT'
     if not'policyArns' in valid_rule_parameters:
-        return 'COMPLIANT'                                 
-        
+        return 'COMPLIANT'
     boundary_name = user_details['User']['PermissionsBoundary']['PermissionsBoundaryArn']
     for permission_policy_name in valid_rule_parameters['policyArns']:
         if permission_policy_name == boundary_name:
-            return 'COMPLIANT'                                   
-
-    return 'NON_COMPLIANT'                          
+            return 'COMPLIANT'
+    return 'NON_COMPLIANT'
 
 def evaluate_parameters(rule_parameters):
-
     if rule_parameters:
         permission_boundary_policy_names = rule_parameters['policyArns'].replace(" ", "")
         permission_boundary_policy_name_list = permission_boundary_policy_names.split(",")
