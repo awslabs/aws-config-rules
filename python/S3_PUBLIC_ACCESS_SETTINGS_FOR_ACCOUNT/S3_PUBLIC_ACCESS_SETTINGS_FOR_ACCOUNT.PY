@@ -1,8 +1,13 @@
+# Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-# This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
+# Licensed under the Apache License, Version 2.0 (the "License"). You may
+# not use this file except in compliance with the License. A copy of the License is located at
 #
-# Created with the Rule Development Kit: https://github.com/awslabs/aws-config-rdk
+#        http://aws.amazon.com/apache2.0/
 #
+# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
+# the specific language governing permissions and limitations under the License.
 
 '''
 #####################################
@@ -17,14 +22,14 @@ Trigger:
 Resource Type to report on:
   AWS::::Account
 Rule Parameters:
-  | ---------------------- | ---------- | ----------------------------------------------------------------------------------------|
-  | Parameter Name         | Type       | Description                                                                             |
-  | ---------------------- | ---------- | ----------------------------------------------------------------------------------------|
-  | BlockPublicAcls        | Mandatory  | Block new public ACLs and uploading public objects (True/False)                         |
-  | IgnorePublicAcls       | Mandatory  | Remove public access granted through public ACLs (True/False)                           |
-  | BlockPublicPolicy      | Mandatory  | Block new public bucket policies (True/False)                                           |
-  | RestrictPublicBuckets  | Mandatory  | Block public and cross-account access to buckets that have public policies (True/False) |
-  | ---------------------- | ---------- | ----------------------------------------------------------------------------------------|
+  | ---------------------- | ---------- | -----------------------------------------------------------------------------------------|
+  | Parameter Name         | Type       | Description                                                                              |
+  | ---------------------- | ---------- | -----------------------------------------------------------------------------------------|
+  | BlockPublicAcls        | Optional   | Block new public ACLs and uploading public objects (Default True)                        |
+  | IgnorePublicAcls       | Optional   | Remove public access granted through public ACLs (Default True)                          |
+  | BlockPublicPolicy      | Optional   | Block new public bucket policies (Default True)                                          |
+  | RestrictPublicBuckets  | Optional   | Block public and cross-account access to buckets that have public policies (Default True)|
+  | ---------------------- | ---------- | -----------------------------------------------------------------------------------------|
 Feature:
   In order to: ensure that s3 account settings are being restricted to the appropriate level
            As: a Security Officer
@@ -40,6 +45,8 @@ Scenarios:
      then: Return COMPLIANT
 '''
 
+
+
 import json
 import datetime
 import os
@@ -49,6 +56,12 @@ envLambdaTaskRoot = os.environ["LAMBDA_TASK_ROOT"]
 sys.path.insert(0,envLambdaTaskRoot+"/boto3-1-9-82") #hack to change the version of boto
 import boto3
 import botocore
+
+try:
+    import liblogging
+except ImportError:
+    pass
+
 
 ##############
 # Parameters #
@@ -60,13 +73,16 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
 
+# Other parameters (no change needed)
+CONFIG_ROLE_TIMEOUT_SECONDS = 900
+
 #############
 # Main Code #
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
   
-    client = boto3.client('s3control')
+    client = get_client('s3control', event)
     response = client.get_public_access_block(AccountId=event['accountId'])
     evaluations = []
     annotationbuilder = ''
@@ -94,23 +110,19 @@ def evaluate_parameters(rule_parameters):
     valid_rule_parameters = {}
 
     if 'BlockPublicAcls' not in rule_parameters:
-        raise ValueError('The parameter "BlockPublicAcls" must be configured.')
+        rule_parameters['BlockPublicAcls'] = True
     if 'IgnorePublicAcls' not in rule_parameters:
-        raise ValueError('The parameter "IgnorePublicAcls" must be configured.')
+        rule_parameters['IgnorePublicAcls'] = True
     if 'BlockPublicPolicy' not in rule_parameters:
-        raise ValueError('The parameter "BlockPublicPolicy" must be configured.')
+        rule_parameters['BlockPublicPolicy'] = True
     if 'RestrictPublicBuckets' not in rule_parameters:
-        raise ValueError('The parameter "RestrictPublicBuckets" must be configured.')
+        rule_parameters['RestrictPublicBuckets'] = True
     valid_rule_parameters['BlockPublicAcls'] = to_bool(rule_parameters['BlockPublicAcls'])
     valid_rule_parameters['IgnorePublicAcls'] = to_bool(rule_parameters['IgnorePublicAcls'])
     valid_rule_parameters['BlockPublicPolicy'] = to_bool(rule_parameters['BlockPublicPolicy'])
     valid_rule_parameters['RestrictPublicBuckets'] = to_bool(rule_parameters['RestrictPublicBuckets'])
 
     return valid_rule_parameters
-
-####################
-# Helper Functions #
-####################
 
 def to_bool(value):
     """
@@ -128,18 +140,31 @@ def to_bool(value):
         raise Exception('Invalid value for boolean conversion: ' + value)
     return bool(value)
 
+####################
+# Helper Functions #
+####################
+
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
+    """Return an error dictionary when the evaluate_parameters() raises a ValueError.
 
-    return  build_error_response(internalErrorMessage="Parameter value is invalid",
-                                 internalErrorDetails="An ValueError was raised during the validation of the Parameter value",
-                                 customerErrorCode="InvalidParameterValueException",
-                                 customerErrorMessage=str(ex))
+    Keyword arguments:
+    ex -- Exception text
+    """
+    return  build_error_response(internal_error_message="Parameter value is invalid",
+                                 internal_error_details="An ValueError was raised during the validation of the Parameter value",
+                                 customer_error_code="InvalidParameterValueException",
+                                 customer_error_message=str(ex))
 
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
 def get_client(service, event):
+    """Return the service boto client. It should be used instead of directly calling the client.
 
+    Keyword arguments:
+    service -- the service name used for calling the boto.client()
+    event -- the event variable given in the lambda handler
+    """
     if not ASSUME_ROLE_MODE:
         return boto3.client(service)
     credentials = get_assume_role_credentials(event["executionRoleArn"])
@@ -150,7 +175,15 @@ def get_client(service, event):
 
 # This generate an evaluation for config
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
+    """Form an evaluation as a dictionary. Usually suited to report on scheduled rules.
 
+    Keyword arguments:
+    resource_id -- the unique id of the resource to report
+    compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
+    event -- the event variable given in the lambda handler
+    resource_type -- the CloudFormation resource type (or AWS::::Account) to report on the rule (default DEFAULT_RESOURCE_TYPE)
+    annotation -- an annotation to be added to the evaluation (default None)
+    """
     eval_cc = {}
     if annotation:
         eval_cc['Annotation'] = annotation
@@ -161,7 +194,13 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     return eval_cc
 
 def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
+    """Form an evaluation as a dictionary. Usually suited to report on configuration change rules.
 
+    Keyword arguments:
+    configuration_item -- the configurationItem dictionary in the invokingEvent
+    compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
+    annotation -- an annotation to be added to the evaluation (default None)
+    """
     eval_ci = {}
     if annotation:
         eval_ci['Annotation'] = annotation
@@ -199,53 +238,57 @@ def get_configuration(resource_type, resource_id, configuration_capture_time):
         resourceId=resource_id,
         laterTime=configuration_capture_time,
         limit=1)
-    configurationItem = result['configurationItems'][0]
-    return convert_api_configuration(configurationItem)
+    configuration_item = result['configurationItems'][0]
+    return convert_api_configuration(configuration_item)
 
 # Convert from the API model to the original invocation model
-def convert_api_configuration(configurationItem):
-    for k, v in configurationItem.items():
+def convert_api_configuration(configuration_item):
+    for k, v in configuration_item.items():
         if isinstance(v, datetime.datetime):
-            configurationItem[k] = str(v)
-    configurationItem['awsAccountId'] = configurationItem['accountId']
-    configurationItem['ARN'] = configurationItem['arn']
-    configurationItem['configurationStateMd5Hash'] = configurationItem['configurationItemMD5Hash']
-    configurationItem['configurationItemVersion'] = configurationItem['version']
-    configurationItem['configuration'] = json.loads(configurationItem['configuration'])
-    if 'relationships' in configurationItem:
-        for i in range(len(configurationItem['relationships'])):
-            configurationItem['relationships'][i]['name'] = configurationItem['relationships'][i]['relationshipName']
-    return configurationItem
+            configuration_item[k] = str(v)
+    configuration_item['awsAccountId'] = configuration_item['accountId']
+    configuration_item['ARN'] = configuration_item['arn']
+    configuration_item['configurationStateMd5Hash'] = configuration_item['configurationItemMD5Hash']
+    configuration_item['configurationItemVersion'] = configuration_item['version']
+    configuration_item['configuration'] = json.loads(configuration_item['configuration'])
+    if 'relationships' in configuration_item:
+        for i in range(len(configuration_item['relationships'])):
+            configuration_item['relationships'][i]['name'] = configuration_item['relationships'][i]['relationshipName']
+    return configuration_item
 
 # Based on the type of message get the configuration item
 # either from configurationItem in the invoking event
 # or using the getResourceConfigHistiry API in getConfiguration function.
-def get_configuration_item(invokingEvent):
-    check_defined(invokingEvent, 'invokingEvent')
-    if is_oversized_changed_notification(invokingEvent['messageType']):
-        configurationItemSummary = check_defined(invokingEvent['configurationItemSummary'], 'configurationItemSummary')
-        return get_configuration(configurationItemSummary['resourceType'], configurationItemSummary['resourceId'], configurationItemSummary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invokingEvent['messageType']):
+def get_configuration_item(invoking_event):
+    check_defined(invoking_event, 'invokingEvent')
+    if is_oversized_changed_notification(invoking_event['messageType']):
+        configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
+        return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
+    elif is_scheduled_notification(invoking_event['messageType']):
         return None
-    return check_defined(invokingEvent['configurationItem'], 'configurationItem')
+    return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
 # Check whether the resource has been deleted. If it has, then the evaluation is unnecessary.
-def is_applicable(configurationItem, event):
+def is_applicable(configuration_item, event):
     try:
-        check_defined(configurationItem, 'configurationItem')
+        check_defined(configuration_item, 'configurationItem')
         check_defined(event, 'event')
     except:
         return True
-    status = configurationItem['configurationItemStatus']
-    eventLeftScope = event['eventLeftScope']
+    status = configuration_item['configurationItemStatus']
+    event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not eventLeftScope
+    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
 
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')
     try:
-        assume_role_response = sts_client.assume_role(RoleArn=role_arn, RoleSessionName="configLambdaExecution")
+        assume_role_response = sts_client.assume_role(RoleArn=role_arn,
+                                                      RoleSessionName="configLambdaExecution",
+                                                      DurationSeconds=CONFIG_ROLE_TIMEOUT_SECONDS)
+        if 'liblogging' in sys.modules:
+            liblogging.logSession(role_arn, assume_role_response)
         return assume_role_response['Credentials']
     except botocore.exceptions.ClientError as ex:
         # Scrub error message for any internal account info leaks
@@ -293,8 +336,9 @@ def clean_up_old_evaluations(latest_evaluations, event):
 
     return cleaned_evaluations + latest_evaluations
 
-# This decorates the lambda_handler in rule_code with the actual PutEvaluation call
 def lambda_handler(event, context):
+    if 'liblogging' in sys.modules:
+        liblogging.logEvent(event)
 
     global AWS_CONFIG_CLIENT
 
@@ -361,13 +405,19 @@ def lambda_handler(event, context):
         evaluations.append(build_evaluation_from_config_item(configuration_item, 'NOT_APPLICABLE'))
 
     # Put together the request that reports the evaluation status
-    resultToken = event['resultToken']
-    testMode = False
-    if resultToken == 'TESTMODE':
+    result_token = event['resultToken']
+    test_mode = False
+    if result_token == 'TESTMODE':
         # Used solely for RDK test to skip actual put_evaluation API call
-        testMode = True
+        test_mode = True
+
     # Invoke the Config API to report the result of the evaluation
-    AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluations, ResultToken=resultToken, TestMode=testMode)
+    evaluation_copy = []
+    evaluation_copy = evaluations[:]
+    while evaluation_copy:
+        AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluation_copy[:100], ResultToken=result_token, TestMode=test_mode)
+        del evaluation_copy[:100]
+
     # Used solely for RDK test to be able to test Lambda function
     return evaluations
 
@@ -375,15 +425,15 @@ def is_internal_error(exception):
     return ((not isinstance(exception, botocore.exceptions.ClientError)) or exception.response['Error']['Code'].startswith('5')
             or 'InternalError' in exception.response['Error']['Code'] or 'ServiceError' in exception.response['Error']['Code'])
 
-def build_internal_error_response(internalErrorMessage, internalErrorDetails=None):
-    return build_error_response(internalErrorMessage, internalErrorDetails, 'InternalError', 'InternalError')
+def build_internal_error_response(internal_error_message, internal_error_details=None):
+    return build_error_response(internal_error_message, internal_error_details, 'InternalError', 'InternalError')
 
-def build_error_response(internalErrorMessage, internalErrorDetails=None, customerErrorCode=None, customerErrorMessage=None):
+def build_error_response(internal_error_message, internal_error_details=None, customer_error_code=None, customer_error_message=None):
     error_response = {
-        'internalErrorMessage': internalErrorMessage,
-        'internalErrorDetails': internalErrorDetails,
-        'customerErrorMessage': customerErrorMessage,
-        'customerErrorCode': customerErrorCode
+        'internalErrorMessage': internal_error_message,
+        'internalErrorDetails': internal_error_details,
+        'customerErrorMessage': customer_error_message,
+        'customerErrorCode': customer_error_code
     }
     print(error_response)
     return error_response

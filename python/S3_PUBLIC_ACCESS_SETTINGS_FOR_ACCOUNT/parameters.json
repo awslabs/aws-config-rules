@@ -7,5 +7,6 @@
     "InputParameters": "{}",
     "OptionalParameters": "{\"BlockPublicAcls\": \"True\", \"IgnorePublicAcls\": \"True\", \"BlockPublicPolicy\": \"True\", \"RestrictPublicBuckets\": \"True\"}",
     "SourcePeriodic": "One_Hour"
-  }
+  },
+  "Tags": "[]"
 }
