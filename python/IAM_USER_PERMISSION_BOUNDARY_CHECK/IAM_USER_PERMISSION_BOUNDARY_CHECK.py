@@ -151,15 +151,15 @@ def evaluate_user(username, valid_rule_parameters, iam_client):
 
 def evaluate_parameters(rule_parameters):
     if rule_parameters:
-        permission_boundary_policy_names = rule_parameters['policyArns'].replace(" ", "")
-        permission_boundary_policy_name_list = permission_boundary_policy_names.split(",")
-        for permission_policy_name in permission_boundary_policy_name_list:
-            if not re.match("^arn:aws:iam::(\d{12}|aws):policy\/.{1,128}", permission_policy_name):
+        boundary_policy_names = rule_parameters['policyArns'].replace(" ", "")
+        boundary_policy_name_list = boundary_policy_names.split(",")
+        for permission_policy_name in boundary_policy_name_list:
+            if not re.match(r'^arn:aws:iam::(\d{12}|aws):policy/.{1,128}', permission_policy_name):
                 raise ValueError('The parameter shoule be a valid ARN format of the policy')
             if len(permission_policy_name) > 161:
                 raise ValueError('The permission boundary policy name is greater than 128 characters')
 
-        rule_parameters['policyArns'] = permission_boundary_policy_name_list
+        rule_parameters['policyArns'] = boundary_policy_name_list
 
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
