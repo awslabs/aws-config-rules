@@ -76,7 +76,7 @@ class TESTScenarios1to7(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
-    # Premission Boudary is present in the Account and IAM user does have it attached.
+    # Premission Boundary is present in the Account and IAM user does have it attached.
     def test_scenario4(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
         IAM_CLIENT_MOCK.get_user = MagicMock(side_effect=self.construct_permission_list)
@@ -87,7 +87,7 @@ class TESTScenarios1to7(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
-    # Premission Boudary Name is provided as the input and IAM user does have it attached.
+    # Premission Boundary Name is provided as the input and IAM user does have it attached.
     def test_scenario5(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
         IAM_CLIENT_MOCK.get_user = MagicMock(side_effect=self.construct_permission_list)
@@ -99,7 +99,7 @@ class TESTScenarios1to7(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
-    # Premission Boudary Name is provided as the input and IAM user does not have any permission boundary attached.
+    # Premission Boundary Name is provided as the input and IAM user does not have any permission boundary attached.
     def test_scenario6(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
         IAM_CLIENT_MOCK.get_user = MagicMock(return_value={'User':{}})
@@ -112,7 +112,7 @@ class TESTScenarios1to7(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
-    # Premission Boudary Name is provided as the input but IAM user does not have it attached.
+    # Premission Boundary Name is provided as the input but IAM user does not have it attached.
     def test_scenario7(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
         IAM_CLIENT_MOCK.get_user = MagicMock(return_value={"User": {"UserName": "user-name-2", "PermissionsBoundary": {"PermissionsBoundaryType": "Policy", "PermissionsBoundaryArn": "arn:aws:iam::aws:policy/AdminAccess"}, "UserId": "AIDAIDFOUX2OSRO6DO7XN", "Arn": "arn:aws:iam::677885075477:user/ddbtest"}})
@@ -129,7 +129,7 @@ class TESTScenarios1to7(unittest.TestCase):
 class TESTInvalidpermissionboundry(unittest.TestCase):
     user_list = {'Users': [{'UserId': 'AIDAIDFOUX2OSRO6DO7XM', 'UserName': 'user-name-1'}, {'UserId': 'AIDAIDFOUX2OSRO6DO7XN', 'UserName': 'user-name-2'}]}
 
-    # Premission Boudary Name is provided as the input but policy name is in invalid format.
+    # Premission Boundary Name is provided as the input but policy name is in invalid format.
 
     def test_scenario8(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
