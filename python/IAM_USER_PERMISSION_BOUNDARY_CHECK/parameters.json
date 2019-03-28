@@ -2,11 +2,11 @@
   "Version": "1.0", 
   "Parameters": {
     "CodeKey": "IAM_USER_PERMISSION_BOUNDARY_CHECK.zip", 
-    "SourceRuntime": "python3.6", 
+    "SourceRuntime": "python2.7", 
+    "SourcePeriodic": "TwentyFour_Hours", 
     "RuleName": "IAM_USER_PERMISSION_BOUNDARY_CHECK", 
-    "SourceEvents": "AWS::IAM::User", 
     "OptionalParameters": "{}", 
-    "InputParameters": "{\"policyArns\":\"arn:aws:iam::852640994763:policy/Autoscalingaccess,arn:aws:iam::aws:policy/AdministratorAccess\"}"
+    "InputParameters": "{\"policyArns\": \"arn:aws:iam::852640994763:policy/Autoscalingaccess,arn:aws:iam::aws:policy/AdministratorAccess\"}"
   }, 
   "Tags": "[]"
 }
