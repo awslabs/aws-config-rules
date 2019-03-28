@@ -110,7 +110,7 @@ class TESTScenarios1to7(unittest.TestCase):
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XM'))
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'AIDAIDFOUX2OSRO6DO7XN'))
-        assert_successful_evaluation(self, response, resp_expected, 2)    
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
     # Premission Boudary Name is provided as the input but IAM user does not have it attached.
     def test_scenario7(self):
