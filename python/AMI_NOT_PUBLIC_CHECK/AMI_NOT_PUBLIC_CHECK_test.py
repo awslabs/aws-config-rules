@@ -55,7 +55,7 @@ class CompliantResourcesTest(unittest.TestCase):
         ]
         assert_successful_evaluation(self, response, expected_response, len(response))
 
-# Checks for scenario wherein non-compliant resources are present (Two Public Amazon Machine Image)
+# Checks for scenario wherein non-compliant resources are present
 class NonCompliantResourcesTest(unittest.TestCase):
     def test_scenario_2_non_compliant_resources(self):
             describe_images_result = {
@@ -80,6 +80,83 @@ class NonCompliantResourcesTest(unittest.TestCase):
                                 compliance_type='NON_COMPLIANT',
                                 compliance_resource_id='123456789012',
                                 annotation='Public Amazon Machine Image Id: ami-040574eaefd6dc6d4,ami-0a1402bb0642906aa'
+                        )
+            ]
+            assert_successful_evaluation(self, response, expected_response, len(response))
+
+    def test_scenario_3_non_compliant_resources(self):
+            describe_images_result = {
+                'Images': [
+                    {
+                      'ImageId': 'ami-0a1402bb0642906ab',
+                      'Public': True,
+                      'OwnerId': '123456789012'
+                    },
+                    {
+                      'ImageId': 'ami-0a1402bb0642906ac',
+                      'Public': True,
+                      'OwnerId': '123456789012'
+                     },
+                     {
+                       'ImageId': 'ami-0a1402bb0642906ad',
+                       'Public': True,
+                       'OwnerId': '123456789012'
+                     },
+                     {
+                       'ImageId': 'ami-0a1402bb0642906ae',
+                       'Public': True,
+                       'OwnerId': '123456789012'
+                      },
+                      {
+                        'ImageId': 'ami-0a1402bb0642906af',
+                        'Public': True,
+                        'OwnerId': '123456789012'
+                      },
+                      {
+                        'ImageId': 'ami-0a1402bb0642906ag',
+                        'Public': True,
+                        'OwnerId': '123456789012'
+                       },
+                       {
+                         'ImageId': 'ami-0a1402bb0642906ah',
+                         'Public': True,
+                         'OwnerId': '123456789012'
+                       },
+                       {
+                         'ImageId': 'ami-0a1402bb0642906ai',
+                         'Public': True,
+                         'OwnerId': '123456789012'
+                        },
+                        {
+                          'ImageId': 'ami-0a1402bb0642906aj',
+                          'Public': True,
+                          'OwnerId': '123456789012'
+                        },
+                        {
+                          'ImageId': 'ami-0a1402bb0642906ak',
+                          'Public': True,
+                          'OwnerId': '123456789012'
+                         },
+                         {
+                           'ImageId': 'ami-0a1402bb0642906al',
+                           'Public': True,
+                           'OwnerId': '123456789012'
+                         },
+                         {
+                           'ImageId': 'ami-0a1402bb0642906am',
+                           'Public': True,
+                           'OwnerId': '123456789012'
+                          }
+                ],
+                'ResponseMetadata': {}
+            }
+            EC2_CLIENT_MOCK.describe_images = MagicMock(return_value=describe_images_result)
+            response = RULE.lambda_handler(build_lambda_scheduled_event(),{})
+            expected_response = [
+                        build_expected_response(
+                                compliance_type='NON_COMPLIANT',
+                                compliance_resource_id='123456789012',
+                                annotation='Public Amazon Machine Image Id: ami-0a1402bb0642906ab,ami-0a1402bb0642906ac,ami-0a1402bb0642906ad,ami-0a1402bb0642906ae,ami-0a1402bb0642906af,ami-0a1402bb0642906ag,ami-0a1402bb0642906ah,ami-0a1402bb0642906ai,ami-0a1402bb0642906aj,ami-0a1402bb[...truncated]'
                         )
             ]
             assert_successful_evaluation(self, response, expected_response, len(response))
