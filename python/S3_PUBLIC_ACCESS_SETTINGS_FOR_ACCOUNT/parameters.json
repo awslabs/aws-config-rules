@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.6",
     "CodeKey": "S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{\"BlockPublicAcls\": \"True\", \"IgnorePublicAcls\": \"True\", \"BlockPublicPolicy\": \"True\", \"RestrictPublicBuckets\": \"True\"}",
+    "OptionalParameters": "{\"BlockPublicAcls\": \"\", \"IgnorePublicAcls\": \"\", \"BlockPublicPolicy\": \"\", \"RestrictPublicBuckets\": \"\"}",
     "SourcePeriodic": "One_Hour"
   },
   "Tags": "[]"
