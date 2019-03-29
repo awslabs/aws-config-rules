@@ -36,16 +36,26 @@ Feature:
        I want: to verify that the configuration of s3 account public access settings is correct.
 Scenarios:
   Scenario 1:
-    Given: config parameters are defined for the config rule
+    Given: Given: Input paramters are configured
+      And: At least one Input Paramter is invalid
+     then: Return an error
+  Scenario 2:
+    Given: Given: All input parameters are valid
       And: At least 1 S3 config parameter does not match the corresponding value for the account
      then: Return NON_COMPLIANT
-  Scenario 2:
-    Given: config parameters are defined for the config rule
+  Scenario 3:
+    Given: Given: No input parameters are defined
+      And: At least 1 default value does not match the corresponding value for the account
+     then: Return NON_COMPLIANT
+  Scenario 4:
+    Given: Given: No input parameters are defined 
+      And: All S3 public access account settings match the default values
+     then: Return COMPLIANT
+  Scenario 5:
+    Given: Given: All input parameters are valid
       And: All S3 config parameters match the corresponding value for the account
      then: Return COMPLIANT
 '''
-
-
 
 import json
 import datetime
