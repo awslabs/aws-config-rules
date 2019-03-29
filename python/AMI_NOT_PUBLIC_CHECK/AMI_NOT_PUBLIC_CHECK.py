@@ -34,7 +34,7 @@ Scenarios:
      Then: Return COMPLIANT
   Scenario: 2
     Given: One or more AMIs with is-public parameter set to True
-     Then: Return NON_COMPLIANT with Annotation containing AMIIDs
+     Then: Return NON_COMPLIANT with Annotation containing AMI IDs
 '''
 
 import json
@@ -64,6 +64,11 @@ def generate_image_id_list(images, event):
         image_ids.append(image['ImageId'])
     return image_ids
 
+def build_annotation(annotation_string):
+    if len(annotation_string) > 256:
+        return annotation_string[0:242] + "[...truncated]"
+    return annotation_string
+
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ec2_client = get_client('ec2', event)
     public_ami_result = ec2_client.describe_images(
@@ -77,13 +82,16 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                         )
     # If public_ami_list is not empty, generate non-compliant response
     if public_ami_result['Images']:
-                image_ids = generate_image_id_list(public_ami_result['Images'], event)
-                return build_evaluation(
+                evaluations = []
+                evaluations.append(
+                        build_evaluation(
                             event['accountId'],
-                            "NON_COMPLIANT",
+                            'NON_COMPLIANT',
                             event,
-                            annotation="Amazon Machine Image Id: {} is public.".format(image_ids)[:256]
+                            annotation=build_annotation('Public Amazon Machine Image Id: {}'.format(",".join([image_id for image_id in generate_image_id_list(public_ami_result['Images'], event)])))
                         )
+                )
+                return evaluations
     return build_evaluation(event['accountId'], "COMPLIANT", event)
 
 def evaluate_parameters(rule_parameters):
