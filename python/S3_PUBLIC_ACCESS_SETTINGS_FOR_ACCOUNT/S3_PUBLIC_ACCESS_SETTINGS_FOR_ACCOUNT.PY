@@ -85,16 +85,11 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     client = get_client('s3control', event)
     response = client.get_public_access_block(AccountId=event['accountId'])
     evaluations = []
-    annotationbuilder = ''
 
     if (response['PublicAccessBlockConfiguration']['BlockPublicAcls'] == valid_rule_parameters['BlockPublicAcls']) \
     and (response['PublicAccessBlockConfiguration']['IgnorePublicAcls'] == valid_rule_parameters['IgnorePublicAcls']) \
     and (response['PublicAccessBlockConfiguration']['BlockPublicPolicy'] == valid_rule_parameters['BlockPublicPolicy']) \
     and (response['PublicAccessBlockConfiguration']['RestrictPublicBuckets'] == valid_rule_parameters['RestrictPublicBuckets']):
-        annotationbuilder = 'BlockPublicAcls:' + str(response['PublicAccessBlockConfiguration']['BlockPublicAcls']) + ' ' \
-        'IgnorePublicAcls:' + str(response['PublicAccessBlockConfiguration']['IgnorePublicAcls']) + ' ' \
-        'BlockPublicPolicy:' + str(response['PublicAccessBlockConfiguration']['BlockPublicPolicy']) + ' ' \
-        'RestrictPublicBuckets:' + str(response['PublicAccessBlockConfiguration']['RestrictPublicBuckets'])
         evaluations.append(build_evaluation(event['accountId'], 'COMPLIANT', event))
 
     else:
