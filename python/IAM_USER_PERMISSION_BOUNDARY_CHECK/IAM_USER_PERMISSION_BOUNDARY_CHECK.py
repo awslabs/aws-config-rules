@@ -31,51 +31,52 @@ Rule Parameters:
     Comma-separated list of permission boundary policy ARNs, that are expected to be attached to the IAM Users
 
 Scenarios:
+
     Scenario 1:
+    Given: Rule parameter policyArns provided
+      And: Not Valid one
+     Then: Return ERROR
+
+    Scenario 2:
     Given: No IAM users in Account
      Then: Return NOT_APPLICABLE
 
-    Scenario 2:
-    Given: At least 1 IAM User is present in the AWS Account
-      And: No permission boundary policy in the Account
-     Then: Return NON_COMPLAINT
-
     Scenario 3:
     Given: At least 1 IAM User is present in the AWS Account
-      And: Permission boundary policies present in Account
-      And: IAM user does not have permission boundary attached
+      And: No permission boundary policy in the Account
      Then: Return NON_COMPLAINT
 
     Scenario 4:
     Given: At least 1 IAM User is present in the AWS Account
       And: Permission boundary policies present in Account
+      And: IAM user does not have permission boundary attached
+     Then: Return NON_COMPLAINT
+
+    Scenario 5:
+    Given: At least 1 IAM User is present in the AWS Account
+      And: Permission boundary policies present in Account
       And: IAM user does have permission boundary attached
      Then: Return COMPLAINT
 
-    Scenario 5:
-    Given: Valid Rule paramter policyArns provided
+    Scenario 6:
+    Given: Valid Rule parameter policyArns provided
       And: IAM users present in Account
       And: IAM user does have permission boundary attached
       And: The Permission Boundary attached to user is the one listed in parameter.
      Then: Return COMPLAINT
 
-    Scenario 6:
-    Given: Valid Rule paramter policyArns provided
+    Scenario 7:
+    Given: Valid Rule parameter policyArns provided
       And: IAM users present in Account
       And: IAM user does not have permission boundary attached
      Then: Return NON_COMPLAINT
 
-    Scenario 7:
-    Given: Valid Rule paramter policyArns provided
+    Scenario 8:
+    Given: Valid Rule parameter policyArns provided
       And: IAM users present in Account
       And: IAM user does have permission boundary attached
       And: The Permission Boundary attached to user is not the one listed in parameter.
      Then: Return NON_COMPLAINT
-
-    Scenario 8:
-    Given: Rule paramter policyArns provided
-      And: Not Valid one
-     Then: Return ERROR
 
 """
 
@@ -115,12 +116,12 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     evaluations = []
     users_list = get_all_iam_users(iam_client)
     if not users_list:
-        return 'NOT_APPLICABLE'
+        return None
     #To check if atleast 1 permission boundary exists.
     permission_boundary_list = iam_client.list_policies(OnlyAttached=True, PolicyUsageFilter='PermissionsBoundary')
     if not permission_boundary_list:
         for user in users_list:
-            return evaluations.append(build_evaluation(user['UserId'], 'NON_COMPLIANT', event, annotation='No permission boundary is attached to this IAM User'))
+            return evaluations.append(build_evaluation(user['UserId'], 'NON_COMPLIANT', event, annotation='No permission boundary is attached to this IAM User.'))
     for user in users_list:
         compliance_type = evaluate_user(user['UserName'], valid_rule_parameters, iam_client)
         evaluations.append(build_evaluation(user['UserId'], compliance_type, event))
@@ -141,7 +142,7 @@ def evaluate_user(username, valid_rule_parameters, iam_client):
     user_details = iam_client.get_user(UserName=username)
     if not 'PermissionsBoundary' in user_details['User']:
         return 'NON_COMPLIANT'
-    if not'policyArns' in valid_rule_parameters:
+    if not 'policyArns' in valid_rule_parameters:
         return 'COMPLIANT'
     boundary_name = user_details['User']['PermissionsBoundary']['PermissionsBoundaryArn']
     for permission_policy_name in valid_rule_parameters['policyArns']:
@@ -155,7 +156,7 @@ def evaluate_parameters(rule_parameters):
         boundary_policy_name_list = boundary_policy_names.split(",")
         for permission_policy_name in boundary_policy_name_list:
             if not re.match(r'^arn:aws:iam::(\d{12}|aws):policy/.{1,128}', permission_policy_name):
-                raise ValueError('The parameter shoule be a valid ARN format of the policy')
+                raise ValueError('The parameter should be a valid ARN format of the policy')
             if len(permission_policy_name) > 161:
                 raise ValueError('The permission boundary policy name is greater than 128 characters')
 
