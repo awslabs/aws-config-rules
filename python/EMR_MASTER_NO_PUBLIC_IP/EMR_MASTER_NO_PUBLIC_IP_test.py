@@ -1,9 +1,10 @@
 import sys
 import unittest
 try:
-    from unittest.mock import MagicMock, patch, ANY
+    from unittest.mock import MagicMock
 except ImportError:
-    from mock import MagicMock, patch, ANY
+    import mock
+    from mock import MagicMock
 import botocore
 from botocore.exceptions import ClientError
 
@@ -18,117 +19,102 @@ DEFAULT_RESOURCE_TYPE = 'AWS::EMR::Cluster'
 # Main Code #
 #############
 
-config_client_mock = MagicMock()
-sts_client_mock = MagicMock()
-emr_client_mock = MagicMock()
-ec2_client_mock = MagicMock()
+CONFIG_CLIENT_MOCK = MagicMock()
+STS_CLIENT_MOCK = MagicMock()
+EMR_CLIENT_MOCK = MagicMock()
+EC2_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
         if client_name == 'config':
-            return config_client_mock
-        if client_name == 'sts':
-            return sts_client_mock
-        if client_name == 'emr':
-            return emr_client_mock
-        if client_name == 'ec2':
-            return ec2_client_mock
+            return CONFIG_CLIENT_MOCK
+        elif client_name == 'sts':
+            return STS_CLIENT_MOCK
+        elif client_name == 'emr':
+            return EMR_CLIENT_MOCK
+        elif client_name == 'ec2':
+            return EC2_CLIENT_MOCK
         else:
             raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-rule = __import__('EMR_MASTER_NO_PUBLIC_IP')
+RULE = __import__('EMR_MASTER_NO_PUBLIC_IP')
 
+class ComplianceTest(unittest.TestCase):
 
-class SampleTest(unittest.TestCase):
-
-    rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
-
-    invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-
-    def setUp(self):
-        pass
-
-    def test_sample(self):
-        self.assertTrue(True)
-
-    #def test_sample_2(self):
-    #    rule.ASSUME_ROLE_MODE = False
-    #    response = rule.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
-    #    resp_expected = []
-    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-    #    assert_successful_evaluation(self, response, resp_expected)
-
-####################
-# Helper Functions #
-####################
-class TestCustomerInput(unittest.TestCase):
-
-    #Test for when no clusters are RUNNING or WAITNG
-    def test_no_running_or_waiting_cluster(self):
+    #Scenario 1: If no RUNNING and WAITING clusters then return NOT_APPLICABLE
+    def test_scenario_1_no_running_or_waiting_cluster(self):
         no_clusters = {"Clusters": []}
-        emr_client_mock.list_clusters = MagicMock(return_value=no_clusters)
-        response = rule.lambda_handler(build_lambda_scheduled_event(), {})
+        EMR_CLIENT_MOCK.list_clusters = MagicMock(return_value=no_clusters)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         resp_expected = []
         resp_expected.append(build_expected_response('NOT_APPLICABLE',
                                                      compliance_resource_id='123456789012',
-                                                     compliance_resource_type=DEFAULT_RESOURCE_TYPE))
+                                                     compliance_resource_type="AWS::::Account"))
         assert_successful_evaluation(self, response, resp_expected)
 
-
-    #Test for when the cluster is in a Private Subnet but EIP was attached and then detached from the master node
-    def test_running_cluster_valid_EIP_removed(self):
-        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}]}
-        list_instances_valid = {"Instances": [{"Ec2InstanceId": "i-0e98faaaa8a99", "PublicDnsName": "ec2-1-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
-
-        described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-0e98faaaa8a99", "PublicDnsName": ""}]}]}
-
-        emr_client_mock.list_clusters = MagicMock(return_value=listcluster_valid_running)
-        emr_client_mock.list_instances = MagicMock(return_value=list_instances_valid)
-        ec2_client_mock.describe_instances = MagicMock(return_value=described_instances)
-
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT',
-                                                     compliance_resource_id='j-AAAAA0AAAAA',
-                                                     compliance_resource_type='AWS::EMR::Cluster'))
-
-        response = rule.lambda_handler(build_lambda_scheduled_event(), {})
-        assert_successful_evaluation(self, response, resp_expected)
-
-    #Test for when the cluster is in RUNNING state and master node as no public IP, COMPLIANT
-    def test_running_cluster_valid(self):
-        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}]}
-        list_instances_valid = {"Instances": [{"Ec2InstanceId": "i-0e98faaaa8a99", "PublicDnsName": "", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
-        described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-0e98faaaa8a99", "PublicDnsName": ""}]}]}
-
-        emr_client_mock.list_clusters = MagicMock(return_value=listcluster_valid_running)
-        emr_client_mock.list_instances = MagicMock(return_value=list_instances_valid)
-        ec2_client_mock.describe_instances = MagicMock(return_value=described_instances)
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT',
-                                                     compliance_resource_id='j-AAAAA0AAAAA',
-                                                     compliance_resource_type='AWS::EMR::Cluster'))
-        response = rule.lambda_handler(build_lambda_scheduled_event(), {})
-        assert_successful_evaluation(self, response, resp_expected)
-
+    #Scenario 2: Both DescribeInstances and ListInstances have public DNS for the master node of the cluster.
     #Test for when the cluster is in RUNNING state and master node as a public IP, NON-COMPLIANT
-    def test_running_cluster_invalid(self):
+    def test_scenario_2_running_public_cluster(self):
         listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}]}
         list_instances_valid = {"Instances": [{"Ec2InstanceId": "i-0e98faaaa8a99", "PublicDnsName": "ec2-1-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
         described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-0e98faaaa8a99", "PublicDnsName": "ec2-1-1-1-1.compute-1.amazonaws.com"}]}]}
 
-        emr_client_mock.list_clusters = MagicMock(return_value=listcluster_valid_running)
-        emr_client_mock.list_instances = MagicMock(return_value=list_instances_valid)
-        ec2_client_mock.describe_instances = MagicMock(return_value=described_instances)
+        EMR_CLIENT_MOCK.list_clusters = MagicMock(return_value=listcluster_valid_running)
+        EMR_CLIENT_MOCK.list_instances = MagicMock(return_value=list_instances_valid)
+        EC2_CLIENT_MOCK.configure_mock(**{
+            "get_paginator.return_value": EC2_CLIENT_MOCK,
+            "paginate.return_value": [described_instances]})
+
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT',
                                                      compliance_resource_id='j-AAAAA0AAAAA',
-                                                     compliance_resource_type='AWS::EMR::Cluster',
-                                                     annotation="The EMR Cluster's master has a public IP"))
-        response = rule.lambda_handler(build_lambda_scheduled_event(), {})
+                                                     annotation="The master node of the EMR cluster has a public IP."))
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         assert_successful_evaluation(self, response, resp_expected)
 
+
+    #Scenario 3: DescribeInstances doesn't have public DNS for the master node of the cluster while ListInstances has it.
+    #Test for when the cluster is in a Private Subnet but EIP was attached and then detached from the master node
+    def test_scenario_3_running_private_cluster_eip_removed(self):
+        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}]}
+        list_instances_valid = {"Instances": [{"Ec2InstanceId": "i-0e98faaaa8a99", "PublicDnsName": "ec2-1-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
+
+        described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-0e98faaaa8a99", "PublicDnsName": ""}]}]}
+
+        EMR_CLIENT_MOCK.list_clusters = MagicMock(return_value=listcluster_valid_running)
+        EMR_CLIENT_MOCK.list_instances = MagicMock(return_value=list_instances_valid)
+        EC2_CLIENT_MOCK.configure_mock(**{
+            "get_paginator.return_value": EC2_CLIENT_MOCK,
+            "paginate.return_value": [described_instances]})
+
+        resp_expected = []
+        resp_expected.append(build_expected_response('COMPLIANT',
+                                                     compliance_resource_id='j-AAAAA0AAAAA'))
+
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(self, response, resp_expected)
+
+    #Scenario 4: The ListInstances call doesn't have public DNS for the master node of the cluster.
+    #Test for when the cluster is in RUNNING state and master node as no public IP, COMPLIANT
+    def test_scenario_4_running_private_cluster(self):
+        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}]}
+        list_instances_valid = {"Instances": [{"Ec2InstanceId": "i-0e98faaaa8a99", "PublicDnsName": "", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
+        described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-0e98faaaa8a99", "PublicDnsName": ""}]}]}
+
+        EMR_CLIENT_MOCK.list_clusters = MagicMock(return_value=listcluster_valid_running)
+        EMR_CLIENT_MOCK.list_instances = MagicMock(return_value=list_instances_valid)
+        EC2_CLIENT_MOCK.describe_instances = MagicMock(return_value=described_instances)
+        resp_expected = []
+        resp_expected.append(build_expected_response('COMPLIANT',
+                                                     compliance_resource_id='j-AAAAA0AAAAA'))
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(self, response, resp_expected)
+
+####################
+# Helper Functions #
+####################
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
     event_to_return = {
@@ -173,35 +159,35 @@ def build_expected_response(compliance_type, compliance_resource_id, compliance_
         'Annotation': annotation
         }
 
-def assert_successful_evaluation(testClass, response, resp_expected, evaluations_count=1):
+def assert_successful_evaluation(test_class, response, resp_expected, evaluations_count=1):
     if isinstance(response, dict):
-        testClass.assertEquals(resp_expected['ComplianceResourceType'], response['ComplianceResourceType'])
-        testClass.assertEquals(resp_expected['ComplianceResourceId'], response['ComplianceResourceId'])
-        testClass.assertEquals(resp_expected['ComplianceType'], response['ComplianceType'])
-        testClass.assertTrue(response['OrderingTimestamp'])
+        test_class.assertEquals(resp_expected['ComplianceResourceType'], response['ComplianceResourceType'])
+        test_class.assertEquals(resp_expected['ComplianceResourceId'], response['ComplianceResourceId'])
+        test_class.assertEquals(resp_expected['ComplianceType'], response['ComplianceType'])
+        test_class.assertTrue(response['OrderingTimestamp'])
         if 'Annotation' in resp_expected or 'Annotation' in response:
-            testClass.assertEquals(resp_expected['Annotation'], response['Annotation'])
+            test_class.assertEquals(resp_expected['Annotation'], response['Annotation'])
     elif isinstance(response, list):
-        testClass.assertEquals(evaluations_count, len(response))
+        test_class.assertEquals(evaluations_count, len(response))
         for i, response_expected in enumerate(resp_expected):
-            testClass.assertEquals(response_expected['ComplianceResourceType'], response[i]['ComplianceResourceType'])
-            testClass.assertEquals(response_expected['ComplianceResourceId'], response[i]['ComplianceResourceId'])
-            testClass.assertEquals(response_expected['ComplianceType'], response[i]['ComplianceType'])
-            testClass.assertTrue(response[i]['OrderingTimestamp'])
+            test_class.assertEquals(response_expected['ComplianceResourceType'], response[i]['ComplianceResourceType'])
+            test_class.assertEquals(response_expected['ComplianceResourceId'], response[i]['ComplianceResourceId'])
+            test_class.assertEquals(response_expected['ComplianceType'], response[i]['ComplianceType'])
+            test_class.assertTrue(response[i]['OrderingTimestamp'])
             if 'Annotation' in response_expected or 'Annotation' in response[i]:
-                testClass.assertEquals(response_expected['Annotation'], response[i]['Annotation'])
+                test_class.assertEquals(response_expected['Annotation'], response[i]['Annotation'])
 
-def assert_customer_error_response(testClass, response, customerErrorCode=None, customerErrorMessage=None):
-    if customerErrorCode:
-        testClass.assertEqual(customerErrorCode, response['customerErrorCode'])
-    if customerErrorMessage:
-        testClass.assertEqual(customerErrorMessage, response['customerErrorMessage'])
-    testClass.assertTrue(response['customerErrorCode'])
-    testClass.assertTrue(response['customerErrorMessage'])
+def assert_customer_error_response(test_class, response, customer_error_code=None, customer_error_message=None):
+    if customer_error_code:
+        test_class.assertEqual(customer_error_code, response['customerErrorCode'])
+    if customer_error_message:
+        test_class.assertEqual(customer_error_message, response['customerErrorMessage'])
+    test_class.assertTrue(response['customerErrorCode'])
+    test_class.assertTrue(response['customerErrorMessage'])
     if "internalErrorMessage" in response:
-        testClass.assertTrue(response['internalErrorMessage'])
+        test_class.assertTrue(response['internalErrorMessage'])
     if "internalErrorDetails" in response:
-        testClass.assertTrue(response['internalErrorDetails'])
+        test_class.assertTrue(response['internalErrorDetails'])
 
 def sts_mock():
     assume_role_response = {
@@ -209,8 +195,8 @@ def sts_mock():
             "AccessKeyId": "string",
             "SecretAccessKey": "string",
             "SessionToken": "string"}}
-    sts_client_mock.reset_mock(return_value=True)
-    sts_client_mock.assume_role = MagicMock(return_value=assume_role_response)
+    STS_CLIENT_MOCK.reset_mock(return_value=True)
+    STS_CLIENT_MOCK.assume_role = MagicMock(return_value=assume_role_response)
 
 ##################
 # Common Testing #
@@ -219,17 +205,17 @@ def sts_mock():
 class TestStsErrors(unittest.TestCase):
 
     def test_sts_unknown_error(self):
-        rule.ASSUME_ROLE_MODE = True
-        sts_client_mock.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
+        RULE.ASSUME_ROLE_MODE = True
+        STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
-        response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
             self, response, 'InternalError', 'InternalError')
 
     def test_sts_access_denied(self):
-        rule.ASSUME_ROLE_MODE = True
-        sts_client_mock.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
+        RULE.ASSUME_ROLE_MODE = True
+        STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
-        response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
             self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')

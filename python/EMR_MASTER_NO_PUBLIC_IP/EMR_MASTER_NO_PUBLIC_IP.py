@@ -8,6 +8,7 @@
 # or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
+
 """
 #####################################
 ##           Gherkin               ##
@@ -25,7 +26,7 @@ Resource Type to report on:
     AWS::EMR::Cluster
 
 Rule Parameters:
-        None
+  None
 
 Scenarios:
   Scenario 1:
@@ -34,33 +35,33 @@ Scenarios:
 
   Scenario 2:
   Given: At least 1 EMR cluster is in RUNNING or WAITING state
-    And: The master DNS name is a public DNS name (i.e. starting with "ec2-")
+    And: The master node instance has a value specified for the key PublicDnsName in the ListInstances EMR API call
+    And: The master node instance has a value specified for the key PublicDnsName in the DescribeInstances EC2 API call
    Then: Return NON_COMPLIANT on this cluster
 
   Scenario 3:
   Given: At least 1 EMR cluster is in RUNNING or WAITING state
-    And: The master DNS name is a public DNS name (i.e. starting with "ip-")
-    And: The master node has an Elastic IP attached to it
-   Then: Return NON_COMPLIANT on this cluster
+    And: The master node instance has a value specified for the key PublicDnsName in the ListInstances EMR API call
+    And: The master node instance has no key PublicDnsName in the DescribeInstances EC2 API call
+   Then: Return COMPLIANT on this cluster
 
   Scenario 4:
   Given: At least 1 EMR cluster is in RUNNING or WAITING state
-    And: The master DNS name is a private DNS name (i.e. starting with "ip-")
-    And: The master node has no Elastic IP attached to it
+    And: The master node has "" as the value for key PublicDnsName in the ListInstances API call
    Then: Return COMPLIANT on this cluster
 
-
-Feature:
-    In order to: enforce our Security Policies
-             As: a Security Officer
-         I want: to ensure that EMR Clusters do not have Public DNS
-
 """
+
 import json
+import sys
 import datetime
 import boto3
 import botocore
-import time
+
+try:
+    import liblogging
+except ImportError:
+    pass
 
 ##############
 # Parameters #
@@ -72,29 +73,14 @@ DEFAULT_RESOURCE_TYPE = 'AWS::EMR::Cluster'
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
 
+# Other parameters (no change needed)
+CONFIG_ROLE_TIMEOUT_SECONDS = 900
+
 #############
 # Main Code #
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either "COMPLIANT", NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
 
     ###############################
     # Add your custom logic here. #
@@ -106,74 +92,70 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     emr_client = get_client('emr', event)
     ec2_client = get_client('ec2', event)
-    sts_client = get_client('sts', event)
-
 
     #Listing RUNNING and WAITING clusters
-    cluster_list = listing_clusters(emr_client)
-
-    #If no RUNNING and WAITING clusters then return NOT_APPLICABLE
+    cluster_list = list_all_clusters(emr_client)
+    #Scenario 1: If no RUNNING and WAITING clusters then return NOT_APPLICABLE
     if not cluster_list:
-        return "NOT_APPLICABLE"
+        return None
 
     #Main logic for compliance deduction in cluster_dns_mapping()
-    cluster_list_valid, cluster_dns_list = cluster_dns_mapping(cluster_list, emr_client, ec2_client)
+    private_dns_cluster_list, cluster_dns_list = cluster_dns_mapping(cluster_list, emr_client, ec2_client)
 
     #cluster_dns_list is a list of lists which has cluster id and public DNS mappings
     #If public DNS is empty then Compliant else not Compliant
 
     if cluster_dns_list:
         for cluster in cluster_dns_list:
-            print(cluster[0])
-            if cluster[1] == '':
+            #Scenario 3: DescribeInstances doesn't have public DNS for the master node of the cluster while ListInstances has it.
+            if not cluster[1]:
                 evaluations.append(build_evaluation(cluster[0],
                                                     'COMPLIANT',
-                                                    event,
-                                                    "AWS::EMR::Cluster"))
+                                                    event))
+            #Scenario 2: Both DescribeInstances and ListInstances have public DNS for the master node of the cluster.
             else:
                 evaluations.append(build_evaluation(cluster[0],
                                                     'NON_COMPLIANT',
                                                     event,
-                                                    "AWS::EMR::Cluster",
-                                                    annotation="The EMR Cluster's master has a public IP"))
+                                                    annotation="The master node of the EMR cluster has a public IP."))
 
-    #cluster_list_valid is a list of only cluster ids which have Compliant clusters
-    if cluster_list_valid:
-        for cluster in cluster_list_valid:
-            print(cluster)
-            evaluations.append(build_evaluation(cluster, 'COMPLIANT', event, "AWS::EMR::Cluster"))
+    #private_dns_cluster_list is a list of only cluster ids which have Compliant clusters
+    #Scenario 4: The ListInstances call doesn't have public DNS for the master node of the cluster.
+    if private_dns_cluster_list:
+        for cluster in private_dns_cluster_list:
+            evaluations.append(build_evaluation(cluster, 'COMPLIANT', event))
     return evaluations
 
-def listing_clusters(emr):
+def list_all_clusters(emr_client):
     #Listing WAITING and RUNNING clusters and paginating
-    clusters = emr.list_clusters(ClusterStates=['WAITING', 'RUNNING'])
+    clusters = emr_client.list_clusters(ClusterStates=['WAITING', 'RUNNING'])
     all_clusters = []
     while True:
         all_clusters += clusters['Clusters']
         if "Marker" in clusters:
-            clusters = emr.list_clusters(ClusterStates=['WAITING', 'RUNNING'], Marker=clusters["Marker"])
+            clusters = emr_client.list_clusters(ClusterStates=['WAITING', 'RUNNING'], Marker=clusters["Marker"])
         else:
             break
     return all_clusters
 
-def cluster_dns_mapping(all_clusters, emr, ec2):
+def cluster_dns_mapping(all_clusters, emr_client, ec2_client):
     #instance_cluster_dict this is a dictionary which will have {'instance-id':[cluster-id,"public dns if any"]}
     instance_cluster_dict = {}
 
-    #cluster_dns_valid_list list of valid cluster ids
-    cluster_dns_valid_list = []
+    #private_dns_cluster_list is a list of cluster IDs with private DNS only
+    private_dns_cluster_list = []
     for cluster in all_clusters:
         cluster_id = cluster["Id"]
-        master_details = emr.list_instances(ClusterId=cluster_id, InstanceGroupTypes=['MASTER'])
-        public_DNS = master_details["Instances"][0]["PublicDnsName"]
-        instanceId = master_details["Instances"][0]["Ec2InstanceId"]
+        master_details = emr_client.list_instances(ClusterId=cluster_id, InstanceGroupTypes=['MASTER'])
+        public_dns = master_details["Instances"][0]["PublicDnsName"]
+        instance_id = master_details["Instances"][0]["Ec2InstanceId"]
 
         #If the master node has no public DNS in the list instances call, add to the cluster_dns_valid_list list
         #else add the key as instance id and value as cluster id to the map instance_cluster_dict
-        if public_DNS == '':
-            cluster_dns_valid_list.append(cluster_id)
+        if not public_dns:
+            private_dns_cluster_list.append(cluster_id)
         else:
-            instance_cluster_dict[instanceId] = [cluster_id]
+            instance_cluster_dict[instance_id] = [cluster_id]
 
     #If instance_cluster_dict has entries, to deal with the edge case, perform describe_instances call
     if instance_cluster_dict:
@@ -181,26 +163,23 @@ def cluster_dns_mapping(all_clusters, emr, ec2):
         #instance_id_list is a list of instances derived from the keys of map
 
         described_instances = []
-        described_instances.append(ec2.describe_instances(InstanceIds=instance_id_list)['Reservations'])
+
+        paginator = ec2_client.get_paginator('describe_instances')
+        describe_parameters = {'InstanceIds': instance_id_list}
+        page_iterator = paginator.paginate(**describe_parameters)
+        for page in page_iterator:
+            described_instances.append(page['Reservations'])
 
         #the for loop appends public DNS of the instance to the value of the respective key
-        for i in described_instances:
-            for instance in i:
-                print(instance['Instances'][0]['InstanceId'])
-                instance_cluster_dict[instance['Instances'][0]['InstanceId']].append(instance['Instances'][0]['PublicDnsName'])
-                print(instance['Instances'][0]['PublicDnsName'])
+        for paged_instances in described_instances:
+            for instance_group in paged_instances:
+                for j in range(len(instance_group['Instances'])):
+                    instance_cluster_dict[instance_group['Instances'][j]['InstanceId']].append(instance_group['Instances'][j]['PublicDnsName'])
 
-    return cluster_dns_valid_list, list(instance_cluster_dict.values())
+    return private_dns_cluster_list, list(instance_cluster_dict.values())
+
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
-
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
@@ -215,10 +194,10 @@ def build_parameters_value_error_response(ex):
     Keyword arguments:
     ex -- Exception text
     """
-    return  build_error_response(internalErrorMessage="Parameter value is invalid",
-                                 internalErrorDetails="An ValueError was raised during the validation of the Parameter value",
-                                 customerErrorCode="InvalidParameterValueException",
-                                 customerErrorMessage=str(ex))
+    return  build_error_response(internal_error_message="Parameter value is invalid",
+                                 internal_error_details="An ValueError was raised during the validation of the Parameter value",
+                                 customer_error_code="InvalidParameterValueException",
+                                 customer_error_message=str(ex))
 
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
@@ -302,53 +281,57 @@ def get_configuration(resource_type, resource_id, configuration_capture_time):
         resourceId=resource_id,
         laterTime=configuration_capture_time,
         limit=1)
-    configurationItem = result['configurationItems'][0]
-    return convert_api_configuration(configurationItem)
+    configuration_item = result['configurationItems'][0]
+    return convert_api_configuration(configuration_item)
 
 # Convert from the API model to the original invocation model
-def convert_api_configuration(configurationItem):
-    for k, v in configurationItem.items():
+def convert_api_configuration(configuration_item):
+    for k, v in configuration_item.items():
         if isinstance(v, datetime.datetime):
-            configurationItem[k] = str(v)
-    configurationItem['awsAccountId'] = configurationItem['accountId']
-    configurationItem['ARN'] = configurationItem['arn']
-    configurationItem['configurationStateMd5Hash'] = configurationItem['configurationItemMD5Hash']
-    configurationItem['configurationItemVersion'] = configurationItem['version']
-    configurationItem['configuration'] = json.loads(configurationItem['configuration'])
-    if 'relationships' in configurationItem:
-        for i in range(len(configurationItem['relationships'])):
-            configurationItem['relationships'][i]['name'] = configurationItem['relationships'][i]['relationshipName']
-    return configurationItem
+            configuration_item[k] = str(v)
+    configuration_item['awsAccountId'] = configuration_item['accountId']
+    configuration_item['ARN'] = configuration_item['arn']
+    configuration_item['configurationStateMd5Hash'] = configuration_item['configurationItemMD5Hash']
+    configuration_item['configurationItemVersion'] = configuration_item['version']
+    configuration_item['configuration'] = json.loads(configuration_item['configuration'])
+    if 'relationships' in configuration_item:
+        for i in range(len(configuration_item['relationships'])):
+            configuration_item['relationships'][i]['name'] = configuration_item['relationships'][i]['relationshipName']
+    return configuration_item
 
 # Based on the type of message get the configuration item
 # either from configurationItem in the invoking event
 # or using the getResourceConfigHistiry API in getConfiguration function.
-def get_configuration_item(invokingEvent):
-    check_defined(invokingEvent, 'invokingEvent')
-    if is_oversized_changed_notification(invokingEvent['messageType']):
-        configurationItemSummary = check_defined(invokingEvent['configurationItemSummary'], 'configurationItemSummary')
-        return get_configuration(configurationItemSummary['resourceType'], configurationItemSummary['resourceId'], configurationItemSummary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invokingEvent['messageType']):
+def get_configuration_item(invoking_event):
+    check_defined(invoking_event, 'invokingEvent')
+    if is_oversized_changed_notification(invoking_event['messageType']):
+        configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
+        return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
+    elif is_scheduled_notification(invoking_event['messageType']):
         return None
-    return check_defined(invokingEvent['configurationItem'], 'configurationItem')
+    return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
 # Check whether the resource has been deleted. If it has, then the evaluation is unnecessary.
-def is_applicable(configurationItem, event):
+def is_applicable(configuration_item, event):
     try:
-        check_defined(configurationItem, 'configurationItem')
+        check_defined(configuration_item, 'configurationItem')
         check_defined(event, 'event')
     except:
         return True
-    status = configurationItem['configurationItemStatus']
-    eventLeftScope = event['eventLeftScope']
+    status = configuration_item['configurationItemStatus']
+    event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not eventLeftScope
+    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
 
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')
     try:
-        assume_role_response = sts_client.assume_role(RoleArn=role_arn, RoleSessionName="configLambdaExecution")
+        assume_role_response = sts_client.assume_role(RoleArn=role_arn,
+                                                      RoleSessionName="configLambdaExecution",
+                                                      DurationSeconds=CONFIG_ROLE_TIMEOUT_SECONDS)
+        if 'liblogging' in sys.modules:
+            liblogging.logSession(role_arn, assume_role_response)
         return assume_role_response['Credentials']
     except botocore.exceptions.ClientError as ex:
         # Scrub error message for any internal account info leaks
@@ -396,8 +379,9 @@ def clean_up_old_evaluations(latest_evaluations, event):
 
     return cleaned_evaluations + latest_evaluations
 
-# This decorates the lambda_handler in rule_code with the actual PutEvaluation call
 def lambda_handler(event, context):
+    if 'liblogging' in sys.modules:
+        liblogging.logEvent(event)
 
     global AWS_CONFIG_CLIENT
 
@@ -464,17 +448,17 @@ def lambda_handler(event, context):
         evaluations.append(build_evaluation_from_config_item(configuration_item, 'NOT_APPLICABLE'))
 
     # Put together the request that reports the evaluation status
-    resultToken = event['resultToken']
-    testMode = False
-    if resultToken == 'TESTMODE':
+    result_token = event['resultToken']
+    test_mode = False
+    if result_token == 'TESTMODE':
         # Used solely for RDK test to skip actual put_evaluation API call
-        testMode = True
+        test_mode = True
 
     # Invoke the Config API to report the result of the evaluation
     evaluation_copy = []
     evaluation_copy = evaluations[:]
-    while(evaluation_copy):
-        AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluation_copy[:100], ResultToken=resultToken, TestMode=testMode)
+    while evaluation_copy:
+        AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluation_copy[:100], ResultToken=result_token, TestMode=test_mode)
         del evaluation_copy[:100]
 
     # Used solely for RDK test to be able to test Lambda function
@@ -484,15 +468,15 @@ def is_internal_error(exception):
     return ((not isinstance(exception, botocore.exceptions.ClientError)) or exception.response['Error']['Code'].startswith('5')
             or 'InternalError' in exception.response['Error']['Code'] or 'ServiceError' in exception.response['Error']['Code'])
 
-def build_internal_error_response(internalErrorMessage, internalErrorDetails=None):
-    return build_error_response(internalErrorMessage, internalErrorDetails, 'InternalError', 'InternalError')
+def build_internal_error_response(internal_error_message, internal_error_details=None):
+    return build_error_response(internal_error_message, internal_error_details, 'InternalError', 'InternalError')
 
-def build_error_response(internalErrorMessage, internalErrorDetails=None, customerErrorCode=None, customerErrorMessage=None):
+def build_error_response(internal_error_message, internal_error_details=None, customer_error_code=None, customer_error_message=None):
     error_response = {
-        'internalErrorMessage': internalErrorMessage,
-        'internalErrorDetails': internalErrorDetails,
-        'customerErrorMessage': customerErrorMessage,
-        'customerErrorCode': customerErrorCode
+        'internalErrorMessage': internal_error_message,
+        'internalErrorDetails': internal_error_details,
+        'customerErrorMessage': customer_error_message,
+        'customerErrorCode': customer_error_code
     }
     print(error_response)
     return error_response
