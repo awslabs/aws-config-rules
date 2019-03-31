@@ -1,3 +1,5 @@
+![Build Status](https://codebuild.ap-southeast-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiUXNEakMwc3E0V2F0Q0RxSzdDWU9tcjNDbWpLRStWaFBQdHdFS1NhWWlqWmdNZnZTcXJpRkR5MjVRSUh2Wit2bnQ3RUxQUVk0QWJMVC9lTk9hZnZGVFhjPSIsIml2UGFyYW1ldGVyU3BlYyI6IjFycUFQb0MzTTZyNnovdEciLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
+
 # AWS Config Rules Repository
 
 AWS Community repository of custom Config rules. Contributions welcome. Instructions for leveraging these rules are below.
