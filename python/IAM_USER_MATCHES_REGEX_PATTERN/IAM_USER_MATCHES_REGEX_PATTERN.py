@@ -18,47 +18,30 @@ Rule Name:
 Description:
   Verify that IAM user name conforms to a particular regex pattern.
 Trigger:
-  Event change
+  Configuration change on AWS::IAM::User
 Resource Type to report on:
   AWS::IAM::User
 Rule Parameters:
   | ------------------- | --------- | -------------------------------------------------------- |
   | Parameter Name      | Type      | Description                                              |
   | ------------------- | --------- | -------------------------------------------------------- |
-  | pattern             | Required  | Find regex patterns in the IAM user name.                |
+  | regexPattern        | Required  | Find regex patterns in the IAM user name.                |
   |                     |           | This action is triggered by an event change              |
   | ------------------- | --------- | -------------------------------------------------------- |
 Scenarios:
   Scenario 1:
   Given: Regex Pattern is not specified
-    Then: Return NON_COMPLIANT
+    Then: Return Error
   Scenario 2:
-  Given: Regex Pattern is not the in rule parameters
-    Then: Return NON_COMPLIANT
-  Scenario 3:
   Given: Regex Pattern an invaild regex pattern
-    Then: Return NON_COMPLIANT
-  Scenario 4:
-  Given: Regex Pattern
+    Then: Return Error
+  Scenario 3:
+  Given: The parameter regexPattern is configured and valid.
     And: A user name contains the regex pattern
     Then: COMPLIANT
-  Scenario 5:
+  Scenario 4:
   Given: Regex Pattern
     And: A user name does not contain the regex pattern
-    Then: Return NON_COMPLIANT
-  Scenario 6:
-  Given: Regex Pattern
-    And: A user name does contain the regex patterns
-    Then: Return COMPLIANT
-  Scenario 7:
-  Given: Regex Pattern with a uppercase letter
-    And: A user name does contain the regex pattern
-    And: The regex pattern contains a uppercased letter
-    Then: Return NON_COMPLIANT
-  Scenario 8:
-  Given: Regex Pattern with a uppercase letter
-    And: A user name does contain the regex pattern
-    And: The regex pattern contains a uppercased letter in the first position
     Then: Return NON_COMPLIANT
 '''
 
@@ -93,34 +76,15 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
     """
-    evaluations = []
     iam_user_name = configuration_item["resourceName"]
-    pattern = valid_rule_parameters["pattern"]
+    pattern = valid_rule_parameters["regexPattern"]
     is_compliant = evaluate_username(iam_user_name, pattern)
 
     if is_compliant:
-        evaluations.append(build_evaluation(iam_user_name, 'COMPLIANT', event))
+        return build_evaluation(iam_user_name, 'COMPLIANT', event)
     else:
-        evaluations.append(build_evaluation(iam_user_name, 'NON_COMPLIANT', event, annotation='The regex ({}) does not match ({}).'.format(pattern, iam_user_name)))
-
-    return evaluations
+        return build_evaluation(iam_user_name, 'NON_COMPLIANT', event, annotation='The regex ({}) does not match ({}).'.format(pattern, iam_user_name))
 
 def evaluate_username(user_name, pattern_str):
     """Evaluate the regex pattern for match in the user name
@@ -133,11 +97,7 @@ def evaluate_username(user_name, pattern_str):
     pattern_str -- a string that gets compiled into a regular expression object
     """
     pattern = re.compile(f"{pattern_str}")
-    result = pattern.match(user_name)
-
-    if not result:
-        return False
-    return True
+    return pattern.match(user_name)
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
@@ -148,20 +108,12 @@ def evaluate_parameters(rule_parameters):
     Keyword arguments:
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
-
-    # Scenario 7-8: Validate when a regex pattern is not provided.
-    rule_parameters_dict = json.loads(rule_parameters)
-    if 'pattern' not in rule_parameters:
-        raise ValueError('The Config Rule must have the parameter "pattern"')
-    if not rule_parameters_dict['pattern']:
-        raise ValueError('The Config Rule must have a value specified for the parameter "pattern"')
-
     try:
-        re.compile(rule_parameters_dict['pattern'])
+        re.compile(rule_parameters['regexPattern'])
     except:
-        raise ValueError('The Config Rule must have a validate regex value specified for the parameter "pattern"')
+        raise ValueError('The Config Rule must have a validate regex value specified for the parameter "regexPattern"')
 
-    return rule_parameters_dict
+    return rule_parameters
 
 ####################
 # Helper Functions #

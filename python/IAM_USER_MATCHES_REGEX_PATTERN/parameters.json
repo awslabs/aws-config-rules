@@ -1,10 +1,10 @@
 {
   "Version": "1.0",
   "Parameters": {
-    "RuleName": "iam-user-without-character-string",
+    "RuleName": "IAM_USER_MATCHES_REGEX_PATTERN",
     "SourceRuntime": "python3.6",
-    "CodeKey": "iam-user-without-character-string.zip",
-    "InputParameters": "{\"pattern\":\".*admin.*\"}",
+    "CodeKey": "IAM_USER_MATCHES_REGEX_PATTERN.zip",
+    "InputParameters": "{\"regexPattern\":\".*admin.*\"}",
     "OptionalParameters": "{}",
     "SourceEvents": "AWS::IAM::User"
   },

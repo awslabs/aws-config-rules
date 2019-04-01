@@ -11,8 +11,6 @@ try:
 except ImportError:
     import mock
     from mock import MagicMock
-import botocore
-from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -33,10 +31,6 @@ class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        elif client_name == 'sts':
-            return STS_CLIENT_MOCK
-        elif client_name == 'iam':
-            return IAM_CLIENT_MOCK
         else:
             raise Exception("Attempting to create an unknown client")
 
@@ -48,19 +42,13 @@ class ComplianceTest(unittest.TestCase):
 
     user_list = {'Users': [
         {'UserId': 'AIDAIDFOUX2OSRO6DO7XA',
-         'UserName': 'user-name-1'},
+         'UserName': 'user-name-0'},
         {'UserId': 'AIDAIDFOUX2OSRO6DO7XB',
-         'UserName': 'user-name-admin-2'},
-        {'UserId': 'AIDAIDFOUX2OSRO6DO7XC',
-         'UserName': 'user-name-admin-power-3'},
-        {'UserId': 'AIDAIDFOUX2OSRO6DO7XD',
-         'UserName': 'Admin-user-name-4'},
-        {'UserId': 'AIDAIDFOUX2OSRO6DO7XE',
-         'UserName': 'Power-username-5 '},
+         'UserName': 'user-name-admin-1'},
         {'UserId': 'AIDAIDFOUX2OSRO6DO7XF',
-         'UserName': 'Admin-user-badexpress-6'},
+         'UserName': 'Admin-user-badexpress-2'},
         {'UserId': 'AIDAIDFOUX2OSRO6DO7XG',
-         'UserName': 'Admin-user-no-pattern-7'}]}
+         'UserName': 'Admin-user-no-pattern-3'}]}
 
     def test_scenario_1_no_pattern(self):
         """Test scenario to test when pattern is not specified
@@ -68,113 +56,55 @@ class ComplianceTest(unittest.TestCase):
         self -- class ComplianceTest
         """
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        rule_param = '{"pattern":}'
-        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][6]['UserName']))
+        rule_param = {}
+        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][3]['UserName']))
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         print(response)
         assert_customer_error_response(self, response, "InvalidParameterValueException")
 
-    def test_scenario_2_no_pattern_param_rule(self):
-        """Test scenario to test when a pattern is not the in rule parameters
-        Keyword arguments:
-        self -- class ComplianceTest
-        """
-        IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        rule_param = '{}'
-        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][6]['UserName']))
-        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
-        response = RULE.lambda_handler(lambda_event, {})
-        print(response)
-        assert_customer_error_response(self, response, "InvalidParameterValueException")
-
-    def test_scenario_3_invalid_regex(self):
+    def test_scenario_2_invalid_regex(self):
         """Test scenario to test an invaild regex pattern
         Keyword arguments:
         self -- class ComplianceTest
         """
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        rule_param = '{"pattern":"[bad"}'
-        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][5]['UserName']))
+        rule_param = {"regexPattern":"[bad"}
+        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][2]['UserName']))
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         print(response)
         assert_customer_error_response(self, response, "InvalidParameterValueException")
 
-    def test_scenario_4_non_compliant(self):
+    def test_scenario_3_non_compliant(self):
         """Test scenario to test non-compliant user name
         Keyword arguments:
         self -- class ComplianceTest
         """
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        rule_param = '{"pattern":"admin"}'
+        rule_param = {"regexPattern":"admin"}
         invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][0]['UserName']))
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         print(response)
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', self.user_list['Users'][0]['UserName'], annotation='The regex (admin) does not match (user-name-1).'))
-        assert_successful_evaluation(self, response, resp_expected, 1)
+        resp_expected.append(build_expected_response('NON_COMPLIANT', self.user_list['Users'][0]['UserName'], annotation='The regex (admin) does not match (user-name-0).'))
+        assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_5_compliant(self):
+    def test_scenario_4_compliant(self):
         """Test scenario to test compliant user name
         Keyword arguments:
         self -- class ComplianceTest
         """
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        rule_param = '{"pattern":".*admin.*"}'
+        rule_param = {"regexPattern":".*admin.*"}
         invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][1]['UserName']))
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         print(response)
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', self.user_list['Users'][1]['UserName']))
-        assert_successful_evaluation(self, response, resp_expected, 1)
-
-    def test_scenario_6_compliant(self):
-        """Test scenario to test compliant user name
-        Keyword arguments:
-        self -- class ComplianceTest
-        """
-        IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        rule_param = '{"pattern":".*power.*"}'
-        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][2]['UserName']))
-        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
-        response = RULE.lambda_handler(lambda_event, {})
-        print(response)
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', self.user_list['Users'][2]['UserName']))
-        assert_successful_evaluation(self, response, resp_expected, 1)
-
-    def test_scenario_7_compliant(self):
-        """Test scenario to test compliant user name
-        Keyword arguments:
-        self -- class ComplianceTest
-        """
-        IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        rule_param = '{"pattern":"[aA]dmin"}'
-        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][3]['UserName']))
-        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
-        response = RULE.lambda_handler(lambda_event, {})
-        print(response)
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', self.user_list['Users'][3]['UserName']))
-        assert_successful_evaluation(self, response, resp_expected, 1)
-
-    def test_scenario_8_compliant(self):
-        """Test scenario to test compliant user name
-        Keyword arguments:
-        self -- class ComplianceTest
-        """
-        IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
-        rule_param = '{"pattern":"^[A-Z]\\\\w.+"}'
-        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][4]['UserName']))
-        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
-        response = RULE.lambda_handler(lambda_event, {})
-        print(response)
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', self.user_list['Users'][4]['UserName']))
-        assert_successful_evaluation(self, response, resp_expected, 1)
+        assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #
@@ -197,7 +127,7 @@ def constructConfigItem(resourceName):
         'ARN': "arn:aws:iam::264683526309:user/{}".format(resourceName),
         'awsRegion': "ap-south-1",
         'configurationStateMd5Hash': "",
-        'resourceCreationTime': "2018\9-03-17T06:27:28.289Z",
+        'resourceCreationTime': "2019-03-17T06:27:28.289Z",
         'tags': {}
     }
     return configItem
