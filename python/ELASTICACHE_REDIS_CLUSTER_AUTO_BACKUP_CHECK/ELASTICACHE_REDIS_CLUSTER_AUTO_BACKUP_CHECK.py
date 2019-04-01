@@ -110,9 +110,9 @@ def evaluate_parameters(rule_parameters):
     Keyword arguments:
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
-
-    valid_rule_parameters = rule_parameters
-    return valid_rule_parameters
+    if 'snapshotRetentionPeriod' not in rule_parameters:
+        return {}
+    return {'snapshotRetentionPeriod': int(rule_parameters['snapshotRetentionPeriod'])}
 
 ####################
 # Helper Functions #
