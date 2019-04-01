@@ -10,7 +10,7 @@
 # the specific language governing permissions and limitations under the License.
 '''
 Rule Name:
-  ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
+  ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK
 
 Description:
   Check whether the Amazon ElastiCache Redis clusters have automatic backup turned on. The rule is NON_COMPLIANT if the SnapshotRetentionLimit of an Amazon Elasticache Redis cluster is 0.
