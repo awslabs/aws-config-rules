@@ -37,6 +37,7 @@ RULE = __import__('EC2_INSTANCE_NO_PUBLIC_IPv4_IP')
 
 class ComplianceTest(unittest.TestCase):
 
+    #Scenario 1 test cases: NON_COMPLIANT
     def test_scenario_1a_pri_eni_pri_ip_public(self):
         invoking_event_non_compliant = '{"configurationItem":{"configuration":{"networkInterfaces": [\
                                        {\
@@ -159,6 +160,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', 'AWS::EC2::Instance', 'This Amazon EC2 Instance uses a public IP.'))
         assert_successful_evaluation(self, response, resp_expected)
 
+        #Scenario 2 test case: COMPLIANT
     def test_scenario_2_no_public_ip(self):
         invoking_event_compliant = '{"configurationItem":{"configuration":{"networkInterfaces": [\
                                    {\
