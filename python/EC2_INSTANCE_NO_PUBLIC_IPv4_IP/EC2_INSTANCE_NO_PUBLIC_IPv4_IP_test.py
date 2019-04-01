@@ -160,7 +160,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', 'AWS::EC2::Instance', 'This Amazon EC2 Instance uses a public IP.'))
         assert_successful_evaluation(self, response, resp_expected)
 
-        #Scenario 2 test case: COMPLIANT
+    #Scenario 2 test case: COMPLIANT
     def test_scenario_2_no_public_ip(self):
         invoking_event_compliant = '{"configurationItem":{"configuration":{"networkInterfaces": [\
                                    {\
