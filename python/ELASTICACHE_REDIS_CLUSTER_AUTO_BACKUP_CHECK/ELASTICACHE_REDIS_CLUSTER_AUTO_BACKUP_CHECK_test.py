@@ -38,24 +38,29 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK')
 
+class CompliantResourceTest(unittest.TestCase):
+
+    def test_scenario_3_no_auto_backup_enabled(self):
+        # compliance_type, compliance_resource_id, compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation=None
+        ES_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'ABC', 'SnapshotRetentionLimit':0}]})
+        ES_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"15"}'), {})
+        assert_successful_evaluation(self, lambda_result, [build_expected_response("NON_COMPLIANT", "ABC", )], len(lambda_result))
+
 class ErrorTest(unittest.TestCase):
 
     def test_scenario_2_non_positive_integer_parameter_value(self):
-        response = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"-1"}'), {})
-        print(response)
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"-1"}'), {})
         expected_respose = {'internalErrorMessage': 'Parameter value is invalid', 'internalErrorDetails': 'An ValueError was raised during the validation of the Parameter value', 'customerErrorMessage': '', 'customerErrorCode': 'InvalidParameterValueException'}
-        self.assertEquals(response, expected_respose)
+        self.assertEquals(lambda_result, expected_respose)
 
-class CompliantResourceTest(unittest.TestCase):
+class NotApplicableResourceTest(unittest.TestCase):
 
-    def test_scenario_
-
-    #def test_sample_2(self):
-    #    RULE.ASSUME_ROLE_MODE = False
-    #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
-    #    resp_expected = []
-    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-    #    assert_successful_evaluation(self, response, resp_expected)
+    def test_scenario_1_no_resources(self):
+        ES_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': []})
+        ES_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"15"}'), {})
+        assert_successful_evaluation(self, lambda_result, [build_expected_response("NOT_APPLICABLE", "123456789012")], len(lambda_result))
 
 ####################
 # Helper Functions #

@@ -113,7 +113,7 @@ def generate_evaluations(cache_clusters, replication_groups, snapshot_retention_
         for cluster in cache_clusters:
             if cluster['Engine'] == 'redis':
                 if cluster['SnapshotRetentionLimit'] < snapshot_retention_period:
-                    evaluations.append(build_evaluation(cluster['CacheClusterId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster')
+                    evaluations.append(build_evaluation(cluster['CacheClusterId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster'))
                 elif cluster['SnapshotRetentionLimit'] == 0:
                     evaluations.append(build_evaluation(cluster['CacheClusterId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup not enabled for Amazon ElastiCache cluster: {}".format(cluster['CacheClusterId'])))
                 else:
