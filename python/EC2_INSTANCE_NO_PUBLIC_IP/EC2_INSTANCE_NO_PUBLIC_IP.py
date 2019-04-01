@@ -9,29 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
 
-"""
-#####################################
-##           Gherkin               ##
-#####################################
-Rule Name:
-  EC2_INSTANCE_NO_PUBLIC_IPv4_IP
-Description:
-  Checks whether Amazon EC2 instances have a public IP association or not. The rule is NON_COMPLIANT if the publicIp field is present in the Amazon EC2 instance configuration item.
-Trigger:
-  Configuration Change on AWS::EC2::Instance
-Reports on:
-  AWS::EC2::Instance
-Rule Parameters:
-  None
-Scenarios:
-  Scenario: 1
-     Given: The publicIp field is present in the Amazon EC2 instance configuration item.
-     Then: Return NON_COMPLIANT
-  Scenario: 2
-     Given: The publicIp field is not present in the Amazon EC2 instance configuration item.
-     Then: Return COMPLIANT
-"""
-
 import re
 import json
 import sys
