@@ -156,7 +156,7 @@ class NonCompliantResourcesTest(unittest.TestCase):
                         build_expected_response(
                                 compliance_type='NON_COMPLIANT',
                                 compliance_resource_id='123456789012',
-                                annotation='Public Amazon Machine Image Id: ami-0a1402bb0642906ab,ami-0a1402bb0642906ac,ami-0a1402bb0642906ad,ami-0a1402bb0642906ae,ami-0a1402bb0642906af,ami-0a1402bb0642906ag,ami-0a1402bb0642906ah,ami-0a1402bb0642906ai,ami-0a1402bb0642906aj,ami-0a1402bb[...truncated]'
+                                annotation='Public Amazon Machine Image Id: ami-0a1402bb0642906ab,ami-0a1402bb0642906ac,ami-0a1402bb0642906ad,ami-0a1402bb0642906ae,ami-0a1402bb0642906af,ami-0a1402bb0642906ag,ami-0a1402bb0642906ah,ami-0a1402bb0642906ai,ami-0a1402bb0642906aj,ami-0a1402bb06[ truncated]'
                         )
             ]
             assert_successful_evaluation(self, response, expected_response, len(response))

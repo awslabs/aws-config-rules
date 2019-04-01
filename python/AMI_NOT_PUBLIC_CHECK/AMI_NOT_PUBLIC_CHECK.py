@@ -66,7 +66,7 @@ def generate_image_id_list(images, event):
 
 def build_annotation(annotation_string):
     if len(annotation_string) > 256:
-        return annotation_string[0:242] + "[...truncated]"
+        return annotation_string[:244] + "[ truncated]"
     return annotation_string
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
@@ -88,7 +88,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                             event['accountId'],
                             'NON_COMPLIANT',
                             event,
-                            annotation=build_annotation('Public Amazon Machine Image Id: {}'.format(",".join([image_id for image_id in generate_image_id_list(public_ami_result['Images'], event)])))
+                            annotation='Public Amazon Machine Image Id: {}'.format(",".join([image_id for image_id in generate_image_id_list(public_ami_result['Images'], event)]))
                         )
                 )
                 return evaluations
@@ -124,7 +124,7 @@ def get_client(service, event):
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
     eval_cc = {}
     if annotation:
-        eval_cc['Annotation'] = annotation
+        eval_cc['Annotation'] = build_annotation(annotation)
     eval_cc['ComplianceResourceType'] = resource_type
     eval_cc['ComplianceResourceId'] = resource_id
     eval_cc['ComplianceType'] = compliance_type
@@ -134,7 +134,7 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
 def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
     eval_ci = {}
     if annotation:
-        eval_ci['Annotation'] = annotation
+        eval_ci['Annotation'] = build_annotation(annotation)
     eval_ci['ComplianceResourceType'] = configuration_item['resourceType']
     eval_ci['ComplianceResourceId'] = configuration_item['resourceId']
     eval_ci['ComplianceType'] = compliance_type
