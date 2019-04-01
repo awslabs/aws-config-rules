@@ -122,6 +122,7 @@ def generate_evaluations(cache_clusters, replication_groups, expected_snapshot_r
                 evaluations.append(build_evaluation(cluster['ReplicationGroupId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup not enabled for Amazon ElastiCache cluster: {}".format(cluster['ReplicationGroupId'])))
             else:
                 evaluations.append(build_evaluation(cluster['ReplicationGroupId'], 'COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup enabled for Amazon ElastiCache cluster: {}".format(cluster['ReplicationGroupId'])))
+    return evaluations
 
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
