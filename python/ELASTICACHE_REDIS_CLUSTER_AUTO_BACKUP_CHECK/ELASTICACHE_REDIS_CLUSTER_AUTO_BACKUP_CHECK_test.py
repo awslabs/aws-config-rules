@@ -21,6 +21,7 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
+ES_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
@@ -28,6 +29,8 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         elif client_name == 'sts':
             return STS_CLIENT_MOCK
+        elif client_name == 'elasticache':
+            return ES_CLIENT_MOCK
         else:
             raise Exception("Attempting to create an unknown client")
 
@@ -35,17 +38,17 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK')
 
-class SampleTest(unittest.TestCase):
+class ErrorTest(unittest.TestCase):
 
-    rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
+    def test_scenario_2_non_positive_integer_parameter_value(self):
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"-1"}'), {})
+        print(response)
+        expected_respose = {'internalErrorMessage': 'Parameter value is invalid', 'internalErrorDetails': 'An ValueError was raised during the validation of the Parameter value', 'customerErrorMessage': '', 'customerErrorCode': 'InvalidParameterValueException'}
+        self.assertEquals(response, expected_respose)
 
-    invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
+class CompliantResourceTest(unittest.TestCase):
 
-    def setUp(self):
-        pass
-
-    def test_sample(self):
-        self.assertTrue(True)
+    def test_scenario_
 
     #def test_sample_2(self):
     #    RULE.ASSUME_ROLE_MODE = False
