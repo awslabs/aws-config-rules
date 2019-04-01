@@ -75,6 +75,22 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 
+def get_replication_groups(es_client):
+    replication_groups = []
+    marker = None
+    replication_groups_result = {}
+    while True:
+        if not marker:
+            replication_groups_result = es_client.describe_replication_groups(MaxRecords=100)
+        else:
+            replication_groups_result = es_client.describe_replication_groups(Marker=marker, MaxRecords=100)
+        replication_groups.extend(replication_groups_result['ReplicationGroups'])
+        if 'Marker' in replication_groups_result:
+            Marker = replication_groups_result['Marker']
+        else:
+            return replication_groups
+
+
 def get_cache_clusters(es_client):
     cache_clusters = []
     marker = None
@@ -83,43 +99,44 @@ def get_cache_clusters(es_client):
         if not marker:
             cache_clusters_result = es_client.describe_cache_clusters(MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
         else:
-            cache_clusters_result = es_client.describe_cache_clusters(MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
+            cache_clusters_result = es_client.describe_cache_clusters(Marker=marker, MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
         cache_clusters.extend(cache_clusters_result['CacheClusters'])
         if 'Marker' in cache_clusters_result:
             Marker = cache_clusters_result['Marker']
         else:
             return cache_clusters
 
+
+def generate_evaluations(cache_clusters, replication_groups, expected_snapshot_retention_period):
+    evaluations = []
+    if cache_clusters:
+        for cluster in cache_clusters:
+            if cluster['Engine'] == 'redis':
+                if cluster['SnapshotRetentionLimit'] < expected_snapshot_retention_period:
+                    evaluations.append(build_evaluation(cluster['CacheClusterId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup not enabled for Amazon ElastiCache cluster: {}".format(cluster['CacheClusterId'])))
+                else:
+                    evaluations.append(build_evaluation(cluster['CacheClusterId'], 'COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup enabled for Amazon ElastiCache cluster: {}".format(cluster['CacheClusterId'])))
+    if replication_groups:
+        for replication_group in replication_groups:
+            if replication_group['SnapshotRetentionLimit'] < expected_snapshot_retention_period:
+                evaluations.append(build_evaluation(cluster['ReplicationGroupId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup not enabled for Amazon ElastiCache cluster: {}".format(cluster['ReplicationGroupId'])))
+            else:
+                evaluations.append(build_evaluation(cluster['ReplicationGroupId'], 'COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup enabled for Amazon ElastiCache cluster: {}".format(cluster['ReplicationGroupId'])))
+
+
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
     es_client = get_client('elasticache', event)
-
-    ###############################
-    # Add your custom logic here. #
-    ###############################
-
-    return 'NOT_APPLICABLE'
+    cache_clusters = get_cache_clusters(es_client)
+    replication_groups = get_replication_groups(es_client)
+    if not cache_clusters or not replication_groups:
+        return build_evaluation(event['accountId'], "NOT_APPLICABLE", event)
+    return generate_evaluations(cache_clusters, replication_groups, valid_rule_parameters['snapshotRetentionPeriod'])
 
 def evaluate_parameters(rule_parameters):
     if 'snapshotRetentionPeriod' not in rule_parameters:
         return {'snapshotRetentionPeriod': 15}
+    if int(rule_parameters['snapshotRetentionPeriod']) < 1:
+        raise ValueError
     return {'snapshotRetentionPeriod': int(rule_parameters['snapshotRetentionPeriod'])}
 
 ####################
