@@ -57,7 +57,7 @@ class ComplianceTest(unittest.TestCase):
         """
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
         rule_param = {}
-        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][3]['UserName']))
+        invoking_event = construct_invoking_event(construct_config_item(self.user_list['Users'][3]['UserName']))
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         print(response)
@@ -70,7 +70,7 @@ class ComplianceTest(unittest.TestCase):
         """
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
         rule_param = {"regexPattern":"[bad"}
-        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][2]['UserName']))
+        invoking_event = construct_invoking_event(construct_config_item(self.user_list['Users'][2]['UserName']))
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         print(response)
@@ -83,7 +83,7 @@ class ComplianceTest(unittest.TestCase):
         """
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
         rule_param = {"regexPattern":"admin"}
-        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][0]['UserName']))
+        invoking_event = construct_invoking_event(construct_config_item(self.user_list['Users'][0]['UserName']))
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         print(response)
@@ -98,7 +98,7 @@ class ComplianceTest(unittest.TestCase):
         """
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
         rule_param = {"regexPattern":".*admin.*"}
-        invoking_event = constructInvokingEvent(constructConfigItem(self.user_list['Users'][1]['UserName']))
+        invoking_event = construct_invoking_event(construct_config_item(self.user_list['Users'][1]['UserName']))
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         print(response)
@@ -110,8 +110,8 @@ class ComplianceTest(unittest.TestCase):
 # Helper Functions #
 ####################
 
-def constructConfigItem(resourceName):
-    configItem = {
+def construct_config_item(resource_name):
+    config_item = {
         'relatedEvents': [],
         'relationships': [],
         'configuration': None,
@@ -123,24 +123,24 @@ def constructConfigItem(resourceName):
         'configurationItemStatus': "ResourceDiscovered",
         'resourceType': "AWS::IAM::User",
         'resourceId': "AIDAILEDWOGIPJFAKOJKW",
-        'resourceName': resourceName,
-        'ARN': "arn:aws:iam::264683526309:user/{}".format(resourceName),
+        'resourceName': resource_name,
+        'ARN': "arn:aws:iam::264683526309:user/{}".format(resource_name),
         'awsRegion': "ap-south-1",
         'configurationStateMd5Hash': "",
         'resourceCreationTime': "2019-03-17T06:27:28.289Z",
         'tags': {}
     }
-    return configItem
+    return config_item
 
-def constructInvokingEvent(configItem):
-    invokingEvent = {
+def construct_invoking_event(config_item):
+    invoking_event = {
         "configurationItemDiff": None,
-        "configurationItem": configItem,
+        "configurationItem": config_item,
         "notificationCreationTime": "SAMPLE",
         "messageType": "ConfigurationItemChangeNotification",
         "recordVersion": "SAMPLE"
     }
-    return invokingEvent
+    return invoking_event
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
     event_to_return = {
