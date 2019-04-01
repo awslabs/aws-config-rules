@@ -86,7 +86,7 @@ def get_replication_groups(es_client):
             replication_groups_result = es_client.describe_replication_groups(Marker=marker, MaxRecords=100)
         replication_groups.extend(replication_groups_result['ReplicationGroups'])
         if 'Marker' in replication_groups_result:
-            Marker = replication_groups_result['Marker']
+            marker = replication_groups_result['Marker']
         else:
             return replication_groups
 
@@ -102,27 +102,35 @@ def get_cache_clusters(es_client):
             cache_clusters_result = es_client.describe_cache_clusters(Marker=marker, MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
         cache_clusters.extend(cache_clusters_result['CacheClusters'])
         if 'Marker' in cache_clusters_result:
-            Marker = cache_clusters_result['Marker']
+            marker = cache_clusters_result['Marker']
         else:
             return cache_clusters
 
 
-def generate_evaluations(cache_clusters, replication_groups, expected_snapshot_retention_period):
+def generate_evaluations(cache_clusters, replication_groups, snapshot_retention_period, event):
     evaluations = []
     if cache_clusters:
         for cluster in cache_clusters:
             if cluster['Engine'] == 'redis':
-                if cluster['SnapshotRetentionLimit'] < expected_snapshot_retention_period:
+                if cluster['SnapshotRetentionLimit'] < snapshot_retention_period:
+                    evaluations.append(build_evaluation(cluster['CacheClusterId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster')
+                elif cluster['SnapshotRetentionLimit'] == 0:
                     evaluations.append(build_evaluation(cluster['CacheClusterId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup not enabled for Amazon ElastiCache cluster: {}".format(cluster['CacheClusterId'])))
                 else:
                     evaluations.append(build_evaluation(cluster['CacheClusterId'], 'COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup enabled for Amazon ElastiCache cluster: {}".format(cluster['CacheClusterId'])))
     if replication_groups:
         for replication_group in replication_groups:
-            if replication_group['SnapshotRetentionLimit'] < expected_snapshot_retention_period:
-                evaluations.append(build_evaluation(cluster['ReplicationGroupId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup not enabled for Amazon ElastiCache cluster: {}".format(cluster['ReplicationGroupId'])))
+            if replication_group['SnapshotRetentionLimit'] < snapshot_retention_period:
+                evaluations.append(build_evaluation(replication_group['ReplicationGroupId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster'))
+            elif replication_group['SnapshotRetentionLimit'] == 0:
+                evaluations.append(build_evaluation(replication_group['ReplicationGroupId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup not enabled for Amazon ElastiCache cluster: {}".format(replication_group['ReplicationGroupId'])))
             else:
-                evaluations.append(build_evaluation(cluster['ReplicationGroupId'], 'COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup enabled for Amazon ElastiCache cluster: {}".format(cluster['ReplicationGroupId'])))
+                evaluations.append(build_evaluation(replication_group['ReplicationGroupId'], 'COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup enabled for Amazon ElastiCache cluster: {}".format(replication_group['ReplicationGroupId'])))
     return evaluations
+    # for evaluation in evaluations:
+    #     if evaluation['compliance_type'] == 'NON_COMPLIANT':
+    #         return evaluations
+    # return build_evaluation(event['accountId'], 'COMPLIANT', event, annotation="Automatic backup enabled for all Amazon ElastiCache clusters")
 
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
@@ -131,7 +139,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     replication_groups = get_replication_groups(es_client)
     if not cache_clusters or not replication_groups:
         return build_evaluation(event['accountId'], "NOT_APPLICABLE", event)
-    return generate_evaluations(cache_clusters, replication_groups, valid_rule_parameters['snapshotRetentionPeriod'])
+    return generate_evaluations(cache_clusters, replication_groups, valid_rule_parameters['snapshotRetentionPeriod'], event)
 
 def evaluate_parameters(rule_parameters):
     if 'snapshotRetentionPeriod' not in rule_parameters:
