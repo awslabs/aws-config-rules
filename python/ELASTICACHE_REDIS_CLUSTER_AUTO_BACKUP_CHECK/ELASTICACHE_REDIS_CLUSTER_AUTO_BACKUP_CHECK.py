@@ -75,6 +75,21 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 
+def get_cache_clusters(es_client):
+    cache_clusters = []
+    marker = None
+    cache_clusters_result = {}
+    while True:
+        if not marker:
+            cache_clusters_result = es_client.describe_cache_clusters(MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
+        else:
+            cache_clusters_result = es_client.describe_cache_clusters(MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
+        cache_clusters.extend(cache_clusters_result['CacheClusters'])
+        if 'Marker' in cache_clusters_result:
+            Marker = cache_clusters_result['Marker']
+        else:
+            return cache_clusters
+
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     """Form the evaluation(s) to be return to Config Rules
 
@@ -94,6 +109,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
     3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
     """
+    es_client = get_client('elasticache', event)
 
     ###############################
     # Add your custom logic here. #
@@ -102,16 +118,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     return 'NOT_APPLICABLE'
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
-
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
     if 'snapshotRetentionPeriod' not in rule_parameters:
-        return {}
+        return {'snapshotRetentionPeriod': 15}
     return {'snapshotRetentionPeriod': int(rule_parameters['snapshotRetentionPeriod'])}
 
 ####################
