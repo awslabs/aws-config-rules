@@ -72,26 +72,26 @@ def build_annotation(annotation_string):
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ec2_client = get_client('ec2', event)
     public_ami_result = ec2_client.describe_images(
-                              Filters=[
-                                  {
-                                      'Name': 'is-public',
-                                      'Values': ['true']
-                                  }
-                              ],
-                              Owners=[event['accountId']]
-                        )
+        Filters=[
+            {
+                'Name': 'is-public',
+                'Values': ['true']
+            }
+            ],
+        Owners=[event['accountId']]
+        )
     # If public_ami_list is not empty, generate non-compliant response
     if public_ami_result['Images']:
-                evaluations = []
-                evaluations.append(
-                        build_evaluation(
-                            event['accountId'],
-                            'NON_COMPLIANT',
-                            event,
-                            annotation='Public Amazon Machine Image Id: {}'.format(",".join([image_id for image_id in generate_image_id_list(public_ami_result['Images'], event)]))
-                        )
-                )
-                return evaluations
+        evaluations = []
+        evaluations.append(
+            build_evaluation(
+                event['accountId'],
+                'NON_COMPLIANT',
+                event,
+                annotation='Public Amazon Machine Image Id: {}'.format(",".join([image_id for image_id in generate_image_id_list(public_ami_result['Images'], event)]))
+            )
+        )
+        return evaluations
     return build_evaluation(event['accountId'], "COMPLIANT", event)
 
 def evaluate_parameters(rule_parameters):
@@ -195,7 +195,7 @@ def get_configuration_item(invoking_event):
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invoking_event['messageType']):
+    if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
@@ -210,7 +210,7 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
+    return status in ('OK', 'ResourceDiscovered') and not event_left_scope
 
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')
@@ -368,4 +368,3 @@ def build_error_response(internal_error_message, internal_error_details=None, cu
     }
     print(error_response)
     return error_response
-
