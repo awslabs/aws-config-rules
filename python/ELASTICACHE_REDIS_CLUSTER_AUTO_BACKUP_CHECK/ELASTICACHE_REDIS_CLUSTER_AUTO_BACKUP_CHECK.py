@@ -137,7 +137,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     es_client = get_client('elasticache', event)
     cache_clusters = get_cache_clusters(es_client)
     replication_groups = get_replication_groups(es_client)
-    if not cache_clusters or not replication_groups:
+    if not cache_clusters and not replication_groups:
         return build_evaluation(event['accountId'], "NOT_APPLICABLE", event)
     return generate_evaluations(cache_clusters, replication_groups, valid_rule_parameters['snapshotRetentionPeriod'], event)
 
