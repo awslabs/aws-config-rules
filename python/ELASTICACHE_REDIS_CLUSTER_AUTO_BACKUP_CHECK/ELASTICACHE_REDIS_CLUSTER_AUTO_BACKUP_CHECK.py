@@ -80,6 +80,7 @@ def get_replication_groups(es_client):
     marker = None
     replication_groups_result = {}
     while True:
+        print(replication_groups_result)
         if not marker:
             replication_groups_result = es_client.describe_replication_groups(MaxRecords=100)
         else:
@@ -111,7 +112,6 @@ def generate_evaluations(cache_clusters, replication_groups, snapshot_retention_
     evaluations = []
     if cache_clusters:
         for cluster in cache_clusters:
-            print(cluster)
             if cluster['Engine'] == 'redis':
                 if cluster['SnapshotRetentionLimit'] == 0:
                     evaluations.append(build_evaluation(cluster['CacheClusterId'], 'NON_COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup not enabled for Amazon ElastiCache cluster: {}".format(cluster['CacheClusterId'])))
