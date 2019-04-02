@@ -40,14 +40,23 @@ RULE = __import__('ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK')
 
 class CompliantResourceTest(unittest.TestCase):
 
+    def test_scenario_4_snapshot_retention_limit_low(self):
+        ES_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'ABC', 'SnapshotRetentionLimit': 16, 'Engine': 'redis'}]})
+        ES_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"15"}'), {})
+        print(lambda_result)
+        assert_successful_evaluation(self, lambda_result, [build_expected_response("COMPLIANT", "ABC", "AWS::ElastiCache::CacheCluster", "Automatic backup enabled for Amazon ElastiCache cluster: ABC")], len(lambda_result))
+
+class NonCompliantResourceTest(unittest.TestCase):
+
     def test_scenario_3_no_auto_backup_enabled(self):
         # compliance_type, compliance_resource_id, compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation=None
-        ES_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'ABC', 'SnapshotRetentionLimit':0, 'Engine': 'redis'}]})
+        ES_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'ABCD', 'SnapshotRetentionLimit': 0, 'Engine': 'redis'}]})
         ES_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"15"}'), {})
         # compliance_type, compliance_resource_id, compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
         print(lambda_result)
-        assert_successful_evaluation(self, lambda_result, [build_expected_response("NON_COMPLIANT", "ABC", "AWS::ElastiCache::CacheCluster", "Automatic backup not enabled for Amazon ElastiCache cluster: ABC")], len(lambda_result))
+        assert_successful_evaluation(self, lambda_result, [build_expected_response("NON_COMPLIANT", "ABCD", "AWS::ElastiCache::CacheCluster", "Automatic backup not enabled for Amazon ElastiCache cluster: ABC")], len(lambda_result))
 
 class ErrorTest(unittest.TestCase):
 
