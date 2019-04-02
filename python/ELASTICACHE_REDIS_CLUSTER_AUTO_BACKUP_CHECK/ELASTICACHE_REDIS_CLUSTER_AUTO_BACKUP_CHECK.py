@@ -80,7 +80,6 @@ def get_replication_groups(es_client):
     marker = None
     replication_groups_result = {}
     while True:
-        print(replication_groups_result)
         if not marker:
             replication_groups_result = es_client.describe_replication_groups(MaxRecords=100)
         else:
