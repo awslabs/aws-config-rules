@@ -38,23 +38,25 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK')
 
+
+def describe_replication_groups_se(Marker=None, MaxRecords=100):
+    if Marker is None:
+        return {'Marker': 'ABC', 'ReplicationGroups': [{'ReplicationGroupId':'ABC', 'SnapshotRetentionLimit': 16}]}
+    if Marker == 'ABC':
+        return {'ReplicationGroups': [{'ReplicationGroupId':'DEF', 'SnapshotRetentionLimit': 10}]}
+
+
 class CompliantResourceTest(unittest.TestCase):
 
-    def describe_replication_groups_side_effect(self, Marker=None, MaxRecords=100):
-        if Marker is None:
-            return {'Marker': 'ABC', 'ReplicationGroups': [{'ReplicationGroupId':'ABC', 'SnapshotRetentionLimit': 16}]}
-        if Marker == 'ABC':
-            return {'ReplicationGroups': [{'ReplicationGroupId':'DEF', 'SnapshotRetentionLimit': 10}]}
-
-    def test_scenario_5_snapshot_retention_period_valid(self):
+    def test_scenario_5_compliant_resources(self):
         ES_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'GHI', 'SnapshotRetentionLimit': 16, 'Engine': 'redis'}]})
-        ES_CLIENT_MOCK.describe_replication_groups.side_effect = self.describe_replication_groups_side_effect
+        ES_CLIENT_MOCK.describe_replication_groups.side_effect = describe_replication_groups_se
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"15"}'), {})
         print(lambda_result)
         assert_successful_evaluation(self, lambda_result, [build_expected_response('COMPLIANT', "GHI", "AWS::ElastiCache::CacheCluster", "Automatic backup enabled for Amazon ElastiCache cluster: GHI"),
                                                            build_expected_response('COMPLIANT', "ABC", "AWS::ElastiCache::CacheCluster", "Automatic backup enabled for Amazon ElastiCache cluster: ABC"),
                                                            build_expected_response('NON_COMPLIANT', "DEF", "AWS::ElastiCache::CacheCluster")
-                                                           ], len(lambda_result))
+                                                          ], len(lambda_result))
 
 
 class NonCompliantResourceTest(unittest.TestCase):
@@ -79,7 +81,7 @@ class ErrorTest(unittest.TestCase):
     def test_scenario_2_non_positive_integer_parameter_value(self):
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"-1"}'), {})
         expected_respose = {'internalErrorMessage': 'Parameter value is invalid', 'internalErrorDetails': 'An ValueError was raised during the validation of the Parameter value', 'customerErrorMessage': '', 'customerErrorCode': 'InvalidParameterValueException'}
-        self.assertEquals(lambda_result, expected_respose)
+        assert_successful_evaluation(self, lambda_result, expected_respose)
 
 class NotApplicableResourceTest(unittest.TestCase):
 

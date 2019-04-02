@@ -75,6 +75,8 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 
+
+# Function to get obtain all Redis replication groups
 def get_replication_groups(es_client):
     replication_groups = []
     marker = None
@@ -91,6 +93,7 @@ def get_replication_groups(es_client):
             return replication_groups
 
 
+# Function to get obtain all clusters not part of replication groups
 def get_cache_clusters(es_client):
     cache_clusters = []
     marker = None
@@ -127,11 +130,6 @@ def generate_evaluations(cache_clusters, replication_groups, snapshot_retention_
             else:
                 evaluations.append(build_evaluation(replication_group['ReplicationGroupId'], 'COMPLIANT', event, resource_type='AWS::ElastiCache::CacheCluster', annotation="Automatic backup enabled for Amazon ElastiCache cluster: {}".format(replication_group['ReplicationGroupId'])))
     return evaluations
-    # for evaluation in evaluations:
-    #     if evaluation['compliance_type'] == 'NON_COMPLIANT':
-    #         return evaluations
-    # return build_evaluation(event['accountId'], 'COMPLIANT', event, annotation="Automatic backup enabled for all Amazon ElastiCache clusters")
-
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     es_client = get_client('elasticache', event)
