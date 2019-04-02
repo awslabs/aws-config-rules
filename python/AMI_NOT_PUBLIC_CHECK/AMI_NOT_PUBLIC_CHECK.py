@@ -66,7 +66,7 @@ def generate_image_id_list(images, event):
 
 def build_annotation(annotation_string):
     if len(annotation_string) > 256:
-        return annotation_string[:244] + "[ truncated]"
+        return annotation_string[:244] + " [truncated]"
     return annotation_string
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
