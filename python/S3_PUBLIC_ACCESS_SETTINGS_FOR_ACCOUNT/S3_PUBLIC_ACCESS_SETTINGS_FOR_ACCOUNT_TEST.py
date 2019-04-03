@@ -22,15 +22,15 @@ STS_CLIENT_MOCK = MagicMock()
 S3_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
-    def client(self, client_name, *args, **kwargs):
+    @staticmethod
+    def client(client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        elif client_name == 'sts':
+        if client_name == 'sts':
             return STS_CLIENT_MOCK
-        elif client_name == 's3control':
+        if client_name == 's3control':
             return S3_CLIENT_MOCK
-        else:
-            raise Exception("Attempting to create an unknown client")
+        raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
