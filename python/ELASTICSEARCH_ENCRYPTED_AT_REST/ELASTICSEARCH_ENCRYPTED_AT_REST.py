@@ -68,15 +68,14 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-	es_client = get_client('es', event)
-	list_domain=es_client.list_domain_names()
-	evaluations = []
-
-	if not list_domain['DomainNames']:
+    es_client = get_client('es', event)
+    list_domain =es_client.list_domain_names()
+    evaluations = []
+    if not list_domain['DomainNames']:
 		print("Empty")
 		return 'NOT_APPLICABLE'
-	else :
-		domain_list=[]
+	else:
+		domain_list =[]
 		for domain in list_domain['DomainNames']:
 			domain_list.append(domain['DomainName'])
 		
