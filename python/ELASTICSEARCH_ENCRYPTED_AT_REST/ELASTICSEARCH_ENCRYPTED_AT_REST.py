@@ -49,11 +49,6 @@ try:
     import liblogging
 except ImportError:
     pass
-
-##############
-# Parameters #
-##############
-
 # Define the default resource to report to Config Rules
 DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
 
@@ -63,42 +58,28 @@ ASSUME_ROLE_MODE = False
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
-#############
-# Main Code #
-#############
-
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     es_client = get_client('es', event)
-    list_domain =es_client.list_domain_names()
+    list_domain = es_client.list_domain_names()
     evaluations = []
     if not list_domain['DomainNames']:
-            print("Empty")
-		return 'NOT_APPLICABLE'
-	else:
-		domain_list =[]
-		for domain in list_domain['DomainNames']:
-			domain_list.append(domain['DomainName'])
-		
-		domain_config = es_client.describe_elasticsearch_domains(
-		DomainNames=domain_list
-			)
-		for domain in domain_config['DomainStatusList']:
-			if domain['EncryptionAtRestOptions']['Enabled']:
-				print(domain['DomainName'])
-				print(domain['EncryptionAtRestOptions']['Enabled'])
-				evaluations.append(build_evaluation(domain['DomainName'], 'COMPLIANT', event))
+        return 'NOT_APPLICABLE'
+    domain_list = []
+    for domain in list_domain['DomainNames']:
+        domain_list.append(domain['DomainName'])
 
-			else :	
-				print(domain['DomainName'])
-				print(domain['EncryptionAtRestOptions']['Enabled'])
-				evaluations.append(build_evaluation(domain['DomainName'], 'NON_COMPLIANT', event, annotation='The Amazon Elasticsearch domain does not have the encryption of data at rest as enabled'))
-	print(evaluations)
-	return evaluations
+    domain_config = es_client.describe_elasticsearch_domains(DomainNames=domain_list)
+    for domain in domain_config['DomainStatusList']:
+        if domain['EncryptionAtRestOptions']['Enabled']:
+            evaluations.append(build_evaluation(domain['DomainName'], 'COMPLIANT', event))
+        else:
+            evaluations.append(build_evaluation(domain['DomainName'], 'NON_COMPLIANT', event, annotation='The Amazon Elasticsearch domain does not have the encryption of data at rest as enabled'))
+    return evaluations
 
 
 def evaluate_parameters(rule_parameters):
-	valid_rule_parameters = rule_parameters
-	return valid_rule_parameters
+    valid_rule_parameters = rule_parameters
+    return valid_rule_parameters
 
 def build_parameters_value_error_response(ex):
     return  build_error_response(internal_error_message="Parameter value is invalid",

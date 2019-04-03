@@ -8,17 +8,8 @@ except ImportError:
 import botocore
 from botocore.exceptions import ClientError
 
-##############
-# Parameters #
-##############
-
 # Define the default resource to report to Config Rules
 DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
-
-#############
-# Main Code #
-#############
-
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
 ES_CLIENT_MOCK = MagicMock()
@@ -30,7 +21,7 @@ class Boto3Mock():
         elif client_name == 'sts':
             return STS_CLIENT_MOCK
         elif client_name == 'es':
-            return ES_CLIENT_MOCK    
+            return ES_CLIENT_MOCK
         else:
             raise Exception("Attempting to create an unknown client")
 
@@ -54,9 +45,9 @@ class SampleTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected, 1)
 
     def test_scenario_1_is_compliant(self):
-        list_domains={'DomainNames': [{'DomainName': 'test'}]}
+        list_domains = {'DomainNames':[{'DomainName':'test'}]}
         ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=list_domains)
-        describe_domain={"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":True},"DomainName":"test" }]}
+        describe_domain = {"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"test"}]}
         ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=describe_domain)
 
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
@@ -66,16 +57,16 @@ class SampleTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected, 1)
 
     def test_scenario_1_is_non_compliant(self):
-        list_domains={'DomainNames': [{'DomainName': 'test'}]}
+        list_domains = {'DomainNames': [{'DomainName': 'test'}]}
         ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=list_domains)
-        describe_domain={"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":False},"DomainName":"test" }]}
+        describe_domain = {"DomainStatusList":[{"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"test"}]}
         ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=describe_domain)
 
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test', 'AWS::Elasticsearch::Domain',annotation='The Amazon Elasticsearch domain does not have the encryption of data at rest as enabled'))
-        assert_successful_evaluation(self, response, resp_expected, 1)    
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test', 'AWS::Elasticsearch::Domain', annotation='The Amazon Elasticsearch domain does not have the encryption of data at rest as enabled'))
+        assert_successful_evaluation(self, response, resp_expected, 1)
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
     event_to_return = {
