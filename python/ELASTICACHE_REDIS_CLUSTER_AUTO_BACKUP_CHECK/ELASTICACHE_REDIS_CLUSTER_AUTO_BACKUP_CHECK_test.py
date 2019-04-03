@@ -39,7 +39,7 @@ sys.modules['boto3'] = Boto3Mock()
 RULE = __import__('ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK')
 
 
-def describe_replication_groups_se(Marker=None, MaxRecords=100):
+def replication_groups_se(Marker=None, MaxRecords=100):
     if Marker is None:
         return {'Marker': 'ABC', 'ReplicationGroups': [{'ReplicationGroupId':'ABC', 'SnapshotRetentionLimit': 16}]}
     if Marker == 'ABC':
@@ -50,7 +50,7 @@ class CompliantResourceTest(unittest.TestCase):
 
     def test_scenario_5_compliant_resources(self):
         EC_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'GHI', 'SnapshotRetentionLimit': 16, 'Engine': 'redis'}]})
-        EC_CLIENT_MOCK.describe_replication_groups.side_effect = describe_replication_groups_se
+        EC_CLIENT_MOCK.describe_replication_groups.side_effect = replication_groups_se
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"15"}'), {})
         print(lambda_result)
         assert_successful_evaluation(self, lambda_result, [build_expected_response('COMPLIANT', "GHI", "AWS::ElastiCache::CacheCluster"),
