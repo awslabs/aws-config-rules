@@ -72,7 +72,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     list_domain =es_client.list_domain_names()
     evaluations = []
     if not list_domain['DomainNames']:
-		print("Empty")
+            print("Empty")
 		return 'NOT_APPLICABLE'
 	else:
 		domain_list =[]
