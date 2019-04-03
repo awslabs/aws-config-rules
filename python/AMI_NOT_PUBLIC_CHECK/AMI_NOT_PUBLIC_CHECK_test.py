@@ -11,7 +11,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::EFS::FileSystem'
+DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 #############
 # Main Code #
@@ -19,7 +19,7 @@ DEFAULT_RESOURCE_TYPE = 'AWS::EFS::FileSystem'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-EFS_CLIENT_MOCK = MagicMock()
+EC2_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
@@ -28,113 +28,140 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 'efs':
-            return EFS_CLIENT_MOCK
+        if client_name == 'ec2':
+            return EC2_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('EFS_ENCRYPTED_CHECK')
+RULE = __import__('AMI_NOT_PUBLIC_CHECK')
 
-class ComplianceTestScenarios(unittest.TestCase):
+# Checks for scenario wherein no non-compliant resources are present
+class CompliantResourcesTest(unittest.TestCase):
+    def test_scenario_1_compliant_resources(self):
+        describe_images_result = {
+            'Images': [],
+            'ResponseMetadata': {}
+        }
+        EC2_CLIENT_MOCK.describe_images = MagicMock(return_value=describe_images_result)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        expected_response = [
+            build_expected_response(
+                compliance_type='COMPLIANT',
+                compliance_resource_id='123456789012'
+            )
+        ]
+        assert_successful_evaluation(self, response, expected_response, len(response))
 
-    rule_valid_parameters = '{"KmsKeyId": "arn:aws:kms:us-west-2:123456789012:key/12345-1111-1111-1111-123456789"}'
-    rule_invalid_value_parameter = '{"KmsKeyId": "asdfa97asf8a0sf09sa8df0a98sd0f8as0f8d0"}'
-    rule_empty_parameter = '{"KmsKeyId": ""}'
+# Checks for scenario wherein non-compliant resources are present
+class NonCompliantResourcesTest(unittest.TestCase):
+    def test_scenario_2_non_compliant_resources(self):
+        describe_images_result = {
+            'Images': [
+                {
+                    'ImageId': 'ami-040574eaefd6dc6d4',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906aa',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                }
+            ],
+            'ResponseMetadata': {}
+        }
+        EC2_CLIENT_MOCK.describe_images = MagicMock(return_value=describe_images_result)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        expected_response = [
+            build_expected_response(
+                compliance_type='NON_COMPLIANT',
+                compliance_resource_id='123456789012',
+                annotation='Public Amazon Machine Image Id: ami-040574eaefd6dc6d4,ami-0a1402bb0642906aa'
+            )
+        ]
+        assert_successful_evaluation(self, response, expected_response, len(response))
 
-    efs_zero_file_system = {
-        "FileSystems": [
-        ],
-    }
-
-    efs_encrypted_matching_key = {
-        "FileSystems": [
-            {
-                "OwnerId": "234759432549",
-                "FileSystemId": "fs-123456ab",
-                "Encrypted": True,
-                "KmsKeyId": "arn:aws:kms:us-west-2:123456789012:key/12345-1111-1111-1111-123456789",
-            },
-        ],
-    }
-
-    efs_encrypted_different_kms_key = {
-        "FileSystems": [
-            {
-                "OwnerId": "234759432549",
-                "FileSystemId": "fs-123456ab",
-                "Encrypted": True,
-                "KmsKeyId": "arn:aws:kms:us-west-2:123456789012:key/12345-1111-1111-1111-00000000",
-            },
-        ],
-    }
-    efs_not_encrypted = {
-        "FileSystems": [
-            {
-                "OwnerId": "234759432549",
-                "FileSystemId": "fs-123456ab",
-                "Encrypted": False,
-            },
-        ],
-    }
-
-    # Common Scenario
-    def test_invalid_value_parameter(self):
-        RULE.ASSUME_ROLE_MODE = False
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.rule_invalid_value_parameter), {})
-        assert_customer_error_response(
-            self, response, 'InvalidParameterValueException', 'Invalid value for paramter KmsKeyId, Expected KMS Key ARN')
-
-    # Scenarion 1
-    def test_efs_zero_file_systems(self):
-        EFS_CLIENT_MOCK.describe_file_systems = MagicMock(return_value=self.efs_zero_file_system)
-        RULE.ASSUME_ROLE_MODE = False
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.rule_empty_parameter), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::::Account'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    # Scenario 2
-    def test_efs_not_encrypted(self):
-        EFS_CLIENT_MOCK.describe_file_systems = MagicMock(return_value=self.efs_not_encrypted)
-        RULE.ASSUME_ROLE_MODE = False
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.rule_valid_parameters), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'fs-123456ab', 'AWS::EFS::FileSystem', 'This EFS File System is not encrypted.'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    # Scenario 3
-    def test_efs_encrypted_no_parameter(self):
-        EFS_CLIENT_MOCK.describe_file_systems = MagicMock(return_value=self.efs_encrypted_matching_key)
-        RULE.ASSUME_ROLE_MODE = False
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.rule_empty_parameter), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'fs-123456ab', 'AWS::EFS::FileSystem'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    # Scenario 4
-    def test_efs_encrypted_no_match(self):
-        EFS_CLIENT_MOCK.describe_file_systems = MagicMock(return_value=self.efs_encrypted_different_kms_key)
-        RULE.ASSUME_ROLE_MODE = False
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.rule_valid_parameters), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'fs-123456ab', 'AWS::EFS::FileSystem', 'This EFS File System is not encrypted with the KMS key specified in "KmsKeyId" input parameter.'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    # Scenario 5
-    def test_efs_encrypted_valid_param(self):
-        EFS_CLIENT_MOCK.describe_file_systems = MagicMock(return_value=self.efs_encrypted_matching_key)
-        RULE.ASSUME_ROLE_MODE = False
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.rule_valid_parameters), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'fs-123456ab', 'AWS::EFS::FileSystem'))
-        assert_successful_evaluation(self, response, resp_expected)
-
+    def test_scenario_3_non_compliant_resources(self):
+        describe_images_result = {
+            'Images': [
+                {
+                    'ImageId': 'ami-0a1402bb0642906ab',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906ac',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906ad',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906ae',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906af',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906ag',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906ah',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906ai',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906aj',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906ak',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906al',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                },
+                {
+                    'ImageId': 'ami-0a1402bb0642906am',
+                    'Public': True,
+                    'OwnerId': '123456789012'
+                }
+            ],
+            'ResponseMetadata': {}
+        }
+        EC2_CLIENT_MOCK.describe_images = MagicMock(return_value=describe_images_result)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        expected_response = [
+            build_expected_response(
+                compliance_type='NON_COMPLIANT',
+                compliance_resource_id='123456789012',
+                annotation='Public Amazon Machine Image Id: ami-0a1402bb0642906ab,ami-0a1402bb0642906ac,ami-0a1402bb0642906ad,ami-0a1402bb0642906ae,ami-0a1402bb0642906af,ami-0a1402bb0642906ag,ami-0a1402bb0642906ah,ami-0a1402bb0642906ai,ami-0a1402bb0642906aj,ami-0a1402bb06 [truncated]'
+            )
+        ]
+        assert_successful_evaluation(self, response, expected_response, len(response))
 
 ####################
 # Helper Functions #
 ####################
-
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
     event_to_return = {
