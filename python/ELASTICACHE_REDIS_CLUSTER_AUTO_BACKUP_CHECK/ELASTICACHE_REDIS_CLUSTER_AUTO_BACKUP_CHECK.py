@@ -77,15 +77,15 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 
 # Function to get obtain all Redis replication groups
-def get_replication_groups(es_client):
+def get_replication_groups(ec_client):
     replication_groups = []
     marker = None
     replication_groups_result = {}
     while True:
         if not marker:
-            replication_groups_result = es_client.describe_replication_groups(MaxRecords=100)
+            replication_groups_result = ec_client.describe_replication_groups(MaxRecords=100)
         else:
-            replication_groups_result = es_client.describe_replication_groups(Marker=marker, MaxRecords=100)
+            replication_groups_result = ec_client.describe_replication_groups(Marker=marker, MaxRecords=100)
         replication_groups.extend(replication_groups_result['ReplicationGroups'])
         if 'Marker' in replication_groups_result:
             marker = replication_groups_result['Marker']
@@ -94,15 +94,15 @@ def get_replication_groups(es_client):
 
 
 # Function to get obtain all clusters not part of replication groups
-def get_cache_clusters(es_client):
+def get_cache_clusters(ec_client):
     cache_clusters = []
     marker = None
     cache_clusters_result = {}
     while True:
         if not marker:
-            cache_clusters_result = es_client.describe_cache_clusters(MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
+            cache_clusters_result = ec_client.describe_cache_clusters(MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
         else:
-            cache_clusters_result = es_client.describe_cache_clusters(Marker=marker, MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
+            cache_clusters_result = ec_client.describe_cache_clusters(Marker=marker, MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
         cache_clusters.extend(cache_clusters_result['CacheClusters'])
         if 'Marker' in cache_clusters_result:
             marker = cache_clusters_result['Marker']
@@ -132,9 +132,9 @@ def generate_evaluations(cache_clusters, replication_groups, snapshot_retention_
     return evaluations
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    es_client = get_client('elasticache', event)
-    cache_clusters = get_cache_clusters(es_client)
-    replication_groups = get_replication_groups(es_client)
+    ec_client = get_client('elasticache', event)
+    cache_clusters = get_cache_clusters(ec_client)
+    replication_groups = get_replication_groups(ec_client)
     if not cache_clusters and not replication_groups:
         return build_evaluation(event['accountId'], "NOT_APPLICABLE", event)
     return generate_evaluations(cache_clusters, replication_groups, valid_rule_parameters['snapshotRetentionPeriod'], event)
