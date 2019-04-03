@@ -48,7 +48,7 @@ Scenarios:
       And: At least 1 default value does not match the corresponding value for the account
      then: Return NON_COMPLIANT
   Scenario 4:
-    Given: Given: No input parameters are defined 
+    Given: Given: No input parameters are defined
       And: All S3 public access account settings match the default values
      then: Return COMPLIANT
   Scenario 5:
@@ -62,8 +62,8 @@ import datetime
 import os
 import os.path
 import sys
-envLambdaTaskRoot = os.environ["LAMBDA_TASK_ROOT"]  
-sys.path.insert(0,envLambdaTaskRoot+"/boto3-1-9-82") #hack to change the version of boto
+ENVLAMBDATASKROOT = os.environ["LAMBDA_TASK_ROOT"]
+sys.path.insert(0, ENVLAMBDATASKROOT+"/boto3-1-9-82") #hack to change the version of boto
 import boto3
 import botocore
 
@@ -91,7 +91,7 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-  
+
     client = get_client('s3control', event)
     response = client.get_public_access_block(AccountId=event['accountId'])
     evaluations = []
@@ -137,10 +137,10 @@ def to_bool(value):
     False: "", "0", "faLse", "no", "n", "f"
     Non-string values are passed to bool.
     """
-    if type(value) == type(''):
-        if value.lower() in ("yes", "y", "true",  "t", "1"):
+    if isinstance(value, str):
+        if value.lower() in ("yes", "y", "true", "t", "1"):
             return True
-        if value.lower() in ("no",  "n", "false", "f", "0", ""):
+        if value.lower() in ("no", "n", "false", "f", "0", ""):
             return False
         raise Exception('Invalid value for boolean conversion: ' + value)
     return bool(value)
