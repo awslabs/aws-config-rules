@@ -48,7 +48,7 @@ def replication_groups_se(Marker=None, MaxRecords=100):
 
 class CompliantResourceTest(unittest.TestCase):
 
-    def test_scenario_5_compliant_resources(self):
+    def test_scenario_5_is_compliant(self):
         EC_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'GHI', 'SnapshotRetentionLimit': 16, 'Engine': 'redis'}]})
         EC_CLIENT_MOCK.describe_replication_groups.side_effect = replication_groups_se
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"15"}'), {})
@@ -77,7 +77,7 @@ class NonCompliantResourceTest(unittest.TestCase):
 
 class ErrorTest(unittest.TestCase):
 
-    def test_scenario_2_non_positive_integer_parameter_value(self):
+    def test_scenario_2_parameter_error(self):
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"-1"}'), {})
         print(lambda_result)
         assert_customer_error_response(self, lambda_result, customer_error_message='snapshotRetentionPeriod value should be a positive integer greater than 0', customer_error_code='InvalidParameterValueException')
