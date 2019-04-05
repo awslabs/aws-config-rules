@@ -79,8 +79,7 @@ class ErrorTest(unittest.TestCase):
 
     def test_scenario_2_parameter_error(self):
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"-1"}'), {})
-        print(lambda_result)
-        assert_customer_error_response(self, lambda_result, customer_error_message='snapshotRetentionPeriod value should be a positive integer greater than 0', customer_error_code='InvalidParameterValueException')
+        assert_customer_error_response(self, lambda_result, customer_error_message='snapshotRetentionPeriod value should be an integer greater than 0', customer_error_code='InvalidParameterValueException')
 
 class NotApplicableResourceTest(unittest.TestCase):
 

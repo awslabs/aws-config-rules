@@ -141,7 +141,7 @@ def evaluate_parameters(rule_parameters):
     if 'snapshotRetentionPeriod' not in rule_parameters:
         return {'snapshotRetentionPeriod': 15}
     if int(rule_parameters['snapshotRetentionPeriod']) < 1:
-        raise ValueError('snapshotRetentionPeriod value should be a positive integer greater than 0')
+        raise ValueError('snapshotRetentionPeriod value should be an integer greater than 0')
     return {'snapshotRetentionPeriod': int(rule_parameters['snapshotRetentionPeriod'])}
 
 ####################
