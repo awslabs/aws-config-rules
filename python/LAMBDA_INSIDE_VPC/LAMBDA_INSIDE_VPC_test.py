@@ -4,10 +4,8 @@ import unittest
 try:
     from unittest.mock import MagicMock
 except ImportError:
-    import mock
     from mock import MagicMock
 import botocore
-from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -24,7 +22,8 @@ CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
-    def client(self, client_name, *args, **kwargs):
+    @staticmethod
+    def client(client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
@@ -90,7 +89,7 @@ class ComplianceTestScenarios(unittest.TestCase):
     def test_invalid_parameter_value(self):
         invoking_event = '{"configurationItem":{"configuration":' + json.dumps(self.lambda_inside_vpc) + ',"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Lambda::Function","resourceId":"test_function"},"messageType":"ConfigurationItemChangeNotification"}'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_invalid_parameter), {})
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', 'Invalid value for paramter subnetId, Expected subnetId')
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', 'Invalid value for paramter "subnetId", Expected subnet Id')
 
     # Scenario 2
     def test_empty_parameter_value(self):
