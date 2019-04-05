@@ -21,33 +21,41 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-
+SUPPORT_CLIENT_MOCK = MagicMock()
+print ("magicmock done")
 class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
         elif client_name == 'sts':
             return STS_CLIENT_MOCK
+        elif client_name == 'support':
+            print ("support client pickedup")
+            return SUPPORT_CLIENT_MOCK
         else:
             raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('ENTERPRISE_SUPPORT_PLAN_ENABLED')
-
+print ("rule imported")
 class ComplianceTest(unittest.TestCase):
 
-    rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
-
-    invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-
-
-    def test_scenario_1_basic_or_dev(self):
-        
-
-    def test_sample(self):
-        self.assertTrue(True)
-
+    def test_scenario_3_enterprise(self):
+        print ("inside test")
+        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(return_value={
+            'severityLevels': [
+                {
+                    'code': 'critical'
+                },
+            ]
+        })
+        print ("after describe call")
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        print ("before")
+        print (response)
+        print ("after response")
+        self.assertTrue(False)
     #def test_sample_2(self):
     #    RULE.ASSUME_ROLE_MODE = False
     #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
