@@ -22,7 +22,7 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
 SUPPORT_CLIENT_MOCK = MagicMock()
-print ("magicmock done")
+
 class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
         if client_name == 'config':
@@ -38,11 +38,9 @@ class Boto3Mock():
 sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('ENTERPRISE_SUPPORT_PLAN_ENABLED')
-print ("rule imported")
 class ComplianceTest(unittest.TestCase):
 
     def test_scenario_3_enterprise(self):
-        print ("inside test")
         SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(return_value={
             'severityLevels': [
                 {
@@ -50,12 +48,14 @@ class ComplianceTest(unittest.TestCase):
                 },
             ]
         })
-        print ("after describe call")
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        print ("before")
-        print (response)
-        print ("after response")
-        self.assertTrue(False)
+        assert_successful_evaluation(self, response,[
+            build_expected_response(
+            "COMPLIANT",
+            "123456789012"
+            )
+        ])
+    
     #def test_sample_2(self):
     #    RULE.ASSUME_ROLE_MODE = False
     #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})

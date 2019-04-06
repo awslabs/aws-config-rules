@@ -9,6 +9,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
 
+'''
+#####################################
+##           Gherkin               ##
+#####################################
+Rule Name:
+  ENTERPRISE_SUPPORT_PLAN_ENABLED
+
+Description:
+  Check whether the Enterprise Support Plan is enabled for an AWS Account.
+
+Trigger:
+  Periodic
+
+Reports on:
+  AWS::::Account
+
+Rule Parameters:
+  None
+
+Scenarios:
+  Scenario: 1
+     Given: AWS Support API call errors out with SubscriptionRequired exception while using the DescribeSeverityLevels API call
+      Then: Return NON_COMPLIANT with Annotation "The AWS Enterprise Support Plan is not enabled for this AWS Account."
+  Scenario: 2
+     Given: The AWS Account does not have access to "critical" case severity level as returned by the AWS Support API DescribeSeverityLevels
+      Then: Return NON_COMPLIANT with Annotation "The AWS Enterprise Support Plan is not enabled for this AWS Account."
+  Scenario: 3
+     Given: The AWS Account has access to "critical" case severity level as returned by the AWS Support API DescribeSeverityLevels
+      Then: Return COMPLIANT
+'''
+
 import json
 import sys
 import datetime
