@@ -31,18 +31,17 @@ class Boto3Mock():
             return STS_CLIENT_MOCK
         elif client_name == 'elasticache':
             return EC_CLIENT_MOCK
-        else:
-            raise Exception("Attempting to create an unknown client")
+        raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK')
 
 
-def replication_groups_se(Marker=None, MaxRecords=100):
-    if Marker is None:
+def replication_groups_se(**kwargs):
+    if 'Marker' not in kwargs:
         return {'Marker': 'ABC', 'ReplicationGroups': [{'ReplicationGroupId':'ABC', 'SnapshotRetentionLimit': 16}]}
-    if Marker == 'ABC':
+    if kwargs['Marker'] == 'ABC':
         return {'ReplicationGroups': [{'ReplicationGroupId':'DEF', 'SnapshotRetentionLimit': 10}]}
 
 
@@ -61,13 +60,13 @@ class CompliantResourceTest(unittest.TestCase):
 
 class NonCompliantResourceTest(unittest.TestCase):
 
-    def test_scenario_4_snapshot_retention_limit_low(self):
+    def test_scenario_4_low_retention(self):
         EC_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'ABC', 'SnapshotRetentionLimit': 16, 'Engine': 'redis'}]})
         EC_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"snapshotRetentionPeriod":"15"}'), {})
         assert_successful_evaluation(self, lambda_result, [build_expected_response("COMPLIANT", "ABC", "AWS::ElastiCache::CacheCluster")], len(lambda_result))
 
-    def test_scenario_3_no_auto_backup_enabled(self):
+    def test_scenario_3_no_auto_backup(self):
         # compliance_type, compliance_resource_id, compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation=None
         EC_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'ABCD', 'SnapshotRetentionLimit': 0, 'Engine': 'redis'}]})
         EC_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
