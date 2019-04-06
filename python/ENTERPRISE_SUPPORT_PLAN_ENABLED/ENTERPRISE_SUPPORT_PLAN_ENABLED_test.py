@@ -41,16 +41,19 @@ RULE = __import__('ENTERPRISE_SUPPORT_PLAN_ENABLED')
 class ComplianceTest(unittest.TestCase):
 
     def test_scenario_1_dev_or_basic(self):
-        describe_severity_levels_result = (raise Exception({
-            "Error": {
-                "Message": "AWS Premium Support Subscription is required to use this service.",
-                "Code": "SubscriptionRequiredException"
-            },
-            "ResponseMetadata": {
-            }
-        }))
+        describe_severity_levels_result = botocore.exceptions.ClientError(
+            {
+                'Error': 
+                {
+                    'Code': 'SubscriptionRequiredException', 
+                    'Message': 'SubscriptionRequiredException'
+                }
+            }, 
+            'operation'
+        )
+        
 
-        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(return_value=describe_severity_levels_result)
+        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(side_effect=describe_severity_levels_result)
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         assert_successful_evaluation(self, response,[
             build_expected_response(
