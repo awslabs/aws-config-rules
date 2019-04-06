@@ -17,7 +17,7 @@
 Rule Name:
     emr_master_no_public_ip
 Description:
-    Checks that EMR clusters have Kerberos Enabled
+    Checks that Amazon EMR clusters' master node does not have a public IP. This rule only checks clusters in RUNNING or WAITING state.
 
 Trigger:
   Periodic
@@ -88,16 +88,19 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     evaluations = []
 
-    #Building service clients using get_client()
+    #Building EMR service client using get_client()
 
     emr_client = get_client('emr', event)
-    ec2_client = get_client('ec2', event)
 
     #Listing RUNNING and WAITING clusters
     cluster_list = list_all_clusters(emr_client)
     #Scenario 1: If no RUNNING and WAITING clusters then return NOT_APPLICABLE
     if not cluster_list:
         return None
+
+    #Building EC2 service client using get_client()
+
+    ec2_client = get_client('ec2', event)
 
     #Main logic for compliance deduction in cluster_dns_mapping()
     private_dns_cluster_list, cluster_dns_list = cluster_dns_mapping(cluster_list, emr_client, ec2_client)
