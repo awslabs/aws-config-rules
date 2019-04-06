@@ -40,6 +40,57 @@ sys.modules['boto3'] = Boto3Mock()
 RULE = __import__('ENTERPRISE_SUPPORT_PLAN_ENABLED')
 class ComplianceTest(unittest.TestCase):
 
+    def test_scenario_1_dev_or_basic(self):
+        describe_severity_levels_result = (raise Exception({
+            "Error": {
+                "Message": "AWS Premium Support Subscription is required to use this service.",
+                "Code": "SubscriptionRequiredException"
+            },
+            "ResponseMetadata": {
+            }
+        }))
+
+        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(return_value=describe_severity_levels_result)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(self, response,[
+            build_expected_response(
+            compliance_type="NON_COMPLIANT",
+            compliance_resource_id="123456789012",
+            annotation="The account does not have Enterprise Support Plan"
+            )
+        ])
+
+    def test_scenario_2_business(self):
+        describe_severity_levels_result = {
+            "severityLevels": [
+                {
+                    "code": "low",
+                    "name": "Low"
+                },
+                {
+                    "code": "normal",
+                    "name": "Normal"
+                },
+                {
+                    "code": "high",
+                    "name": "High"
+                },
+                {
+                    "code": "urgent",
+                    "name": "Urgent"
+                }
+            ]
+        }
+        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(return_value=describe_severity_levels_result)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(self, response,[
+            build_expected_response(
+            compliance_type="NON_COMPLIANT",
+            compliance_resource_id="123456789012",
+            annotation="The account does not have Enterprise Support Plan"
+            )
+        ])
+
     def test_scenario_3_enterprise(self):
         SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(return_value={
             'severityLevels': [
@@ -55,7 +106,7 @@ class ComplianceTest(unittest.TestCase):
             "123456789012"
             )
         ])
-    
+
     #def test_sample_2(self):
     #    RULE.ASSUME_ROLE_MODE = False
     #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})

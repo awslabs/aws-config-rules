@@ -93,8 +93,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     #use region as below - if rule deployed to a region other than us-east-1
     #support_client = get_client('support', event, 'us-east-1')
     support_client = get_client('support', event)
-    account_id = event['accountId']
-
+    
     try:
         response = support_client.describe_severity_levels()
     except ClientError as e:
@@ -102,7 +101,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         if e.response['Error']['Code'] == 'SubscriptionRequiredException':
             #This is either basic or developer plan
             return build_evaluation(
-                account_id,
+                event['accountId'],
                 "NON_COMPLIANT",
                 event,
                 resource_type=DEFAULT_RESOURCE_TYPE,
@@ -119,7 +118,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         if level['code'] == 'critical':
             #This is Enterprise
             return build_evaluation(
-                account_id,
+                event['accountId'],
                 "COMPLIANT",
                 event
             )
@@ -127,7 +126,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     #Only option left now is Business
     return build_evaluation(
-        account_id,
+        event['accountId'],
         "NON_COMPLIANT",
         event,
         resource_type=DEFAULT_RESOURCE_TYPE,
