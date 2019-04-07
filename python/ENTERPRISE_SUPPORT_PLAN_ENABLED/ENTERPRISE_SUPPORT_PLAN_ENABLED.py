@@ -15,19 +15,14 @@
 #####################################
 Rule Name:
   ENTERPRISE_SUPPORT_PLAN_ENABLED
-
 Description:
   Check whether the Enterprise Support Plan is enabled for an AWS Account.
-
 Trigger:
   Periodic
-
 Reports on:
   AWS::::Account
-
 Rule Parameters:
   None
-
 Scenarios:
   Scenario: 1
      Given: AWS Support API call errors out with SubscriptionRequired exception while using the DescribeSeverityLevels API call
@@ -69,79 +64,38 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 
+# AWS Support API has only one endpoint which is in us-east-1 region
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
-    
-    #Building service clients using get_client()
-    #use region as below - if rule deployed to a region other than us-east-1
-    #support_client = get_client('support', event, 'us-east-1')
-    support_client = get_client('support', event)
-    
+    support_client = get_client('support', event, 'us-east-1')
     try:
+        # Account with Basic or Developer support returns ClientError exception
         response = support_client.describe_severity_levels()
-    except ClientError as e:
-        #Check if either basic or developer plan. It should return specific exception
-        if e.response['Error']['Code'] == 'SubscriptionRequiredException':
-            #This is either basic or developer plan
+    except ClientError as error:
+        if error.response['Error']['Code'] == 'SubscriptionRequiredException':
             return build_evaluation(
                 event['accountId'],
                 "NON_COMPLIANT",
                 event,
-                resource_type=DEFAULT_RESOURCE_TYPE,
-                annotation="The account does not have Enterprise Support Plan"
+                DEFAULT_RESOURCE_TYPE,
+                annotation="The AWS Enterprise Support Plan is not enabled for this AWS Account."
             )
         else:
-            print (e.response['Error']['Code'])
-            return
-    
+            print(error.response['Error']['Code'])
+            raise
 
-    #Check for compliance if 'critical' severity available - which is enterprise == COMPLIANT
-    levels = response['severityLevels']
-    for level in levels:
+    for level in response['severityLevels']:
         if level['code'] == 'critical':
-            #This is Enterprise
-            return build_evaluation(
-                event['accountId'],
-                "COMPLIANT",
-                event
-            )
-            
+            return build_evaluation(event['accountId'], "COMPLIANT", event)
 
-    #Only option left now is Business
     return build_evaluation(
         event['accountId'],
         "NON_COMPLIANT",
         event,
-        resource_type=DEFAULT_RESOURCE_TYPE,
-        annotation="The account does not have Enterprise Support Plan"
+        DEFAULT_RESOURCE_TYPE,
+        annotation="The AWS Enterprise Support Plan is not enabled for this AWS Account."
     )
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
-
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
@@ -152,7 +106,6 @@ def evaluate_parameters(rule_parameters):
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
     """Return an error dictionary when the evaluate_parameters() raises a ValueError.
-
     Keyword arguments:
     ex -- Exception text
     """
@@ -163,29 +116,24 @@ def build_parameters_value_error_response(ex):
 
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
-# 
-# Hardcoding region to us-east-1 sinc there is only one endpoint for support API
-# Ref: https://docs.aws.amazon.com/general/latest/gr/rande.html#awssupport_region
 def get_client(service, event, region=None):
     """Return the service boto client. It should be used instead of directly calling the client.
-
     Keyword arguments:
     service -- the service name used for calling the boto.client()
     event -- the event variable given in the lambda handler
     """
     if not ASSUME_ROLE_MODE:
-        return boto3.client(service, region_name=region)
-    credentials = get_assume_role_credentials(event["executionRoleArn"])
+        return boto3.client(service, region)
+    credentials = get_assume_role_credentials(event["executionRoleArn"], region)
     return boto3.client(service, aws_access_key_id=credentials['AccessKeyId'],
                         aws_secret_access_key=credentials['SecretAccessKey'],
                         aws_session_token=credentials['SessionToken'],
-                        region_name = region
+                        region_name=region
                        )
 
 # This generate an evaluation for config
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
     """Form an evaluation as a dictionary. Usually suited to report on scheduled rules.
-
     Keyword arguments:
     resource_id -- the unique id of the resource to report
     compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
@@ -204,7 +152,6 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
 
 def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
     """Form an evaluation as a dictionary. Usually suited to report on configuration change rules.
-
     Keyword arguments:
     configuration_item -- the configurationItem dictionary in the invokingEvent
     compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
@@ -445,4 +392,4 @@ def build_error_response(internal_error_message, internal_error_details=None, cu
         'customerErrorCode': customer_error_code
     }
     print(error_response)
-    return error_response
+return error_response

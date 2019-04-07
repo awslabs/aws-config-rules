@@ -6,7 +6,7 @@
     "CodeKey": "ENTERPRISE_SUPPORT_PLAN_ENABLED.zip",
     "InputParameters": "{}",
     "OptionalParameters": "{}",
-    "SourcePeriodic": "Six_Hours"
+    "SourcePeriodic": "TwentyFour_Hours"
   },
   "Tags": "[]"
 }

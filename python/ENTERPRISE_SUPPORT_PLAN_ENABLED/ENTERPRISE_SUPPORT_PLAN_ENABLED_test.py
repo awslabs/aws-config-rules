@@ -30,7 +30,6 @@ class Boto3Mock():
         elif client_name == 'sts':
             return STS_CLIENT_MOCK
         elif client_name == 'support':
-            print ("support client pickedup")
             return SUPPORT_CLIENT_MOCK
         else:
             raise Exception("Attempting to create an unknown client")
@@ -38,84 +37,56 @@ class Boto3Mock():
 sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('ENTERPRISE_SUPPORT_PLAN_ENABLED')
-class ComplianceTest(unittest.TestCase):
 
-    def test_scenario_1_dev_or_basic(self):
-        describe_severity_levels_result = botocore.exceptions.ClientError(
-            {
-                'Error': 
-                {
-                    'Code': 'SubscriptionRequiredException', 
-                    'Message': 'SubscriptionRequiredException'
-                }
-            }, 
-            'operation'
-        )
-        
-
-        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(side_effect=describe_severity_levels_result)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        assert_successful_evaluation(self, response,[
-            build_expected_response(
-            compliance_type="NON_COMPLIANT",
-            compliance_resource_id="123456789012",
-            annotation="The account does not have Enterprise Support Plan"
+class NonCompliantResourceTest(unittest.TestCase):
+    def test_scenario_1_baisc_support_non_compliant(self):
+        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(
+            side_effect=botocore.exceptions.ClientError(
+                {'Error': {'Code': 'SubscriptionRequiredException', 'Message': 'unknown-message'}},
+                'operation'
+                )
             )
-        ])
-
-    def test_scenario_2_business(self):
-        describe_severity_levels_result = {
-            "severityLevels": [
-                {
-                    "code": "low",
-                    "name": "Low"
-                },
-                {
-                    "code": "normal",
-                    "name": "Normal"
-                },
-                {
-                    "code": "high",
-                    "name": "High"
-                },
-                {
-                    "code": "urgent",
-                    "name": "Urgent"
-                }
-            ]
-        }
-        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(return_value=describe_severity_levels_result)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        assert_successful_evaluation(self, response,[
-            build_expected_response(
-            compliance_type="NON_COMPLIANT",
-            compliance_resource_id="123456789012",
-            annotation="The account does not have Enterprise Support Plan"
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(
+            self,
+            lambda_result,
+            [build_expected_response(
+                'NON_COMPLIANT',
+                '123456789012',
+                DEFAULT_RESOURCE_TYPE,
+                'The AWS Enterprise Support Plan is not enabled for this AWS Account.'
+                )]
             )
-        ])
-
-    def test_scenario_3_enterprise(self):
-        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(return_value={
-            'severityLevels': [
-                {
-                    'code': 'critical'
-                },
-            ]
-        })
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        assert_successful_evaluation(self, response,[
-            build_expected_response(
-            "COMPLIANT",
-            "123456789012"
+    def test_scenario_2_bussiness_support_non_compliant(self):
+        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(
+            return_value={'severityLevels': [{'code': 'urgent', 'name': 'Urgent'}]}
             )
-        ])
-
-    #def test_sample_2(self):
-    #    RULE.ASSUME_ROLE_MODE = False
-    #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
-    #    resp_expected = []
-    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-    #    assert_successful_evaluation(self, response, resp_expected)
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(
+            self,
+            lambda_result,
+            [build_expected_response(
+                'NON_COMPLIANT',
+                '123456789012',
+                DEFAULT_RESOURCE_TYPE,
+                'The AWS Enterprise Support Plan is not enabled for this AWS Account.'
+                )]
+            )
+class CompliantResourceTest(unittest.TestCase):
+    def test_scenario_3_enterprice_support_compliant(self):
+        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(
+            return_value={'severityLevels': [{'code': 'critical', 'name': 'Critical'}]}
+            )
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(
+            self,
+            lambda_result,
+            [build_expected_response(
+                'COMPLIANT',
+                '123456789012',
+                DEFAULT_RESOURCE_TYPE
+                )]
+            )
 
 ####################
 # Helper Functions #
@@ -223,4 +194,4 @@ class TestStsErrors(unittest.TestCase):
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
         response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
-            self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')
+self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')
