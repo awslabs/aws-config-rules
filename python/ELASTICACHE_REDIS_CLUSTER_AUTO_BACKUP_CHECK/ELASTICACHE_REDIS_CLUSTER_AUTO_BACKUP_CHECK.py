@@ -283,7 +283,7 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
+    return status in (['OK', 'ResourceDiscovered']) and not event_left_scope
     # return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
 
 def get_assume_role_credentials(role_arn):
