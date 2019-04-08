@@ -7,7 +7,7 @@ Prior to rule deployment additional libraries must be added to make this rule fu
      ```   mkdir S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT/newboto ```
 3. Add current libraries to S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT/newboto folder
 
-```pip3 install boto3 botocore urllib3 --system --no-deps -t='S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT/newboto/'```
+```pip3 install boto3 botocore urllib3 --system --no-deps --target='S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT/newboto/'```
 
 4. Deploy as normal
 
