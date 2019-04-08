@@ -40,12 +40,18 @@ RULE = __import__('BUSINESS_SUPPORT_OR_ABOVE_ENABLED')
 
 class Compliance_Test(unittest.TestCase):
     def test_scenario_1(self):
+        SUPPORT_CLIENT_MOCK.reset_mock()
+        SUPPORT_CLIENT_MOCK.describe_cases = MagicMock(side_effect=botocore.exceptions.ClientError(
+            {'Error': {'Code': 'SubscriptionRequiredException', 'Message': 'An error occurred (SubscriptionRequiredException) when calling the DescribeCases operation: AWS Premium Support Subscription is required to use this service.'}}, 'operation'))
         resp_expected = []
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '0123456789012', DEFAULT_RESOURCE_TYPE, annotation='This AWS Account is not subscribed to the AWS business Support plan or above.'))
-        assert_successful_evaluation(self, response, resp_expected) 
+        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', DEFAULT_RESOURCE_TYPE, annotation='This AWS Account is not subscribed to the AWS business Support plan or above.'))
+        assert_successful_evaluation(self, response, resp_expected)
 
     def test_scenario_2(self):
+        SUPPORT_CLIENT_MOCK.reset_mock()
+        payload_response = {'cases':[]}
+        SUPPORT_CLIENT_MOCK.describe_cases = MagicMock(response=payload_response)
         resp_expected = []
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         resp_expected.append(build_expected_response('COMPLIANT', '123456789012', DEFAULT_RESOURCE_TYPE))
