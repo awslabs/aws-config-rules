@@ -22,12 +22,14 @@ STS_CLIENT_MOCK = MagicMock()
 EC_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
+    sample = 123
     def client(self, client_name, *args, **kwargs):
+        self.sample = 123
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        elif client_name == 'sts':
+        if client_name == 'sts':
             return STS_CLIENT_MOCK
-        elif client_name == 'elasticache':
+        if client_name == 'elasticache':
             return EC_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
