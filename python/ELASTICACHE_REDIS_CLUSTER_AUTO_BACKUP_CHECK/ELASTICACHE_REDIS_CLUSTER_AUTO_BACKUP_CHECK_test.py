@@ -41,8 +41,7 @@ RULE = __import__('ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK')
 def replication_groups_se(**kwargs):
     if 'Marker' not in kwargs:
         return {'Marker': 'ABC', 'ReplicationGroups': [{'ReplicationGroupId':'ABC', 'SnapshotRetentionLimit': 16}]}
-    if kwargs['Marker'] == 'ABC':
-        return {'ReplicationGroups': [{'ReplicationGroupId':'DEF', 'SnapshotRetentionLimit': 10}]}
+    return {'ReplicationGroups': [{'ReplicationGroupId':'DEF', 'SnapshotRetentionLimit': 10}]}
 
 
 class CompliantResourceTest(unittest.TestCase):
