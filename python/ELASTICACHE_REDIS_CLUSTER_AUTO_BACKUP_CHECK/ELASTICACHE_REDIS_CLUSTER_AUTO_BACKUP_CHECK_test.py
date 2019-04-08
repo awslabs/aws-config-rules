@@ -3,7 +3,6 @@ import unittest
 try:
     from unittest.mock import MagicMock
 except ImportError:
-    import mock
     from mock import MagicMock
 import botocore
 
