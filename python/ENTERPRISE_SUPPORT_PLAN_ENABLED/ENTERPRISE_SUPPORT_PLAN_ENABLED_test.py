@@ -1,12 +1,21 @@
+# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You may
+# not use this file except in compliance with the License. A copy of the License is located at
+#
+#        http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
+# the specific language governing permissions and limitations under the License.
+
 import sys
 import unittest
 try:
     from unittest.mock import MagicMock
 except ImportError:
-    import mock
     from mock import MagicMock
 import botocore
-from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -24,15 +33,15 @@ STS_CLIENT_MOCK = MagicMock()
 SUPPORT_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
-    def client(self, client_name, *args, **kwargs):
+    @staticmethod
+    def client(client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        elif client_name == 'sts':
+        if client_name == 'sts':
             return STS_CLIENT_MOCK
-        elif client_name == 'support':
+        if client_name == 'support':
             return SUPPORT_CLIENT_MOCK
-        else:
-            raise Exception("Attempting to create an unknown client")
+        raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
