@@ -1,4 +1,4 @@
-# Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You may
 # not use this file except in compliance with the License. A copy of the License is located at
@@ -134,11 +134,12 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
     event -- the event variable given in the lambda handler
     resource_type -- the CloudFormation resource type (or AWS::::Account) to report on the rule (default DEFAULT_RESOURCE_TYPE)
-    annotation -- an annotation to be added to the evaluation (default None)
+    annotation -- an annotation to be added to the evaluation (default None). It will be truncated to 255 if longer.
+    """
     """
     eval_cc = {}
     if annotation:
-        eval_cc['Annotation'] = annotation
+        eval_cc['Annotation'] = build_annotation(annotation)
     eval_cc['ComplianceResourceType'] = resource_type
     eval_cc['ComplianceResourceId'] = resource_id
     eval_cc['ComplianceType'] = compliance_type
@@ -151,11 +152,11 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
     Keyword arguments:
     configuration_item -- the configurationItem dictionary in the invokingEvent
     compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    annotation -- an annotation to be added to the evaluation (default None)
+    annotation -- an annotation to be added to the evaluation (default None). It will be truncated to 255 if longer.
     """
     eval_ci = {}
     if annotation:
-        eval_ci['Annotation'] = annotation
+        eval_ci['Annotation'] = build_annotation(annotation)
     eval_ci['ComplianceResourceType'] = configuration_item['resourceType']
     eval_ci['ComplianceResourceId'] = configuration_item['resourceId']
     eval_ci['ComplianceType'] = compliance_type
@@ -165,6 +166,12 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
 ####################
 # Boilerplate Code #
 ####################
+
+# Build annotation within Service constraints
+def build_annotation(annotation_string):
+    if len(annotation_string) > 256:
+        return annotation_string[:244] + " [truncated]"
+    return annotation_string
 
 # Helper function used to validate input
 def check_defined(reference, reference_name):
@@ -216,7 +223,7 @@ def get_configuration_item(invoking_event):
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invoking_event['messageType']):
+    if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
@@ -231,7 +238,7 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
+    return status in ('OK', 'ResourceDiscovered') and not event_left_scope
 
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')
