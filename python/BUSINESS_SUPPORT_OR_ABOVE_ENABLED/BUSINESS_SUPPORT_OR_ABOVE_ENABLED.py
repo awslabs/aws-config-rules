@@ -14,19 +14,19 @@
   #####################################  
   Rule Name:
     BUSINESS_SUPPORT_OR_ABOVE_ENABLED
-  
+
   Description:
     Check whether the AWS Account is subscribed to the AWS Business Support Plan or above (i.e. Enterprise).
-  
+
   Trigger:
     Periodic
-  
+
   Reports on:
     AWS::::Account
-  
+
   Rule Parameters:
     None
-  
+
   Scenarios:
     Scenario: 1
         Given: AWS Account has ability to use Support API's DescribeCases call with results returned without ClientError Exception
