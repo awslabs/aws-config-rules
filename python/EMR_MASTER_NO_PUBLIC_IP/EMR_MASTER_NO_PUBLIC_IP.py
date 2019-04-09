@@ -87,18 +87,12 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
 
     evaluations = []
-
-    #Building EMR service client using get_client()
-
     emr_client = get_client('emr', event)
 
-    #Listing RUNNING and WAITING clusters
-    cluster_list = list_all_clusters(emr_client)
     #Scenario 1: If no RUNNING and WAITING clusters then return NOT_APPLICABLE
+    cluster_list = list_all_clusters(emr_client)
     if not cluster_list:
         return None
-
-    #Building EC2 service client using get_client()
 
     ec2_client = get_client('ec2', event)
 
@@ -107,15 +101,14 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     #cluster_dns_list is a list of lists which has cluster id and public DNS mappings
     #If public DNS is empty then Compliant else not Compliant
-
+    #Scenario 2: Both DescribeInstances and ListInstances have public DNS for the master node of the cluster.
+    #Scenario 3: DescribeInstances doesn't have public DNS for the master node of the cluster while ListInstances has it.
     if cluster_dns_list:
         for cluster in cluster_dns_list:
-            #Scenario 3: DescribeInstances doesn't have public DNS for the master node of the cluster while ListInstances has it.
             if not cluster[1]:
                 evaluations.append(build_evaluation(cluster[0],
                                                     'COMPLIANT',
                                                     event))
-            #Scenario 2: Both DescribeInstances and ListInstances have public DNS for the master node of the cluster.
             else:
                 evaluations.append(build_evaluation(cluster[0],
                                                     'NON_COMPLIANT',
@@ -130,7 +123,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     return evaluations
 
 def list_all_clusters(emr_client):
-    #Listing WAITING and RUNNING clusters and paginating
     clusters = emr_client.list_clusters(ClusterStates=['WAITING', 'RUNNING'])
     all_clusters = []
     while True:
@@ -143,9 +135,9 @@ def list_all_clusters(emr_client):
 
 def cluster_dns_mapping(all_clusters, emr_client, ec2_client):
     #instance_cluster_dict this is a dictionary which will have {'instance-id':[cluster-id,"public dns if any"]}
-    instance_cluster_dict = {}
-
     #private_dns_cluster_list is a list of cluster IDs with private DNS only
+
+    instance_cluster_dict = {}
     private_dns_cluster_list = []
     for cluster in all_clusters:
         cluster_id = cluster["Id"]
@@ -161,9 +153,9 @@ def cluster_dns_mapping(all_clusters, emr_client, ec2_client):
             instance_cluster_dict[instance_id] = [cluster_id]
 
     #If instance_cluster_dict has entries, to deal with the edge case, perform describe_instances call
+
     if instance_cluster_dict:
         instance_id_list = list(instance_cluster_dict.keys())
-        #instance_id_list is a list of instances derived from the keys of map
 
         described_instances = []
 

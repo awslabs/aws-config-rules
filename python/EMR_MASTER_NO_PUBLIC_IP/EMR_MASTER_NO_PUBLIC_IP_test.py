@@ -42,7 +42,7 @@ RULE = __import__('EMR_MASTER_NO_PUBLIC_IP')
 class ComplianceTest(unittest.TestCase):
 
     #Scenario 1: If no RUNNING and WAITING clusters then return NOT_APPLICABLE
-    def test_scenario_1_no_running_or_waiting_cluster(self):
+    def test_scenario_1_no_running_or_waiting_or_waiting_cluster(self):
         no_clusters = {"Clusters": []}
         EMR_CLIENT_MOCK.list_clusters = MagicMock(return_value=no_clusters)
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
@@ -54,13 +54,19 @@ class ComplianceTest(unittest.TestCase):
 
     #Scenario 2: Both DescribeInstances and ListInstances have public DNS for the master node of the cluster.
     #Test for when the cluster is in RUNNING state and master node as a public IP, NON-COMPLIANT
-    def test_scenario_2_running_public_cluster(self):
-        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}]}
-        list_instances_valid = {"Instances": [{"Ec2InstanceId": "i-0e98faaaa8a99", "PublicDnsName": "ec2-1-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
-        described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-0e98faaaa8a99", "PublicDnsName": "ec2-1-1-1-1.compute-1.amazonaws.com"}]}]}
+    def test_scenario_2_running_or_waiting_public_cluster(self):
+        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}, {'Id': 'j-AAAAA000000', 'Status': {'State': 'WAITING'}}]}
+
+        list_instances = []
+        list_instances_valid_1 = {"Instances": [{"Ec2InstanceId": "i-0e98faa", "PublicDnsName": "ec2-1-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
+        list_instances.append(list_instances_valid_1)
+        list_instances_valid_2 = {"Instances": [{"Ec2InstanceId": "i-aaaa8a99", "PublicDnsName": "ec2-2-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-2-204.ec2.internal"}]}
+        list_instances.append(list_instances_valid_2)
+
+        described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-0e98faa", "PublicDnsName": "ec2-1-1-1-1.compute-1.amazonaws.com"}, {"InstanceId": "i-aaaa8a99", "PublicDnsName": "ec2-2-1-1-1.compute-1.amazonaws.com"}]}]}
 
         EMR_CLIENT_MOCK.list_clusters = MagicMock(return_value=listcluster_valid_running)
-        EMR_CLIENT_MOCK.list_instances = MagicMock(return_value=list_instances_valid)
+        EMR_CLIENT_MOCK.list_instances = MagicMock(side_effect=list_instances)
         EC2_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": EC2_CLIENT_MOCK,
             "paginate.return_value": [described_instances]})
@@ -69,20 +75,28 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT',
                                                      compliance_resource_id='j-AAAAA0AAAAA',
                                                      annotation="The master node of the EMR cluster has a public IP."))
+        resp_expected.append(build_expected_response('NON_COMPLIANT',
+                                                     compliance_resource_id='j-AAAAA000000',
+                                                     annotation="The master node of the EMR cluster has a public IP."))
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        assert_successful_evaluation(self, response, resp_expected)
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
 
     #Scenario 3: DescribeInstances doesn't have public DNS for the master node of the cluster while ListInstances has it.
     #Test for when the cluster is in a Private Subnet but EIP was attached and then detached from the master node
-    def test_scenario_3_running_private_cluster_eip_removed(self):
-        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}]}
-        list_instances_valid = {"Instances": [{"Ec2InstanceId": "i-0e98faaaa8a99", "PublicDnsName": "ec2-1-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
+    def test_scenario_3_running_or_waiting_private_cluster_eip_removed(self):
+        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}, {'Id': 'j-AAAAA000000', 'Status': {'State': 'WAITING'}}]}
 
-        described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-0e98faaaa8a99", "PublicDnsName": ""}]}]}
+        list_instances = []
+        list_instances_invalid_1 = {"Instances": [{"Ec2InstanceId": "i-0e98faa", "PublicDnsName": "ec2-1-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
+        list_instances.append(list_instances_invalid_1)
+        list_instances_invalid_2 = {"Instances": [{"Ec2InstanceId": "i-aaaa8a99", "PublicDnsName": "ec2-2-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-2-204.ec2.internal"}]}
+        list_instances.append(list_instances_invalid_2)
+
+        described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-0e98faa", "PublicDnsName": ""}, {"InstanceId": "i-aaaa8a99", "PublicDnsName": ""}]}]}
 
         EMR_CLIENT_MOCK.list_clusters = MagicMock(return_value=listcluster_valid_running)
-        EMR_CLIENT_MOCK.list_instances = MagicMock(return_value=list_instances_valid)
+        EMR_CLIENT_MOCK.list_instances = MagicMock(side_effect=list_instances)
         EC2_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": EC2_CLIENT_MOCK,
             "paginate.return_value": [described_instances]})
@@ -91,24 +105,68 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT',
                                                      compliance_resource_id='j-AAAAA0AAAAA'))
 
+        resp_expected.append(build_expected_response('COMPLIANT',
+                                                     compliance_resource_id='j-AAAAA000000'))
+
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        assert_successful_evaluation(self, response, resp_expected)
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
     #Scenario 4: The ListInstances call doesn't have public DNS for the master node of the cluster.
     #Test for when the cluster is in RUNNING state and master node as no public IP, COMPLIANT
-    def test_scenario_4_running_private_cluster(self):
-        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}]}
-        list_instances_valid = {"Instances": [{"Ec2InstanceId": "i-0e98faaaa8a99", "PublicDnsName": "", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
-        described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-0e98faaaa8a99", "PublicDnsName": ""}]}]}
+    def test_scenario_4_running_or_waiting_private_cluster(self):
+        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}, {'Id': 'j-AAAAA000000', 'Status': {'State': 'WAITING'}}]}
+
+        list_instances = []
+        list_instances_valid_1 = {"Instances": [{"Ec2InstanceId": "i-0e98faa", "PublicDnsName": "", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
+        list_instances.append(list_instances_valid_1)
+        list_instances_valid_2 = {"Instances": [{"Ec2InstanceId": "i-aaaa8a99", "PublicDnsName": "", "PrivateDnsName": "ip-10-0-2-204.ec2.internal"}]}
+        list_instances.append(list_instances_valid_2)
 
         EMR_CLIENT_MOCK.list_clusters = MagicMock(return_value=listcluster_valid_running)
-        EMR_CLIENT_MOCK.list_instances = MagicMock(return_value=list_instances_valid)
-        EC2_CLIENT_MOCK.describe_instances = MagicMock(return_value=described_instances)
+        EMR_CLIENT_MOCK.list_instances = MagicMock(side_effect=list_instances)
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT',
                                                      compliance_resource_id='j-AAAAA0AAAAA'))
+        resp_expected.append(build_expected_response('COMPLIANT',
+                                                     compliance_resource_id='j-AAAAA000000'))
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        assert_successful_evaluation(self, response, resp_expected)
+        assert_successful_evaluation(self, response, resp_expected, 2)
+
+
+    def test_all_scenarios(self):
+
+        listcluster_valid_running = {'Clusters': [{'Id': 'j-AAAAA0AAAAA', 'Status': {'State': 'RUNNING'}}, {'Id': 'j-AAAAA000000', 'Status': {'State': 'WAITING'}}, {'Id': 'j-0000000AAAAA', 'Status': {'State': 'RUNNING'}}]}
+
+        list_instances = []
+        list_instances_valid_1 = {"Instances": [{"Ec2InstanceId": "i-0e98faa", "PublicDnsName": "", "PrivateDnsName": "ip-10-0-1-204.ec2.internal"}]}
+        list_instances.append(list_instances_valid_1)
+        list_instances_valid_2 = {"Instances": [{"Ec2InstanceId": "i-aaaa8a99", "PublicDnsName": "ec2-2-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-2-204.ec2.internal"}]}
+        list_instances.append(list_instances_valid_2)
+        list_instances_invalid_3 = {"Instances": [{"Ec2InstanceId": "i-baaa8a99", "PublicDnsName": "ec2-2-1-1-1.compute-1.amazonaws.com", "PrivateDnsName": "ip-10-0-2-204.ec2.internal"}]}
+        list_instances.append(list_instances_invalid_3)
+
+        described_instances = {"Reservations": [{"Instances": [{"InstanceId": "i-aaaa8a99", "PublicDnsName": ""}, {"InstanceId": "i-baaa8a99", "PublicDnsName": "ec2-2-1-1-1.compute-1.amazonaws.com"}]}]}
+
+        EMR_CLIENT_MOCK.list_clusters = MagicMock(return_value=listcluster_valid_running)
+        EMR_CLIENT_MOCK.list_instances = MagicMock(side_effect=list_instances)
+        EC2_CLIENT_MOCK.configure_mock(**{
+            "get_paginator.return_value": EC2_CLIENT_MOCK,
+            "paginate.return_value": [described_instances]})
+
+        resp_expected = []
+
+        resp_expected.append(build_expected_response('COMPLIANT',
+                                                     compliance_resource_id='j-AAAAA000000'))
+
+        resp_expected.append(build_expected_response('NON_COMPLIANT',
+                                                     compliance_resource_id='j-0000000AAAAA',
+                                                     annotation="The master node of the EMR cluster has a public IP."))
+        resp_expected.append(build_expected_response('COMPLIANT',
+                                                     compliance_resource_id='j-AAAAA0AAAAA'))
+
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(self, response, resp_expected, 3)
+
 
 ####################
 # Helper Functions #
