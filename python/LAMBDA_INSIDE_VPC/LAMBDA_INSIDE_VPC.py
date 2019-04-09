@@ -107,10 +107,6 @@ def evaluate_parameters(rule_parameters):
     if "subnetId" not in rule_parameters:
         return {}
 
-    # if parameter is given but value is empty then ignore it.
-    if not rule_parameters['subnetId']:
-        return {}
-
     #split the parameter by delimiter "," and remove whitespace, then validate the subnetId
     subnet_id_list = [each_subnet.strip() for each_subnet in rule_parameters['subnetId'].split(',')]
     # to remove the empty item from the list (caused due trailing comma ',' in the parameter)
