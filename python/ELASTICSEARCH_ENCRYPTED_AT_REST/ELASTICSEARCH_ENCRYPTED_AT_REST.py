@@ -41,6 +41,7 @@ Scenarios:
 
 import json
 import sys
+import time
 import datetime
 import boto3
 import botocore
@@ -57,25 +58,36 @@ ASSUME_ROLE_MODE = False
 
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
+PAUSE_TO_AVOID_THROTTLE_SECONDS = 4
+
+def get_all_domain_details(es_client, es_domains):
+    es_domain_list_details = []
+    es_domains_names_only = []
+    for es_domain in es_domains:
+        es_domains_names_only.append(es_domain['DomainName'])
+    while es_domains_names_only:
+        time.sleep(PAUSE_TO_AVOID_THROTTLE_SECONDS)
+        domain_details = es_client.describe_elasticsearch_domains(DomainNames=es_domains_names_only[:5])['DomainStatusList']
+        es_domain_list_details += domain_details
+        del es_domains_names_only[:5]
+    return es_domain_list_details
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     es_client = get_client('es', event)
-    list_domain = es_client.list_domain_names()
+    es_domain_list = es_client.list_domain_names()['DomainNames']
     evaluations = []
-    if not list_domain['DomainNames']:
+
+    if not es_domain_list:
         return 'NOT_APPLICABLE'
-    domain_list = []
-    for domain in list_domain['DomainNames']:
-        domain_list.append(domain['DomainName'])
 
-    domain_config = es_client.describe_elasticsearch_domains(DomainNames=domain_list)
-    for domain in domain_config['DomainStatusList']:
-        if domain['EncryptionAtRestOptions']['Enabled']:
-            evaluations.append(build_evaluation(domain['DomainName'], 'COMPLIANT', event))
+    es_domain_list_details = get_all_domain_details(es_client, es_domain_list)
+
+    for es_domain_details in es_domain_list_details:
+        if es_domain_details['EncryptionAtRestOptions']['Enabled']:
+            evaluations.append(build_evaluation(es_domain_details['DomainName'], 'COMPLIANT', event))
         else:
-            evaluations.append(build_evaluation(domain['DomainName'], 'NON_COMPLIANT', event, annotation='The Amazon Elasticsearch domain does not have the encryption of data at rest as enabled'))
+            evaluations.append(build_evaluation(es_domain_details['DomainName'], 'NON_COMPLIANT', event, annotation='This Amazon Elasticsearch domain does not have the encryption of data at rest as enabled'))
     return evaluations
-
 
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = rule_parameters
