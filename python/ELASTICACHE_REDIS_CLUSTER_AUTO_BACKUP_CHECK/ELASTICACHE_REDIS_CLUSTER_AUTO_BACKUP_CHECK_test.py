@@ -11,7 +11,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::ElastiCache::CacheCluster'
 
 #############
 # Main Code #
@@ -51,9 +51,9 @@ class CompliantResourceTest(unittest.TestCase):
         EC_CLIENT_MOCK.describe_replication_groups.side_effect = replication_groups_se
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"SnapshotRetentionPeriod":"15"}'), {})
         print(lambda_result)
-        assert_successful_evaluation(self, lambda_result, [build_expected_response('COMPLIANT', "GHI", "AWS::ElastiCache::CacheCluster"),
-                                                           build_expected_response('COMPLIANT', "ABC", "AWS::ElastiCache::CacheCluster"),
-                                                           build_expected_response('NON_COMPLIANT', "DEF", "AWS::ElastiCache::CacheCluster", "Automatic backup retention period for Amazon ElastiCache cluster DEF is less then 15 day(s).")
+        assert_successful_evaluation(self, lambda_result, [build_expected_response('COMPLIANT', "GHI"),
+                                                           build_expected_response('COMPLIANT', "ABC"),
+                                                           build_expected_response('NON_COMPLIANT', "DEF", "AWS::ElastiCache::CacheCluster", annotation="Automatic backup retention period for Amazon ElastiCache cluster DEF is less then 15 day(s).")
                                                           ], len(lambda_result))
 
 
