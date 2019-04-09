@@ -36,7 +36,7 @@ RULE = __import__('LAMBDA_INSIDE_VPC')
 
 class ComplianceTestScenarios(unittest.TestCase):
 
-    rule_emptry_parameter_value = '{"subnetId":""}'
+    rule_empty_parameter_value = '{"subnetId":""}'
     rule_invalid_parameter = '{"subnetId":"vpc-123456789, sub-123123123"}'
     rule_valid_parameter = '{"subnetId":"subnet-123456789, subnet-123123123"}'
 
@@ -87,45 +87,45 @@ class ComplianceTestScenarios(unittest.TestCase):
 
     # common scenarios
     def test_invalid_parameter_value(self):
-        invoking_event = '{"configurationItem":{"configuration":' + json.dumps(self.lambda_inside_vpc) + ',"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Lambda::Function","resourceId":"test_function"},"messageType":"ConfigurationItemChangeNotification"}'
+        invoking_event = generate_invoking_event(self.lambda_inside_vpc)
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_invalid_parameter), {})
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', 'Invalid value for paramter "subnetId", Expected subnet Id')
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', 'Invalid value for the parameter "subnetId", Expected Comma-separated list of Subnet ID\'s that Lambda functions must belong to.')
 
     # Scenario 2
     def test_empty_parameter_value(self):
-        invoking_event = '{"configurationItem":{"configuration":' + json.dumps(self.lambda_inside_vpc) + ',"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Lambda::Function","resourceId":"test_function"},"messageType":"ConfigurationItemChangeNotification"}'
-        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_emptry_parameter_value), {})
+        invoking_event = generate_invoking_event(self.lambda_inside_vpc)
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_empty_parameter_value), {})
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'test_function', 'AWS::Lambda::Function'))
         assert_successful_evaluation(self, response, resp_expected)
 
     # Scenario 3.a
     def test_lambda_outside_vpc(self):
-        invoking_event = '{"configurationItem":{"configuration":' + json.dumps(self.lambda_outside_vpc) + ',"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Lambda::Function","resourceId":"test_function"},"messageType":"ConfigurationItemChangeNotification"}'
+        invoking_event = generate_invoking_event(self.lambda_outside_vpc)
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test_function', 'AWS::Lambda::Function', 'This Lambda Function is not in VPC'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test_function', 'AWS::Lambda::Function', 'This Lambda Function is not in VPC.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     # Scenario 3.b
     def test_lambda_outside_vpc_2(self):
-        invoking_event = '{"configurationItem":{"configuration":' + json.dumps(self.lambda_outside_vpc_scenario_2) + ',"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Lambda::Function","resourceId":"test_function"},"messageType":"ConfigurationItemChangeNotification"}'
+        invoking_event = generate_invoking_event(self.lambda_outside_vpc_scenario_2)
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test_function', 'AWS::Lambda::Function', 'This Lambda Function is not in VPC'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test_function', 'AWS::Lambda::Function', 'This Lambda Function is not in VPC.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     # Scenario 4
     def test_non_matching_subnet(self):
-        invoking_event = '{"configurationItem":{"configuration":' + json.dumps(self.lambda_different_subnet) + ',"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Lambda::Function","resourceId":"test_function"},"messageType":"ConfigurationItemChangeNotification"}'
+        invoking_event = generate_invoking_event(self.lambda_different_subnet)
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test_function', 'AWS::Lambda::Function', 'This Lambda Function is not associated with the subnets specified in the "subnetId" input parameter'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test_function', 'AWS::Lambda::Function', 'This Lambda Function is not associated with the subnets specified in the "subnetId" input parameter.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     # Scenario 5
     def test_matching_subnet(self):
-        invoking_event = '{"configurationItem":{"configuration":' + json.dumps(self.lambda_inside_vpc) + ',"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Lambda::Function","resourceId":"test_function"},"messageType":"ConfigurationItemChangeNotification"}'
+        invoking_event = generate_invoking_event(self.lambda_inside_vpc)
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'test_function', 'AWS::Lambda::Function'))
@@ -135,6 +135,13 @@ class ComplianceTestScenarios(unittest.TestCase):
 ####################
 # Helper Functions #
 ####################
+
+def generate_invoking_event(test_configuration):
+    invoking_event = '{"configurationItem":{"configuration":' \
+    + json.dumps(test_configuration) \
+    + ',"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Lambda::Function","resourceId":"test_function"},"messageType":"ConfigurationItemChangeNotification"}'
+
+    return invoking_event
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
     event_to_return = {

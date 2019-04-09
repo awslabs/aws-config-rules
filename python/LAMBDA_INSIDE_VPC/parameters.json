@@ -5,8 +5,8 @@
     "SourceRuntime": "python3.6", 
     "RuleName": "LAMBDA_INSIDE_VPC", 
     "SourceEvents": "AWS::Lambda::Function", 
-    "OptionalParameters": "{}", 
-    "InputParameters": "{\"subnetId\": \"subnet-124231, subnet-3532432\"}"
+    "OptionalParameters": "{\"subnetId\": \"\"}", 
+    "InputParameters": "{}"
   }, 
   "Tags": "[]"
 }

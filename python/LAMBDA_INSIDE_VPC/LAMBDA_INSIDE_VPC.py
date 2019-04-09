@@ -27,7 +27,7 @@ Reports on:
 
 Rule Parameters:
   subnetId
-  (Optional) Comma-separated list of Subnet ID's that Lambda fuctions must belong to.
+  (Optional) Comma-separated list of Subnet ID's that Lambda functions must belong to.
 
 Scenarios:
   Scenario: 1
@@ -85,11 +85,11 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     # if "vpcConfig" is not present, then lambda function is outside the VPC
     if 'vpcConfig' not in configuration_item['configuration']:
-        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='This Lambda Function is not in VPC')
+        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='This Lambda Function is not in VPC.')
 
-    # if "vpcConfig" exists but no subnet is present, this scenario is possilbe if the lambda function was previously part of a VPC.
+    # if "vpcConfig" exists but no subnet is present, this scenario is possible if the lambda function was previously part of a VPC.
     if not configuration_item['configuration']['vpcConfig']['subnetIds']:
-        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='This Lambda Function is not in VPC')
+        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='This Lambda Function is not in VPC.')
 
     # if no input parameter provided then return COMPLIANT
     if not valid_rule_parameters:
@@ -97,28 +97,28 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     # compare the subnets of lambda with the input parameter using set operation
     if set(configuration_item['configuration']['vpcConfig']['subnetIds']) - set(valid_rule_parameters):
-        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='This Lambda Function is not associated with the subnets specified in the "subnetId" input parameter')
+        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='This Lambda Function is not associated with the subnets specified in the "subnetId" input parameter.')
 
     return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
 
 
 def evaluate_parameters(rule_parameters):
-    # if paramter is given, check whether its subnet Id or not, else ignore it as it is an optional paramter
+    # if parameter is given, check whether it is subnet Id or not, if it's not a subnetId then ignore it as it is an optional parameter
     if "subnetId" not in rule_parameters:
         return {}
 
-    # if paramter is given but value is empty then ignore it.
+    # if parameter is given but value is empty then ignore it.
     if not rule_parameters['subnetId']:
         return {}
 
-    #split the paramter by delimter "," and remove whitespace, then validate the subnetId
+    #split the parameter by delimiter "," and remove whitespace, then validate the subnetId
     subnet_id_list = [each_subnet.strip() for each_subnet in rule_parameters['subnetId'].split(',')]
-    # to remove the emty item from the list (caused due trailing comma ',' in the parameter)
+    # to remove the empty item from the list (caused due trailing comma ',' in the parameter)
     subnet_id_list = list(filter(None, subnet_id_list))
 
     for each_subnet in subnet_id_list:
         if "subnet-" not in each_subnet:
-            raise ValueError('Invalid value for paramter "subnetId", Expected subnet Id')
+            raise ValueError('Invalid value for the parameter "subnetId", Expected Comma-separated list of Subnet ID\'s that Lambda functions must belong to.')
 
     return subnet_id_list
 
