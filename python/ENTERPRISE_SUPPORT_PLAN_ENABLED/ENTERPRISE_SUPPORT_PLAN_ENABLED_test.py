@@ -203,4 +203,4 @@ class TestStsErrors(unittest.TestCase):
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
         response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
-self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')
+            self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')
