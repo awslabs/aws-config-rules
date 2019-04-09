@@ -22,16 +22,15 @@ Reports on:
   AWS::ElastiCache::CacheCluster
 
 Rule Parameters:
-  snapshotRetentionPeriod
-   Optional
-   Minimum snapshot retention period in days for Amazon ElastiCache Redis cluster. Default is 15 days.
+  SnapshotRetentionPeriod
+   (Optional) Minimum snapshot retention period in days for Amazon ElastiCache Redis cluster. Default is 15 days.
 
 Scenarios:
   Scenario: 1
      Given: No Amazon ElastiCache Redis cluster in the AWS Account
       Then: Return "NOT_APPLICABLE"
   Scenario: 2
-     Given: Parameter snapshotRetentionPeriod is configured
+     Given: Parameter SnapshotRetentionPeriod is configured
        And: It is not a positive integer greater then 0
       Then: Return an error
   Scenario: 3
@@ -40,11 +39,11 @@ Scenarios:
       Then: Return NON_COMPLIANT with Annotation "Automatic backup not enabled for Amazon ElastiCache cluster {Cluster_ID}"
   Scenario: 4
      Given: At least 1 Amazon Elasticache Redis cluster is present
-       And: The SnapshotRetentionLimit is less than snapshotRetentionPeriod
-      Then: Return NON_COMPLAINT with Annotation "Automatic backup retention period for Amazon ElastiCache cluster {Cluster_ID} is less then {snapshotRetentionPeriod} day(s)."
+       And: The SnapshotRetentionLimit is less than SnapshotRetentionPeriod
+      Then: Return NON_COMPLAINT with Annotation "Automatic backup retention period for Amazon ElastiCache cluster {Cluster_ID} is less then {SnapshotRetentionPeriod} day(s)."
   Scenario: 5
      Given: At least 1 Amazon Elasticache Redis cluster is present
-       And: The SnapshotRetentionLimit is greater than or equal to snapshotRetentionPeriod
+       And: The SnapshotRetentionLimit is greater than or equal to SnapshotRetentionPeriod
       Then: Return COMPLAINT
 '''
 import json
@@ -63,8 +62,8 @@ except ImportError:
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
-
+DEFAULT_RESOURCE_TYPE = 'AWS::ElastiCache::CacheCluster'
+DEFAULT_PARAMETER_VALUE = {'SnapshotRetentionPeriod': 15}
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
 
@@ -74,6 +73,8 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 # Main Code #
 #############
+
+def get_ec_clusters(ec_client, ):
 
 
 def get_replication_groups(ec_client):
@@ -135,14 +136,14 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     replication_groups = get_replication_groups(ec_client)
     if not cache_clusters and not replication_groups:
         return build_evaluation(event['accountId'], "NOT_APPLICABLE", event)
-    return generate_evaluations(cache_clusters, replication_groups, valid_rule_parameters['snapshotRetentionPeriod'], event)
+    return generate_evaluations(cache_clusters, replication_groups, valid_rule_parameters['SnapshotRetentionPeriod'], event)
 
 def evaluate_parameters(rule_parameters):
-    if 'snapshotRetentionPeriod' not in rule_parameters:
-        return {'snapshotRetentionPeriod': 15}
-    if int(rule_parameters['snapshotRetentionPeriod']) < 1:
-        raise ValueError('snapshotRetentionPeriod value should be an integer greater than 0')
-    return {'snapshotRetentionPeriod': int(rule_parameters['snapshotRetentionPeriod'])}
+    if 'SnapshotRetentionPeriod' not in rule_parameters:
+        return DEFAULT_PARAMETER_VALUE
+    if int(rule_parameters['SnapshotRetentionPeriod']) < 1:
+        raise ValueError('SnapshotRetentionPeriod value should be an integer greater than 0')
+    return {'SnapshotRetentionPeriod': int(rule_parameters['SnapshotRetentionPeriod'])}
 
 ####################
 # Helper Functions #
