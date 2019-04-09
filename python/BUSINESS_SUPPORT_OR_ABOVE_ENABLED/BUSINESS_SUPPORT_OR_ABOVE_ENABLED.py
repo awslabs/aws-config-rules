@@ -136,7 +136,6 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     resource_type -- the CloudFormation resource type (or AWS::::Account) to report on the rule (default DEFAULT_RESOURCE_TYPE)
     annotation -- an annotation to be added to the evaluation (default None). It will be truncated to 255 if longer.
     """
-    """
     eval_cc = {}
     if annotation:
         eval_cc['Annotation'] = build_annotation(annotation)
