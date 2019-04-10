@@ -100,7 +100,8 @@ def get_cache_clusters(ec_client):
         else:
             cache_clusters_result = ec_client.describe_cache_clusters(Marker=marker, MaxRecords=100, ShowCacheNodeInfo=False, ShowCacheClustersNotInReplicationGroups=True)
         for cluster in cache_clusters_result['CacheClusters']:
-            cache_clusters.append(cluster) if cluster['Engine'] == 'redis' else None
+            if cluster['Engine'] == 'redis':
+                cache_clusters.append(cluster)
         if 'Marker' in cache_clusters_result:
             marker = cache_clusters_result['Marker']
         else:
