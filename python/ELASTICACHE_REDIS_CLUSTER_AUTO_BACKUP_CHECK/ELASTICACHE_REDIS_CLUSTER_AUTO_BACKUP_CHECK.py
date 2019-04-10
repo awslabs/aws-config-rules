@@ -90,7 +90,6 @@ def get_replication_groups(ec_client):
         else:
             return replication_groups
 
-
 def get_cache_clusters(ec_client):
     cache_clusters = []
     marker = None
@@ -107,10 +106,9 @@ def get_cache_clusters(ec_client):
         else:
             return cache_clusters
 
-
-def generate_evaluations(evalList, key, snapshot_retention_period, event):
+def generate_evaluations(eval_list, key, snapshot_retention_period, event):
     evaluations = []
-    for cluster in evalList:
+    for cluster in eval_list:
         if cluster['SnapshotRetentionLimit'] == 0:
             evaluations.append(build_evaluation(cluster[key], 'NON_COMPLIANT', event, annotation="Automatic backup not enabled for Amazon ElastiCache cluster: {}".format(cluster[key])))
         elif cluster['SnapshotRetentionLimit'] < snapshot_retention_period:
@@ -118,7 +116,6 @@ def generate_evaluations(evalList, key, snapshot_retention_period, event):
         else:
             evaluations.append(build_evaluation(cluster[key], 'COMPLIANT', event))
     return evaluations
-
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ec_client = get_client('elasticache', event)
