@@ -1,15 +1,5 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may
-# not use this file except in compliance with the License. A copy of the License is located at
-#
-#        http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
-# the specific language governing permissions and limitations under the License.
-
 import sys
+import json
 import unittest
 try:
     from unittest.mock import MagicMock
@@ -22,7 +12,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
+DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 #############
 # Main Code #
@@ -30,7 +20,6 @@ DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-ES_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
@@ -39,97 +28,120 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 'es':
-            return ES_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('ELASTICSEARCH_IN_VPC_ONLY')
+RULE = __import__('LAMBDA_INSIDE_VPC')
 
-class ComplianceTest(unittest.TestCase):
+class ComplianceTestScenarios(unittest.TestCase):
 
-    def setUp(self):
-        pass
+    rule_empty_parameter_value = '{"subnetId":""}'
+    rule_invalid_parameter = '{"subnetId":"vpc-123456789, sub-123123123"}'
+    rule_valid_parameter = '{"subnetId":"subnet-123456789, subnet-123123123"}'
 
-    domain_list_empty = {'DomainNames': []}
-    domain_list_2 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_6 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5'},
-        {'DomainName': 'test-es-6'}]}
-    domain_list_2_non_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_2_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}}]}
-    domain_list_6_part_1 = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5',
-         'VPCOptions':{}}]}
-    domain_list_6_part_2 = {'DomainStatusList': [{'DomainName': 'test-es-6', 'VPCOptions':{}}]}
+    lambda_inside_vpc = {
+        "functionName": "test_function",
+        "functionArn": "arn:aws:lambda:us-west-2:123456789012:function:test_function",
+        "vpcConfig": {
+            "subnetIds": [
+                "subnet-123123123",
+                "subnet-123456789"
+            ],
+            "securityGroupIds": [
+                "sg-f236a088"
+            ]
+        }
+    }
 
-    def test_scenario_1(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_empty)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    lambda_outside_vpc = {
+        "functionName": "test_function",
+        "functionArn": "arn:aws:lambda:us-west-2:234759432549:function:test_function",
+    }
+
+    lambda_outside_vpc_scenario_2 = {
+        "functionName": "test_function",
+        "functionArn": "arn:aws:lambda:us-west-2:123456789012:function:test_function",
+        "vpcConfig": {
+            "subnetIds": [
+            ],
+            "securityGroupIds": [
+            ]
+        }
+    }
+
+    lambda_different_subnet = {
+        "functionName": "test_function",
+        "functionArn": "arn:aws:lambda:us-west-2:123456789012:function:test_function",
+        "vpcConfig": {
+            "subnetIds": [
+                "subnet-000000000",
+                "subnet-123456789"
+            ],
+            "securityGroupIds": [
+                "sg-f236a088"
+            ]
+        }
+    }
+
+
+    # common scenarios
+    def test_invalid_parameter_value(self):
+        invoking_event = generate_invoking_event(self.lambda_inside_vpc)
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_invalid_parameter), {})
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', 'Invalid value for the parameter "subnetId", Expected Comma-separated list of Subnet ID\'s that Lambda functions must belong to.')
+
+    # Scenario 2
+    def test_empty_parameter_value(self):
+        invoking_event = generate_invoking_event(self.lambda_inside_vpc)
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_empty_parameter_value), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::::Account'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'test_function', 'AWS::Lambda::Function'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_2(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_non_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    # Scenario 3.a
+    def test_lambda_outside_vpc(self):
+        invoking_event = generate_invoking_event(self.lambda_outside_vpc)
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test_function', 'AWS::Lambda::Function', 'This Lambda Function is not in VPC.'))
+        assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    # Scenario 3.b
+    def test_lambda_outside_vpc_2(self):
+        invoking_event = generate_invoking_event(self.lambda_outside_vpc_scenario_2)
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test_function', 'AWS::Lambda::Function', 'This Lambda Function is not in VPC.'))
+        assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_2_and_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_6)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.domain_list_6_part_1, self.domain_list_6_part_2])
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    # Scenario 4
+    def test_non_matching_subnet(self):
+        invoking_event = generate_invoking_event(self.lambda_different_subnet)
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-3'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-4'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-5'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-6'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=6)
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test_function', 'AWS::Lambda::Function', 'This Lambda Function is not associated with the subnets specified in the "subnetId" input parameter.'))
+        assert_successful_evaluation(self, response, resp_expected)
+
+    # Scenario 5
+    def test_matching_subnet(self):
+        invoking_event = generate_invoking_event(self.lambda_inside_vpc)
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('COMPLIANT', 'test_function', 'AWS::Lambda::Function'))
+        assert_successful_evaluation(self, response, resp_expected)
+
 
 ####################
 # Helper Functions #
 ####################
+
+def generate_invoking_event(test_configuration):
+    invoking_event = '{"configurationItem":{"configuration":' \
+    + json.dumps(test_configuration) \
+    + ',"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Lambda::Function","resourceId":"test_function"},"messageType":"ConfigurationItemChangeNotification"}'
+
+    return invoking_event
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
     event_to_return = {

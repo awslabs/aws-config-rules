@@ -1,14 +1,3 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may
-# not use this file except in compliance with the License. A copy of the License is located at
-#
-#        http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
-# the specific language governing permissions and limitations under the License.
-
 import sys
 import unittest
 try:
@@ -22,7 +11,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
+DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 #############
 # Main Code #
@@ -30,7 +19,7 @@ DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-ES_CLIENT_MOCK = MagicMock()
+S3_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
@@ -39,93 +28,65 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 'es':
-            return ES_CLIENT_MOCK
+        if client_name == 's3control':
+            return S3_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('ELASTICSEARCH_IN_VPC_ONLY')
+RULE = __import__('S3_PUBLIC_ACCESS_SETTTINGS_FOR_ACCOUNT')
 
-class ComplianceTest(unittest.TestCase):
+class ComplianceTestScenarios(unittest.TestCase):
 
-    def setUp(self):
-        pass
+    s3_account_settings = {
+        'BlockPublicAcls': True,
+        'IgnorePublicAcls': True,
+        'BlockPublicPolicy': True,
+        'RestrictPublicBuckets': True
+        }
 
-    domain_list_empty = {'DomainNames': []}
-    domain_list_2 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_6 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5'},
-        {'DomainName': 'test-es-6'}]}
-    domain_list_2_non_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_2_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}}]}
-    domain_list_6_part_1 = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5',
-         'VPCOptions':{}}]}
-    domain_list_6_part_2 = {'DomainStatusList': [{'DomainName': 'test-es-6', 'VPCOptions':{}}]}
+    scenario1_invalid_inputs = '{"BlockPublicAcls": "Truee", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
+    scenario2_mismatched_inputs = '{"BlockPublicAcls": "False", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
+    scenario3_empty_inputs_nonmatch = {}
+    scenario4_empty_inputs_match = {}
+    scenario5_valid_inputs = '{"BlockPublicAcls": "True", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
 
-    def test_scenario_1(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_empty)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    def test_scenario1_invalid_parameters(self):
+        RULE.ASSUME_ROLE_MODE = False
+        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario1_invalid_inputs), {})
+        assert_customer_error_response(self, response, "InvalidParameterValueException")
+
+    def test_scenario2_not_matching_parameters(self):
+        RULE.ASSUME_ROLE_MODE = False
+        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario2_mismatched_inputs), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::::Account'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', 'BlockPublicAcls:True IgnorePublicAcls:True BlockPublicPolicy:True RestrictPublicBuckets:True'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_2(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_non_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    def test_scenario3_not_matching_empty_parameters(self):
+        RULE.ASSUME_ROLE_MODE = False
+        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario3_empty_inputs_nonmatch), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
+        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', 'BlockPublicAcls:True IgnorePublicAcls:True BlockPublicPolicy:True RestrictPublicBuckets:True'))
+        assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    def test_scenario4_empty_inputs_that_match(self):
+        RULE.ASSUME_ROLE_MODE = False
+        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario4_empty_inputs_match), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
+        resp_expected.append(build_expected_response('COMPLIANT', '123456789012', 'AWS::::Account'))
+        assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_2_and_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_6)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.domain_list_6_part_1, self.domain_list_6_part_2])
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    def test_scenario5_valid_parameters(self):
+        RULE.ASSUME_ROLE_MODE = False
+        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario5_valid_inputs), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-3'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-4'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-5'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-6'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=6)
+        resp_expected.append(build_expected_response('COMPLIANT', '123456789012', 'AWS::::Account'))
+        assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #
