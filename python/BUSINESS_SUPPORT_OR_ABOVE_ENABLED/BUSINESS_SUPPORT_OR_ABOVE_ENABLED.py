@@ -65,20 +65,17 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    rule_evaluations = []
     support_client = boto3.client('support')
     account_id = event['accountId']
 
     try:
         support_client.describe_cases()
-        rule_evaluations.append(build_evaluation(account_id, 'COMPLIANT', event))
+        return build_evaluation(account_id, 'COMPLIANT', event)
     except ClientError as error:
         if error.response['Error']['Code'] == 'SubscriptionRequiredException':
             annotate = 'This AWS Account is not subscribed to the AWS business Support plan or above.'
-            rule_evaluations.append(build_evaluation(account_id, 'NON_COMPLIANT', event, annotation=annotate))
-        else:
-            raise
-    return rule_evaluations
+            return build_evaluation(account_id, 'NON_COMPLIANT', event, annotation=annotate)
+        raise
 
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
