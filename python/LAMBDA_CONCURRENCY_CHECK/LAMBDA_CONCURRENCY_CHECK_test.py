@@ -82,18 +82,10 @@ class SampleTest(unittest.TestCase):
     #
     #Scenario: 2
     def test_concurrency_not_set_in_lambda(self):
-        invoking_event_iam_role_sample = '{ \
-    	"configurationItem": {    \
-    		"configurationItemStatus": "ResourceDiscovered",  \
-    		"resourceName": "glue",    \
-    		"ARN": "arn:aws:lambda:ap-south-1:633141505637:function:tam"  \
-    	},     \
-    	"notificationCreationTime": "2018-07-02T23:05:34.445Z",    \
-    	"messageType": "ConfigurationItemChangeNotification" }'
         RULE.ASSUME_ROLE_MODE = False
         LAMBDA_CLIENT_MOCK.get_function = MagicMock(side_effect = self.side_effect)
         LAMBDA_CLIENT_MOCK.list_functions = MagicMock(return_value = self.listAllFunctions)
-        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample, self.rule_parameters), {})
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
 
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function'))
