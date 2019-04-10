@@ -87,7 +87,7 @@ class SampleTest(unittest.TestCase):
         RULE.ASSUME_ROLE_MODE = False
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample, self.rule_parameters), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', "", 'AWS::Lambda::Function', 'Lamda function not present'))
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', "", 'AWS::Lambda::Function'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario: 2
@@ -123,7 +123,7 @@ class SampleTest(unittest.TestCase):
         rule_parameters = '{"concurrencyLimitLow":"", "concurrencyLimitHigh":""}'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function', 'Concurrency present but concurrencyLimitLow and concurrencyLimitHigh are not set'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario: 4
@@ -143,7 +143,7 @@ class SampleTest(unittest.TestCase):
         rule_parameters = '{"concurrencyLimitLow":"200", "concurrencyLimitHigh":""}'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function', 'concurrencyLimitHigh is not set and fuction concurrency is lesser or equal to concurrencyLimitLow'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario: 6
@@ -163,7 +163,7 @@ class SampleTest(unittest.TestCase):
         rule_parameters = '{"concurrencyLimitLow":"", "concurrencyLimitHigh":"50"}'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function', 'concurrencyLimitLow is not set and fuction concurrency is greater or equal to concurrencyLimitHigh'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario: 8
@@ -173,7 +173,7 @@ class SampleTest(unittest.TestCase):
         rule_parameters = '{"concurrencyLimitLow":"100", "concurrencyLimitHigh":"200"}'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function', 'Lamda function concurrency is within bounds of concurrencyLimitLow and concurrencyLimitHigh'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario: 9

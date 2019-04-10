@@ -9,6 +9,67 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
 
+'''
+Description:
+  Checks whether the AWS Lambda function is configured for function-level concurrent execution limit. The rule is NON_COMPLIANT if the Lambda function is not configured for function-level concurrent execution limit.
+
+Trigger:
+  Periodic
+
+Reports on:
+  AWS::Lambda::Function
+
+Rule Parameters:
+  concurrencyLimitLow
+  (Optional) To check if the function concurrency is less than or equal to what has been specified in the concurrencyLimitLow
+
+  concurrencyLimitHigh
+  (Optional) To check if the function concurrency is higher than or equal to what has been specified in the concurrencyLimitHigh
+
+
+Scenarios:
+  Scenario: 1
+     Given: No Lambda functions are present
+      Then: Return NOT_APPLICABLE
+  Scenario: 2
+     Given: Lambda function is not configured for Concurrency i.e. Concurrency is not set
+      Then: Return NON_COMPLIANT
+  Scenario: 3
+     Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+       And: Both the rule parameters are empty
+      Then: Return COMPLIANT
+  Scenario: 4
+      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+        And: concurrencyLimitLow is set and the function concurrency is higher than concurrencyLimitLow
+        And: concurrencyLimitHigh is not set
+       Then: Return NON_COMPLIANT
+  Scenario: 5
+      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+        And: concurrencyLimitLow is set and the function concurrency is lower than equal to concurrencyLimitLow
+        And: concurrencyLimitHigh is not set
+       Then: Return COMPLIANT
+  Scenario: 6
+      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+        And: concurrencyLimitHigh is set and the function concurrency is lower than concurrencyLimitHigh
+        And: concurrencyLimitLow is not set
+       Then: Return NON_COMPLIANT
+  Scenario: 7
+      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+        And: concurrencyLimitHigh is set and the function concurrency is higher than equal to concurrencyLimitHigh
+        And: concurrencyLimitLow is not set
+       Then: Return COMPLIANT
+  Scenario: 8
+      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+        And: concurrencyLimitHigh is set and the function concurrency is higher than equal to concurrencyLimitHigh
+        And: concurrencyLimitLow is set and the function concurrency is less than equal to concurrencyLimitHigh
+       Then: Return COMPLIANT
+  Scenario: 9
+      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+        And: concurrencyLimitHigh is set and the function concurrency is lower than equal to concurrencyLimitHigh
+        And: concurrencyLimitLow is set and the function concurrency is higher than equal to concurrencyLimitHigh
+       Then: Return NON_COMPLIANT
+'''
+
 import json
 import sys
 import datetime
@@ -40,33 +101,11 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
-
-    ###############################
-    # Add your custom logic here. #
-    ###############################
 
     lambda_name = configuration_item['resourceName']
 
     if not lambda_name:
-        return build_evaluation(configuration_item['resourceId'],'NOT_APPLICABLE', event, DEFAULT_RESOURCE_TYPE, annotation='Lamda function not present')
+        return build_evaluation(configuration_item['resourceId'],'NOT_APPLICABLE', event)
 
     client = get_client('lambda', event)
 
@@ -76,37 +115,45 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         concurrency = function_data['Concurrency']['ReservedConcurrentExecutions']
 
         if not valid_rule_parameters['concurrencyLimitLow'] and not valid_rule_parameters['concurrencyLimitHigh']:
-            return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='Concurrency present but concurrencyLimitLow and concurrencyLimitHigh are not set')
+            return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event)
 
         if not valid_rule_parameters['concurrencyLimitHigh']:
             if concurrency > int(valid_rule_parameters['concurrencyLimitLow']):
-                return build_evaluation(configuration_item['resourceId'],'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='concurrencyLimitHigh is not set and fuction concurrency is greater than concurrencyLimitLow')
+                return build_evaluation(configuration_item['resourceId'],
+                                        'NON_COMPLIANT',
+                                        event,
+                                        DEFAULT_RESOURCE_TYPE,
+                                        annotation='concurrencyLimitHigh is not set and fuction concurrency is greater than concurrencyLimitLow')
             else:
-                return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='concurrencyLimitHigh is not set and fuction concurrency is lesser or equal to concurrencyLimitLow')
+                return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event)
 
         if not valid_rule_parameters['concurrencyLimitLow']:
             if concurrency < int(valid_rule_parameters['concurrencyLimitHigh']):
-                 return build_evaluation(configuration_item['resourceId'],'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='concurrencyLimitLow is not set and fuction concurrency is lesser than concurrencyLimitHigh')
+                 return build_evaluation(configuration_item['resourceId'],
+                                         'NON_COMPLIANT',
+                                         event,
+                                         DEFAULT_RESOURCE_TYPE,
+                                         annotation='concurrencyLimitLow is not set and fuction concurrency is lesser than concurrencyLimitHigh')
             else:
-                 return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='concurrencyLimitLow is not set and fuction concurrency is greater or equal to concurrencyLimitHigh')
+                 return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event)
 
         if concurrency >= int(valid_rule_parameters['concurrencyLimitHigh']) or concurrency <= int(valid_rule_parameters['concurrencyLimitLow']):
-            return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='Lamda function concurrency is within bounds of concurrencyLimitLow and concurrencyLimitHigh')
+            return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event)
 
         if concurrency < int(valid_rule_parameters['concurrencyLimitHigh']) and concurrency > int(valid_rule_parameters['concurrencyLimitLow']):
-            return build_evaluation(configuration_item['resourceId'],'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='Lamda function concurrency is not within bounds of concurrencyLimitLow and concurrencyLimitHigh')
+            return build_evaluation(configuration_item['resourceId'],
+                                    'NON_COMPLIANT',
+                                    event,
+                                    DEFAULT_RESOURCE_TYPE,
+                                    annotation='Lamda function concurrency is not within bounds of concurrencyLimitLow and concurrencyLimitHigh')
     else:
-        return build_evaluation(configuration_item['resourceId'],'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='Concurrency not set for the lambda function')
+        return build_evaluation(configuration_item['resourceId'],
+                                'NON_COMPLIANT',
+                                event,
+                                DEFAULT_RESOURCE_TYPE,
+                                annotation='Concurrency not set for the lambda function')
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
-
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
