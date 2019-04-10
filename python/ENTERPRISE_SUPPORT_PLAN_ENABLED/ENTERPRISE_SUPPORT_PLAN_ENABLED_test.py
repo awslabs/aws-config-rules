@@ -62,7 +62,6 @@ class NonCompliantResourceTest(unittest.TestCase):
             [build_expected_response(
                 'NON_COMPLIANT',
                 '123456789012',
-                DEFAULT_RESOURCE_TYPE,
                 'The AWS Enterprise Support Plan is not enabled for this AWS Account.'
                 )]
             )
@@ -77,7 +76,6 @@ class NonCompliantResourceTest(unittest.TestCase):
             [build_expected_response(
                 'NON_COMPLIANT',
                 '123456789012',
-                DEFAULT_RESOURCE_TYPE,
                 'The AWS Enterprise Support Plan is not enabled for this AWS Account.'
                 )]
             )
@@ -92,8 +90,7 @@ class CompliantResourceTest(unittest.TestCase):
             lambda_result,
             [build_expected_response(
                 'COMPLIANT',
-                '123456789012',
-                DEFAULT_RESOURCE_TYPE
+                '123456789012'
                 )]
             )
 

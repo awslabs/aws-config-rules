@@ -76,10 +76,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                 event['accountId'],
                 "NON_COMPLIANT",
                 event,
-                DEFAULT_RESOURCE_TYPE,
                 annotation="The AWS Enterprise Support Plan is not enabled for this AWS Account."
             )
-        print(error.response['Error']['Code'])
         raise
 
     for level in response['severityLevels']:
@@ -90,7 +88,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         event['accountId'],
         "NON_COMPLIANT",
         event,
-        DEFAULT_RESOURCE_TYPE,
         annotation="The AWS Enterprise Support Plan is not enabled for this AWS Account."
     )
 
