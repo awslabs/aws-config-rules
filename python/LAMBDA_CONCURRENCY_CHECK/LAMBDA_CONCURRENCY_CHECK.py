@@ -102,56 +102,69 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
-    lambda_name = configuration_item['resourceName']
-
-    if not lambda_name:
-        return build_evaluation(configuration_item['resourceId'],'NOT_APPLICABLE', event)
-
     client = get_client('lambda', event)
 
-    function_data = json.loads(client.get_function(FunctionName=lambda_name))
-    print(function_data)
-    if 'Concurrency' in function_data:
-        concurrency = function_data['Concurrency']['ReservedConcurrentExecutions']
+    listAllFunctions = client.list_functions()
 
-        if not valid_rule_parameters['concurrencyLimitLow'] and not valid_rule_parameters['concurrencyLimitHigh']:
-            return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event)
+    if not listAllFunctions:
+        return build_evaluation('','NOT_APPLICABLE', event)
 
-        if not valid_rule_parameters['concurrencyLimitHigh']:
-            if concurrency > int(valid_rule_parameters['concurrencyLimitLow']):
-                return build_evaluation(configuration_item['resourceId'],
+    evaluations = []
+
+    for function in listAllFunctions['Functions']:
+        lambda_name = function['FunctionName']
+
+        function_data = client.get_function(lambda_name)
+        if 'Concurrency' in function_data:
+            concurrency = function_data['Concurrency']['ReservedConcurrentExecutions']
+
+            if not valid_rule_parameters['concurrencyLimitLow'] and not valid_rule_parameters['concurrencyLimitHigh']:
+                evaluations.append(build_evaluation(lambda_name,'COMPLIANT', event))
+                continue
+
+            if not valid_rule_parameters['concurrencyLimitHigh']:
+                if concurrency > int(valid_rule_parameters['concurrencyLimitLow']):
+                    evaluations.append(build_evaluation(lambda_name,
+                                            'NON_COMPLIANT',
+                                            event,
+                                            DEFAULT_RESOURCE_TYPE,
+                                            annotation='concurrencyLimitHigh is not set and fuction concurrency is greater than concurrencyLimitLow'))
+                    continue
+                else:
+                    evaluations.append( build_evaluation(lambda_name,'COMPLIANT', event))
+                    continue
+
+            if not valid_rule_parameters['concurrencyLimitLow']:
+                if concurrency < int(valid_rule_parameters['concurrencyLimitHigh']):
+                     evaluations.append(build_evaluation(lambda_name,
+                                             'NON_COMPLIANT',
+                                             event,
+                                             DEFAULT_RESOURCE_TYPE,
+                                             annotation='concurrencyLimitLow is not set and fuction concurrency is lesser than concurrencyLimitHigh'))
+                     continue
+                else:
+                     evaluations.append(build_evaluation(lambda_name,'COMPLIANT', event))
+                     continue
+
+            if concurrency >= int(valid_rule_parameters['concurrencyLimitHigh']) or concurrency <= int(valid_rule_parameters['concurrencyLimitLow']):
+                evaluations.append( build_evaluation(lambda_name,'COMPLIANT', event))
+                continue
+
+            if concurrency < int(valid_rule_parameters['concurrencyLimitHigh']) and concurrency > int(valid_rule_parameters['concurrencyLimitLow']):
+                evaluations.append( build_evaluation(lambda_name,
                                         'NON_COMPLIANT',
                                         event,
                                         DEFAULT_RESOURCE_TYPE,
-                                        annotation='concurrencyLimitHigh is not set and fuction concurrency is greater than concurrencyLimitLow')
-            else:
-                return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event)
-
-        if not valid_rule_parameters['concurrencyLimitLow']:
-            if concurrency < int(valid_rule_parameters['concurrencyLimitHigh']):
-                 return build_evaluation(configuration_item['resourceId'],
-                                         'NON_COMPLIANT',
-                                         event,
-                                         DEFAULT_RESOURCE_TYPE,
-                                         annotation='concurrencyLimitLow is not set and fuction concurrency is lesser than concurrencyLimitHigh')
-            else:
-                 return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event)
-
-        if concurrency >= int(valid_rule_parameters['concurrencyLimitHigh']) or concurrency <= int(valid_rule_parameters['concurrencyLimitLow']):
-            return build_evaluation(configuration_item['resourceId'],'COMPLIANT', event)
-
-        if concurrency < int(valid_rule_parameters['concurrencyLimitHigh']) and concurrency > int(valid_rule_parameters['concurrencyLimitLow']):
-            return build_evaluation(configuration_item['resourceId'],
-                                    'NON_COMPLIANT',
-                                    event,
-                                    DEFAULT_RESOURCE_TYPE,
-                                    annotation='Lamda function concurrency is not within bounds of concurrencyLimitLow and concurrencyLimitHigh')
-    else:
-        return build_evaluation(configuration_item['resourceId'],
+                                        annotation='Lamda function concurrency is not within bounds of concurrencyLimitLow and concurrencyLimitHigh'))
+                continue
+        else:
+            evaluations.append( build_evaluation(lambda_name,
                                 'NON_COMPLIANT',
                                 event,
                                 DEFAULT_RESOURCE_TYPE,
-                                annotation='Concurrency not set for the lambda function')
+                                annotation='Concurrency not set for the lambda function'))
+            continue
+    return evaluations
 
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = rule_parameters
