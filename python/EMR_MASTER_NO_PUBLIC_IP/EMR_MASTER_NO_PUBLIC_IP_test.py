@@ -23,8 +23,8 @@ EMR_CLIENT_MOCK = MagicMock()
 EC2_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
-    @classmethod
-    def client(cls, client_name, *args, **kwargs):
+    @staticmethod
+    def client(client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':

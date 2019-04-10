@@ -16,6 +16,7 @@
 
 Rule Name:
     emr_master_no_public_ip
+
 Description:
     Checks that Amazon EMR clusters' master node does not have a public IP. This rule only checks clusters in RUNNING or WAITING state.
 
@@ -81,10 +82,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-
-    ###############################
-    # Add your custom logic here. #
-    ###############################
 
     evaluations = []
     emr_client = get_client('emr', event)
