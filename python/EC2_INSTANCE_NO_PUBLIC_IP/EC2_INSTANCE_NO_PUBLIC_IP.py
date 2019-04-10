@@ -58,7 +58,7 @@ ASSUME_ROLE_MODE = False
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    if not re.findall('\\bpublicIp\\b', str(configuration_item)):
+    if not re.findall('\\bpublicIp\\b', str(configuration_item['configuration']['networkInterfaces'])):
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
     return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='This Amazon EC2 Instance uses a public IP.')
 
