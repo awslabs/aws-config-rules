@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "S3_VPC_ENDPOINT_ENABLED.zip", 
+    "SourceRuntime": "python3.6", 
+    "SourcePeriodic": "TwentyFour_Hours", 
+    "RuleName": "S3_VPC_ENDPOINT_ENABLED", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}
