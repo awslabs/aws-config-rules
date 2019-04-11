@@ -4,7 +4,7 @@
     "RuleName": "ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK",
     "SourceRuntime": "python3.6",
     "CodeKey": "ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK.zip",
-    "InputParameters": "{\"snapshotRetentionPeriod\": \"15\"}",
+    "InputParameters": "{\"snapshotRetentionPeriod\": \"\"}",
     "OptionalParameters": "{}",
     "SourcePeriodic": "TwentyFour_Hours"
   },
