@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "LAMBDA_CONCURRENCY_CHECK_NEW",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "LAMBDA_CONCURRENCY_CHECK_NEW.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
