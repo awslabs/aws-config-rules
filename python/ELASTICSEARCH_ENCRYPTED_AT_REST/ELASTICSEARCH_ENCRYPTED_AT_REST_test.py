@@ -34,7 +34,8 @@ class ComplianceTest(unittest.TestCase):
     list_domains_scenario_2 = {'DomainNames':[{'DomainName':'domain1'}, {'DomainName':'domain2'}]}
     describe_domain_scenario_2 = {"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain1"}, {"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain2"}]}
     list_domains_scenario_3 = {'DomainNames':[{'DomainName':'domain1'}, {'DomainName':'domain2'}, {'DomainName':'domain3'}, {'DomainName':'domain4'}, {'DomainName':'domain5'}, {'DomainName':'domain6'}]}
-    describe_domain_scenario_3 = {"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain1"}, {"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain2"}, {"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain3"}, {"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain4"}, {"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain5"}, {"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain6"}]}
+    describe_domain_scenario_3 = {"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain1"}, {"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain2"}, {"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain3"}, {"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain4"}, {"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain5"}]}
+    describe_domain_scenario_4 = {"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain6"}]}
 
     def setUp(self):
         pass
@@ -45,9 +46,9 @@ class ComplianceTest(unittest.TestCase):
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
         resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::Elasticsearch::Domain'))
-        assert_successful_evaluation(self, response, resp_expected, 1)
+        assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_1_is_compliant(self):
+    def test_scenario_2_is_compliant(self):
         ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.list_domains_scenario_1)
         ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.describe_domain_scenario_1)
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
@@ -57,29 +58,31 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', 'domain2', 'AWS::Elasticsearch::Domain'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
-    def test_scenario_2_is_non_compliant(self):
+    def test_scenario_3_is_non_compliant(self):
         ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.list_domains_scenario_2)
         ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.describe_domain_scenario_2)
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
+        print(response)
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain1', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain does not have encryption of data at rest enabled'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain2', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain does not have encryption of data at rest enabled'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain1', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain2', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
-    def test_scenario_3_(self):
+    def test_scenario_4_multiple_domains(self):
         ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.list_domains_scenario_3)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.describe_domain_scenario_3)
+        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.describe_domain_scenario_3, self.describe_domain_scenario_4])
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
+        print(response)
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain1', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain does not have encryption of data at rest enabled'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain1', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
         resp_expected.append(build_expected_response('COMPLIANT', 'domain2', 'AWS::Elasticsearch::Domain'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain3', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain does not have encryption of data at rest enabled'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain3', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
         resp_expected.append(build_expected_response('COMPLIANT', 'domain4', 'AWS::Elasticsearch::Domain'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain5', 'sAWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain does not have encryption of data at rest enabled'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain5', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
         resp_expected.append(build_expected_response('COMPLIANT', 'domain6', 'AWS::Elasticsearch::Domain'))
-        assert_successful_evaluation(self, response, resp_expected, 6)
+        assert_successful_evaluation(self, response, resp_expected, evaluations_count=6)
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
     event_to_return = {

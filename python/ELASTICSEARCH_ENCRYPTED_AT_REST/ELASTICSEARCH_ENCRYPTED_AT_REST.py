@@ -27,7 +27,7 @@ Rule Parameters:
 
 Scenarios:
   Scenario: 1
-     Given: No Amazon Elasticsearch Service (Amazon ES) domains are present in a region for an account.
+     Given: Given: No Amazon Elasticsearch Service (Amazon ES) domains are present.
      Then: Return NOT_APPLICABLE
   Scenario: 2
      Given: At least one Elasticsearch Service Domain is present
@@ -76,7 +76,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     es_client = get_client('es', event)
     es_domain_list = es_client.list_domain_names()['DomainNames']
     evaluations = []
-
+    print(configuration_item)
     if not es_domain_list:
         return 'NOT_APPLICABLE'
 
@@ -86,7 +86,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         if es_domain_details['EncryptionAtRestOptions']['Enabled']:
             evaluations.append(build_evaluation(es_domain_details['DomainName'], 'COMPLIANT', event))
         else:
-            evaluations.append(build_evaluation(es_domain_details['DomainName'], 'NON_COMPLIANT', event, annotation='This Amazon Elasticsearch domain does not have the encryption of data at rest as enabled'))
+            evaluations.append(build_evaluation(es_domain_details['DomainName'], 'NON_COMPLIANT', event, annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
     return evaluations
 
 def evaluate_parameters(rule_parameters):
