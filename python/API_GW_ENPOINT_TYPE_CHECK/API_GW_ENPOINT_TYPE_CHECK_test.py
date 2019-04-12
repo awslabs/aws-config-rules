@@ -60,7 +60,7 @@ class ComplianceTest(unittest.TestCase):
 
     #Scenario 4: Compliant
     def test_compliant(self):
-        rule_parameter = '{"endpointConfigurationType":"REGIONAL"}'
+        rule_parameter = '{"endpointConfigurationType":"REGIONAL,PRIVATE"}'
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter), '{}')
         resp_expected = []
