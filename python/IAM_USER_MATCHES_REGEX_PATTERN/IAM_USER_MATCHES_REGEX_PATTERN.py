@@ -22,12 +22,8 @@ Trigger:
 Resource Type to report on:
   AWS::IAM::User
 Rule Parameters:
-  | ------------------- | --------- | -------------------------------------------------------- |
-  | Parameter Name      | Type      | Description                                              |
-  | ------------------- | --------- | -------------------------------------------------------- |
-  | regexPattern        | Required  | Find regex patterns in the IAM user name.                |
-  |                     |           | This action is triggered by an event change              |
-  | ------------------- | --------- | -------------------------------------------------------- |
+  regexPattern (Required)
+    Find the specified regex pattern in the IAM user name.
 Scenarios:
   Scenario 1:
   Given: Regex Pattern is not specified
