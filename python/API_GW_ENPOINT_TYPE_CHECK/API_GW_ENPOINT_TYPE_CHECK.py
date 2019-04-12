@@ -73,9 +73,9 @@ def evaluate_parameters(rule_parameters):
     if 'endpointConfigurationType' not in rule_parameters:
         raise ValueError("endpointConfigurationType is a mandatory parameter.")
     rule_parameters_list = rule_parameters['endpointConfigurationType'].split(',')
-    allowed_rule_parameters_values = ["REGIONAL", "PRIVATE", "EDGE"]
-    if not all(rule_parameter in allowed_rule_parameters_values for rule_parameter in rule_parameters_list):
-        raise ValueError("Parameter endpointConfiguration Type should be from " + str(allowed_rule_parameters_values) + ".")
+    allowed_rule_parameter_values = ["REGIONAL", "PRIVATE", "EDGE"]
+    if not all(rule_parameter in allowed_rule_parameter_values for rule_parameter in rule_parameters_list):
+        raise ValueError("Parameter endpointConfiguration Type should be from " + str(allowed_rule_parameter_values) + ".")
     return rule_parameters_list
 
 ####################
@@ -202,7 +202,7 @@ def get_configuration_item(invoking_event):
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invoking_event['messageType']):
+    if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
@@ -217,7 +217,7 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
+    return status in ("OK", "ResourceDiscovered") and not event_left_scope
 
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')

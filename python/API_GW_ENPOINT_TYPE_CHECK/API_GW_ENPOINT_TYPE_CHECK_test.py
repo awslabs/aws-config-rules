@@ -46,9 +46,9 @@ class ComplianceTest(unittest.TestCase):
     #Scenario 2: Rule parameter value is invalid
     def test_invalid_value_rule_parameter(self):
         rule_parameter_invalid = '{"endpointConfigurationType":"INVALID"}'
-        allowed_rule_parameters_values = ["REGIONAL", "PRIVATE", "EDGE"]
+        allowed_rule_parameter_values = ["REGIONAL", "PRIVATE", "EDGE"]
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter_invalid), '{}')
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', "Parameter endpointConfiguration Type should be from " + str(allowed_rule_parameters_values) + ".")
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', "Parameter endpointConfiguration Type should be from " + str(allowed_rule_parameter_values) + ".")
 
     #Scenario 3: Mismatch in type v/s rule parameter
     def test_type_mismatch(self):
