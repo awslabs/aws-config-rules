@@ -53,7 +53,7 @@ class CompliantResourceTest(unittest.TestCase):
         print(lambda_result)
         assert_successful_evaluation(self, lambda_result, [build_expected_response('COMPLIANT', "GHI"),
                                                            build_expected_response('COMPLIANT', "ABC"),
-                                                           build_expected_response('NON_COMPLIANT', "DEF", "AWS::ElastiCache::CacheCluster", annotation="Automatic backup retention period for Amazon ElastiCache cluster DEF is less then 15 day(s).")
+                                                           build_expected_response('NON_COMPLIANT', "DEF", annotation="Automatic backup retention period for Amazon ElastiCache cluster DEF is less then 15 day(s).")
                                                           ], len(lambda_result))
 
 
@@ -63,14 +63,14 @@ class NonCompliantResourceTest(unittest.TestCase):
         EC_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'ABC', 'SnapshotRetentionLimit': 16, 'Engine': 'redis'}]})
         EC_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"SnapshotRetentionPeriod":"15"}'), {})
-        assert_successful_evaluation(self, lambda_result, [build_expected_response("COMPLIANT", "ABC", "AWS::ElastiCache::CacheCluster")], len(lambda_result))
+        assert_successful_evaluation(self, lambda_result, [build_expected_response("COMPLIANT", "ABC")], len(lambda_result))
 
     def test_scenario_3_no_auto_backup(self):
         # compliance_type, compliance_resource_id, compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation=None
         EC_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'ABCD', 'SnapshotRetentionLimit': 0, 'Engine': 'redis'}]})
         EC_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"SnapshotRetentionPeriod":"15"}'), {})
-        assert_successful_evaluation(self, lambda_result, [build_expected_response("NON_COMPLIANT", "ABCD", "AWS::ElastiCache::CacheCluster", "Automatic backup not enabled for Amazon ElastiCache cluster: ABCD")], len(lambda_result))
+        assert_successful_evaluation(self, lambda_result, [build_expected_response("NON_COMPLIANT", "ABCD", annotation="Automatic backup not enabled for Amazon ElastiCache cluster: ABCD")], len(lambda_result))
 
 class ErrorTest(unittest.TestCase):
 
