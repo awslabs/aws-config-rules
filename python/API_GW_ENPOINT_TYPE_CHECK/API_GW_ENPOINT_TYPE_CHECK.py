@@ -25,7 +25,7 @@ Rule Parameters:
 
 Scenarios:
   Scenario: 1
-    Given: The rule parameter value is not provided
+    Given: The rule parameter is not provided
      Then: Return ERROR
   Scenario: 2
     Given: The rule parameter is invalid
@@ -67,7 +67,7 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     if configuration_item['configuration']['endpointConfiguration']['types'][0] in valid_rule_parameters:
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation="This Amazon API Gateway endpoint type does not match as specified in rule parameters: " + str(valid_rule_parameters) + ".")
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation="This Amazon API Gateway endpoint type does not match as specified in rule parameter(endpointConfigurationType): " + str(valid_rule_parameters) + ".")
 
 def evaluate_parameters(rule_parameters):
     if 'endpointConfigurationType' not in rule_parameters:
@@ -75,7 +75,7 @@ def evaluate_parameters(rule_parameters):
     rule_parameters_list = rule_parameters['endpointConfigurationType'].split(',')
     allowed_rule_parameter_values = ["REGIONAL", "PRIVATE", "EDGE"]
     if not all(rule_parameter in allowed_rule_parameter_values for rule_parameter in rule_parameters_list):
-        raise ValueError("Parameter endpointConfiguration Type should be from " + str(allowed_rule_parameter_values) + ".")
+        raise ValueError("Value for rule parameter endpointConfigurationType should be from " + str(allowed_rule_parameter_values) + ".")
     return rule_parameters_list
 
 ####################

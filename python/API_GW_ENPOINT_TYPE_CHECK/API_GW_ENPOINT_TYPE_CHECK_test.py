@@ -48,14 +48,14 @@ class ComplianceTest(unittest.TestCase):
         rule_parameter_invalid = '{"endpointConfigurationType":"INVALID"}'
         allowed_rule_parameter_values = ["REGIONAL", "PRIVATE", "EDGE"]
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter_invalid), '{}')
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', "Parameter endpointConfiguration Type should be from " + str(allowed_rule_parameter_values) + ".")
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', "Value for rule parameter endpointConfigurationType should be from " + str(allowed_rule_parameter_values) + ".")
 
     #Scenario 3: Mismatch in type v/s rule parameter
     def test_type_mismatch(self):
         rule_parameter = '{"endpointConfigurationType":"PRIVATE"}'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter), '{}')
         resp_expected = []
-        resp_expected.append(build_expected_response("NON_COMPLIANT", "some-resource-id", DEFAULT_RESOURCE_TYPE, annotation="This Amazon API Gateway endpoint type does not match as specified in rule parameters: ['PRIVATE']."))
+        resp_expected.append(build_expected_response("NON_COMPLIANT", "some-resource-id", DEFAULT_RESOURCE_TYPE, annotation="This Amazon API Gateway endpoint type does not match as specified in rule parameter(endpointConfigurationType): ['PRIVATE']."))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario 4: Compliant
