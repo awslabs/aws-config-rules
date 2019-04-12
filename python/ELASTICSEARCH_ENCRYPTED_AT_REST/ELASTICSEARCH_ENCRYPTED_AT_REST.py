@@ -27,7 +27,7 @@ Rule Parameters:
 
 Scenarios:
   Scenario: 1
-     Given: Given: No Amazon Elasticsearch Service (Amazon ES) domains are present.
+     Given: No Amazon Elasticsearch Service (Amazon ES) domains are present.
      Then: Return NOT_APPLICABLE
   Scenario: 2
      Given: At least one Elasticsearch Service Domain is present
