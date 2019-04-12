@@ -114,7 +114,8 @@ def generate_evaluations(eval_list, key, snapshot_retention_period, event):
             evaluations.append(build_evaluation(cluster[key], 'NON_COMPLIANT', event, annotation="Automatic backup not enabled for Amazon ElastiCache cluster: {}".format(cluster[key])))
         elif cluster['SnapshotRetentionLimit'] < snapshot_retention_period:
             evaluations.append(build_evaluation(cluster[key], 'NON_COMPLIANT', event, annotation='Automatic backup retention period for Amazon ElastiCache cluster {} is less then {} day(s).'.format(cluster[key], snapshot_retention_period)))
-        evaluations.append(build_evaluation(cluster[key], 'COMPLIANT', event))
+        else:
+            evaluations.append(build_evaluation(cluster[key], 'COMPLIANT', event))
     return evaluations
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
