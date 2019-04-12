@@ -83,8 +83,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     if is_compliant:
         return build_evaluation(iam_user_name, 'COMPLIANT', event)
-    else:
-        return build_evaluation(iam_user_name, 'NON_COMPLIANT', event, annotation='The regex ({}) does not match ({}).'.format(pattern, iam_user_name))
+
+    return build_evaluation(iam_user_name, 'NON_COMPLIANT', event, annotation='The regex ({}) does not match ({}).'.format(pattern, iam_user_name))
 
 def evaluate_username(user_name, pattern_str):
     """Evaluate the regex pattern for match in the user name
@@ -239,7 +239,7 @@ def get_configuration_item(invoking_event):
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invoking_event['messageType']):
+    if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
@@ -254,7 +254,7 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
+    return (status in ('OK', 'ResourceDiscovered')) and not event_left_scope
 
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')
