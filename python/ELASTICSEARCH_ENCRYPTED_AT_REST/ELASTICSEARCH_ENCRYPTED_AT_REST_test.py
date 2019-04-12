@@ -6,8 +6,8 @@ except ImportError:
     from mock import MagicMock
 import botocore
 
-
 DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
+
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
 ES_CLIENT_MOCK = MagicMock()
@@ -45,7 +45,7 @@ class ComplianceTest(unittest.TestCase):
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::Elasticsearch::Domain'))
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_scenario_2_is_compliant(self):
@@ -54,8 +54,8 @@ class ComplianceTest(unittest.TestCase):
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'domain1', 'AWS::Elasticsearch::Domain'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'domain2', 'AWS::Elasticsearch::Domain'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'domain1'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'domain2'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario_3_is_non_compliant(self):
@@ -63,10 +63,9 @@ class ComplianceTest(unittest.TestCase):
         ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.describe_domain_scenario_2)
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
-        print(response)
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain1', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain2', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain1', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain2', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario_4_multiple_domains(self):
@@ -74,14 +73,13 @@ class ComplianceTest(unittest.TestCase):
         ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.describe_domain_scenario_3, self.describe_domain_scenario_4])
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
-        print(response)
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain1', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'domain2', 'AWS::Elasticsearch::Domain'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain3', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'domain4', 'AWS::Elasticsearch::Domain'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain5', 'AWS::Elasticsearch::Domain', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'domain6', 'AWS::Elasticsearch::Domain'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain1', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'domain2'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain3', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'domain4'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain5', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'domain6'))
         assert_successful_evaluation(self, response, resp_expected, evaluations_count=6)
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
