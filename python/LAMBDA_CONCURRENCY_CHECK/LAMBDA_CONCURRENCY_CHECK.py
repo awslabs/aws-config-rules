@@ -101,19 +101,16 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-
     lambda_client = get_client('lambda', event)
-
     list_all_functions = list_all_lambda_function_names(lambda_client)
 
-    print(list_all_functions)
-
     if not list_all_functions:
-        return build_evaluation('','NOT_APPLICABLE', event)
+        return build_evaluation(event['accountId'],'NOT_APPLICABLE', event)
 
     evaluations = []
-
-    for lambda_name in list_all_functions:
+    #
+    for lambda_data in list_all_functions:
+        lambda_name = lambda_data['FunctionName']
         function_data = lambda_client.get_function(lambda_name)
         if 'Concurrency' in function_data:
             concurrency = function_data['Concurrency']['ReservedConcurrentExecutions']
@@ -167,25 +164,34 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     return evaluations
 
 def evaluate_parameters(rule_parameters):
-    if 'concurrencyLimitLow' not in rule_parameters or 'concurrencyLimitHigh' not in rule_parameters:
-        return 'NOT_APPLICABLE'
+
+    if 'concurrencyLimitLow' in rule_parameters and 'concurrencyLimitHigh' in rule_parameters:
+        try:
+            if rule_parameters['concurrencyLimitLow']:
+                concurrencyLimitLow = int(rule_parameters['concurrencyLimitLow'])
+                if concurrencyLimitLow < 0:
+                    raise ValueError("Value of concurrencyLimitLow less than 0")
+            if rule_parameters['concurrencyLimitHigh']:
+                concurrencyLimitHigh = int(rule_parameters['concurrencyLimitHigh'])
+                if concurrencyLimitHigh < 0:
+                    raise ValueError("Value of concurrencyLimitHigh less than 0")
+        except:
+            raise ValueError('concurrencyLimitLow: ' + rule_parameters['concurrencyLimitLow'] +' or concurrencyLimitHigh: ' + rule_parameters['concurrencyLimitHigh'] + ' are not positive integers')
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
 
 def list_all_lambda_function_names(lambda_client):
-    function_list = lambda_client.list_functions(MaxItem=10000)
+    function_list = lambda_client.list_functions(MaxItems=500)
     name_list = []
     if not function_list:
         return name_list
-    while True:
-        for item in function_list['Functions']:
-            name_list.append(item['FunctionName'])
-        if 'NextMarker' in function_list:
-            marker = function_list['NextMarker']
-            function_list = lambda_client.list_functions(Marker=marker, MaxItem=10000)
-        else:
-            break
+    function_list = lambda_client.list_functions(MaxItem=500)
+    name_list.extend(function_list['Functions'])
+    while 'NextMarker' in function_list:
+        name_list.extend(function_list['Functions'])
+        marker = function_list['NextMarker']
+        function_list = lambda_client.list_functions(Marker=marker, MaxItem=500)
     return name_list
 
 ####################
