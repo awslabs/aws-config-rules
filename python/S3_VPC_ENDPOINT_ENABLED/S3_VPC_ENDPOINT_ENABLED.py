@@ -34,13 +34,13 @@ Scenarios:
   Scenario 3:
   Given: At least one VPC is present
     And: The S3 service is present in the "ServiceName" key on DescribeVpcEndpoints API
-    And: The "VpcEndpointState" key value is not "Available"
+    And: The "State" key value is not "Available"
    Then: Return NON_COMPLIANT on this VPC
 
   Scenario 4:
   Given: At least one VPC is present
     And: The S3 service is present in the "ServiceName" key on DescribeVpcEndpoints API
-    And: The "VpcEndpointState" key value is "Available"
+    And: The "State" key value is "Available"
    Then: Return COMPLIANT on this VPC
 '''
 import re
@@ -75,16 +75,17 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     vpc_list = []
+    evaluations = []
     account_id = event['accountId']
-    ec2_client = boto3.client('ec2')
+    ec2_client = get_client('ec2', event)
     regex_pattern = r'com\.amazonaws\.\S*s3'
     endpoint_response = ec2_client.describe_vpc_endpoints()
     vpc_response = ec2_client.describe_vpcs()
 
     try:
         if not vpc_response['Vpcs']:
-            annotate = 'There are no VPCs in the region'
-            return build_evaluation(account_id, 'NOT_APPLICABLE', event, annotation=annotate)
+            annotate = 'There are no AWS VPCs in the region.'
+            evaluations.append(build_evaluation(account_id, 'NOT_APPLICABLE', event, annotation=annotate))
         for vpc in vpc_response['Vpcs']:
             vpc_list.append(vpc['VpcId'])
         for vpc_id in vpc_list:
@@ -95,24 +96,24 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                 }
             ])
             if not endpoint_response['VpcEndpoints']:
-                annonate = 'There are no S3 endpoints present in '+ vpc_id
-                return build_evaluation(vpc_id, 'NON_COMPLIANT', event, annotation=annonate)
+                annonate = 'There are no Amazon S3 endpoints present in '+ vpc_id+'.'
+                evaluations.append(build_evaluation(vpc_id, 'NON_COMPLIANT', event, annotation=annonate))
             for endpoint in endpoint_response['VpcEndpoints']:
                 endpoint_name = endpoint['ServiceName']
                 endpoint_state = endpoint['State']
                 pattern_match = re.search(regex_pattern, endpoint_name)
                 if pattern_match and (endpoint_state == 'available'):
-                    annonate = 'S3 endpoint is present for this VPC '+ vpc_id
-                    return build_evaluation(vpc_id, 'COMPLIANT', event)
+                    annonate = 'Amazon S3 endpoint is present for this VPC '+ vpc_id+'.'
+                    evaluations.append(build_evaluation(vpc_id, 'COMPLIANT', event))
                 if pattern_match and (endpoint_state != 'available'):
-                    annonate = 'The S3 VPC endpoint is not in Available state '+vpc_id
-                    return build_evaluation(vpc_id, 'NON_COMPLIANT', event, annotation=annonate)
+                    annonate = 'The Amazon S3 VPC endpoint is not in Available state '+vpc_id+'.'
+                    evaluations.append(build_evaluation(vpc_id, 'NON_COMPLIANT', event, annotation=annonate))
                 if pattern_match is None:
-                    annonate = 'There are no S3 endpoints present in '+ vpc_id
-                    return build_evaluation(vpc_id, 'NON_COMPLIANT', event, annotation=annonate)
+                    annonate = 'There are no Amazon S3 VPC endpoints present in '+ vpc_id+'.'
+                    evaluations.append(build_evaluation(vpc_id, 'NON_COMPLIANT', event, annotation=annonate))
     except Exception as exception:
         return exception
-
+    return evaluations
 def evaluate_parameters(rule_parameters):
     """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
 

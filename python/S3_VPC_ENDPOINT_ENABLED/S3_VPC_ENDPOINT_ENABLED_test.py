@@ -55,7 +55,7 @@ class ComplianceTest(unittest.TestCase):
         EC2_CLIENT_MOCK.describe_vpcs = MagicMock(return_value=describevpc_return)
         resp_expected = []
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::EC2::VPC', annotation='There are no VPCs in the region'))
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::EC2::VPC', annotation='There are no AWS VPCs in the region.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Unit test for VPC is present and no VPC endpoints are present for that VPC -- GHERKIN Scenario 2
@@ -68,7 +68,7 @@ class ComplianceTest(unittest.TestCase):
         EC2_CLIENT_MOCK.describe_vpc_endpoints = MagicMock(return_value=describevpcendpoints_return)
         resp_expected = []
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'vpc-1234567', compliance_resource_type='AWS::EC2::VPC', annotation='There are no S3 endpoints present in '+vpc_id))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'vpc-1234567', compliance_resource_type='AWS::EC2::VPC', annotation='There are no Amazon S3 endpoints present in '+ vpc_id+'.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Unit test for VPC is present and there are no S3 endpoint present for that VPC -- GHERKIN Scenario 2
@@ -121,9 +121,10 @@ class ComplianceTest(unittest.TestCase):
         EC2_CLIENT_MOCK.describe_vpc_endpoints = MagicMock(return_value=describevpcendpoints_return)
         resp_expected = []
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'vpc-1234567', compliance_resource_type='AWS::EC2::VPC', annotation='There are no S3 endpoints present in '+vpc_id))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'vpc-1234567', compliance_resource_type='AWS::EC2::VPC', annotation='There are no Amazon S3 VPC endpoints present in '+ vpc_id+'.'))
         assert_successful_evaluation(self, response, resp_expected)
-
+    
+    #Unit test for when Amazon VPC has a AWS S3 VPC present but is not in available state -- Gherkin Scenario 3
     def test_scenario_3(self):
         EC2_CLIENT_MOCK.reset_mock()
         resp_expected = []
@@ -153,7 +154,7 @@ class ComplianceTest(unittest.TestCase):
         }
         EC2_CLIENT_MOCK.describe_vpc_endpoints = MagicMock(return_value=describevpcendpoints_return)
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'vpc-1234567', compliance_resource_type='AWS::EC2::VPC', annotation='The S3 VPC endpoint is not in Available state '+vpc_id))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'vpc-1234567', compliance_resource_type='AWS::EC2::VPC', annotation='The Amazon S3 VPC endpoint is not in Available state '+vpc_id+'.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Unit test for VPC is present, and S3 endpoint is present in available state -- Gherkin Scenario 4
