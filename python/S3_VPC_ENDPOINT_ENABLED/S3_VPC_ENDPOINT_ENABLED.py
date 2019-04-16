@@ -79,7 +79,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     account_id = event['accountId']
     ec2_client = get_client('ec2', event)
     regex_pattern = r'com\.amazonaws\.\S*s3'
-    endpoint_response = ec2_client.describe_vpc_endpoints()
     vpc_response = ec2_client.describe_vpcs()
 
     try:
