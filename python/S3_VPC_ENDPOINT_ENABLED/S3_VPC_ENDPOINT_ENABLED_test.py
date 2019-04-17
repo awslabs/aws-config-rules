@@ -123,7 +123,7 @@ class ComplianceTest(unittest.TestCase):
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'vpc-1234567', compliance_resource_type='AWS::EC2::VPC', annotation='There are no Amazon S3 VPC endpoints present in '+ vpc_id+'.'))
         assert_successful_evaluation(self, response, resp_expected)
-    
+
     #Unit test for when Amazon VPC has a AWS S3 VPC present but is not in available state -- Gherkin Scenario 3
     def test_scenario_3(self):
         EC2_CLIENT_MOCK.reset_mock()
