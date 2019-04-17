@@ -22,7 +22,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
+DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 #############
 # Main Code #
@@ -30,7 +30,7 @@ DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-ES_CLIENT_MOCK = MagicMock()
+SUPPORT_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
@@ -39,93 +39,60 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 'es':
-            return ES_CLIENT_MOCK
+        if client_name == 'support':
+            return SUPPORT_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('ELASTICSEARCH_IN_VPC_ONLY')
+RULE = __import__('ENTERPRISE_SUPPORT_PLAN_ENABLED')
 
-class ComplianceTest(unittest.TestCase):
-
-    def setUp(self):
-        pass
-
-    domain_list_empty = {'DomainNames': []}
-    domain_list_2 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_6 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5'},
-        {'DomainName': 'test-es-6'}]}
-    domain_list_2_non_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_2_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}}]}
-    domain_list_6_part_1 = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5',
-         'VPCOptions':{}}]}
-    domain_list_6_part_2 = {'DomainStatusList': [{'DomainName': 'test-es-6', 'VPCOptions':{}}]}
-
-    def test_scenario_1(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_empty)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::::Account'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    def test_scenario_2(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_non_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
-
-    def test_scenario_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
-
-    def test_scenario_2_and_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_6)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.domain_list_6_part_1, self.domain_list_6_part_2])
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-3'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-4'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-5'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-6'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=6)
+class NonCompliantResourceTest(unittest.TestCase):
+    def test_scenario_1_baisc_support_non_compliant(self):
+        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(
+            side_effect=botocore.exceptions.ClientError(
+                {'Error': {'Code': 'SubscriptionRequiredException', 'Message': 'unknown-message'}},
+                'operation'
+                )
+            )
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(
+            self,
+            lambda_result,
+            [build_expected_response(
+                'NON_COMPLIANT',
+                '123456789012',
+                'The AWS Enterprise Support Plan is not enabled for this AWS Account.'
+                )]
+            )
+    def test_scenario_2_bussiness_support_non_compliant(self):
+        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(
+            return_value={'severityLevels': [{'code': 'urgent', 'name': 'Urgent'}]}
+            )
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(
+            self,
+            lambda_result,
+            [build_expected_response(
+                'NON_COMPLIANT',
+                '123456789012',
+                'The AWS Enterprise Support Plan is not enabled for this AWS Account.'
+                )]
+            )
+class CompliantResourceTest(unittest.TestCase):
+    def test_scenario_3_enterprice_support_compliant(self):
+        SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(
+            return_value={'severityLevels': [{'code': 'critical', 'name': 'Critical'}]}
+            )
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        assert_successful_evaluation(
+            self,
+            lambda_result,
+            [build_expected_response(
+                'COMPLIANT',
+                '123456789012'
+                )]
+            )
 
 ####################
 # Helper Functions #

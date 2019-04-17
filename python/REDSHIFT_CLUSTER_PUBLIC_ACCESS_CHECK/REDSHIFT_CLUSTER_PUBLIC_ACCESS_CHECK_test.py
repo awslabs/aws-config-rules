@@ -1,131 +1,53 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may
-# not use this file except in compliance with the License. A copy of the License is located at
-#
-#        http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
-# the specific language governing permissions and limitations under the License.
-
 import sys
 import unittest
 try:
     from unittest.mock import MagicMock
 except ImportError:
+    import mock
     from mock import MagicMock
 import botocore
+from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
-
-#############
-# Main Code #
-#############
-
+DEFAULT_RESOURCE_TYPE = 'AWS::Redshift::Cluster'
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-ES_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
-    @staticmethod
-    def client(client_name, *args, **kwargs):
+    def client(self, client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        if client_name == 'sts':
+        elif client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 'es':
-            return ES_CLIENT_MOCK
-        raise Exception("Attempting to create an unknown client")
+        else:
+            raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('ELASTICSEARCH_IN_VPC_ONLY')
+RULE = __import__('REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK')
 
 class ComplianceTest(unittest.TestCase):
 
-    def setUp(self):
-        pass
+    invoking_event_redshift_public_sample = '{"configurationItem":{"configuration":{"publiclyAccessible": true},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Redshift::Cluster","resourceId":"some-resource-id"},"messageType":"ConfigurationItemChangeNotification"}'
+    invoking_event_redshift_not_public_sample = '{"configurationItem":{"configuration":{"publiclyAccessible": false},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::Redshift::Cluster","resourceId":"some-resource-id"},"messageType":"ConfigurationItemChangeNotification"}'
 
-    domain_list_empty = {'DomainNames': []}
-    domain_list_2 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_6 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5'},
-        {'DomainName': 'test-es-6'}]}
-    domain_list_2_non_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_2_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}}]}
-    domain_list_6_part_1 = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5',
-         'VPCOptions':{}}]}
-    domain_list_6_part_2 = {'DomainStatusList': [{'DomainName': 'test-es-6', 'VPCOptions':{}}]}
-
-    def test_scenario_1(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_empty)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    def test_scenario_1_is_public(self):
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_redshift_public_sample), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::::Account'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', 'AWS::Redshift::Cluster', 'This Amazon Redshift Cluster has the publiclyAccessible field set to True.'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_2(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_non_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
 
-    def test_scenario_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    def test_scenario_2_isnot_public(self):
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_redshift_not_public_sample), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
+        resp_expected.append(build_expected_response('COMPLIANT', 'some-resource-id', 'AWS::Redshift::Cluster'))
+        assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_2_and_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_6)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.domain_list_6_part_1, self.domain_list_6_part_2])
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-3'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-4'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-5'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-6'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=6)
 
 ####################
 # Helper Functions #
