@@ -21,7 +21,7 @@ Reports on:
 
 Rule Parameters:
   endpointConfigurationType
-  (Required) Comma-separated list of allowed endpoint types.
+  (Required) Comma-separated list of allowed endpoint types. Allowed values are REGIONAL, PRIVATE and EDGE.
 
 Scenarios:
   Scenario: 1
@@ -63,19 +63,19 @@ ASSUME_ROLE_MODE = False
 
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
+ALLOWED_RULE_PARAMETER_VALUES = ["REGIONAL", "PRIVATE", "EDGE"]
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     if configuration_item['configuration']['endpointConfiguration']['types'][0] in valid_rule_parameters:
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation="This Amazon API Gateway endpoint type does not match as specified in rule parameter(endpointConfigurationType): " + str(valid_rule_parameters) + ".")
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation="The Endpoint Type for this API Gateway API does not match the specified rule parameter (endpointConfigurationType): " + str(valid_rule_parameters) + ".")
 
 def evaluate_parameters(rule_parameters):
     if 'endpointConfigurationType' not in rule_parameters:
         raise ValueError("endpointConfigurationType is a mandatory parameter.")
-    rule_parameters_list = rule_parameters['endpointConfigurationType'].split(',')
-    allowed_rule_parameter_values = ["REGIONAL", "PRIVATE", "EDGE"]
-    if not all(rule_parameter in allowed_rule_parameter_values for rule_parameter in rule_parameters_list):
-        raise ValueError("Value for rule parameter endpointConfigurationType should be from " + str(allowed_rule_parameter_values) + ".")
+    rule_parameters_list = [endpointType.strip() for endpointType in rule_parameters['endpointConfigurationType'].split(',')]
+    if not all(rule_parameter in ALLOWED_RULE_PARAMETER_VALUES for rule_parameter in rule_parameters_list):
+        raise ValueError("Value for rule parameter endpointConfigurationType should be from " + str(ALLOWED_RULE_PARAMETER_VALUES) + ".")
     return rule_parameters_list
 
 ####################

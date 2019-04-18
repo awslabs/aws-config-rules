@@ -31,7 +31,8 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('API_GW_ENPOINT_TYPE_CHECK')
+RULE = __import__('API_GW_ENDPOINT_TYPE_CHECK')
+ALLOWED_RULE_PARAMETER_VALUES = ["REGIONAL", "PRIVATE", "EDGE"]
 
 class ComplianceTest(unittest.TestCase):
 
@@ -46,16 +47,15 @@ class ComplianceTest(unittest.TestCase):
     #Scenario 2: Rule parameter value is invalid
     def test_invalid_value_rule_parameter(self):
         rule_parameter_invalid = '{"endpointConfigurationType":"INVALID"}'
-        allowed_rule_parameter_values = ["REGIONAL", "PRIVATE", "EDGE"]
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter_invalid), '{}')
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', "Value for rule parameter endpointConfigurationType should be from " + str(allowed_rule_parameter_values) + ".")
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', "Value for rule parameter endpointConfigurationType should be from " + str(ALLOWED_RULE_PARAMETER_VALUES) + ".")
 
     #Scenario 3: Mismatch in type v/s rule parameter
     def test_type_mismatch(self):
         rule_parameter = '{"endpointConfigurationType":"PRIVATE"}'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter), '{}')
         resp_expected = []
-        resp_expected.append(build_expected_response("NON_COMPLIANT", "some-resource-id", DEFAULT_RESOURCE_TYPE, annotation="This Amazon API Gateway endpoint type does not match as specified in rule parameter(endpointConfigurationType): ['PRIVATE']."))
+        resp_expected.append(build_expected_response("NON_COMPLIANT", "some-resource-id", DEFAULT_RESOURCE_TYPE, annotation="The Endpoint Type for this API Gateway API does not match the specified rule parameter (endpointConfigurationType): ['PRIVATE']."))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario 4: Compliant
