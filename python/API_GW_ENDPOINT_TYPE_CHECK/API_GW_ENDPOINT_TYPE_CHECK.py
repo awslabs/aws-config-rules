@@ -68,7 +68,7 @@ ALLOWED_RULE_PARAMETER_VALUES = ["REGIONAL", "PRIVATE", "EDGE"]
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     if configuration_item['configuration']['endpointConfiguration']['types'][0] in valid_rule_parameters:
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation="The Endpoint Type for this API Gateway API does not match the specified rule parameter (endpointConfigurationType): " + str(valid_rule_parameters) + ".")
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation="The Endpoint Type for this Amazon API Gateway API does not match the specified rule parameter (endpointConfigurationType): " + str(valid_rule_parameters) + ".")
 
 def evaluate_parameters(rule_parameters):
     if 'endpointConfigurationType' not in rule_parameters:

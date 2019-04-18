@@ -55,7 +55,7 @@ class ComplianceTest(unittest.TestCase):
         rule_parameter = '{"endpointConfigurationType":"PRIVATE"}'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter), '{}')
         resp_expected = []
-        resp_expected.append(build_expected_response("NON_COMPLIANT", "some-resource-id", DEFAULT_RESOURCE_TYPE, annotation="The Endpoint Type for this API Gateway API does not match the specified rule parameter (endpointConfigurationType): ['PRIVATE']."))
+        resp_expected.append(build_expected_response("NON_COMPLIANT", "some-resource-id", DEFAULT_RESOURCE_TYPE, annotation="The Endpoint Type for this Amazon API Gateway API does not match the specified rule parameter (endpointConfigurationType): ['PRIVATE']."))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario 4: Compliant
