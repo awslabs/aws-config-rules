@@ -45,7 +45,7 @@ class SampleTest(unittest.TestCase):
     get_function_output_with_concurrency = {"Concurrency": {"ReservedConcurrentExecutions": 100}}
     get_function_output_without_concurrency = {}
 
-    listAllFunctions={"Functions": [{"FunctionName": "tam"}, {"FunctionName": "glue"}]}
+    listAllFunctions = {"Functions": [{"FunctionName": "tam"}, {"FunctionName": "glue"}]}
 
     invoking_event_iam_role_sample = '{\
 	"configurationItem": {\
@@ -183,7 +183,7 @@ class SampleTest(unittest.TestCase):
 ####################
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
-    event_to_return={
+    event_to_return = {
         'configRuleName':'myrule',
         'executionRoleArn':'roleArn',
         'eventLeftScope': False,
@@ -193,12 +193,12 @@ def build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         'resultToken':'token'
     }
     if rule_parameters:
-        event_to_return['ruleParameters']=rule_parameters
+        event_to_return['ruleParameters'] = rule_parameters
     return event_to_return
 
 def build_lambda_scheduled_event(rule_parameters=None):
-    invoking_event='{"messageType":"ScheduledNotification","notificationCreationTime":"2017-12-23T22:11:18.158Z"}'
-    event_to_return={
+    invoking_event = '{"messageType":"ScheduledNotification","notificationCreationTime":"2017-12-23T22:11:18.158Z"}'
+    event_to_return = {
         'configRuleName':'myrule',
         'executionRoleArn':'roleArn',
         'eventLeftScope': False,
@@ -208,7 +208,7 @@ def build_lambda_scheduled_event(rule_parameters=None):
         'resultToken':'token'
     }
     if rule_parameters:
-        event_to_return['ruleParameters']=rule_parameters
+        event_to_return['ruleParameters'] = rule_parameters
     return event_to_return
 
 def build_expected_response(compliance_type, compliance_resource_id, compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
@@ -256,13 +256,13 @@ def assert_customer_error_response(test_class, response, customer_error_code=Non
         test_class.assertTrue(response['internalErrorDetails'])
 
 def sts_mock():
-    assume_role_response={
+    assume_role_response = {
         "Credentials": {
             "AccessKeyId": "string",
             "SecretAccessKey": "string",
             "SessionToken": "string"}}
     STS_CLIENT_MOCK.reset_mock(return_value=True)
-    STS_CLIENT_MOCK.assume_role=MagicMock(return_value=assume_role_response)
+    STS_CLIENT_MOCK.assume_role = MagicMock(return_value=assume_role_response)
 
 ##################
 # Common Testing #
@@ -271,16 +271,16 @@ def sts_mock():
 class TestStsErrors(unittest.TestCase):
 
     def test_sts_unknown_error(self):
-        RULE.ASSUME_ROLE_MODE=True
-        STS_CLIENT_MOCK.assume_role=MagicMock(side_effect=botocore.exceptions.ClientError(
+        RULE.ASSUME_ROLE_MODE = True
+        STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
         response = RUlE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
             self, response, 'InternalError', 'InternalError')
 
     def test_sts_access_denied(self):
-        RULE.ASSUME_ROLE_MODE=True
-        STS_CLIENT_MOCK.assume_role=MagicMock(side_effect=botocore.exceptions.ClientError(
+        RULE.ASSUME_ROLE_MODE = True
+        STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
         response = RUlE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
