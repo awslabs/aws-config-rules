@@ -129,11 +129,11 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
             if not valid_rule_parameters['concurrencyLimitLow']:
                 if concurrency < int(valid_rule_parameters['concurrencyLimitHigh']):
-                     evaluations.append(build_evaluation(lambda_name, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='concurrencyLimitLow is not set and fuction concurrency is lesser than concurrencyLimitHigh'))
-                     continue
+                    evaluations.append(build_evaluation(lambda_name, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='concurrencyLimitLow is not set and fuction concurrency is lesser than concurrencyLimitHigh'))
+                    continue
                 else:
-                     evaluations.append(build_evaluation(lambda_name, 'COMPLIANT', event))
-                     continue
+                    evaluations.append(build_evaluation(lambda_name, 'COMPLIANT', event))
+                    continue
 
             if concurrency >= int(valid_rule_parameters['concurrencyLimitHigh']) or concurrency <= int(valid_rule_parameters['concurrencyLimitLow']):
                 evaluations.append(build_evaluation(lambda_name, 'COMPLIANT', event))
@@ -302,7 +302,7 @@ def get_configuration_item(invoking_event):
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invoking_event['messageType']):
+    if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
