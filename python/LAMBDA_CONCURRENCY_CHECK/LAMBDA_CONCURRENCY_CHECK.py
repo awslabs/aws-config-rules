@@ -12,17 +12,23 @@
 '''
 Rule Name:
   LAMBDA_CONCURRENCY_CHECK
+
 Description:
   Checks whether the AWS Lambda function is configured for function-level concurrent execution limit. The rule is NON_COMPLIANT if the Lambda function is not configured for function-level concurrent execution limit.
+
 Trigger:
   Configuration change on AWS::Lambda::Function
+
 Reports on:
   AWS::Lambda::Function
+
 Rule Parameters:
   ConcurrencyLimitLow
   (Optional) To check if the function concurrency is higher than or equal to what has been specified in the ConcurrencyLimitLow
+
   ConcurrencyLimitHigh
   (Optional) To check if the function concurrency is less than or equal to what has been specified in the ConcurrencyLimitHigh
+
 Scenarios:
   Scenario: 1
     Given: ConcurrencyLimitLow or ConcurrencyLimitHigh is configured
