@@ -13,15 +13,15 @@ from botocore.exceptions import ClientError
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE='AWS::Lambda::Function'
+DEFAULT_RESOURCE_TYPE = 'AWS::Lambda::Function'
 
 #############
 # Main Code #
 #############
 
-CONFIG_CLIENT_MOCK=MagicMock()
-STS_CLIENT_MOCK=MagicMock()
-LAMBDA_CLIENT_MOCK=MagicMock()
+CONFIG_CLIENT_MOCK = MagicMock()
+STS_CLIENT_MOCK = MagicMock()
+LAMBDA_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
@@ -34,20 +34,20 @@ class Boto3Mock():
         else:
             raise Exception("Attempting to create an unknown client")
 
-sys.modules['boto3']=Boto3Mock()
+sys.modules['boto3'] = Boto3Mock()
 
-RULE=__import__('LAMBDA_CONCURRENCY_CHECK')
+RULE = __import__('LAMBDA_CONCURRENCY_CHECK')
 
 class SampleTest(unittest.TestCase):
 
-    rule_parameters='{"concurrencyLimitLow": "100", "concurrencyLimitHigh": "100" }'
+    rule_parameters = '{"concurrencyLimitLow": "100", "concurrencyLimitHigh": "100" }'
 
-    get_function_output_with_concurrency={"Concurrency": {"ReservedConcurrentExecutions": 100}}
-    get_function_output_without_concurrency={}
+    get_function_output_with_concurrency = {"Concurrency": {"ReservedConcurrentExecutions": 100}}
+    get_function_output_without_concurrency = {}
 
     listAllFunctions={"Functions": [{"FunctionName": "tam"}, {"FunctionName": "glue"}]}
 
-    invoking_event_iam_role_sample='{\
+    invoking_event_iam_role_sample = '{\
 	"configurationItem": {\
 		"configurationItemStatus": "ResourceDiscovered",\
 		"resourceName": "tam",    \
@@ -64,7 +64,7 @@ class SampleTest(unittest.TestCase):
 
     #Scenario: 1
     def test_lambda_not_present(self):
-        invoking_event_iam_role_sample='{\
+        invoking_event_iam_role_sample = '{\
     	"configurationItem": {\
     		"configurationItemStatus": "ResourceDiscovered",\
     		"resourceName": "",\
@@ -73,107 +73,107 @@ class SampleTest(unittest.TestCase):
     	"notificationCreationTime": "2018-07-02T23:05:34.445Z",\
     	"messageType": "ConfigurationItemChangeNotification" }'
 
-        RULE.ASSUME_ROLE_MODE=False
-        LAMBDA_CLIENT_MOCK.list_functions=MagicMock(return_value={})
-        response=RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample, self.rule_parameters), {})
-        resp_expected=[]
+        RULE.ASSUME_ROLE_MODE = False
+        LAMBDA_CLIENT_MOCK.list_functions = MagicMock(return_value={})
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample, self.rule_parameters), {})
+        resp_expected = []
         resp_expected.append(build_expected_response('NOT_APPLICABLE', "123456789012", 'AWS::Lambda::Function'))
         assert_successful_evaluation(self, response, resp_expected)
     #
     #Scenario: 2
     def test_concurrency_not_set_in_lambda(self):
-        RULE.ASSUME_ROLE_MODE=False
-        LAMBDA_CLIENT_MOCK.get_function=MagicMock(side_effect=self.side_effect)
-        LAMBDA_CLIENT_MOCK.list_functions=MagicMock(return_value=self.listAllFunctions)
-        response=RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
+        RULE.ASSUME_ROLE_MODE = False
+        LAMBDA_CLIENT_MOCK.get_function = absMagicMock(side_effect=self.side_effect)
+        LAMBDA_CLIENT_MOCK.list_functions = MagicMock(return_value=self.listAllFunctions)
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
 
-        resp_expected=[]
+        resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function'))
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'glue', 'AWS::Lambda::Function', 'Concurrency not set for the lambda function'))
         assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
 
     #Scenario: 3
     def test_both_rule_parameters_empty_or_incorrect(self):
-        RULE.ASSUME_ROLE_MODE=False
-        LAMBDA_CLIENT_MOCK.get_function=MagicMock(side_effect=self.side_effect)
-        LAMBDA_CLIENT_MOCK.list_functions=MagicMock(return_value=self.listAllFunctions)
-        rule_parameters='{"concurrencyLimitLow":"", "concurrencyLimitHigh":""}'
-        response=RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
+        RULE.ASSUME_ROLE_MODE = False
+        LAMBDA_CLIENT_MOCK.get_function = MagicMock(side_effect=self.side_effect)
+        LAMBDA_CLIENT_MOCK.list_functions = MagicMock(return_value=self.listAllFunctions)
+        rule_parameters = '{"concurrencyLimitLow":"", "concurrencyLimitHigh":""}'
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
 
-        resp_expected=[]
+        resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function'))
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'glue', 'AWS::Lambda::Function', 'Concurrency not set for the lambda function'))
         assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
 
     #Scenario: 4
     def test_concurrency_limit_low_set_lower_than_concurrency_concurrency_limit_high_not_set(self):
-        RULE.ASSUME_ROLE_MODE=False
-        LAMBDA_CLIENT_MOCK.get_function=MagicMock(side_effect=self.side_effect)
-        LAMBDA_CLIENT_MOCK.list_functions=MagicMock(return_value=self.listAllFunctions)
-        rule_parameters='{"concurrencyLimitLow":"50", "concurrencyLimitHigh":""}'
-        response=RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
+        RULE.ASSUME_ROLE_MODE = False
+        LAMBDA_CLIENT_MOCK.get_function = absMagicMock(side_effect=self.side_effect)
+        LAMBDA_CLIENT_MOCK.list_functions = MagicMock(return_value=self.listAllFunctions)
+        rule_parameters = '{"concurrencyLimitLow":"50", "concurrencyLimitHigh":""}'
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
 
-        resp_expected=[]
+        resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'tam', 'AWS::Lambda::Function', 'concurrencyLimitHigh is not set and fuction concurrency is greater than concurrencyLimitLow'))
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'glue', 'AWS::Lambda::Function', 'Concurrency not set for the lambda function'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     #Scenario: 5
     def test_concurrency_limit_low_set_higher_than_concurrency_concurrency_limit_high_not_set(self):
-        RULE.ASSUME_ROLE_MODE=False
-        LAMBDA_CLIENT_MOCK.get_function=MagicMock(side_effect=self.side_effect)
-        LAMBDA_CLIENT_MOCK.list_functions=MagicMock(return_value=self.listAllFunctions)
-        rule_parameters='{"concurrencyLimitLow":"200", "concurrencyLimitHigh":""}'
-        response=RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
+        RULE.ASSUME_ROLE_MODE = False
+        LAMBDA_CLIENT_MOCK.get_function = MagicMock(side_effect=self.side_effect)
+        LAMBDA_CLIENT_MOCK.list_functions = MagicMock(return_value=self.listAllFunctions)
+        rule_parameters = '{"concurrencyLimitLow":"200", "concurrencyLimitHigh":""}'
+        response = RUlE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
 
-        resp_expected=[]
+        resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function'))
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'glue', 'AWS::Lambda::Function', 'Concurrency not set for the lambda function'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     #Scenario: 6
     def test_concurrency_limit_high_set_higher_than_concurrency_concurrency_limit_low_not_set(self):
-        RULE.ASSUME_ROLE_MODE=False
-        LAMBDA_CLIENT_MOCK.get_function=MagicMock(side_effect=self.side_effect)
-        LAMBDA_CLIENT_MOCK.list_functions=MagicMock(return_value=self.listAllFunctions)
-        rule_parameters='{"concurrencyLimitLow":"", "concurrencyLimitHigh":"200"}'
-        response=RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
-        resp_expected=[]
+        RULE.ASSUME_ROLE_MODE = False
+        LAMBDA_CLIENT_MOCK.get_function = MagicMock(side_effect=self.side_effect)
+        LAMBDA_CLIENT_MOCK.list_functions = MagicMock(return_value=self.listAllFunctions)
+        rule_parameters = '{"concurrencyLimitLow":"", "concurrencyLimitHigh":"200"}'
+        response = RUlE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
+        resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'tam', 'AWS::Lambda::Function', 'concurrencyLimitLow is not set and fuction concurrency is lesser than concurrencyLimitHigh'))
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'glue', 'AWS::Lambda::Function', 'Concurrency not set for the lambda function'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     #Scenario: 7
     def test_concurrency_limit_high_set_lower_than_concurrency_concurrency_limit_low_not_set(self):
-        RULE.ASSUME_ROLE_MODE=False
-        LAMBDA_CLIENT_MOCK.get_function=MagicMock(side_effect=self.side_effect)
-        LAMBDA_CLIENT_MOCK.list_functions=MagicMock(return_value=self.listAllFunctions)
-        rule_parameters='{"concurrencyLimitLow":"", "concurrencyLimitHigh":"50"}'
-        response=RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
-        resp_expected=[]
+        RULE.ASSUME_ROLE_MODE = False
+        LAMBDA_CLIENT_MOCK.get_function = MagicMock(side_effect=self.side_effect)
+        LAMBDA_CLIENT_MOCK.list_functions = MagicMock(return_value=self.listAllFunctions)
+        rule_parameters = '{"concurrencyLimitLow":"", "concurrencyLimitHigh":"50"}'
+        response = RUlE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
+        resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     #Scenario: 8
     def test_concurrency_lower_than_concurrency_limit_low_higher_than_concurrency_limit_high(self):
-        RULE.ASSUME_ROLE_MODE=False
-        LAMBDA_CLIENT_MOCK.get_function=MagicMock(side_effect=self.side_effect)
-        LAMBDA_CLIENT_MOCK.list_functions=MagicMock(return_value=self.listAllFunctions)
-        rule_parameters='{"concurrencyLimitLow":"100", "concurrencyLimitHigh":"200"}'
-        response=RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
-        resp_expected=[]
+        RULE.ASSUME_ROLE_MODE = False
+        LAMBDA_CLIENT_MOCK.get_function = MagicMock(side_effect=self.side_effect)
+        LAMBDA_CLIENT_MOCK.list_functions = MagicMock(return_value=self.listAllFunctions)
+        rule_parameters = '{"concurrencyLimitLow":"100", "concurrencyLimitHigh":"200"}'
+        response = RUlE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
+        resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'tam', 'AWS::Lambda::Function'))
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'glue', 'AWS::Lambda::Function', 'Concurrency not set for the lambda function'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     #Scenario: 9
     def test_concurrency_higher_than_concurrency_limit_low_lower_than_concurrency_limit_high(self):
-        RULE.ASSUME_ROLE_MODE=False
-        LAMBDA_CLIENT_MOCK.get_function=MagicMock(side_effect=self.side_effect)
-        LAMBDA_CLIENT_MOCK.list_functions=MagicMock(return_value=self.listAllFunctions)
-        rule_parameters='{"concurrencyLimitLow":"50", "concurrencyLimitHigh":"200"}'
-        response=RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
-        resp_expected=[]
+        RULE.ASSUME_ROLE_MODE = False
+        LAMBDA_CLIENT_MOCK.get_function = MagicMock(side_effect=self.side_effect)
+        LAMBDA_CLIENT_MOCK.list_functions = MagicMock(return_value=self.listAllFunctions)
+        rule_parameters = '{"concurrencyLimitLow":"50", "concurrencyLimitHigh":"200"}'
+        response = RUlE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, rule_parameters), {})
+        resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'tam', 'AWS::Lambda::Function', 'Lamda function concurrency is not within bounds of concurrencyLimitLow and concurrencyLimitHigh'))
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'glue', 'AWS::Lambda::Function', 'Concurrency not set for the lambda function'))
         assert_successful_evaluation(self, response, resp_expected, 2)
@@ -274,7 +274,7 @@ class TestStsErrors(unittest.TestCase):
         RULE.ASSUME_ROLE_MODE=True
         STS_CLIENT_MOCK.assume_role=MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
-        response=RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        response = RUlE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
             self, response, 'InternalError', 'InternalError')
 
@@ -282,6 +282,6 @@ class TestStsErrors(unittest.TestCase):
         RULE.ASSUME_ROLE_MODE=True
         STS_CLIENT_MOCK.assume_role=MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
-        response=RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        response = RUlE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
             self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')
