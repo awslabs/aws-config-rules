@@ -1,4 +1,4 @@
-# Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You may
 # not use this file except in compliance with the License. A copy of the License is located at
@@ -10,64 +10,65 @@
 # the specific language governing permissions and limitations under the License.
 
 '''
+Rule Name:
+  LAMBDA_CONCURRENCY_CHECK
 Description:
   Checks whether the AWS Lambda function is configured for function-level concurrent execution limit. The rule is NON_COMPLIANT if the Lambda function is not configured for function-level concurrent execution limit.
-
 Trigger:
-  Periodic
-
+  Configuration change on AWS::Lambda::Function
 Reports on:
   AWS::Lambda::Function
-
 Rule Parameters:
-  concurrencyLimitLow
-  (Optional) To check if the function concurrency is less than or equal to what has been specified in the concurrencyLimitLow
-
-  concurrencyLimitHigh
-  (Optional) To check if the function concurrency is higher than or equal to what has been specified in the concurrencyLimitHigh
-
-
+  ConcurrencyLimitLow
+  (Optional) To check if the function concurrency is higher than or equal to what has been specified in the ConcurrencyLimitLow
+  ConcurrencyLimitHigh
+  (Optional) To check if the function concurrency is less than or equal to what has been specified in the ConcurrencyLimitHigh
 Scenarios:
   Scenario: 1
-     Given: No Lambda functions are present
-      Then: Return NOT_APPLICABLE
+    Given: ConcurrencyLimitLow or ConcurrencyLimitHigh is configured
+      And: ConcurrencyLimitLow or ConcurrencyLimitHigh is not an positive integer
+     Then: Return an Error
   Scenario: 2
-     Given: Lambda function is not configured for Concurrency i.e. Concurrency is not set
-      Then: Return NON_COMPLIANT
+    Given: ConcurrencyLimitLow and ConcurrencyLimitHigh is configured
+      And: ConcurrencyLimitLow > ConcurrencyLimitHigh
+     Then: Return an Error
   Scenario: 3
-     Given: Lambda function is configured for Concurrency i.e. Concurrency is set
-       And: Both the rule parameters are empty
-      Then: Return COMPLIANT
+    Given: Lambda function is not configured for Concurrency i.e. Concurrency is not set
+     Then: Return NON_COMPLIANT
   Scenario: 4
-      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
-        And: concurrencyLimitLow is set and the function concurrency is higher than concurrencyLimitLow
-        And: concurrencyLimitHigh is not set
-       Then: Return NON_COMPLIANT
+    Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+      And: the ConcurrencyLimitLow parameter is not configured
+      And: the ConcurrencyLimitHigh parameter is not configured
+     Then: Return COMPLIANT
   Scenario: 5
-      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
-        And: concurrencyLimitLow is set and the function concurrency is lower than equal to concurrencyLimitLow
-        And: concurrencyLimitHigh is not set
-       Then: Return COMPLIANT
+    Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+      And: the ConcurrencyLimitLow parameter is configured and valid
+      And: the function concurrency < ConcurrencyLimitLow
+     Then: Return NON_COMPLIANT
   Scenario: 6
-      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
-        And: concurrencyLimitHigh is set and the function concurrency is lower than concurrencyLimitHigh
-        And: concurrencyLimitLow is not set
-       Then: Return NON_COMPLIANT
+    Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+      And: the ConcurrencyLimitLow parameter is configured and valid
+      And: the function concurrency ≥ ConcurrencyLimitLow
+      And: the ConcurrencyLimitHigh parameter is not configured
+     Then: Return COMPLIANT
   Scenario: 7
-      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
-        And: concurrencyLimitHigh is set and the function concurrency is higher than equal to concurrencyLimitHigh
-        And: concurrencyLimitLow is not set
-       Then: Return COMPLIANT
+    Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+      And: the ConcurrencyLimitHigh parameter is configured and valid
+      And: the function concurrency > ConcurrencyLimitHigh
+     Then: Return NON_COMPLIANT
   Scenario: 8
-      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
-        And: concurrencyLimitHigh is set and the function concurrency is higher than equal to concurrencyLimitHigh
-        And: concurrencyLimitLow is set and the function concurrency is less than equal to concurrencyLimitHigh
-       Then: Return COMPLIANT
+    Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+      And: the ConcurrencyLimitHigh parameter is configured and valid
+      And: the function concurrency ≤ ConcurrencyLimitHigh
+      And: the ConcurrencyLimitLow parameter is not configured
+     Then: Return COMPLIANT
   Scenario: 9
-      Given: Lambda function is configured for Concurrency i.e. Concurrency is set
-        And: concurrencyLimitHigh is set and the function concurrency is lower than equal to concurrencyLimitHigh
-        And: concurrencyLimitLow is set and the function concurrency is higher than equal to concurrencyLimitHigh
-       Then: Return NON_COMPLIANT
+    Given: Lambda function is configured for Concurrency i.e. Concurrency is set
+      And: the ConcurrencyLimitLow parameter is configured and valid
+      And: the function concurrency ≥ ConcurrencyLimitLow
+      And: the ConcurrencyLimitHigh parameter is configured and valid
+      And: the function concurrency ≤ ConcurrencyLimitHigh
+     Then: Return COMPLIANT
 '''
 
 import json
@@ -94,89 +95,67 @@ ASSUME_ROLE_MODE = False
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
-
-
 #############
 # Main Code #
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    lambda_client = get_client('lambda', event)
-    list_all_functions = list_all_lambda_function_names(lambda_client)
 
-    if not list_all_functions:
-        return build_evaluation(event['accountId'], 'NOT_APPLICABLE', event)
+    function_name = configuration_item['configuration']['functionName']
+    if 'Concurrency' not in configuration_item['supplementaryConfiguration']:
+        return build_evaluation(function_name, 'NON_COMPLIANT', event,
+                                annotation='Concurrency not set for the lambda function: {}'.format(function_name)
+                                )
 
-    evaluations = []
-    #
-    for lambda_data in list_all_functions:
-        lambda_name = lambda_data['FunctionName']
-        function_data = lambda_client.get_function(lambda_name)
-        if 'Concurrency' in function_data:
-            concurrency = function_data['Concurrency']['ReservedConcurrentExecutions']
+    if not valid_rule_parameters:
+        return build_evaluation(function_name, 'COMPLIANT', event)
 
-            if not valid_rule_parameters['concurrencyLimitLow'] and not valid_rule_parameters['concurrencyLimitHigh']:
-                evaluations.append(build_evaluation(lambda_name, 'COMPLIANT', event))
-                continue
+    concurrency = configuration_item['supplementaryConfiguration']['Concurrency']['reservedConcurrentExecutions']
 
-            if not valid_rule_parameters['concurrencyLimitHigh']:
-                if concurrency > int(valid_rule_parameters['concurrencyLimitLow']):
-                    evaluations.append(build_evaluation(lambda_name, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='concurrencyLimitHigh is not set and fuction concurrency is greater than concurrencyLimitLow'))
-                    continue
-                else:
-                    evaluations.append(build_evaluation(lambda_name, 'COMPLIANT', event))
-                    continue
+    if 'ConcurrencyLimitLow' in valid_rule_parameters and 'ConcurrencyLimitHigh' not in valid_rule_parameters:
+        if concurrency < valid_rule_parameters['ConcurrencyLimitLow']:
+            return build_evaluation(function_name, 'NON_COMPLIANT', event,
+                                    annotation='Concurrency of AWS Lambda function {} is lower then {}.'.format(
+                                        function_name,
+                                        valid_rule_parameters['ConcurrencyLimitLow']
+                                    ))
+        return build_evaluation(function_name, 'COMPLIANT', event)
 
-            if not valid_rule_parameters['concurrencyLimitLow']:
-                if concurrency < int(valid_rule_parameters['concurrencyLimitHigh']):
-                    evaluations.append(build_evaluation(lambda_name, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='concurrencyLimitLow is not set and fuction concurrency is lesser than concurrencyLimitHigh'))
-                    continue
-                else:
-                    evaluations.append(build_evaluation(lambda_name, 'COMPLIANT', event))
-                    continue
+    if 'ConcurrencyLimitHigh' in valid_rule_parameters and 'ConcurrencyLimitLow' not in valid_rule_parameters:
+        if concurrency > valid_rule_parameters['ConcurrencyLimitHigh']:
+            return build_evaluation(function_name, 'NON_COMPLIANT', event,
+                                    annotation='Concurrency of AWS Lambda function {} is higher then {}.'.format(
+                                        function_name,
+                                        valid_rule_parameters['ConcurrencyLimitHigh']
+                                    ))
+        return build_evaluation(function_name, 'COMPLIANT', event)
 
-            if concurrency >= int(valid_rule_parameters['concurrencyLimitHigh']) or concurrency <= int(valid_rule_parameters['concurrencyLimitLow']):
-                evaluations.append(build_evaluation(lambda_name, 'COMPLIANT', event))
-                continue
+    if valid_rule_parameters['ConcurrencyLimitLow'] <= concurrency <= valid_rule_parameters['ConcurrencyLimitHigh']:
+        return build_evaluation(function_name, 'COMPLIANT', event)
+    return build_evaluation(function_name, 'NON_COMPLIANT', event,
+                            annotation='AWS Lambda function {} concurrency is not within bounds of {} and {}.'.format(
+                                function_name,
+                                valid_rule_parameters['ConcurrencyLimitLow'],
+                                valid_rule_parameters['ConcurrencyLimitHigh']
+                            ))
 
-            if concurrency < int(valid_rule_parameters['concurrencyLimitHigh']) and concurrency > int(valid_rule_parameters['concurrencyLimitLow']):
-                evaluations.append(build_evaluation(lambda_name, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='Lamda function concurrency is not within bounds of concurrencyLimitLow and concurrencyLimitHigh'))
-                continue
-        else:
-            evaluations.append(build_evaluation(lambda_name, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='Concurrency not set for the lambda function'))
-            continue
-    return evaluations
-
+# Check if parameters are defined and has values > 0
 def evaluate_parameters(rule_parameters):
+    if not rule_parameters:
+        return {}
+    if 'ConcurrencyLimitLow' in rule_parameters:
+        if int(rule_parameters['ConcurrencyLimitLow']) <= 0:
+            raise ValueError('ConcurrencyLimitLow must be a positive integer greater than 0.')
+        rule_parameters['ConcurrencyLimitLow'] = int(rule_parameters['ConcurrencyLimitLow'])
+    if 'ConcurrencyLimitHigh' in rule_parameters:
+        if int(rule_parameters['ConcurrencyLimitHigh']) <= 0:
+            raise ValueError('ConcurrencyLimitHigh must be a positive integer greater than 0.')
+        rule_parameters['ConcurrencyLimitHigh'] = int(rule_parameters['ConcurrencyLimitHigh'])
+    if all(key in rule_parameters for key in ['ConcurrencyLimitLow', 'ConcurrencyLimitHigh']) and \
+        rule_parameters['ConcurrencyLimitLow'] >= rule_parameters['ConcurrencyLimitHigh']:
+        raise ValueError('ConcurrencyLimitHigh can not be smaller then or equal to ConcurrencyLimitLow.')
+    return rule_parameters
 
-    if 'concurrencyLimitLow' in rule_parameters and 'concurrencyLimitHigh' in rule_parameters:
-        try:
-            if rule_parameters['concurrencyLimitLow']:
-                concurrency_limit_low = int(rule_parameters['concurrencyLimitLow'])
-                if concurrency_limit_low < 0:
-                    raise ValueError("Value of concurrencyLimitLow less than 0")
-            if rule_parameters['concurrencyLimitHigh']:
-                concurrency_limit_high = int(rule_parameters['concurrencyLimitHigh'])
-                if concurrency_limit_high < 0:
-                    raise ValueError("Value of concurrencyLimitHigh less than 0")
-        except:
-            raise ValueError('concurrencyLimitLow: ' + rule_parameters['concurrencyLimitLow'] +' or concurrencyLimitHigh: ' + rule_parameters['concurrencyLimitHigh'] + ' are not positive integers')
-    valid_rule_parameters = rule_parameters
-    return valid_rule_parameters
-
-
-def list_all_lambda_function_names(lambda_client):
-    function_list = lambda_client.list_functions(MaxItems=500)
-    name_list = []
-    if not function_list:
-        return name_list
-    function_list = lambda_client.list_functions(MaxItem=500)
-    name_list.extend(function_list['Functions'])
-    while 'NextMarker' in function_list:
-        name_list.extend(function_list['Functions'])
-        marker = function_list['NextMarker']
-        function_list = lambda_client.list_functions(Marker=marker, MaxItem=500)
-    return name_list
 
 ####################
 # Helper Functions #
@@ -185,7 +164,6 @@ def list_all_lambda_function_names(lambda_client):
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
     """Return an error dictionary when the evaluate_parameters() raises a ValueError.
-
     Keyword arguments:
     ex -- Exception text
     """
@@ -196,35 +174,35 @@ def build_parameters_value_error_response(ex):
 
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
-def get_client(service, event):
+def get_client(service, event, region=None):
     """Return the service boto client. It should be used instead of directly calling the client.
-
     Keyword arguments:
     service -- the service name used for calling the boto.client()
     event -- the event variable given in the lambda handler
+    region -- the region where the client is called (default: None)
     """
     if not ASSUME_ROLE_MODE:
-        return boto3.client(service)
-    credentials = get_assume_role_credentials(event["executionRoleArn"])
+        return boto3.client(service, region)
+    credentials = get_assume_role_credentials(event["executionRoleArn"], region)
     return boto3.client(service, aws_access_key_id=credentials['AccessKeyId'],
                         aws_secret_access_key=credentials['SecretAccessKey'],
-                        aws_session_token=credentials['SessionToken']
+                        aws_session_token=credentials['SessionToken'],
+                        region_name=region
                        )
 
 # This generate an evaluation for config
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
     """Form an evaluation as a dictionary. Usually suited to report on scheduled rules.
-
     Keyword arguments:
     resource_id -- the unique id of the resource to report
     compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
     event -- the event variable given in the lambda handler
     resource_type -- the CloudFormation resource type (or AWS::::Account) to report on the rule (default DEFAULT_RESOURCE_TYPE)
-    annotation -- an annotation to be added to the evaluation (default None)
+    annotation -- an annotation to be added to the evaluation (default None). It will be truncated to 255 if longer.
     """
     eval_cc = {}
     if annotation:
-        eval_cc['Annotation'] = annotation
+        eval_cc['Annotation'] = build_annotation(annotation)
     eval_cc['ComplianceResourceType'] = resource_type
     eval_cc['ComplianceResourceId'] = resource_id
     eval_cc['ComplianceType'] = compliance_type
@@ -233,15 +211,14 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
 
 def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
     """Form an evaluation as a dictionary. Usually suited to report on configuration change rules.
-
     Keyword arguments:
     configuration_item -- the configurationItem dictionary in the invokingEvent
     compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    annotation -- an annotation to be added to the evaluation (default None)
+    annotation -- an annotation to be added to the evaluation (default None). It will be truncated to 255 if longer.
     """
     eval_ci = {}
     if annotation:
-        eval_ci['Annotation'] = annotation
+        eval_ci['Annotation'] = build_annotation(annotation)
     eval_ci['ComplianceResourceType'] = configuration_item['resourceType']
     eval_ci['ComplianceResourceId'] = configuration_item['resourceId']
     eval_ci['ComplianceType'] = compliance_type
@@ -251,6 +228,12 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
 ####################
 # Boilerplate Code #
 ####################
+
+# Build annotation within Service constraints
+def build_annotation(annotation_string):
+    if len(annotation_string) > 256:
+        return annotation_string[:244] + " [truncated]"
+    return annotation_string
 
 # Helper function used to validate input
 def check_defined(reference, reference_name):
@@ -317,10 +300,10 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
+    return status in ('OK', 'ResourceDiscovered') and not event_left_scope
 
-def get_assume_role_credentials(role_arn):
-    sts_client = boto3.client('sts')
+def get_assume_role_credentials(role_arn, region=None):
+    sts_client = boto3.client('sts', region)
     try:
         assume_role_response = sts_client.assume_role(RoleArn=role_arn,
                                                       RoleSessionName="configLambdaExecution",
@@ -413,7 +396,7 @@ def lambda_handler(event, context):
     latest_evaluations = []
 
     if not compliance_result:
-        latest_evaluations.append(build_evaluation(event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::Lambda::Function'))
+        latest_evaluations.append(build_evaluation(event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::::Account'))
         evaluations = clean_up_old_evaluations(latest_evaluations, event)
     elif isinstance(compliance_result, str):
         if configuration_item:
