@@ -111,7 +111,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                     annonate = 'There are no Amazon S3 VPC endpoints present in '+ vpc_id+'.'
                     evaluations.append(build_evaluation(vpc_id, 'NON_COMPLIANT', event, annotation=annonate))
     except Exception as exception:
-        return exception
+        return build_internal_error_response(exception, internal_error_details=None)
     return evaluations
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = rule_parameters
