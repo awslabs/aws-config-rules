@@ -59,11 +59,7 @@ class ParameterTest(unittest.TestCase):
         RULE.ASSUME_ROLE_MODE = False
         response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_non_compliant, rule_parameters), {})
         resp_expected = []
-<<<<<<< HEAD
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/test', 'AWS::ApiGateway::Stage', 'The Logging Level for this API Gateway Stage does not match the value for rule parameter (loggingLevel): [\'ERROR\', \'INFO\'].'))
-=======
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/test', 'AWS::ApiGateway::Stage', 'API Stage: test doesn\'t have required logging level enabled.'))
->>>>>>> 21cd6e1dd0187b62c74d06cde4eff8b07461ceb5
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario 3: Compliant
@@ -94,11 +90,7 @@ class LoggingLevelTest(unittest.TestCase):
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, self.rule_parameters), {})
         print(response)
         resp_expected = []
-<<<<<<< HEAD
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/limit', 'AWS::ApiGateway::Stage', 'The Logging Level for this API Gateway Stage does not match the value for rule parameter (loggingLevel): [\'ERROR\', \'INFO\'].'))
-=======
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/limit', 'AWS::ApiGateway::Stage', 'API Stage: limit doesn\'t have required logging level enabled.'))
->>>>>>> 21cd6e1dd0187b62c74d06cde4eff8b07461ceb5
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_logging_level_info_non_compliant(self):
@@ -108,11 +100,7 @@ class LoggingLevelTest(unittest.TestCase):
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         print(response)
         resp_expected = []
-<<<<<<< HEAD
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/test', 'AWS::ApiGateway::Stage', 'The Logging Level for this API Gateway Stage does not match the value for rule parameter (loggingLevel): [\'ERROR\'].'))
-=======
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/test', 'AWS::ApiGateway::Stage', 'API Stage: test doesn\'t have required logging level enabled.'))
->>>>>>> 21cd6e1dd0187b62c74d06cde4eff8b07461ceb5
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_logging_level_error_non_compliant(self):
@@ -122,11 +110,7 @@ class LoggingLevelTest(unittest.TestCase):
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         print(response)
         resp_expected = []
-<<<<<<< HEAD
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/test', 'AWS::ApiGateway::Stage', 'The Logging Level for this API Gateway Stage does not match the value for rule parameter (loggingLevel): [\'INFO\'].'))
-=======
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/test', 'AWS::ApiGateway::Stage', 'API Stage: test doesn\'t have required logging level enabled.'))
->>>>>>> 21cd6e1dd0187b62c74d06cde4eff8b07461ceb5
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario 3: Compliant for Resource Type AWS::ApiGateway::Stage
@@ -172,11 +156,7 @@ class LoggingLevelTest(unittest.TestCase):
         RULE.ASSUME_ROLE_MODE = False
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, self.rule_parameters), {})
         resp_expected = []
-<<<<<<< HEAD
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/apis/qwert123yu/stages/config4', 'AWS::ApiGatewayV2::Stage', 'The Logging Level for this API Gateway Stage does not match the value for rule parameter (loggingLevel): [\'ERROR\', \'INFO\'].'))
-=======
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/apis/qwert123yu/stages/config4', 'AWS::ApiGatewayV2::Stage', 'API Stage: config4 doesn\'t have required logging level enabled.'))
->>>>>>> 21cd6e1dd0187b62c74d06cde4eff8b07461ceb5
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_apiv2_change_loglevel_to_off(self):
@@ -184,11 +164,7 @@ class LoggingLevelTest(unittest.TestCase):
         RULE.ASSUME_ROLE_MODE = False
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, self.rule_parameters), {})
         resp_expected = []
-<<<<<<< HEAD
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/apis/qwert123yu/stages/test', 'AWS::ApiGatewayV2::Stage', 'The Logging Level for this API Gateway Stage does not match the value for rule parameter (loggingLevel): [\'ERROR\', \'INFO\'].'))
-=======
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/apis/qwert123yu/stages/test', 'AWS::ApiGatewayV2::Stage', 'API Stage: test doesn\'t have required logging level enabled.'))
->>>>>>> 21cd6e1dd0187b62c74d06cde4eff8b07461ceb5
         assert_successful_evaluation(self, response, resp_expected)
 
     #Scenario 3: Compliant for Resource Type AWS::ApiGatewayV2::Stage
