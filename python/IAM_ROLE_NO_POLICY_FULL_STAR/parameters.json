@@ -1,0 +1,18 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "IAM_ROLE_NO_POLICY_FULL_STAR",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "IAM_ROLE_NO_POLICY_FULL_STAR.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::IAM::Role",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:7.1",
+      "iam"
+    ]
+  }
+}

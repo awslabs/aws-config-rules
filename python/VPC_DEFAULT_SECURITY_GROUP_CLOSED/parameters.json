@@ -1,0 +1,18 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "VPC_DEFAULT_SECURITY_GROUP_CLOSED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "SourceEvents": "AWS::EC2::SecurityGroup",
+    "SourceIdentifier": "VPC_DEFAULT_SECURITY_GROUP_CLOSED",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:medium",
+      "pci",
+      "pci:1.2",
+      "vpc"
+    ]
+  }
+}

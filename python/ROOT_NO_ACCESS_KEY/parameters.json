@@ -1,0 +1,18 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ROOT_NO_ACCESS_KEY",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "ROOT_NO_ACCESS_KEY.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:critical",
+      "pci",
+      "pci:7.1",
+      "root"
+    ]
+  }
+}

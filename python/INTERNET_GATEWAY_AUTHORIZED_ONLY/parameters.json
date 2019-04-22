@@ -1,0 +1,18 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "INTERNET_GATEWAY_AUTHORIZED_ONLY",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "INTERNET_GATEWAY_AUTHORIZED_ONLY.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"AuthorizedVpcIds\":\"\"}",
+    "SourceEvents": "AWS::EC2::InternetGateway",
+    "RuleSets": [
+      "accountclassification:secret",
+      "accountclassification:confidential",
+      "rulecriticity:high",
+      "pci"
+    ]
+  }
+}
+

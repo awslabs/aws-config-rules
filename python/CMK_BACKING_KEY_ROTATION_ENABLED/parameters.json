@@ -1,0 +1,17 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "CMK_BACKING_KEY_ROTATION_ENABLED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "CMK_BACKING_KEY_ROTATION_ENABLED",  
+    "RuleSets": [
+      "rulecriticity:medium",
+      "pci",
+      "pci:3.6",
+      "kms"
+    ]
+  }
+}

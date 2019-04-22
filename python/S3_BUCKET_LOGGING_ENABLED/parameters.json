@@ -1,0 +1,19 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "RuleName": "S3_BUCKET_LOGGING_ENABLED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "SourceEvents": "AWS::S3::Bucket",
+    "OptionalParameters": "{\"targetBucket\":\"\",\"targetPrefix\":\"\"}", 
+    "InputParameters": "{}",
+    "SourceIdentifier": "S3_BUCKET_LOGGING_ENABLED",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:10.1",
+      "s3"
+    ]
+  }
+}

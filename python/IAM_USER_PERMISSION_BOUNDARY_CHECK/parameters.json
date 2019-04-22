@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "IAM_USER_PERMISSION_BOUNDARY_CHECK.zip", 
+    "SourceRuntime": "python3.6", 
+    "SourcePeriodic": "TwentyFour_Hours", 
+    "RuleName": "IAM_USER_PERMISSION_BOUNDARY_CHECK", 
+    "OptionalParameters": "{\"policyArns\":\"arn:aws:iam::aws:policy/AdministratorAccess\"}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}

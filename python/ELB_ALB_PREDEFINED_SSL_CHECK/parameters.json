@@ -1,0 +1,18 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ELB_ALB_PREDEFINED_SSL_CHECK",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "ELB_ALB_PREDEFINED_SSL_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+    "RuleSets": [
+      "rulecriticity:high",
+      "pci",
+      "pci:4.1",
+      "elb",
+      "alb"
+    ]
+  }
+}

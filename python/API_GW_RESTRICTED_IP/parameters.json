@@ -1,0 +1,9 @@
+{
+  "Parameters": {
+    "RuleName": "API_GW_RESTRICTED_IP",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "API_GW_RESTRICTED_IP.zip",
+    "InputParameters": "{\"WhitelistedIPs\":\"10.0.0.0/24\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  }
+}

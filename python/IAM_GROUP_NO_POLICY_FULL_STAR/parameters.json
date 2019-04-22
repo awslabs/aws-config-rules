@@ -1,0 +1,11 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "IAM_GROUP_NO_POLICY_FULL_STAR",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "IAM_GROUP_NO_POLICY_FULL_STAR.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::IAM::Group"
+  }
+}

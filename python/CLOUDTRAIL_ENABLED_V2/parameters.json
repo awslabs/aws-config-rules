@@ -1,0 +1,21 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "CLOUDTRAIL_ENABLED_V2",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "CLOUDTRAIL_ENABLED_V2.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"S3BucketName\":\"\",\"EncryptedBoolean\":\"True\",\"KMSKeyArn\":\"\",\"GlobalResourcesBoolean\":\"True\",\"MultiRegionBoolean\":\"True\",\"ManagementEventBoolean\":\"True\",\"S3DataEventBoolean\":\"True\",\"LambdaEventBoolean\":\"True\",\"LFIBoolean\":\"True\"}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:critical",
+      "pci",
+      "pci:10.1",
+      "pci:10.2",
+      "pci:10.5",
+      "cloudtrail"
+    ]
+  }
+}
+

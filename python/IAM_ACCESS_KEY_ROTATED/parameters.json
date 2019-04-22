@@ -1,0 +1,18 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "IAM_ACCESS_KEY_ROTATED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "IAM_ACCESS_KEY_ROTATED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"WhitelistedUserList\":\"\",\"KeyActiveTimeOutInDays\":\"\"}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:8.1",
+      "iam"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "Parameters": {
+    "RuleName": "LAMBDA_ROLE_ALLOWED_ON_LOGGING",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "LAMBDA_ROLE_ALLOWED_ON_LOGGING.zip",
+    "InputParameters": "{}",
+    "SourceEvents": "AWS::Lambda::Function"
+  }
+}
