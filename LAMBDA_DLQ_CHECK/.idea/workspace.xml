@@ -10,11 +10,14 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/LAMBDA_DLQ_CHECK.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="30" column="24" selection-start-line="30" selection-start-column="24" selection-end-line="30" selection-end-column="24" />
+            <state relative-caret-position="120">
+              <caret line="8" column="19" selection-start-line="8" selection-start-column="19" selection-end-line="8" selection-end-column="19" />
+              <folding>
+                <element signature="e#570#581#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -28,11 +31,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/LAMBDA_DLQ_CHECK_test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="810">
-              <caret line="55" selection-start-line="55" selection-end-line="55" />
+            <state relative-caret-position="105">
+              <caret line="7" column="15" lean-forward="true" selection-start-line="7" selection-start-column="15" selection-end-line="7" selection-end-column="15" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -50,7 +53,6 @@
       <find>build_evaluation_from_config_item</find>
       <find>test_configuration</find>
       <find>TestStsErrors</find>
-      <find>DEFAULT_RESOURCE_TYPE</find>
       <find>rule_parameters</find>
       <find>rule_invalid_parameter</find>
       <find>SampleTest</find>
@@ -68,6 +70,8 @@
       <find>test_no_dlq_configured</find>
       <find>not_in_ruleparameter</find>
       <find>assertEqual</find>
+      <find>print</find>
+      <find>DEFAULT_RESOURCE_TYPE</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -76,8 +80,8 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/LAMBDA_DLQ_CHECK_test.py" />
         <option value="$PROJECT_DIR$/LAMBDA_DLQ_CHECK.py" />
+        <option value="$PROJECT_DIR$/LAMBDA_DLQ_CHECK_test.py" />
       </list>
     </option>
   </component>
@@ -272,7 +276,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="35808000" />
+    <option name="totallyTimeSpent" value="37321000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
@@ -291,7 +295,7 @@
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.29178083" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.5068493" />
       <window_info anchor="bottom" id="Python Console" order="12" weight="0.32876712" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -370,8 +374,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/LAMBDA_DLQ_CHECK.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="30" column="24" selection-start-line="30" selection-start-column="24" selection-end-line="30" selection-end-column="24" />
+        <state relative-caret-position="120">
+          <caret line="8" column="19" selection-start-line="8" selection-start-column="19" selection-end-line="8" selection-end-column="19" />
+          <folding>
+            <element signature="e#570#581#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -384,8 +391,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/LAMBDA_DLQ_CHECK_test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="810">
-          <caret line="55" selection-start-line="55" selection-end-line="55" />
+        <state relative-caret-position="105">
+          <caret line="7" column="15" lean-forward="true" selection-start-line="7" selection-start-column="15" selection-end-line="7" selection-end-column="15" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>

@@ -3,18 +3,17 @@ import unittest
 try:
     from unittest.mock import MagicMock
 except ImportError:
-    import mock
     from mock import MagicMock
-import botocore
-from botocore.exceptions import ClientError
 import json
+import botocore
+
 
 ##############
 # Parameters #
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::Lambda::Function'
 
 #############
 # Main Code #
@@ -85,7 +84,6 @@ class SampleTest(unittest.TestCase):
     #scenario 5
     def test_no_dlq_match(self):
         invoking_event = generate_invoking_event(self.valid_dlqarn)
-        print(invoking_event)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_parameter_mismatch), {})
         resp_expected = []
