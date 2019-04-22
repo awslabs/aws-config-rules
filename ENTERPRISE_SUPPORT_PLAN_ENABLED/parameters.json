@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ENTERPRISE_SUPPORT_PLAN_ENABLED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "ENTERPRISE_SUPPORT_PLAN_ENABLED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}

@@ -1,0 +1,17 @@
+Running local test!
+Removing trailing '/'
+Testing LAMBDA_DLQ_CHECK
+Looking for tests in /Users/chhharsh/Desktop/lambda rule/aws-config-rules/python/LAMBDA_DLQ_CHECK
+LAMBDA_DLQ_CHECK_test.py
+Debug!
+<unittest.suite.TestSuite tests=[<unittest.suite.TestSuite tests=[<LAMBDA_DLQ_CHECK_test.SampleTest testMethod=test_empty_parameter_value>, <LAMBDA_DLQ_CHECK_test.SampleTest testMethod=test_invalid_parameter_value>, <LAMBDA_DLQ_CHECK_test.SampleTest testMethod=test_no_dlq_configured>, <LAMBDA_DLQ_CHECK_test.SampleTest testMethod=test_no_dlq_match>, <LAMBDA_DLQ_CHECK_test.SampleTest testMethod=test_sample>]>, <unittest.suite.TestSuite tests=[<LAMBDA_DLQ_CHECK_test.TestStsErrors testMethod=test_sts_access_denied>, <LAMBDA_DLQ_CHECK_test.TestStsErrors testMethod=test_sts_unknown_error>]>]>
+
+Stdout:
+{'internalErrorMessage': 'Parameter value is invalid', 'customerErrorCode': 'InvalidParameterValueException', 'internalErrorDetails': 'An ValueError was raised during the validation of the Parameter value', 'customerErrorMessage': 'Invalid value for the parameter "dlqArn", Expected Comma-separated list of valid SQS or SNS ARNs\'s'}
+
+Stdout:
+{'internalErrorMessage': 'Parameter value is invalid', 'customerErrorCode': 'InvalidParameterValueException', 'internalErrorDetails': 'An ValueError was raised during the validation of the Parameter value', 'customerErrorMessage': 'Invalid value for the parameter "dlqArn", Expected Comma-separated list of valid SQS or SNS ARNs\'s'}
+
+Stdout:
+{'internalErrorMessage': 'Parameter value is invalid', 'customerErrorCode': 'InvalidParameterValueException', 'internalErrorDetails': 'An ValueError was raised during the validation of the Parameter value', 'customerErrorMessage': 'Invalid value for the parameter "dlqArn", Expected Comma-separated list of valid SQS or SNS ARNs\'s'}
+<unittest.runner.TextTestResult run=7 errors=2 failures=1>

@@ -1,0 +1,19 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ACM_CERTIFICATE_EXPIRATION_CHECK",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"daysToExpiration\":\"\"}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceEvents": "AWS::ACM::Certificate",
+    "SourceIdentifier": "ACM_CERTIFICATE_EXPIRATION_CHECK",
+    "RuleSets": [
+      "rulecriticity:high",
+      "pci",
+      "pci:4.1",
+      "acm"
+    ]
+  }
+}

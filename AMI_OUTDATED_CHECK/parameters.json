@@ -1,0 +1,11 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "CodeKey": "AMI_OUTDATED_CHECK.zip",
+    "SourceRuntime": "python3.6",
+    "RuleName": "AMI_OUTDATED_CHECK",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "OptionalParameters": "{\"WhitelistedAmis\": \" \", \"WhitelistedInstances\": \" \", \"NumberOfDays\": \"60\"}",
+    "InputParameters": "{}"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"snapshotRetentionPeriod\": \"\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}

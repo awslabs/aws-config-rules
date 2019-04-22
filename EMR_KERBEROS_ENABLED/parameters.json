@@ -1,0 +1,16 @@
+{
+  "Parameters": {
+    "RuleName": "EMR_KERBEROS_ENABLED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "EMR_KERBEROS_ENABLED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"TicketLifetimeInHours\":\"\",\"Realm\":\"\",\"Domain\":\"\",\"AdminServer\":\"\",\"KdcServer\":\"\"}", 
+    "SourcePeriodic": "TwentyFour_Hours",
+    "RuleSets": [
+      "rulecriticity:high",
+      "pci",
+      "pci:7.1",
+      "emr"
+    ]
+  }
+}

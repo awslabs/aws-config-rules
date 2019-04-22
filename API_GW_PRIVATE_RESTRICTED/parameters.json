@@ -1,0 +1,9 @@
+{
+  "Parameters": {
+    "InputParameters": "{}", 
+    "CodeKey": "final-code.zip", 
+    "SourceRuntime": "python3.6", 
+    "SourcePeriodic": "One_Hour", 
+    "RuleName": "API_GW_PRIVATE_RESTRICTED"
+  }
+}

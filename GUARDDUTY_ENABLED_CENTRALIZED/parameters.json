@@ -1,0 +1,19 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "GUARDDUTY_ENABLED_CENTRALIZED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"CentralMonitoringAccount\":\"\"}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "GUARDDUTY_ENABLED_CENTRALIZED",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:10.6",
+      "guardduty"
+    ]
+  }
+}

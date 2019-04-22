@@ -1,0 +1,11 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "IAM_POLICY_REQUIRED.zip", 
+    "SourceRuntime": "python3.6", 
+    "RuleName": "IAM_POLICY_REQUIRED",
+    "SourceEvents": "AWS::IAM::Role,AWS::IAM::User", 
+    "OptionalParameters": "{\"exceptionList\": \"\"}",
+    "InputParameters": "{\"policyArns\": \"\"}"
+  }
+}
