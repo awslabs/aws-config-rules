@@ -57,7 +57,7 @@ class SampleTest(unittest.TestCase):
     }
 
 
-    def scenario_1_test_invalid_parameter_value(self):
+    def test_scenario_1_invalid_parameter_value(self):
         invoking_event = generate_invoking_event(self.valid_dlqarn)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_invalid_parameter), {})
@@ -66,7 +66,7 @@ class SampleTest(unittest.TestCase):
                                        'valid SQS or SNS ARNs\'s')
 
 
-    def scenario_3_test_empty_parameter_value(self):
+    def test_scenario_3_empty_parameter_value(self):
         invoking_event = generate_invoking_event(self.valid_dlqarn)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_empty_parameter_value), {})
@@ -75,7 +75,7 @@ class SampleTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected)
 
 
-    def scenario_2_test_no_dlq_configured(self):
+    def test_scenario_2_no_dlq_configured(self):
         invoking_event = generate_invoking_event(self.no_dql_configured)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
@@ -85,7 +85,7 @@ class SampleTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected)
 
 
-    def scenario_4_test_no_dlq_match(self):
+    def test_scenario_4_no_dlq_match(self):
         invoking_event = generate_invoking_event(self.valid_dlqarn)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_parameter_mismatch), {})
@@ -95,7 +95,7 @@ class SampleTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected)
 
 
-    def scenario_5_test_dlq_match(self):
+    def test_scenario_5_dlq_match(self):
         invoking_event = generate_invoking_event(self.valid_dlqarn)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
