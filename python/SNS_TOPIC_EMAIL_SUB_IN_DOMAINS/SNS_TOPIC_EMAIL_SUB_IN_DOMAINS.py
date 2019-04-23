@@ -8,7 +8,6 @@
 # or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
-
 """
 #####################################
 ##           Gherkin               ##
@@ -64,9 +63,9 @@ Scenarios:
 import json
 import sys
 import datetime
+import re
 import boto3
 import botocore
-import re
 
 try:
     import liblogging
@@ -93,40 +92,40 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     sns_client = get_client('sns', event)
     evaluations = []
-    topic=''
+    topic = ''
     subscription_endpoints = get_all_subscriptions(sns_client)
     if not subscription_endpoints:
         return None
     for endpoint in subscription_endpoints:
         domain_extract = subscription_endpoints[endpoint].split('@')
-        topic=endpoint+ ':' + subscription_endpoints[endpoint]
+        topic = endpoint+ ':' + subscription_endpoints[endpoint]
         if  domain_extract[1] in valid_rule_parameters['domainNames']:
             evaluations.append(build_evaluation(topic, 'COMPLIANT', event))
             continue
-        #if not domain_extract[1] in valid_rule_parameters['domainNames']:
-        evaluations.append(build_evaluation(topic, 'NON_COMPLIANT', event,DEFAULT_RESOURCE_TYPE,annotation='Endpoint domain is not in the provided input domain names.'))
+        evaluations.append(build_evaluation(topic, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='Endpoint domain is not in the provided input domain names.'))
     return evaluations
+
 def get_all_subscriptions(client):
-    valid_protocols = ['email','email-json']
+    valid_protocols = ['email', 'email-json']
     dict_to_return = {}
     subscriptions_list = client.list_subscriptions()
     while True:
         for subscription in subscriptions_list['Subscriptions']:
             if subscription['Protocol'] in valid_protocols:
-                dict_to_return[subscription['TopicArn']]=subscription['Endpoint']
+                dict_to_return[subscription['TopicArn']] = subscription['Endpoint']
         if 'NextToken' not in subscriptions_list:
             return dict_to_return
-        subscriptions_list = client.list_subscriptions(NextToken=subscriptions_list['NextToken'])   
+        subscriptions_list = client.list_subscriptions(NextToken=subscriptions_list['NextToken'])
 
 def evaluate_parameters(rule_parameters):
     if not rule_parameters['domainNames']:
         raise ValueError('Atleast one domain name is required as input')
-    domain_names = rule_parameters['domainNames'].replace(" ","")
+    domain_names = rule_parameters['domainNames'].replace(" ", "")
     domain_names_list = domain_names.split(',')
     for domain in domain_names_list:
         if not re.match(r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$', domain):
             raise ValueError('{} not a valid domain name'.format(domain))
-        if len(domain) > 254:
+        if len(domain) > 255:
             raise ValueError('Domain name is greater than 255 characters')
     rule_parameters['domainNames'] = domain_names_list
     valid_rule_parameters = rule_parameters
@@ -153,11 +152,10 @@ def build_parameters_value_error_response(ex):
 # either in the same AWS account or cross-account.
 def get_client(service, event):
     """Return the service boto client. It should be used instead of directly calling the client.
-
     Keyword arguments:
     service -- the service name used for calling the boto.client()
-    event -- the event variable given in the lambda handler
-    """
+    event -- the event variable given in the lambda handler."""
+
     if not ASSUME_ROLE_MODE:
         return boto3.client(service)
     credentials = get_assume_role_credentials(event["executionRoleArn"])
@@ -258,7 +256,7 @@ def get_configuration_item(invoking_event):
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invoking_event['messageType']):
+    if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
@@ -273,7 +271,7 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
+    return status in ('OK', 'ResourceDiscovered') and not event_left_scope
 
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')
