@@ -1,13 +1,44 @@
-# Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may
-# not use this file except in compliance with the License. A copy of the License is located at
-#
-#        http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
-# the specific language governing permissions and limitations under the License.
+'''
+
+#####################################
+##           Gherkin               ##
+#####################################
+
+Rule Name: LAMBDA_DLQ_CHECK
+
+Description: Checks whether the AWS Lambda function is configured for a Dead Letter Queue(DLQ). The rule is NON_COMPLIANT if the Lambda function is not configured for DLQ. Trigger: Periodic
+
+Reports on:
+  AWS::Lambda::Function
+
+Rule Parameters:
+  dlqArn
+  (Optional) Comma-separated list of SQS and SNS ARN that Lambda function must be configured for as a DLQ
+
+Scenarios:
+  Scenario: 1
+     Given: The dlqArn rule parameter is not valid (not a valid SNS/SQS ARN)
+      Then: Return Error
+  Scenario: 2
+     Given: No Lambda functions are present
+      Then: Return NOT_APPLICABLE
+  Scenario: 3
+     Given: Lambda function is not configured for DLQ i.e. DeadLetterConfig is not present
+      Then: Return NON_COMPLIANT
+  Scenario: 4
+     Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
+       And: The rule parameter dlqArn is empty
+      Then: Return COMPLIANT
+  Scenario: 5
+      Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
+        And: No ARN in the dlqArn rule parameter doesn't match with the DeadLetterConfig ARN
+       Then: Return NON_COMPLIANT
+  Scenario: 6
+      Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
+        And: One of the ARN in the dlqArn rule parameter matches with the DeadLetterConfig ARN
+       Then: Return COMPLIANT
+
+'''
 
 import json
 import sys
@@ -24,7 +55,7 @@ except ImportError:
 # Parameters #
 ##############
 
-# Define the default resource to report to Config Rules
+# Define the default resource to reportpylint to Config Rules
 DEFAULT_RESOURCE_TYPE = 'AWS::Lambda::Function'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
@@ -39,30 +70,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
-
-    ###############################
-
-    # Add your custom logic here. #
-    ###############################
-
     if 'deadLetterConfig' not in configuration_item['configuration']:
         return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT',
                                                  annotation='This Lambda function is not configured for DLQ')
@@ -74,8 +81,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         if configuration_item['configuration']['deadLetterConfig'] in valid_rule_parameters:
             return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
 
-        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT',
-                                                 annotation='This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter.')
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT',
+                                             annotation='This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter.')
 
 
 def evaluate_parameters(rule_parameters):
@@ -104,12 +111,6 @@ def evaluate_parameters(rule_parameters):
 
     return dlqarn_list
 
-
-####################
-# Helper Functions #
-####################
-
-# Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
     """Return an error dictionary when the evaluate_parameters() raises a ValueError.
 
