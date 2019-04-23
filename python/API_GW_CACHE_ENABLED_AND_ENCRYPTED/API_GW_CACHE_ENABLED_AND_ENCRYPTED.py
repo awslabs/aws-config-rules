@@ -67,14 +67,14 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     stage = configuration_item['configuration']
     # Scenario 1: If caching is not enabled for the stage, return NON_COMPLIANT
     if not stage['cacheClusterEnabled']:
-        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'Cache is not enabled.')
+        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'This Amazon API Gateway Stage is not configured for cache.')
     for method in stage['methodSettings']:
         # Scenario 1: If caching is enabled for the stage, check if it is enabled for all methods
         if not stage['methodSettings'][method]['cachingEnabled']:
-            return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'Cache is not enabled.')
+            return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'This Amazon API Gateway Stage is not configured for cache.')
         # Scenario 2: If caching is enabled for the stage, check if it is encrypted for all methods
         if not stage['methodSettings'][method]['cacheDataEncrypted']:
-            return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'Cache is not encrypted.')
+            return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'The cache for this Amazon API Gateway Stage is not encrypted.')
     # Scenario 3: If caching is enabled amd encrypted for the stage and all methods, return COMPLIANT
     return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
 
