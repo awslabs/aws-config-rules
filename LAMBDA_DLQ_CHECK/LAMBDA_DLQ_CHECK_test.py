@@ -63,7 +63,7 @@ class SampleTest(unittest.TestCase):
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_invalid_parameter), {})
         assert_customer_error_response(self, response, 'InvalidParameterValueException',
                                        'Invalid value for the parameter "dlqArn", Expected Comma-separated list of '
-                                       'valid SQS or SNS ARNs\'s')
+                                       'valid SQS or SNS ARN\'s')
 
 
     def test_scenario_3_empty_parameter_value(self):
