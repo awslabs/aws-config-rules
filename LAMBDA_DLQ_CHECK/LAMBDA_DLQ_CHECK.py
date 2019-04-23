@@ -23,20 +23,17 @@ Scenarios:
      Given: The dlqArn rule parameter is not valid (not a valid SNS/SQS ARN)
       Then: Return Error
   Scenario: 2
-     Given: No Lambda functions are present
-      Then: Return NOT_APPLICABLE
-  Scenario: 3
      Given: Lambda function is not configured for DLQ i.e. DeadLetterConfig is not present
       Then: Return NON_COMPLIANT with Annotation "This Lambda function is not configured for DLQ"
-  Scenario: 4
+  Scenario: 3
      Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
        And: The rule parameter dlqArn is empty
       Then: Return COMPLIANT
-  Scenario: 5
+  Scenario: 4
       Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
         And: No ARN in the dlqArn rule parameter doesn't match with the DeadLetterConfig ARN
        Then: Return NON_COMPLIANT with Annotation "This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter"
-  Scenario: 6
+  Scenario: 5
       Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
         And: One of the ARN in the dlqArn rule parameter matches with the DeadLetterConfig ARN
        Then: Return COMPLIANT
