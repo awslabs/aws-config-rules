@@ -4,7 +4,6 @@ try:
     from unittest.mock import MagicMock
 except ImportError:
     from mock import MagicMock
-import botocore
 
 ##############
 # Parameters #
@@ -22,6 +21,7 @@ STS_CLIENT_MOCK = MagicMock()
 SNS_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
+    @staticmethod
     def client(client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
@@ -79,7 +79,7 @@ class SampleTest(unittest.TestCase):
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:sns:us-east-1:123456789012:vrvamshi47email:abc@gmail.com', 'AWS::SNS::Topic', annotation='Endpoint domain is not in the provided input domain names.'))
-        assert_successful_evaluation(self, response, resp_expected, 1)   
+        assert_successful_evaluation(self, response, resp_expected, 1)
 
     def test_scenario5(self):
         SNS_CLIENT_MOCK.list_subscriptions = MagicMock(return_value={"Subscriptions":[{
@@ -181,25 +181,4 @@ def sts_mock():
             "SessionToken": "string"}}
     STS_CLIENT_MOCK.reset_mock(return_value=True)
     STS_CLIENT_MOCK.assume_role = MagicMock(return_value=assume_role_response)
-
-##################
-# Common Testing #
-##################
-
-# class TestStsErrors(unittest.TestCase):
-
-    # def test_sts_unknown_error(self):
-    #     RULE.ASSUME_ROLE_MODE = True
-    #     STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
-    #         {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
-    #     response = RULE.lambda_handler(build_lambda_configurationchange_event('{}',), {})
-    #     assert_customer_error_response(
-    #         self, response, 'InternalError', 'InternalError')
-
-    # def test_sts_access_denied(self):
-    #     RULE.ASSUME_ROLE_MODE = True
-    #     STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
-    #         {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
-    #     response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
-    #     assert_customer_error_response(
-    #         self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')
+	
