@@ -76,14 +76,11 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     if 'deadLetterConfig' not in configuration_item['configuration']:
         return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT',
                                                  annotation='This Lambda function is not configured for DLQ')
-
     if 'deadLetterConfig' in configuration_item['configuration']:
         if not valid_rule_parameters:
             return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-
         if configuration_item['configuration']['deadLetterConfig'] in valid_rule_parameters:
             return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-
     return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT',
                                              annotation='This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter.')
 
@@ -100,18 +97,13 @@ def evaluate_parameters(rule_parameters):
 
     if "dlqArn" not in rule_parameters:
         return {}
-
-    # split the parameter by delimiter "," and remove whitespace, then validate the dlqArn
     dlqarn_list = [dlqarn.strip() for dlqarn in rule_parameters['dlqArn'].split(',')]
-
-    # to remove the empty item from the list (caused due trailing comma ',' in the parameter)
     dlqarn_list = list(filter(None, dlqarn_list))
 
     for arn in dlqarn_list:
         if not (arn.startswith("arn:aws:sns:") or arn.startswith("arn:aws:sqs:")):
             raise ValueError(
                 'Invalid value for the parameter "dlqArn", Expected Comma-separated list of valid SQS or SNS ARN\'s')
-
     return dlqarn_list
 
 def build_parameters_value_error_response(ex):
