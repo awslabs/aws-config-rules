@@ -27,7 +27,7 @@ Scenarios:
       Then: Return NOT_APPLICABLE
   Scenario: 3
      Given: Lambda function is not configured for DLQ i.e. DeadLetterConfig is not present
-      Then: Return NON_COMPLIANT
+      Then: Return NON_COMPLIANT with Annotation "This Lambda function is not configured for DLQ"
   Scenario: 4
      Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
        And: The rule parameter dlqArn is empty
@@ -35,7 +35,7 @@ Scenarios:
   Scenario: 5
       Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
         And: No ARN in the dlqArn rule parameter doesn't match with the DeadLetterConfig ARN
-       Then: Return NON_COMPLIANT
+       Then: Return NON_COMPLIANT with Annotation "This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter"
   Scenario: 6
       Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
         And: One of the ARN in the dlqArn rule parameter matches with the DeadLetterConfig ARN
@@ -109,7 +109,7 @@ def evaluate_parameters(rule_parameters):
 
     for arn in dlqarn_list:
         if not (arn.startswith("arn:aws:sns:") or arn.startswith("arn:aws:sqs:")):
-            raise ValueError(ls
+            raise ValueError(
                 'Invalid value for the parameter "dlqArn", Expected Comma-separated list of valid SQS or SNS ARN\'s')
 
     return dlqarn_list
