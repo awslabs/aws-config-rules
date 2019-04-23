@@ -107,7 +107,7 @@ def evaluate_parameters(rule_parameters):
     for arn in dlqarn_list:
         if not (arn.startswith("arn:aws:sns:") or arn.startswith("arn:aws:sqs:")):
             raise ValueError(
-                'Invalid value for the parameter "dlqArn", Expected Comma-separated list of valid SQS or SNS ARNs\'s')
+                'Invalid value for the parameter "dlqArn", Expected Comma-separated list of valid SQS or SNS ARN\'s')
 
     return dlqarn_list
 
