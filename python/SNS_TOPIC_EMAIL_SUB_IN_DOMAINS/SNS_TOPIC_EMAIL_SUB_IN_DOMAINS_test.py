@@ -3,10 +3,8 @@ import unittest
 try:
     from unittest.mock import MagicMock
 except ImportError:
-    import mock
     from mock import MagicMock
 import botocore
-from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -24,15 +22,14 @@ STS_CLIENT_MOCK = MagicMock()
 SNS_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
-    def client(self, client_name, *args, **kwargs):
+    def client(client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        elif client_name == 'sts':
+        if client_name == 'sts':
             return STS_CLIENT_MOCK
-        elif client_name == 'sns':
+        if client_name == 'sns':
             return SNS_CLIENT_MOCK
-        else:
-            raise Exception("Attempting to create an unknown client")
+        raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
@@ -45,9 +42,6 @@ class SampleTest(unittest.TestCase):
 
     def setUp(self):
         pass
-
-    def test_sample(self):
-        self.assertTrue(True)
 
     def test_scenario1(self):
         SNS_CLIENT_MOCK.list_subscriptions = MagicMock(return_value={"Subscriptions":[]})
@@ -74,33 +68,32 @@ class SampleTest(unittest.TestCase):
 
     def test_scenario4(self):
         SNS_CLIENT_MOCK.list_subscriptions = MagicMock(return_value={"Subscriptions":[{
-            "Owner": "003523263834",
-            "Endpoint": "vrvamshi47@gmail.com",
+            "Owner": "123456789012",
+            "Endpoint": "abc@gmail.com",
             "Protocol": "email",
-            "TopicArn": "arn:aws:sns:us-east-1:003523263834:vrvamshi47email",
-            "SubscriptionArn": "arn:aws:sns:us-east-1:003523263834:vrvamshi47email:2c87e66f-b659-48ed-9d3b-84f65a5510cc"
+            "TopicArn": "arn:aws:sns:us-east-1:123456789012:vrvamshi47email",
+            "SubscriptionArn": "arn:aws:sns:us-east-1:123456789012:vrvamshi47email:2c87e66f-b659-48ed-9d3b-84f65a5510cc"
         }]})
         rule_param = "{\"domainNames\":\"gmail1.com,notyourwish.net,merachelega.org\"}"
         lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:sns:us-east-1:003523263834:vrvamshi47email:vrvamshi47@gmail.com', 'AWS::SNS::Topic',annotation='Endpoint domain is not in the provided input domain names.'))
-        assert_successful_evaluation(self, response, resp_expected, 1)
-        
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:sns:us-east-1:123456789012:vrvamshi47email:abc@gmail.com', 'AWS::SNS::Topic', annotation='Endpoint domain is not in the provided input domain names.'))
+        assert_successful_evaluation(self, response, resp_expected, 1)   
 
     def test_scenario5(self):
         SNS_CLIENT_MOCK.list_subscriptions = MagicMock(return_value={"Subscriptions":[{
-            "Owner": "003523263834",
-            "Endpoint": "vrvamshi47@gmail.com",
+            "Owner": "123456789012",
+            "Endpoint": "abc@gmail.com",
             "Protocol": "email",
-            "TopicArn": "arn:aws:sns:us-east-1:003523263834:vrvamshi47email",
-            "SubscriptionArn": "arn:aws:sns:us-east-1:003523263834:vrvamshi47email:2c87e66f-b659-48ed-9d3b-84f65a5510cc"
+            "TopicArn": "arn:aws:sns:us-east-1:123456789012:vrvamshi47email",
+            "SubscriptionArn": "arn:aws:sns:us-east-1:123456789012:vrvamshi47email:2c87e66f-b659-48ed-9d3b-84f65a5510cc"
         }]})
         rule_param = "{\"domainNames\":\"gmail.com,notyourwish.net,merachelega.org\"}"
         lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'arn:aws:sns:us-east-1:003523263834:vrvamshi47email:vrvamshi47@gmail.com', 'AWS::SNS::Topic'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'arn:aws:sns:us-east-1:123456789012:vrvamshi47email:abc@gmail.com', 'AWS::SNS::Topic'))
         assert_successful_evaluation(self, response, resp_expected, 1)
 
 ####################
