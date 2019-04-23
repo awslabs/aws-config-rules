@@ -106,13 +106,13 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         evaluations.append(build_evaluation(topic, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='Endpoint domain is not in the provided input domain names.'))
     return evaluations
 def get_all_subscriptions(client):
-    valid_protocols = ['email','email-json']
+    valid_protocols = ['email', 'email-json']
     dict_to_return = {}
     subscriptions_list = client.list_subscriptions()
     while True:
         for subscription in subscriptions_list['Subscriptions']:
             if subscription['Protocol'] in valid_protocols:
-                dict_to_return[subscription['TopicArn']]=subscription['Endpoint']
+                dict_to_return[subscription['TopicArn']] = subscription['Endpoint']
         if 'NextToken' not in subscriptions_list:
             return dict_to_return
         subscriptions_list = client.list_subscriptions(NextToken=subscriptions_list['NextToken'])
@@ -257,7 +257,7 @@ def get_configuration_item(invoking_event):
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invoking_event['messageType']):
+    if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
