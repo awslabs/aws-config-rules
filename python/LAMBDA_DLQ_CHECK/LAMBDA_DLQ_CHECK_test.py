@@ -81,7 +81,7 @@ class SampleTest(unittest.TestCase):
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012',
-                                                     annotation= 'This Lambda function is not configured for DLQ'))
+                                                     annotation='This Lambda function is not configured for DLQ'))
         assert_successful_evaluation(self, response, resp_expected)
 
 
@@ -91,7 +91,7 @@ class SampleTest(unittest.TestCase):
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_parameter_mismatch), {})
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012',
-                                                     annotation= 'This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter.'))
+                                                     annotation='This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter.'))
         assert_successful_evaluation(self, response, resp_expected)
 
 
