@@ -49,6 +49,7 @@ class ComplianceTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_scenario_2_is_compliant(self):
+        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
         ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.list_domains_scenario_1)
         ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.describe_domain_scenario_1)
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
@@ -59,6 +60,7 @@ class ComplianceTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario_3_is_non_compliant(self):
+        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
         ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.list_domains_scenario_2)
         ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.describe_domain_scenario_2)
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
@@ -69,6 +71,7 @@ class ComplianceTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario_4_multiple_domains(self):
+        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
         ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.list_domains_scenario_3)
         ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.describe_domain_scenario_3, self.describe_domain_scenario_4])
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
