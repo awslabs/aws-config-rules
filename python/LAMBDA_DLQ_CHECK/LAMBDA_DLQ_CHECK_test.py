@@ -70,38 +70,28 @@ class SampleTest(unittest.TestCase):
         invoking_event = generate_invoking_event(self.valid_dlqarn)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_empty_parameter_value), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', '123456789012'))
-        assert_successful_evaluation(self, response, resp_expected)
+        assert_successful_evaluation(self, response, [build_expected_response('COMPLIANT', '123456789012')])
 
 
     def test_scenario_2_no_dlq_configured(self):
         invoking_event = generate_invoking_event(self.no_dql_configured)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012',
-                                                     annotation='This Lambda function is not configured for DLQ'))
-        assert_successful_evaluation(self, response, resp_expected)
+        assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', '123456789012', annotation='This Lambda function is not configured for DLQ')])
 
 
     def test_scenario_4_no_dlq_match(self):
         invoking_event = generate_invoking_event(self.valid_dlqarn)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_parameter_mismatch), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012',
-                                                     annotation='This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter.'))
-        assert_successful_evaluation(self, response, resp_expected)
+        assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', '123456789012',annotation='This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter.')])
 
 
     def test_scenario_5_dlq_match(self):
         invoking_event = generate_invoking_event(self.valid_dlqarn)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', '123456789012'))
-        assert_successful_evaluation(self, response, resp_expected)
+        assert_successful_evaluation(self, response, [build_expected_response('COMPLIANT', '123456789012')])
 
 
 ####################
