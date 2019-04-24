@@ -84,7 +84,7 @@ class SampleTest(unittest.TestCase):
         invoking_event = generate_invoking_event(self.valid_dlqarn)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_parameter_mismatch), {})
-        assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', '123456789012',annotation='This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter.')])
+        assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', '123456789012', annotation='This Lambda Function is not associated with the DLQ specified in the dlqArn input parameter.')])
 
 
     def test_scenario_5_dlq_match(self):
