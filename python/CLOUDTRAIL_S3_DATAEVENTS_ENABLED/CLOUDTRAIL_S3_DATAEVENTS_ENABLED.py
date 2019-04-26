@@ -111,8 +111,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                 if isinstance(data_resource_values, bool):
                     evaluations.append(build_evaluation(event['accountId'], 'COMPLIANT', event, DEFAULT_RESOURCE_TYPE))
                     return evaluations
-        #evaluations.append(build_evaluation(event['accountId'], 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, 'No cloudtrail for "arn:aws:s3"'))
-        #return evaluations
 
     #Rule parameter S3BucketName is specified
     else:
