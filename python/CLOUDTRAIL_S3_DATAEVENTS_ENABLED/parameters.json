@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.6", 
     "SourcePeriodic": "TwentyFour_Hours", 
     "RuleName": "CLOUDTRAIL_S3_DATAEVENTS_ENABLED", 
-    "OptionalParameters": "{}", 
+    "OptionalParameters": "{\"S3BucketName\": \"\"}", 
     "InputParameters": "{}"
   }, 
   "Tags": "[]"
