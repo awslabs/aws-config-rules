@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "S3_BUCKET_NAMING_CONVENTION",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "S3_BUCKET_NAMING_CONVENTION.zip",
+    "InputParameters": "{\"regexPattern\":\".*test.*\"}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::S3::Bucket"
+  },
+  "Tags": "[]"
+}
