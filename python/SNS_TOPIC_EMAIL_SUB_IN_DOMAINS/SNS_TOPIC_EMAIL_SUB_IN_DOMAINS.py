@@ -94,18 +94,19 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     sns_client = get_client('sns', event)
     evaluations = []
     topic = ''
-    subscription_endpoints = get_all_subscriptions(sns_client)
+    subscription_endpoints = get_all_email_subscriptions(sns_client)
     if not subscription_endpoints:
         return None
     for endpoint in subscription_endpoints:
         domain_extract = subscription_endpoints[endpoint].split('@')
-        topic = endpoint+ ':' + subscription_endpoints[endpoint]
+        topic = endpoint + ':' + subscription_endpoints[endpoint]
         if  domain_extract[1] in valid_rule_parameters['domainNames']:
             evaluations.append(build_evaluation(topic, 'COMPLIANT', event))
             continue
         evaluations.append(build_evaluation(topic, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='Endpoint domain is not in the provided input domain names.'))
     return evaluations
-def get_all_subscriptions(client):
+
+def get_all_email_subscriptions(client):
     valid_protocols = ['email', 'email-json']
     dict_to_return = {}
     subscriptions_list = client.list_subscriptions()
@@ -119,18 +120,17 @@ def get_all_subscriptions(client):
 
 def evaluate_parameters(rule_parameters):
     if not rule_parameters['domainNames']:
-        raise ValueError('Atleast one domain name is required as input')
+        raise ValueError('Atleast one domain name is required as input parameter.')
     domain_names = rule_parameters['domainNames'].replace(" ", "")
     domain_names_list = domain_names.split(',')
     for domain in domain_names_list:
         if not re.match(r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$', domain):
-            raise ValueError('{} not a valid domain name'.format(domain))
+            raise ValueError('{} not a valid domain name.'.format(domain))
         if len(domain) > 254:
-            raise ValueError('Domain name is greater than 255 characters')
+            raise ValueError('Domain name is greater than 255 characters.')
     rule_parameters['domainNames'] = domain_names_list
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
-
 
 ####################
 # Helper Functions #
