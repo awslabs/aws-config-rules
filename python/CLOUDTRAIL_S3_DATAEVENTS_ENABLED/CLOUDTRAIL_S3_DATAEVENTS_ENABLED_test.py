@@ -40,7 +40,7 @@ S3_DATA_RESOURCE_TYPE = 'AWS::S3::Object'
 class ComplianceTest(unittest.TestCase):
 
     rule_parameter_valid = '{"S3BucketName":"test, test2, test3"}'
-    trail_list = {'trailList':[{"Name":"trail1", "HasCustomEventSelectors": True}, {"Name":"trail2", "HasCustomEventSelectors": True}, {"Name":"trail3", "HasCustomEventSelectors": False}]}
+    trail_list = {'trailList':[{"Name":"trail1", "HasCustomEventSelectors": True, "TrailARN": "arn:aws:cloudtrail:us-east-1:123456789012:trail/test"}, {"Name":"trail2", "HasCustomEventSelectors": True, "TrailARN": "arn:aws:cloudtrail:us-east-1:123456789012:trail/test"}, {"Name":"trail3", "HasCustomEventSelectors": False, "TrailARN": "arn:aws:cloudtrail:us-east-1:123456789012:trail/test"}]}
 
     #Gherkin scenario 1: Invalid rule parameter name
     def test_invalid_rule_parameter_name(self):
