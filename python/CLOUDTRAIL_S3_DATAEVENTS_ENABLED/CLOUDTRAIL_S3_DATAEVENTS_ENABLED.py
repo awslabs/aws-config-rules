@@ -108,7 +108,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             if trail['HasCustomEventSelectors']:
                 #example arn: arn:aws:cloudtrail:us-east-1:123456789012:trail/test
                 region = trail['TrailARN'][19:].split(':')[0]
-                ct_regional_client = boto3.client('cloudtrail', region_name=region)                
+                ct_regional_client = boto3.client('cloudtrail', region_name=region)
                 event_selector_output = ct_regional_client.get_event_selectors(TrailName=trail['Name'])['EventSelectors']
                 data_resource_values = get_data_resource_s3_values(event_selector_output)
                 if isinstance(data_resource_values, bool):
@@ -121,7 +121,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             if trail['HasCustomEventSelectors']:
                 #example arn: arn:aws:cloudtrail:us-east-1:123456789012:trail/test
                 region = trail['TrailARN'][19:].split(':')[0]
-                ct_regional_client = boto3.client('cloudtrail', region_name=region)                
+                ct_regional_client = boto3.client('cloudtrail', region_name=region)
                 event_selector_output = ct_regional_client.get_event_selectors(TrailName=trail['Name'])['EventSelectors']
                 data_resource_values = get_data_resource_s3_values(event_selector_output)
                 #if logging is enabled for 'arn:aws:s3', return COMPLIANT
