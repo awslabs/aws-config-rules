@@ -43,7 +43,6 @@ Scenarios:
     And: The "State" key value is "Available"
    Then: Return COMPLIANT on this VPC
 '''
-import re
 import json
 import sys
 import datetime
@@ -73,12 +72,46 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 
+def get_vpcendpoints(vpc_id, event):
+    vpc_counter = 0
+    end_result = {}
+    #ec2_client = boto3.client('ec2')
+    ec2_client = get_client('ec2', event)
+    compliance = 'NON_COMPLIANT'
+    annotate = 'There are no Amazon S3 VPC endpoints present in '+ vpc_id+'.'
+    response = ec2_client.describe_vpc_endpoints(Filters=[
+                {
+                    'Name':'vpc-id',
+                    'Values':[vpc_id]
+                }])
+    for vpce in response['VpcEndpoints']:
+        endpoint_name = vpce['ServiceName']
+        endpoint_state = vpce['State']
+        if is_s3endpoint(endpoint_name):
+            annotate = 'The Amazon S3 VPC endpoint is not in Available state '+vpc_id+'.'
+            if is_available(endpoint_state):
+                vpc_counter += 1
+                annotate = None
+                compliance = 'COMPLIANT'
+    end_result['%s' %(vpc_id)] = [vpc_counter, annotate, compliance]
+    return end_result
+
+
+def is_s3endpoint(endpointname):
+    if 's3' not in endpointname:
+        return False
+    return True
+
+def is_available(endpointstate):
+    if endpointstate == 'available':
+        return True
+    return False
+
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     vpc_list = []
     evaluations = []
-    account_id = event['accountId']
     ec2_client = get_client('ec2', event)
-    regex_pattern = r'com\.amazonaws\.\S*s3'
+    account_id = event['accountId']
     vpc_response = ec2_client.describe_vpcs()
 
     try:
@@ -87,33 +120,13 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             evaluations.append(build_evaluation(account_id, 'NOT_APPLICABLE', event, annotation=annotate))
         for vpc in vpc_response['Vpcs']:
             vpc_list.append(vpc['VpcId'])
-        for vpc_id in vpc_list:
-            endpoint_response = ec2_client.describe_vpc_endpoints(Filters=[
-                {
-                    'Name':'vpc-id',
-                    'Values':[vpc_id]
-                }
-            ])
-            if not endpoint_response['VpcEndpoints']:
-                annonate = 'There are no Amazon S3 endpoints present in '+ vpc_id+'.'
-                evaluations.append(build_evaluation(vpc_id, 'NON_COMPLIANT', event, annotation=annonate))
-            for endpoint in endpoint_response['VpcEndpoints']:
-                endpoint_name = endpoint['ServiceName']
-                endpoint_state = endpoint['State']
-                pattern_match = re.search(regex_pattern, endpoint_name)
-                if pattern_match and (endpoint_state == 'available'):
-                    annonate = 'Amazon S3 endpoint is present for this VPC '+ vpc_id+'.'
-                    evaluations.append(build_evaluation(vpc_id, 'COMPLIANT', event))
-                if pattern_match and (endpoint_state != 'available'):
-                    annonate = 'The Amazon S3 VPC endpoint is not in Available state '+vpc_id+'.'
-                    evaluations.append(build_evaluation(vpc_id, 'NON_COMPLIANT', event, annotation=annonate))
-                if pattern_match is None:
-                    annonate = 'There are no Amazon S3 VPC endpoints present in '+ vpc_id+'.'
-                    evaluations.append(build_evaluation(vpc_id, 'NON_COMPLIANT', event, annotation=annonate))
+        for vpc in vpc_list:
+            evaluation_payload = get_vpcendpoints(vpc, event)
+            evaluations.append(build_evaluation(vpc, evaluation_payload[vpc][2], event, annotation=evaluation_payload[vpc][1]))
     except Exception as exception:
         return build_internal_error_response(exception, internal_error_details=None)
-    print (evaluations)
     return evaluations
+
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters

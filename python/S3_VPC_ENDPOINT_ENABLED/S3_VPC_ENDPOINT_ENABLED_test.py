@@ -68,7 +68,7 @@ class ComplianceTest(unittest.TestCase):
         EC2_CLIENT_MOCK.describe_vpc_endpoints = MagicMock(return_value=describevpcendpoints_return)
         resp_expected = []
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'vpc-1234567', compliance_resource_type='AWS::EC2::VPC', annotation='There are no Amazon S3 endpoints present in '+ vpc_id+'.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'vpc-1234567', compliance_resource_type='AWS::EC2::VPC', annotation='There are no Amazon S3 VPC endpoints present in '+ vpc_id+'.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Unit test for VPC is present and there are no S3 endpoint present for that VPC -- GHERKIN Scenario 2
@@ -181,6 +181,43 @@ class ComplianceTest(unittest.TestCase):
                     "NetworkInterfaceIds": [],
                     "DnsEntries": [],
                     "CreationTimestamp": "2019-03-29T18:25:47.000Z"
+                },
+                {
+                    "VpcEndpointId": "vpce-03ff48d1f2709aa88",
+                    "VpcEndpointType": "Interface",
+                    "VpcId": "vpc-0056487b",
+                    "ServiceName": "com.amazonaws.us-east-1.secretsmanager",
+                    "State": "available",
+                    "PolicyDocument": "{\n  \"Statement\": [\n    {\n      \"Action\": \"*\", \n      \"Effect\": \"Allow\", \n      \"Principal\": \"*\", \n      \"Resource\": \"*\"\n    }\n  ]\n}",
+                    "RouteTableIds": [],
+                    "SubnetIds": [
+                        "subnet-711b7d3b"
+                    ],
+                    "Groups": [
+                        {
+                            "GroupId": "sg-ceee1485",
+                            "GroupName": "default"
+                        }
+                    ],
+                    "PrivateDnsEnabled": 'True',
+                    "NetworkInterfaceIds": [
+                        "eni-0d20d888cf4ecb0ef"
+                    ],
+                    "DnsEntries": [
+                        {
+                            "DnsName": "secretsmanager.us-east-1.amazonaws.com",
+                            "HostedZoneId": "ZI25M5QAN720W"
+                        },
+                        {
+                            "DnsName": "vpce-03ff48d1f2709aa88-oqdrglvo.secretsmanager.us-east-1.vpce.amazonaws.com",
+                            "HostedZoneId": "Z7HUB22UULQXV"
+                        },
+                        {
+                            "DnsName": "vpce-03ff48d1f2709aa88-oqdrglvo-us-east-1b.secretsmanager.us-east-1.vpce.amazonaws.com",
+                            "HostedZoneId": "Z7HUB22UULQXV"
+                        }
+                    ],
+                    "CreationTimestamp": "2018-08-15T14:29:07.000Z"
                 }
             ]
         }
