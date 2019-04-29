@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.6",
     "CodeKey": "LAMBDA_CONCURRENCY_CHECK.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{}",
+    "OptionalParameters": "{\"ConcurrencyLimitLow\":\"\", \"ConcurrencyLimitHigh\":\"\"}",
     "SourceEvents": "AWS::Lambda::Function"
   },
   "Tags": "[]"

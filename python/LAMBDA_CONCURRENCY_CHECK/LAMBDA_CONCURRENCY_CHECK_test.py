@@ -44,6 +44,22 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('LAMBDA_CONCURRENCY_CHECK')
 
+def create_invoking_event(concurrency=None):
+    if concurrency:
+        return '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
+                         "configurationItem": {"resourceType": "AWS::Lambda::Function",\
+                         "resourceId": "ABC",\
+                         "configurationItemCaptureTime": "2019-04-18T08:49:09.878Z",\
+                         "supplementaryConfiguration": {"Concurrency":\
+                         {"reservedConcurrentExecutions": ' + str(concurrency) + '}}, "configurationItemStatus": "OK",\
+                         "configuration": {"functionName": "ABC"}}}'
+    return '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
+                         "configurationItem": {"resourceType": "AWS::Lambda::Function",\
+                         "resourceId": "ABC",\
+                         "configurationItemCaptureTime": "2019-04-18T08:49:09.878Z",\
+                         "supplementaryConfiguration": {}, "configurationItemStatus": "OK",\
+                         "configuration": {"functionName": "ABC"}}}'
+
 class ErrorTest(unittest.TestCase):
     def test_scenario_1_invalid_parameter_value_error(self):
         invoking_event = '{"configurationItem": {"configuration": {"functionName": "ASDFGV"}}}'
@@ -70,39 +86,28 @@ class ErrorTest(unittest.TestCase):
 class CompliantResourceTest(unittest.TestCase):
 
     def test_scenario_4_concurrency_set_without_parameters_c(self):
-        invoking_event = '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
-                         "configurationItem": {"supplementaryConfiguration": {"Concurrency":\
-                         {"reservedConcurrentExecutions": 200}},"configurationItemStatus": "OK",\
-                         "configuration": {"functionName": "ABC"}}}'
+        invoking_event = create_invoking_event(200)
+        print(invoking_event)
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=None), {})
         expected_response = build_expected_response('COMPLIANT', 'ABC')
         assert_successful_evaluation(self, lambda_result, [expected_response])
 
     def test_scenario_6_concurrency_set_with_concurrencylimitlow_parameter_c(self):
-        invoking_event = '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
-                         "configurationItem": {"supplementaryConfiguration": {"Concurrency":\
-                         {"reservedConcurrentExecutions": 400}},"configurationItemStatus": "OK",\
-                         "configuration": {"functionName": "ABC"}}}'
+        invoking_event = create_invoking_event(400)
         rule_parameters = '{"ConcurrencyLimitLow": "300"}'
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         expected_response = build_expected_response('COMPLIANT', 'ABC')
         assert_successful_evaluation(self, lambda_result, [expected_response])
 
     def test_scenario_8_concurrency_set_with_concurrencylimithigh_parameter_c(self):
-        invoking_event = '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
-                         "configurationItem": {"supplementaryConfiguration": {"Concurrency":\
-                         {"reservedConcurrentExecutions": 200}},"configurationItemStatus": "OK",\
-                         "configuration": {"functionName": "ABC"}}}'
+        invoking_event = create_invoking_event(200)
         rule_parameters = '{"ConcurrencyLimitHigh": "300"}'
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         expected_response = build_expected_response('COMPLIANT', 'ABC')
         assert_successful_evaluation(self, lambda_result, [expected_response])
 
     def test_scenario_9_concurrency_set_with_concurrencylimithigh_and_concurrencylimitlow_parameters_c(self):
-        invoking_event = '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
-                         "configurationItem": {"supplementaryConfiguration": {"Concurrency":\
-                         {"reservedConcurrentExecutions": 400}},"configurationItemStatus": "OK",\
-                         "configuration": {"functionName": "ABC"}}}'
+        invoking_event = create_invoking_event(600)
         rule_parameters = '{"ConcurrencyLimitHigh": "600", "ConcurrencyLimitLow": "300"}'
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         expected_response = build_expected_response('COMPLIANT', 'ABC')
@@ -111,9 +116,7 @@ class CompliantResourceTest(unittest.TestCase):
 class NonCompliantResourceTest(unittest.TestCase):
 
     def test_scenario_3_concurrency_not_configured_nc(self):
-        invoking_event = '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
-                         "configurationItem": {"supplementaryConfiguration": {},"configurationItemStatus": "OK",\
-                         "configuration": {"functionName": "ABC"}}}'
+        invoking_event = create_invoking_event()
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=None), {})
         expected_response = build_expected_response('NON_COMPLIANT', 'ABC',
                                                     annotation='Concurrency not set for the lambda function: ABC'
@@ -121,10 +124,7 @@ class NonCompliantResourceTest(unittest.TestCase):
         assert_successful_evaluation(self, lambda_result, [expected_response])
 
     def test_scenario_5_concurrency_set_with_concurrencylimitlow_parameter_nc(self):
-        invoking_event = '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
-                         "configurationItem": {"supplementaryConfiguration": {"Concurrency":\
-                         {"reservedConcurrentExecutions": 200}},"configurationItemStatus": "OK",\
-                         "configuration": {"functionName": "ABC"}}}'
+        invoking_event = create_invoking_event(200)
         rule_parameters = '{"ConcurrencyLimitLow": "300"}'
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         expected_response = build_expected_response('NON_COMPLIANT', 'ABC',
@@ -132,10 +132,7 @@ class NonCompliantResourceTest(unittest.TestCase):
         assert_successful_evaluation(self, lambda_result, [expected_response])
 
     def test_scenario_7_concurrency_set_with_concurrencylimithigh_parameter_nc(self):
-        invoking_event = '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
-                         "configurationItem": {"supplementaryConfiguration": {"Concurrency":\
-                         {"reservedConcurrentExecutions": 400}},"configurationItemStatus": "OK",\
-                         "configuration": {"functionName": "ABC"}}}'
+        invoking_event = create_invoking_event(400)
         rule_parameters = '{"ConcurrencyLimitHigh": "300"}'
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         expected_response = build_expected_response('NON_COMPLIANT', 'ABC',
@@ -143,10 +140,7 @@ class NonCompliantResourceTest(unittest.TestCase):
         assert_successful_evaluation(self, lambda_result, [expected_response])
 
     def test_scenario_9_concurrency_set_with_concurrencylimithigh_and_concurrencylimitlow_parameters_nc(self):
-        invoking_event = '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
-                         "configurationItem": {"supplementaryConfiguration": {"Concurrency":\
-                         {"reservedConcurrentExecutions": 200}},"configurationItemStatus": "OK",\
-                         "configuration": {"functionName": "ABC"}}}'
+        invoking_event = create_invoking_event(200)
         rule_parameters = '{"ConcurrencyLimitHigh": "600", "ConcurrencyLimitLow": "300"}'
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         expected_response = build_expected_response('NON_COMPLIANT', 'ABC',
