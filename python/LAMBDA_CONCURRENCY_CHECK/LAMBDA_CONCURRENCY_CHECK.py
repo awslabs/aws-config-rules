@@ -107,8 +107,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
-    print("configuration_item: {}".format(configuration_item))
-    print("event: {}".format(event))
     function_name = configuration_item['configuration']['functionName']
     if 'Concurrency' not in configuration_item['supplementaryConfiguration']:
         return build_evaluation_from_config_item(
@@ -382,7 +380,6 @@ def lambda_handler(event, context):
 
     global AWS_CONFIG_CLIENT
 
-    #print(event)
     check_defined(event, 'event')
     invoking_event = json.loads(event['invokingEvent'])
     rule_parameters = {}
@@ -475,5 +472,4 @@ def build_error_response(internal_error_message, internal_error_details=None, cu
         'customerErrorMessage': customer_error_message,
         'customerErrorCode': customer_error_code
     }
-    print(error_response)
     return error_response
