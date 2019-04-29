@@ -315,7 +315,6 @@ def is_applicable(configuration_item, event):
         check_defined(event, 'event')
     except:
         return True
-    print("configuration_item: {}".format(configuration_item))
     status = configuration_item['configurationItemStatus']
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':

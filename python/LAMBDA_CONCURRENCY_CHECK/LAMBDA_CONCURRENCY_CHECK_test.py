@@ -87,7 +87,6 @@ class CompliantResourceTest(unittest.TestCase):
 
     def test_scenario_4_concurrency_set_without_parameters_c(self):
         invoking_event = create_invoking_event(200)
-        print(invoking_event)
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=None), {})
         expected_response = build_expected_response('COMPLIANT', 'ABC')
         assert_successful_evaluation(self, lambda_result, [expected_response])
