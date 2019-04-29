@@ -120,7 +120,7 @@ def get_all_email_subscriptions(client):
 
 def evaluate_parameters(rule_parameters):
     if not rule_parameters['domainNames']:
-        raise ValueError('Atleast one domain name is required as input parameter.')
+        raise ValueError('At least one domain name is required as input parameter.')
     domain_names = rule_parameters['domainNames'].replace(" ", "")
     domain_names_list = domain_names.split(',')
     for domain in domain_names_list:
