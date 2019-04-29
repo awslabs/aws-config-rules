@@ -472,4 +472,5 @@ def build_error_response(internal_error_message, internal_error_details=None, cu
         'customerErrorMessage': customer_error_message,
         'customerErrorCode': customer_error_code
     }
+    print(error_response)
     return error_response
