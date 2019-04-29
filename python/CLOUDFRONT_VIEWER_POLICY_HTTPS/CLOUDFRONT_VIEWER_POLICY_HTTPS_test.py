@@ -12,7 +12,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::CloudFront::Distribution'
 
 #############
 # Main Code #
@@ -26,10 +26,9 @@ class Boto3Mock():
     def client(client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        elif client_name == 'sts':
+        if client_name == 'sts':
             return STS_CLIENT_MOCK
-        else:
-            raise Exception("Attempting to create an unknown client")
+        raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
@@ -44,23 +43,9 @@ class SampleTest(unittest.TestCase):
     resource_id = ['E10KYRP2JT92H5', 'E09KYRP2JT92H5', 'E08KYRP2JT92H5']
 
     configurations = [{'distributionConfig':{'cacheBehaviors':{'quantity':2, 'items':[{'viewerProtocolPolicy':'allow-all', 'pathPattern':'images/*.jpg'}, {'viewerProtocolPolicy':'allow-all', 'pathPattern':'videos/*.mp4'}]}, 'defaultCacheBehavior': {'viewerProtocolPolicy':'redirect-to-https'}}}, {'distributionConfig':{'cacheBehaviors':{'quantity':0}, 'defaultCacheBehavior':{'viewerProtocolPolicy':'allow-all'}}}, {'distributionConfig':{'cacheBehaviors':{'quantity':0}, 'defaultCacheBehavior':{'viewerProtocolPolicy':'redirect-to-https'}}}]
-    def setUp(self):
-        pass
 
-    def test_sample(self):
-        self.assertTrue(True)
-
-# Custom cache behavior NON_COMPLIANT
-    def test_scenario1(self):
-        invoking_event = construct_invoking_event(construct_config_item(self.configurations[0], self.resource_id[0]))
-        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
-        response = RULE.lambda_handler(lambda_event, {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'E10KYRP2JT92H5', 'AWS::CloudFront::Distribution', annotation='''ViewerProtocolPolicy for path "images/*.jpg" is set to 'allow-all.' '''))
-        assert_successful_evaluation(self, response, resp_expected, 1)
-
-# Default cache behavior NON_COMPLIANT
-    def test_scenario2a(self):
+    #Gerkin Scenario 1a: Default viewer protocol policy is set to 'allow-all'
+    def test_scenario1a(self):
         invoking_event = construct_invoking_event(construct_config_item(self.configurations[1], self.resource_id[1]))
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
@@ -68,13 +53,22 @@ class SampleTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'E09KYRP2JT92H5', 'AWS::CloudFront::Distribution', annotation='''Default ViewerProtocolPolicy is set to 'allow-all' for this distribution.'''))
         assert_successful_evaluation(self, response, resp_expected, 1)
 
-# COMPLIANT
-    def test_scenario2b(self):
+    #Gerkin Scenario 1b: COMPLIANT
+    def test_scenario1b(self):
         invoking_event = construct_invoking_event(construct_config_item(self.configurations[2], self.resource_id[2]))
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'E08KYRP2JT92H5', 'AWS::CloudFront::Distribution'))
+        assert_successful_evaluation(self, response, resp_expected, 1)
+
+    #Gerkin Scenario 2: Viewr protocol policy of custom cache behavior is set to 'allow-all'
+    def test_scenario2(self):
+        invoking_event = construct_invoking_event(construct_config_item(self.configurations[0], self.resource_id[0]))
+        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
+        response = RULE.lambda_handler(lambda_event, {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'E10KYRP2JT92H5', 'AWS::CloudFront::Distribution', annotation='''ViewerProtocolPolicy for path "images/*.jpg" is set to 'allow-all.' '''))
         assert_successful_evaluation(self, response, resp_expected, 1)
 
 ####################
