@@ -55,7 +55,7 @@ class ComplianceTest(unittest.TestCase):
         EC2_CLIENT_MOCK.describe_vpcs = MagicMock(return_value=describevpc_return)
         resp_expected = []
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::EC2::VPC', annotation='There are no Amazon VPCs in the region.'))
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::EC2::VPC'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Unit test for VPC is present and no VPC endpoints are present for that VPC -- GHERKIN Scenario 2

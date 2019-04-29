@@ -73,9 +73,7 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def get_vpcendpoints(vpc_id, event):
-    vpc_counter = 0
-    end_result = {}
-    #ec2_client = boto3.client('ec2')
+    compliance_results = {}
     ec2_client = get_client('ec2', event)
     compliance = 'NON_COMPLIANT'
     annotate = 'There are no Amazon S3 VPC endpoints present in '+ vpc_id+'.'
@@ -90,11 +88,10 @@ def get_vpcendpoints(vpc_id, event):
         if is_s3endpoint(endpoint_name):
             annotate = 'The Amazon S3 VPC endpoint is not in Available state '+vpc_id+'.'
             if is_available(endpoint_state):
-                vpc_counter += 1
                 annotate = None
                 compliance = 'COMPLIANT'
-    end_result['%s' %(vpc_id)] = [vpc_counter, annotate, compliance]
-    return end_result
+    compliance_results['%s' %(vpc_id)] = [annotate, compliance]
+    return compliance_results
 
 
 def is_s3endpoint(endpointname):
@@ -116,13 +113,12 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     try:
         if not vpc_response['Vpcs']:
-            annotate = 'There are no Amazon VPCs in the region.'
-            evaluations.append(build_evaluation(account_id, 'NOT_APPLICABLE', event, annotation=annotate))
+            evaluations.append(build_evaluation(account_id, 'NOT_APPLICABLE', event))
         for vpc in vpc_response['Vpcs']:
             vpc_list.append(vpc['VpcId'])
         for vpc in vpc_list:
             evaluation_payload = get_vpcendpoints(vpc, event)
-            evaluations.append(build_evaluation(vpc, evaluation_payload[vpc][2], event, annotation=evaluation_payload[vpc][1]))
+            evaluations.append(build_evaluation(vpc, evaluation_payload[vpc][1], event, annotation=evaluation_payload[vpc][0]))
     except Exception as exception:
         return build_internal_error_response(exception, internal_error_details=None)
     return evaluations
