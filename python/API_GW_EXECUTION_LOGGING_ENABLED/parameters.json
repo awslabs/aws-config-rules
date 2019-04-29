@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.6",
     "CodeKey": "API_GW_EXECUTION_LOGGING_ENABLED.zip",
     "InputParameters": "{\"loggingLevel\": \"ERROR,INFO\"}",
-    "OptionalParameters": "{}",
+    "OptionalParameters": "{\"loggingLevel\": \"\"}",
     "SourceEvents": "AWS::ApiGateway::Stage,AWS::ApiGatewayV2::Stage"
   },
   "Tags": "[]"
