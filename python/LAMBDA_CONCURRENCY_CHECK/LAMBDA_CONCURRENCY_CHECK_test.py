@@ -46,19 +46,17 @@ RULE = __import__('LAMBDA_CONCURRENCY_CHECK')
 
 def create_invoking_event(concurrency=None):
     if concurrency:
-        return '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
+        return '{"messageType": "ConfigurationItemChangeNotification",\
                          "configurationItem": {"resourceType": "AWS::Lambda::Function",\
                          "resourceId": "ABC",\
                          "configurationItemCaptureTime": "2019-04-18T08:49:09.878Z",\
                          "supplementaryConfiguration": {"Concurrency":\
-                         {"reservedConcurrentExecutions": ' + str(concurrency) + '}}, "configurationItemStatus": "OK",\
-                         "configuration": {"functionName": "ABC"}}}'
-    return '{"notificationCreationTime": "asd","messageType": "ConfigurationItemChangeNotification",\
+                         {"reservedConcurrentExecutions": ' + str(concurrency) + '}}, "configurationItemStatus": "OK"}}'
+    return '{"messageType": "ConfigurationItemChangeNotification",\
                          "configurationItem": {"resourceType": "AWS::Lambda::Function",\
                          "resourceId": "ABC",\
                          "configurationItemCaptureTime": "2019-04-18T08:49:09.878Z",\
-                         "supplementaryConfiguration": {}, "configurationItemStatus": "OK",\
-                         "configuration": {"functionName": "ABC"}}}'
+                         "supplementaryConfiguration": {}, "configurationItemStatus": "OK"}}'
 
 class ErrorTest(unittest.TestCase):
     def test_scenario_1_invalid_parameter_value_error(self):
@@ -79,7 +77,7 @@ class ErrorTest(unittest.TestCase):
         assert_customer_error_response(
             self,
             lambda_result,
-            customer_error_message='ConcurrencyLimitHigh can not be smaller then or equal to ConcurrencyLimitLow.',
+            customer_error_message='ConcurrencyLimitHigh can not be smaller then ConcurrencyLimitLow.',
             customer_error_code='InvalidParameterValueException'
             )
 
@@ -118,7 +116,7 @@ class NonCompliantResourceTest(unittest.TestCase):
         invoking_event = create_invoking_event()
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters=None), {})
         expected_response = build_expected_response('NON_COMPLIANT', 'ABC',
-                                                    annotation='Concurrency not set for the lambda function: ABC'
+                                                    annotation='Concurrency is not set for the AWS Lambda function.'
                                                     )
         assert_successful_evaluation(self, lambda_result, [expected_response])
 
@@ -127,7 +125,7 @@ class NonCompliantResourceTest(unittest.TestCase):
         rule_parameters = '{"ConcurrencyLimitLow": "300"}'
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         expected_response = build_expected_response('NON_COMPLIANT', 'ABC',
-                                                    annotation='Concurrency of AWS Lambda function ABC is lower then 300.')
+                                                    annotation='Concurrency of the AWS Lambda function is lower than 300.')
         assert_successful_evaluation(self, lambda_result, [expected_response])
 
     def test_scenario_7_concurrency_set_with_concurrencylimithigh_parameter_nc(self):
@@ -135,7 +133,7 @@ class NonCompliantResourceTest(unittest.TestCase):
         rule_parameters = '{"ConcurrencyLimitHigh": "300"}'
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         expected_response = build_expected_response('NON_COMPLIANT', 'ABC',
-                                                    annotation='Concurrency of AWS Lambda function ABC is higher then 300.')
+                                                    annotation='Concurrency of the AWS Lambda function is higher than 300.')
         assert_successful_evaluation(self, lambda_result, [expected_response])
 
     def test_scenario_9_concurrency_set_with_concurrencylimithigh_and_concurrencylimitlow_parameters_nc(self):
@@ -143,7 +141,7 @@ class NonCompliantResourceTest(unittest.TestCase):
         rule_parameters = '{"ConcurrencyLimitHigh": "600", "ConcurrencyLimitLow": "300"}'
         lambda_result = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         expected_response = build_expected_response('NON_COMPLIANT', 'ABC',
-                                                    annotation='AWS Lambda function ABC concurrency is not within bounds of 300 and 600.')
+                                                    annotation='Concurrency of the AWS Lambda function is not within bounds of 300 and 600.')
         assert_successful_evaluation(self, lambda_result, [expected_response])
 
 ####################

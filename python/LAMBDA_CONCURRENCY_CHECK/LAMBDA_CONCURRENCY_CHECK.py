@@ -107,12 +107,11 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
-    function_name = configuration_item['configuration']['functionName']
     if 'Concurrency' not in configuration_item['supplementaryConfiguration']:
         return build_evaluation_from_config_item(
             configuration_item,
             'NON_COMPLIANT',
-            annotation='Concurrency not set for the lambda function: {}'.format(function_name)
+            annotation='Concurrency is not set for the AWS Lambda function.'
             )
 
     if not valid_rule_parameters:
@@ -125,8 +124,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             return build_evaluation_from_config_item(
                 configuration_item,
                 'NON_COMPLIANT',
-                annotation='Concurrency of AWS Lambda function {} is lower then {}.'.format(
-                    function_name,
+                annotation='Concurrency of the AWS Lambda function is lower than {}.'.format(
                     valid_rule_parameters['ConcurrencyLimitLow']
                     )
                 )
@@ -137,8 +135,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             return build_evaluation_from_config_item(
                 configuration_item,
                 'NON_COMPLIANT',
-                annotation='Concurrency of AWS Lambda function {} is higher then {}.'.format(
-                    function_name,
+                annotation='Concurrency of the AWS Lambda function is higher than {}.'.format(
                     valid_rule_parameters['ConcurrencyLimitHigh']
                     )
                 )
@@ -149,8 +146,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     return build_evaluation_from_config_item(
         configuration_item,
         'NON_COMPLIANT',
-        annotation='AWS Lambda function {} concurrency is not within bounds of {} and {}.'.format(
-            function_name,
+        annotation='Concurrency of the AWS Lambda function is not within bounds of {} and {}.'.format(
             valid_rule_parameters['ConcurrencyLimitLow'],
             valid_rule_parameters['ConcurrencyLimitHigh']
             )
@@ -169,8 +165,8 @@ def evaluate_parameters(rule_parameters):
             raise ValueError('ConcurrencyLimitHigh must be a positive integer greater than 0.')
         rule_parameters['ConcurrencyLimitHigh'] = int(rule_parameters['ConcurrencyLimitHigh'])
     if all(key in rule_parameters for key in ['ConcurrencyLimitLow', 'ConcurrencyLimitHigh']) and \
-        rule_parameters['ConcurrencyLimitLow'] >= rule_parameters['ConcurrencyLimitHigh']:
-        raise ValueError('ConcurrencyLimitHigh can not be smaller then or equal to ConcurrencyLimitLow.')
+        rule_parameters['ConcurrencyLimitLow'] > rule_parameters['ConcurrencyLimitHigh']:
+        raise ValueError('ConcurrencyLimitHigh can not be smaller then ConcurrencyLimitLow.')
     return rule_parameters
 
 
