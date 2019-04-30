@@ -1,14 +1,3 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may
-# not use this file except in compliance with the License. A copy of the License is located at
-#
-#        http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
-# the specific language governing permissions and limitations under the License.
-
 import sys
 import unittest
 try:
@@ -22,7 +11,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
+DEFAULT_RESOURCE_TYPE = 'AWS::ElastiCache::CacheCluster'
 
 #############
 # Main Code #
@@ -30,102 +19,72 @@ DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-ES_CLIENT_MOCK = MagicMock()
+EC_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
-    @staticmethod
-    def client(client_name, *args, **kwargs):
+    sample = 123
+    def client(self, client_name, *args, **kwargs):
+        self.sample = 123
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 'es':
-            return ES_CLIENT_MOCK
+        if client_name == 'elasticache':
+            return EC_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('ELASTICSEARCH_IN_VPC_ONLY')
+RULE = __import__('ELASTICACHE_REDIS_CLUSTER_AUTO_BACKUP_CHECK')
 
-class ComplianceTest(unittest.TestCase):
 
-    def setUp(self):
-        pass
+def replication_groups_se(**kwargs):
+    if 'Marker' not in kwargs:
+        return {'ReplicationGroups': [{'ReplicationGroupId':'ABC', 'SnapshotRetentionLimit': 16}], 'Marker': 'ABC'}
+    return {'ReplicationGroups': [{'ReplicationGroupId':'DEF', 'SnapshotRetentionLimit': 10}]}
 
-    domain_list_empty = {'DomainNames': []}
-    domain_list_2 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_6 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5'},
-        {'DomainName': 'test-es-6'}]}
-    domain_list_2_non_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_2_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}}]}
-    domain_list_6_part_1 = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5',
-         'VPCOptions':{}}]}
-    domain_list_6_part_2 = {'DomainStatusList': [{'DomainName': 'test-es-6', 'VPCOptions':{}}]}
 
-    def test_scenario_1(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_empty)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::::Account'))
-        assert_successful_evaluation(self, response, resp_expected)
+class CompliantResourceTest(unittest.TestCase):
 
-    def test_scenario_2(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_non_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
+    def test_scenario_5_is_compliant(self):
+        EC_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'GHI', 'SnapshotRetentionLimit': 16, 'Engine': 'redis'}]})
+        EC_CLIENT_MOCK.describe_replication_groups.side_effect = replication_groups_se
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"SnapshotRetentionPeriod":"15"}'), {})
+        print(lambda_result)
+        assert_successful_evaluation(self, lambda_result, [build_expected_response('COMPLIANT', "GHI"),
+                                                           build_expected_response('COMPLIANT', "ABC"),
+                                                           build_expected_response('NON_COMPLIANT', "DEF", annotation="Automatic backup retention period for Amazon ElastiCache cluster DEF is less then 15 day(s).")
+                                                          ], len(lambda_result))
 
-    def test_scenario_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
 
-    def test_scenario_2_and_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_6)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.domain_list_6_part_1, self.domain_list_6_part_2])
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-3'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-4'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-5'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-6'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=6)
+class NonCompliantResourceTest(unittest.TestCase):
+
+    def test_scenario_4_low_retention(self):
+        EC_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'ABC', 'SnapshotRetentionLimit': 16, 'Engine': 'redis'}]})
+        EC_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"SnapshotRetentionPeriod":"15"}'), {})
+        assert_successful_evaluation(self, lambda_result, [build_expected_response("COMPLIANT", "ABC")], len(lambda_result))
+
+    def test_scenario_3_no_auto_backup(self):
+        # compliance_type, compliance_resource_id, compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation=None
+        EC_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': [{'CacheClusterId':'ABCD', 'SnapshotRetentionLimit': 0, 'Engine': 'redis'}]})
+        EC_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"SnapshotRetentionPeriod":"15"}'), {})
+        assert_successful_evaluation(self, lambda_result, [build_expected_response("NON_COMPLIANT", "ABCD", annotation="Automatic backup not enabled for Amazon ElastiCache cluster: ABCD")], len(lambda_result))
+
+class ErrorTest(unittest.TestCase):
+
+    def test_scenario_2_parameter_error(self):
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"SnapshotRetentionPeriod":"-1"}'), {})
+        assert_customer_error_response(self, lambda_result, customer_error_message='SnapshotRetentionPeriod value should be an integer greater than 0', customer_error_code='InvalidParameterValueException')
+
+class NotApplicableResourceTest(unittest.TestCase):
+
+    def test_scenario_1_no_resources(self):
+        EC_CLIENT_MOCK.describe_cache_clusters = MagicMock(return_value={'CacheClusters': []})
+        EC_CLIENT_MOCK.describe_replication_groups = MagicMock(return_value={'ReplicationGroups': []})
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event('{"SnapshotRetentionPeriod":"15"}'), {})
+        assert_successful_evaluation(self, lambda_result, [build_expected_response("NOT_APPLICABLE", "123456789012")], len(lambda_result))
 
 ####################
 # Helper Functions #

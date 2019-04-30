@@ -1,4 +1,4 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You may
 # not use this file except in compliance with the License. A copy of the License is located at
@@ -10,43 +10,35 @@
 # the specific language governing permissions and limitations under the License.
 
 '''
+#####################################
+##           Gherkin               ##
+#####################################
+Rule Name:
+  AMI_NOT_PUBLIC_CHECK
+
 Description:
-    Check whether the ElasticSearch Domains are in VPC and not as a public endpoint.
+  Check whether the Amazon Machine Images are not publicly accessible. The rule is NON_COMPLIANT if one or more Amazon Machine Images are publicly accessible.
 
 Trigger:
-    Periodic
+  Periodic
 
 Reports on:
-    AWS::Elasticsearch::Domain
-
-Feature:
-    In order to: to protect my data for exposure
-             As: a Security Officer
-         I want: To ensure that all my ElasticSearch Domains to be in VPC and not as a public endpoint.
+  AWS::::Account
 
 Rule Parameters:
-   None
+  None
 
 Scenarios:
-  Scenario 1:
-  Given: No ElasticSearch Domain is present
-   Then: Return NOT_APPLICABLE on AWS::::Account
-
-  Scenario 2:
-  Given: At least one ElasticSearch Domain is present
-    And: No 'VPCOptions' key is present in the list of "DomainName" on DescribeElasticsearchDomains API
-   Then: Return NON_COMPLIANT on this Domain
-
-  Scenario 3:
-  Given: At least one ElasticSearch Domain is present
-    And: The 'VPCOptions' key is present in the list of "DomainName" on DescribeElasticsearchDomains API
-   Then: Return COMPLIANT on this Domain
-
+  Scenario: 1
+    Given: No AMIs with "is-public" parameter set to True
+     Then: Return COMPLIANT
+  Scenario: 2
+    Given: One or more AMIs with is-public parameter set to True
+     Then: Return NON_COMPLIANT with Annotation containing AMI IDs
 '''
 
 import json
 import sys
-import time
 import datetime
 import boto3
 import botocore
@@ -56,66 +48,53 @@ try:
 except ImportError:
     pass
 
-##############
-# Parameters #
-##############
-
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
+DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
-ASSUME_ROLE_MODE = True
+ASSUME_ROLE_MODE = False
 
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
-PAUSE_TO_AVOID_THROTTLE_SECONDS = 4
 
-#############
-# Main Code #
-#############
+# Generates list of image_id's of public images
+def generate_image_id_list(images, event):
+    image_ids = []
+    for image in images:
+        image_ids.append(image['ImageId'])
+    return image_ids
 
-def get_all_domain_details(es_client, es_domains):
-    es_domain_list_details = []
-    es_domains_names_only = []
-    for es_domain in es_domains:
-        es_domains_names_only.append(es_domain['DomainName'])
-    while es_domains_names_only:
-        time.sleep(PAUSE_TO_AVOID_THROTTLE_SECONDS)
-        domain_details = es_client.describe_elasticsearch_domains(DomainNames=es_domains_names_only[:5])['DomainStatusList']
-        es_domain_list_details += domain_details
-        del es_domains_names_only[:5]
-    return es_domain_list_details
+def build_annotation(annotation_string):
+    if len(annotation_string) > 256:
+        return annotation_string[:244] + " [truncated]"
+    return annotation_string
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    es_client = get_client('es', event)
-    es_domain_list = es_client.list_domain_names()['DomainNames']
-
-    if not es_domain_list:
-        return build_evaluation(event['accountId'], 'NOT_APPLICABLE', event, resource_type='AWS::::Account')
-
-    es_domain_list_details = get_all_domain_details(es_client, es_domain_list)
-
-    evaluation_list = []
-    for es_domain_details in es_domain_list_details:
-        if 'VPCOptions' not in es_domain_details:
-            compliance_type = 'NON_COMPLIANT'
-        else:
-            compliance_type = 'COMPLIANT'
-        evaluation_list.append(build_evaluation(es_domain_details['DomainName'], compliance_type, event))
-
-    if evaluation_list:
-        return evaluation_list
-    return build_evaluation(event['accountId'], 'NOT_APPLICABLE', event, resource_type='AWS::::Account')
+    ec2_client = get_client('ec2', event)
+    public_ami_result = ec2_client.describe_images(
+        Filters=[
+            {
+                'Name': 'is-public',
+                'Values': ['true']
+            }
+            ],
+        Owners=[event['accountId']]
+        )
+    # If public_ami_list is not empty, generate non-compliant response
+    if public_ami_result['Images']:
+        evaluations = []
+        evaluations.append(
+            build_evaluation(
+                event['accountId'],
+                'NON_COMPLIANT',
+                event,
+                annotation='Public Amazon Machine Image Id: {}'.format(",".join([image_id for image_id in generate_image_id_list(public_ami_result['Images'], event)]))
+            )
+        )
+        return evaluations
+    return build_evaluation(event['accountId'], "COMPLIANT", event)
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
-
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
@@ -125,11 +104,6 @@ def evaluate_parameters(rule_parameters):
 
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
-    """Return an error dictionary when the evaluate_parameters() raises a ValueError.
-
-    Keyword arguments:
-    ex -- Exception text
-    """
     return  build_error_response(internal_error_message="Parameter value is invalid",
                                  internal_error_details="An ValueError was raised during the validation of the Parameter value",
                                  customer_error_code="InvalidParameterValueException",
@@ -138,12 +112,6 @@ def build_parameters_value_error_response(ex):
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
 def get_client(service, event):
-    """Return the service boto client. It should be used instead of directly calling the client.
-
-    Keyword arguments:
-    service -- the service name used for calling the boto.client()
-    event -- the event variable given in the lambda handler
-    """
     if not ASSUME_ROLE_MODE:
         return boto3.client(service)
     credentials = get_assume_role_credentials(event["executionRoleArn"])
@@ -154,18 +122,9 @@ def get_client(service, event):
 
 # This generate an evaluation for config
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
-    """Form an evaluation as a dictionary. Usually suited to report on scheduled rules.
-
-    Keyword arguments:
-    resource_id -- the unique id of the resource to report
-    compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    event -- the event variable given in the lambda handler
-    resource_type -- the CloudFormation resource type (or AWS::::Account) to report on the rule (default DEFAULT_RESOURCE_TYPE)
-    annotation -- an annotation to be added to the evaluation (default None)
-    """
     eval_cc = {}
     if annotation:
-        eval_cc['Annotation'] = annotation
+        eval_cc['Annotation'] = build_annotation(annotation)
     eval_cc['ComplianceResourceType'] = resource_type
     eval_cc['ComplianceResourceId'] = resource_id
     eval_cc['ComplianceType'] = compliance_type
@@ -173,16 +132,9 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     return eval_cc
 
 def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
-    """Form an evaluation as a dictionary. Usually suited to report on configuration change rules.
-
-    Keyword arguments:
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    annotation -- an annotation to be added to the evaluation (default None)
-    """
     eval_ci = {}
     if annotation:
-        eval_ci['Annotation'] = annotation
+        eval_ci['Annotation'] = build_annotation(annotation)
     eval_ci['ComplianceResourceType'] = configuration_item['resourceType']
     eval_ci['ComplianceResourceId'] = configuration_item['resourceId']
     eval_ci['ComplianceType'] = compliance_type

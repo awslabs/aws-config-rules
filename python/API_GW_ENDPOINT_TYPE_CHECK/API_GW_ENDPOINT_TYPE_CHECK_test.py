@@ -1,14 +1,3 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may
-# not use this file except in compliance with the License. A copy of the License is located at
-#
-#        http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
-# the specific language governing permissions and limitations under the License.
-
 import sys
 import unittest
 try:
@@ -22,7 +11,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
+DEFAULT_RESOURCE_TYPE = 'AWS::ApiGateway::RestApi'
 
 #############
 # Main Code #
@@ -30,7 +19,6 @@ DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-ES_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
@@ -39,93 +27,45 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 'es':
-            return ES_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('ELASTICSEARCH_IN_VPC_ONLY')
+RULE = __import__('API_GW_ENDPOINT_TYPE_CHECK')
+ALLOWED_RULE_PARAMETER_VALUES = ["REGIONAL", "PRIVATE", "EDGE"]
 
 class ComplianceTest(unittest.TestCase):
 
-    def setUp(self):
-        pass
+    #Scenario 1: Rule parameter is not provided
+    invoking_event_regional = '{"configurationItem": {"configuration": {"endpointConfiguration": {"types": ["REGIONAL"]}},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId": "123456789012","configurationItemStatus": "ResourceDiscovered","resourceType": "AWS::ApiGateway::RestApi","resourceId": "some-resource-id"},"messageType": "ConfigurationItemChangeNotification"}'
 
-    domain_list_empty = {'DomainNames': []}
-    domain_list_2 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_6 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5'},
-        {'DomainName': 'test-es-6'}]}
-    domain_list_2_non_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_2_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}}]}
-    domain_list_6_part_1 = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5',
-         'VPCOptions':{}}]}
-    domain_list_6_part_2 = {'DomainStatusList': [{'DomainName': 'test-es-6', 'VPCOptions':{}}]}
+    def test_no_rule_parameter(self):
+        rule_parameter_empty = '{}'
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter_empty), '{}')
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', "endpointConfigurationType is a mandatory parameter.")
 
-    def test_scenario_1(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_empty)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    #Scenario 2: Rule parameter value is invalid
+    def test_invalid_value_rule_parameter(self):
+        rule_parameter_invalid = '{"endpointConfigurationType":"INVALID"}'
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter_invalid), '{}')
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', "Value for rule parameter endpointConfigurationType should be from " + str(ALLOWED_RULE_PARAMETER_VALUES) + ".")
+
+    #Scenario 3: Mismatch in type v/s rule parameter
+    def test_type_mismatch(self):
+        rule_parameter = '{"endpointConfigurationType":"PRIVATE"}'
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter), '{}')
         resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::::Account'))
+        resp_expected.append(build_expected_response("NON_COMPLIANT", "some-resource-id", DEFAULT_RESOURCE_TYPE, annotation="The Endpoint Type for this Amazon API Gateway API does not match the specified rule parameter (endpointConfigurationType): ['PRIVATE']."))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_2(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_non_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    #Scenario 4: Compliant
+    def test_compliant(self):
+        rule_parameter = '{"endpointConfigurationType":"REGIONAL,PRIVATE"}'
+        response = RULE.lambda_handler(
+            build_lambda_configurationchange_event(invoking_event=self.invoking_event_regional, rule_parameters=rule_parameter), '{}')
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
-
-    def test_scenario_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
-
-    def test_scenario_2_and_3(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_6)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.domain_list_6_part_1, self.domain_list_6_part_2])
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-3'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-4'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-5'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-6'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=6)
+        resp_expected.append(build_expected_response("COMPLIANT", "some-resource-id", DEFAULT_RESOURCE_TYPE))
+        assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #
@@ -219,11 +159,13 @@ def sts_mock():
 
 class TestStsErrors(unittest.TestCase):
 
+    rule_parameters = '{"endpointConfigurationType":"REGIONAL"}'
+
     def test_sts_unknown_error(self):
         RULE.ASSUME_ROLE_MODE = True
         STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
-        response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event='{}', rule_parameters=self.rule_parameters), {})
         assert_customer_error_response(
             self, response, 'InternalError', 'InternalError')
 
@@ -231,6 +173,6 @@ class TestStsErrors(unittest.TestCase):
         RULE.ASSUME_ROLE_MODE = True
         STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
-        response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event='{}', rule_parameters=self.rule_parameters), {})
         assert_customer_error_response(
             self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')

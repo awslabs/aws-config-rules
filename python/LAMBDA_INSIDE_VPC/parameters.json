@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "LAMBDA_INSIDE_VPC.zip", 
+    "SourceRuntime": "python3.6", 
+    "RuleName": "LAMBDA_INSIDE_VPC", 
+    "SourceEvents": "AWS::Lambda::Function", 
+    "OptionalParameters": "{\"subnetId\": \"\"}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}

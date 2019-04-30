@@ -1,14 +1,3 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may
-# not use this file except in compliance with the License. A copy of the License is located at
-#
-#        http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
-# the specific language governing permissions and limitations under the License.
-
 import sys
 import unittest
 try:
@@ -17,16 +6,7 @@ except ImportError:
     from mock import MagicMock
 import botocore
 
-##############
-# Parameters #
-##############
-
-# Define the default resource to report to Config Rules
 DEFAULT_RESOURCE_TYPE = 'AWS::Elasticsearch::Domain'
-
-#############
-# Main Code #
-#############
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
@@ -45,91 +25,65 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('ELASTICSEARCH_IN_VPC_ONLY')
+RULE = __import__('ELASTICSEARCH_ENCRYPTED_AT_REST')
 
 class ComplianceTest(unittest.TestCase):
+
+    list_domains_scenario_1 = {'DomainNames':[{'DomainName':'domain1'}, {'DomainName':'domain2'}]}
+    describe_domain_scenario_1 = {"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain1"}, {"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain2"}]}
+    list_domains_scenario_2 = {'DomainNames':[{'DomainName':'domain1'}, {'DomainName':'domain2'}]}
+    describe_domain_scenario_2 = {"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain1"}, {"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain2"}]}
+    list_domains_scenario_3 = {'DomainNames':[{'DomainName':'domain1'}, {'DomainName':'domain2'}, {'DomainName':'domain3'}, {'DomainName':'domain4'}, {'DomainName':'domain5'}, {'DomainName':'domain6'}]}
+    describe_domain_scenario_3 = {"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain1"}, {"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain2"}, {"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain3"}, {"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain4"}, {"EncryptionAtRestOptions":{"Enabled":False}, "DomainName":"domain5"}]}
+    describe_domain_scenario_4 = {"DomainStatusList": [{"EncryptionAtRestOptions":{"Enabled":True}, "DomainName":"domain6"}]}
 
     def setUp(self):
         pass
 
-    domain_list_empty = {'DomainNames': []}
-    domain_list_2 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_6 = {'DomainNames': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5'},
-        {'DomainName': 'test-es-6'}]}
-    domain_list_2_non_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2'}]}
-    domain_list_2_compliant = {'DomainStatusList': [
-        {'DomainName': 'test-es-1',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}}]}
-    domain_list_6_part_1 = {'DomainStatusList': [
-        {'DomainName': 'test-es-1'},
-        {'DomainName': 'test-es-2',
-         'VPCOptions':{}},
-        {'DomainName': 'test-es-3'},
-        {'DomainName': 'test-es-4'},
-        {'DomainName': 'test-es-5',
-         'VPCOptions':{}}]}
-    domain_list_6_part_2 = {'DomainStatusList': [{'DomainName': 'test-es-6', 'VPCOptions':{}}]}
-
-    def test_scenario_1(self):
-        RULE.ASSUME_ROLE_MODE = True
-        RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_empty)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+    def test_scenario_1_is_null_domains(self):
+        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value={'DomainNames': []})
+        lambda_event = build_lambda_scheduled_event(rule_parameters=None)
+        response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', compliance_resource_type='AWS::::Account'))
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_2(self):
-        RULE.ASSUME_ROLE_MODE = True
+    def test_scenario_2_is_compliant(self):
         RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_non_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.list_domains_scenario_1)
+        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.describe_domain_scenario_1)
+        lambda_event = build_lambda_scheduled_event(rule_parameters=None)
+        response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
+        resp_expected.append(build_expected_response('COMPLIANT', 'domain1'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'domain2'))
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
-    def test_scenario_3(self):
-        RULE.ASSUME_ROLE_MODE = True
+    def test_scenario_3_is_non_compliant(self):
         RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_2)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.domain_list_2_compliant)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.list_domains_scenario_2)
+        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(return_value=self.describe_domain_scenario_2)
+        lambda_event = build_lambda_scheduled_event(rule_parameters=None)
+        response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        assert_successful_evaluation(self, response, resp_expected, evaluations_count=2)
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain1', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain2', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
-    def test_scenario_2_and_3(self):
-        RULE.ASSUME_ROLE_MODE = True
+    def test_scenario_4_multiple_domains(self):
         RULE.PAUSE_TO_AVOID_THROTTLE_SECONDS = 0
-        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.domain_list_6)
-        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.domain_list_6_part_1, self.domain_list_6_part_2])
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        ES_CLIENT_MOCK.list_domain_names = MagicMock(return_value=self.list_domains_scenario_3)
+        ES_CLIENT_MOCK.describe_elasticsearch_domains = MagicMock(side_effect=[self.describe_domain_scenario_3, self.describe_domain_scenario_4])
+        lambda_event = build_lambda_scheduled_event(rule_parameters=None)
+        response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-2'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-3'))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'test-es-4'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-5'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'test-es-6'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain1', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'domain2'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain3', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'domain4'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'domain5', annotation='This Amazon Elasticsearch domain is not encrypted at rest.'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'domain6'))
         assert_successful_evaluation(self, response, resp_expected, evaluations_count=6)
-
-####################
-# Helper Functions #
-####################
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
     event_to_return = {

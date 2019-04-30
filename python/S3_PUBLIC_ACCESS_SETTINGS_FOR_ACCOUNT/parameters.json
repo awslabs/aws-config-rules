@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"BlockPublicAcls\": \"\", \"IgnorePublicAcls\": \"\", \"BlockPublicPolicy\": \"\", \"RestrictPublicBuckets\": \"\"}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}

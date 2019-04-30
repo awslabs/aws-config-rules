@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "API_GW_ENDPOINT_TYPE_CHECK",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "API_GW_ENDPOINT_TYPE_CHECK.zip",
+    "InputParameters": "{\"endpointConfigurationType\": \"\"}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::ApiGateway::RestApi"
+  },
+  "Tags": "[]"
+}

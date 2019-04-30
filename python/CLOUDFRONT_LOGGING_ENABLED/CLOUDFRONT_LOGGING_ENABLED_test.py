@@ -33,16 +33,15 @@ class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
         if client_name == 'config':
             return config_client_mock
-        elif client_name == 'sts':
+        if client_name == 'sts':
             return sts_client_mock
-        else:
-            raise Exception("Attempting to create an unknown client")
+        raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
 rule = __import__('CLOUDFRONT_LOGGING_ENABLED')
 
-class SampleTest(unittest.TestCase):
+class ComplianceTest(unittest.TestCase):
 
     rule_parameters = '{\"CentralLoggingBucket\": \"cloudfront-logs-bucket-here\"}'
 
@@ -218,6 +217,7 @@ class TestStsErrors(unittest.TestCase):
 
     def test_sts_unknown_error(self):
         rule.ASSUME_ROLE_MODE = True
+        rule.evaluate_parameters = MagicMock(return_value=True)
         sts_client_mock.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
         response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})
@@ -226,6 +226,7 @@ class TestStsErrors(unittest.TestCase):
 
     def test_sts_access_denied(self):
         rule.ASSUME_ROLE_MODE = True
+        rule.evaluate_parameters = MagicMock(return_value=True)
         sts_client_mock.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
         response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})

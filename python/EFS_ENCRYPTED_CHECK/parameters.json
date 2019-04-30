@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "EFS_ENCRYPTED_CHECK.zip", 
+    "SourceRuntime": "python3.6", 
+    "SourcePeriodic": "One_Hour", 
+    "RuleName": "EFS_ENCRYPTED_CHECK", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{\"KmsKeyId\": \"arn:aws:kms:us-west-2:123456789012:key/fdbe4169-8c1c-49c9-a181-a3d53e8c8d1f\"}"
+  }, 
+  "Tags": "[]"
+}
