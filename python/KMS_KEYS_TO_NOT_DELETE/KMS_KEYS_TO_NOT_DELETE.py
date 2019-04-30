@@ -31,46 +31,46 @@ Rule Parameters:
 	Comma-separated list of specific Customer Managed Key Ids, that are expected not to be scheduled for deletion.
 
 Scenarios:
-    Scenario 1:
-    Given: At least 1 CMK is present in the AWS Account
-    And: Rule parameter kmsKeyIds are configured and not valid
-    Then: Return ERROR
+    	Scenario 1:
+    	Given: At least 1 CMK is present in the AWS Account
+      	  And: Rule parameter kmsKeyIds are configured and not valid
+     	 Then: Return ERROR
+    
+    	Scenario 2:
+    	Given: No CMKs present
+         Then: Return NOT_APPLICABLE
 
-	Scenario 2:
-	Given: No CMKs present
-	Then: Return NOT_APPLICABLE
-
-    Scenario 3:
-    Given: At least 1 CMK is present in the AWS Account
-      And: Rule parameter kmsKeyIds are configured and valid
-      And: The KMS key in the parameter is not in list of kms keys
-     Then: Return NOT_APPLICABLE
+    	Scenario 3:
+    	Given: At least 1 CMK is present in the AWS Account
+      	  And: Rule parameter kmsKeyIds are configured and valid
+      	  And: The KMS key in the parameter is not in list of kms keys
+     	 Then: Return NOT_APPLICABLE
 
 	Scenario 4:
 	Given: At least 1 CMK is present in the AWS Account
-	And: Rule parameter kmsKeyIds are not configured
-	And: The KMS Key is not scheduled for deletion
-	Then: Return COMPLIANT
+	  And: Rule parameter kmsKeyIds are not configured
+	  And: The KMS Key is not scheduled for deletion
+	 Then: Return COMPLIANT
 
 	Scenario 5:
 	Given: At least 1 CMK is present in the AWS Account
-	And: Rule parameter kmsKeyIds are not configured
-	And: The KMS Key in the account is scheduled for deletion
-	Then: Return NON_COMPLIANT
+	  And: Rule parameter kmsKeyIds are not configured
+	  And: The KMS Key in the account is scheduled for deletion
+	 Then: Return NON_COMPLIANT
 
 	Scenario 6:
 	Given: At least 1 CMK is present in the AWS Account
-	And: Rule parameter kmsKeyIds are configured and valid
-	And: The CMK is one of the keys in the parameter
-	And: The CMK is not scheduled for deletion
-	Then: Return COMPLIANT
+	  And: Rule parameter kmsKeyIds are configured and valid
+	  And: The CMK is one of the keys in the parameter
+	  And: The CMK is not scheduled for deletion
+	 Then: Return COMPLIANT
 
 	Scenario 7:
 	Given: At least 1 CMK is present in the AWS Account
-	And: Rule parameter kmsKeyIds are configured and valid
-	And: The CMK is one of the keys in the parameter
-	And: The CMK is scheduled for deletion
-	Then: Return NON_COMPLIANT
+	  And: Rule parameter kmsKeyIds are configured and valid
+	  And: The CMK is one of the keys in the parameter
+	  And: The CMK is scheduled for deletion
+	 Then: Return NON_COMPLIANT
 '''
 
 import json
@@ -118,7 +118,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                     if kms_key_details['KeyMetadata']['KeyState'] == 'PendingDeletion':
                         evaluations.append(build_evaluation(key_id, 'NON_COMPLIANT', event, annotation='The KMS Key is scheduled for deletion.'))
                         continue
-                    evaluations.append(build_evaluation(key_id, 'COMPLIANT', event))    
+                    evaluations.append(build_evaluation(key_id, 'COMPLIANT', event))
             if not key_id in all_kms_key_list:
                 evaluations.append(build_evaluation(key_id, 'NOT_APPLICABLE', event, 'AWS::::Account', annotation='The given kmsKeyId does not exist. Please verify the kmsKeyId and try again.'))
 
@@ -141,7 +141,7 @@ def get_all_kms_keys(kms_client):
             all_kms_key_list.append(key['KeyId'])
         if not 'NextMarker' in response:
             return all_kms_key_list
-        response = kms_client.list_keys(Marker=response['NextMarker'],Limit=1000)
+        response = kms_client.list_keys(Marker=response['NextMarker'], Limit=1000)
 
 def evaluate_parameters(rule_parameters):
     if rule_parameters:
