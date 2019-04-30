@@ -21,7 +21,7 @@ except ImportError:
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::S3::Bucket'
 
 #############
 # Main Code #
@@ -48,9 +48,6 @@ RULE = __import__('S3_BUCKET_NAMING_CONVENTION')
 
 class ComplianceTest(unittest.TestCase):
 
-    rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
-
-    invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
     invoking_event_bucket = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"apps-us-east-1","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
     invoking_event_bucket_compliant = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"apps-test-us-east-1","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
     s3_bucket_list = {"Buckets": [{"Name": "852640994763-awsmacietrail-dataevent", "CreationDate": "2018-07-12T05:26:16.000Z"}]}
@@ -58,30 +55,21 @@ class ComplianceTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_scenario_1_no_bucket(self):
-        rule_param = "{\"regexPattern\":\".*test.*\"}"
-        S3_CLIENT_MOCK.list_buckets = MagicMock(return_value={"Buckets":[]})
-        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
-        response = RULE.lambda_handler(lambda_event, {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::::Account'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    def test_scenario_2a_not_given(self):
-        rule_param = {}
+    def test_scenario_1a_not_given(self):
+        rule_param = "{\"regexPattern\":\"\"}"
         invoking_event = self.invoking_event_bucket
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         assert_customer_error_response(self, response, "InvalidParameterValueException")
 
-    def test_scenario_2b_invalid(self):
+    def test_scenario_1b_invalid(self):
         rule_param = "{\"regexPattern\":\"[bad\"}"
         invoking_event = self.invoking_event_bucket
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         assert_customer_error_response(self, response, "InvalidParameterValueException")
 
-    def test_scenario_3_non_compliant(self):
+    def test_scenario_2_non_compliant(self):
         rule_param = "{\"regexPattern\":\".*test.*\"}"
         S3_CLIENT_MOCK.list_buckets = MagicMock(return_value=self.s3_bucket_list)
         invoking_event = self.invoking_event_bucket
@@ -91,7 +79,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', "apps-us-east-1", annotation='The regex (.*test.*) does not match (apps-us-east-1).'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_4_compliant(self):
+    def test_scenario_3_compliant(self):
         rule_param = "{\"regexPattern\":\".*test.*\"}"
         S3_CLIENT_MOCK.list_buckets = MagicMock(return_value=self.s3_bucket_list)
         invoking_event = self.invoking_event_bucket_compliant

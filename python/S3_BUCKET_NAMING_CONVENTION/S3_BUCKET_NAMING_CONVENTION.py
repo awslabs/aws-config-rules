@@ -31,21 +31,18 @@ Rule Parameters:
     The string value provided to check with the S3 bucket name.
 
 Scenarios:
-  Scenario 1:
-  Given: No S3 buckets present
-   Then: Return NOT_APPLICABLE
 
-  Scenario 2:
+  Scenario 1:
   Given: Rule parameter regexPattern is not configured or not valid
    Then: Return ERROR
 
-  Scenario 3:
+  Scenario 2:
   Given: At least 1 S3 bucket present
     And: Rule parameter regexPattern is configured and valid
     And: The Bucket name match the regexPattern
    Then: Return COMPLIANT
 
-  Scenario 4:
+  Scenario 3:
   Given: At least 1 S3 bucket present
     And: Rule parameter regexPattern is configured and valid
     And: The Bucket name does not match the regexPattern
@@ -70,7 +67,7 @@ except ImportError:
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::S3::Bucket'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
@@ -84,12 +81,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
-    s3_client = get_client('s3', event)
-    list_of_buckets = s3_client.list_buckets()
-
-    if not list_of_buckets['Buckets']:
-        return None
-
     s3_bucket_name = configuration_item["resourceName"]
     pattern_str = valid_rule_parameters["regexPattern"]
     pattern = re.compile(f"{pattern_str}")
@@ -100,6 +91,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     return build_evaluation(s3_bucket_name, 'NON_COMPLIANT', event, annotation='The regex ({}) does not match ({}).'.format(pattern_str, s3_bucket_name))
 
 def evaluate_parameters(rule_parameters):
+    if not rule_parameters['regexPattern']:
+        raise ValueError('The regex value cannot be empty for the parameter "regexPattern".')
     try:
         re.compile(rule_parameters['regexPattern'])
     except:
