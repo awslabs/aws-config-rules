@@ -56,7 +56,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    distribution_id = configuration_item['resourceId']
     if configuration_item['configuration']['distributionConfig']['defaultCacheBehavior']['viewerProtocolPolicy'] == 'allow-all':
         return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='''Default ViewerProtocolPolicy is set to 'allow-all' for this Amazon CloudFront distribution.''')
     if configuration_item['configuration']['distributionConfig']['cacheBehaviors']['quantity'] > 0:
