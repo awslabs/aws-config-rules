@@ -44,7 +44,7 @@ class SampleTest(unittest.TestCase):
 
     #Gerkin Scenario 1a: Default viewer protocol policy is set to 'allow-all'
     def test_scenario1a(self):
-        invoking_event = construct_invoking_event(construct_config_item(self.configurations[1], self.resource_id[1]))
+        invoking_event = construct_invoking_event(self.configurations[1], self.resource_id[1])
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
@@ -53,7 +53,7 @@ class SampleTest(unittest.TestCase):
 
     #Gerkin Scenario 1b: COMPLIANT
     def test_scenario1b(self):
-        invoking_event = construct_invoking_event(construct_config_item(self.configurations[2], self.resource_id[2]))
+        invoking_event = construct_invoking_event(self.configurations[2], self.resource_id[2])
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
@@ -62,12 +62,40 @@ class SampleTest(unittest.TestCase):
 
     #Gerkin Scenario 2: Viewer protocol policy of custom cache behavior is set to 'allow-all'
     def test_scenario2(self):
-        invoking_event = construct_invoking_event(construct_config_item(self.configurations[0], self.resource_id[0]))
+        invoking_event = construct_invoking_event(self.configurations[0], self.resource_id[0])
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'E0123456789012', 'AWS::CloudFront::Distribution', annotation='''ViewerProtocolPolicy for CacheBehavior with path pattern "images/*.jpg" is set to 'allow-all.' '''))
         assert_successful_evaluation(self, response, resp_expected)
+
+def construct_invoking_event(config, resource_id):
+    config_item = {
+        'relatedEvents': [],
+        'relationships': [],
+        'configuration': config,
+        'configurationItemVersion': None,
+        'configurationItemCaptureTime': "2019-03-17T03:37:52.418Z",
+        'supplementaryConfiguration': {},
+        'configurationStateId': 1532049940079,
+        'awsAccountId': "SAMPLE",
+        'configurationItemStatus': "ResourceDiscovered",
+        'resourceType': "AWS::CloudFront::Distribution",
+        'resourceId': resource_id,
+        'resourceName': "hey",
+        'awsRegion': "ap-south-1",
+        'configurationStateMd5Hash': "",
+        'resourceCreationTime': "2019-03-17T06:27:28.289Z",
+        'tags': {}
+    }
+    invoking_event = {
+        "configurationItemDiff": "",
+        "configurationItem": config_item,
+        "notificationCreationTime": "SAMPLE",
+        "messageType": "ConfigurationItemChangeNotification",
+        "recordVersion": "SAMPLE"
+    }
+    return invoking_event
 
 ####################
 # Helper Functions #
@@ -101,38 +129,6 @@ def build_lambda_scheduled_event(rule_parameters=None):
     if rule_parameters:
         event_to_return['ruleParameters'] = rule_parameters
     return event_to_return
-
-def construct_invoking_event(config_item):
-    invoking_event = {
-        "configurationItemDiff": "",
-        "configurationItem": config_item,
-        "notificationCreationTime": "SAMPLE",
-        "messageType": "ConfigurationItemChangeNotification",
-        "recordVersion": "SAMPLE"
-    }
-    return invoking_event
-
-def construct_config_item(config, resource_id):
-    config_item = {
-        'relatedEvents': [],
-        'relationships': [],
-        'configuration': config,
-        'configurationItemVersion': None,
-        'configurationItemCaptureTime': "2019-03-17T03:37:52.418Z",
-        'supplementaryConfiguration': {},
-        'configurationStateId': 1532049940079,
-        'awsAccountId': "SAMPLE",
-        'configurationItemStatus': "ResourceDiscovered",
-        'resourceType': "AWS::CloudFront:Distribution",
-        'resourceId': resource_id,
-        'resourceName': "hey",
-        'awsRegion': "ap-south-1",
-        'configurationStateMd5Hash': "",
-        'resourceCreationTime': "2019-03-17T06:27:28.289Z",
-        'tags': {}
-    }
-    return config_item
-
 
 def build_expected_response(compliance_type, compliance_resource_id, compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
     if not annotation:
