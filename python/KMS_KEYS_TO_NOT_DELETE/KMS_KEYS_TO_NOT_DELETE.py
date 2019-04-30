@@ -35,7 +35,7 @@ Scenarios:
     	Given: At least 1 CMK is present in the AWS Account
       	  And: Rule parameter kmsKeyIds are configured and not valid
      	 Then: Return ERROR
-    
+
     	Scenario 2:
     	Given: No CMKs present
          Then: Return NOT_APPLICABLE
