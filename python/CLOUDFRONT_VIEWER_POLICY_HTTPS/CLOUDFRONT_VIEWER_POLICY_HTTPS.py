@@ -58,13 +58,13 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     distribution_id = configuration_item['resourceId']
     if configuration_item['configuration']['distributionConfig']['defaultCacheBehavior']['viewerProtocolPolicy'] == 'allow-all':
-        return build_evaluation(distribution_id, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='''Default ViewerProtocolPolicy is set to 'allow-all' for this Amazon CloudFront distribution.''')
+        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='''Default ViewerProtocolPolicy is set to 'allow-all' for this Amazon CloudFront distribution.''')
     if configuration_item['configuration']['distributionConfig']['cacheBehaviors']['quantity'] > 0:
         for behavior in configuration_item['configuration']['distributionConfig']['cacheBehaviors']['items']:
             path = behavior['pathPattern']
             if behavior['viewerProtocolPolicy'] == 'allow-all':
-                return build_evaluation(distribution_id, 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='''ViewerProtocolPolicy for CacheBehavior with path pattern "{}" is set to 'allow-all.' '''.format(path))
-    return build_evaluation(distribution_id, 'COMPLIANT', event)
+                return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='''ViewerProtocolPolicy for CacheBehavior with path pattern "{}" is set to 'allow-all.' '''.format(path))
+    return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
 
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = rule_parameters
