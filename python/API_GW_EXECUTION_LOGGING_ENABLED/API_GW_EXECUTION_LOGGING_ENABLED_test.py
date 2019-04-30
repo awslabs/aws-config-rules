@@ -39,30 +39,28 @@ class ParameterTest(unittest.TestCase):
     stage_settings_1 = {
         'methodSettings':{
             '*/*':{
-                'loggingLevel':'OFF',
-                'dataTraceEnabled':False
+                'loggingLevel':'OFF'
             }
         }
     }
     stage_settings_2 = {
         'methodSettings':{
             '*/*':{
-                'loggingLevel':'INFO',
-                'dataTraceEnabled':False
+                'loggingLevel':'INFO'
             }
         }
     }
 
-     #Scenario 1: Rule Parameter is invalid
+    #Scenario 1: Rule Parameter is invalid
     def test_invalid_param_value(self):
-        rule_parameters = '{"loggingLevel": "SOMETHING"}'
+        rule_parameters = '{"loggingLevel": "INVALID"}'
         invoking_event = build_invoking_event(self.stage_settings_1, 'AWS::ApiGateway::Stage', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/test')
         RULE.ASSUME_ROLE_MODE = False
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
         assert_customer_error_response(self, response, 'InvalidParameterValueException')
 
     def test_invalid_parameter_values2(self):
-        rule_parameters = '{"loggingLevel": "ERROR,NO"}'
+        rule_parameters = '{"loggingLevel": "ERROR,NOTSET"}'
         invoking_event = build_invoking_event(self.stage_settings_1, 'AWS::ApiGateway::Stage', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/test')
         RULE.ASSUME_ROLE_MODE = False
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, rule_parameters), {})
@@ -88,21 +86,29 @@ class ParameterTest(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/test', 'AWS::ApiGateway::Stage'))
         assert_successful_evaluation(self, response, resp_expected)
 
-
 class LoggingLevelTest(unittest.TestCase):
     rule_parameters = '{"loggingLevel": "ERROR,INFO"}'
 
     #Scenario 2: Non compliant for Resource Type AWS::ApiGateway::Stage
+    def test_logging_level_default_off(self):
+        stage_settings = {
+            'methodSettings':{}
+        }
+        invoking_event = build_invoking_event(stage_settings, 'AWS::ApiGateway::Stage', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/limit')
+        RULE.ASSUME_ROLE_MODE = False
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, self.rule_parameters), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/abcd123fgh/stages/limit', 'AWS::ApiGateway::Stage', 'The Logging Level for this API Gateway Stage does not match the value for rule parameter (loggingLevel): [\'ERROR\', \'INFO\'].'))
+        assert_successful_evaluation(self, response, resp_expected)
+
     def test_logging_level_overriden_off(self):
         stage_settings = {
             'methodSettings':{
                 '~1test~1{proxy}/GET':{
-                    'loggingLevel':'OFF',
-                    'dataTraceEnabled':False
+                    'loggingLevel':'OFF'
                 },
                 '*/*':{
-                    'loggingLevel':'INFO',
-                    'dataTraceEnabled':True
+                    'loggingLevel':'INFO'
                 }
             }
         }
@@ -117,8 +123,7 @@ class LoggingLevelTest(unittest.TestCase):
         stage_settings = {
             'methodSettings':{
                 '*/*':{
-                    'loggingLevel':'INFO',
-                    'dataTraceEnabled':False
+                    'loggingLevel':'INFO'
                 }
             }
         }
@@ -134,8 +139,7 @@ class LoggingLevelTest(unittest.TestCase):
         stage_settings = {
             'methodSettings':{
                 '*/*':{
-                    'loggingLevel':'ERROR',
-                    'dataTraceEnabled':False
+                    'loggingLevel':'ERROR'
                 }
             }
         }
@@ -153,8 +157,7 @@ class LoggingLevelTest(unittest.TestCase):
         stage_settings = {
             'methodSettings':{
                 '*/*':{
-                    'loggingLevel':'INFO',
-                    'dataTraceEnabled':False
+                    'loggingLevel':'INFO'
                 }
             }
         }
@@ -169,8 +172,7 @@ class LoggingLevelTest(unittest.TestCase):
         stage_settings = {
             'methodSettings':{
                 '*/*':{
-                    'loggingLevel':'ERROR',
-                    'dataTraceEnabled':False
+                    'loggingLevel':'ERROR'
                 }
             }
         }
@@ -185,12 +187,10 @@ class LoggingLevelTest(unittest.TestCase):
         stage_settings = {
             'methodSettings':{
                 '~1test~1{proxy}/GET':{
-                    'loggingLevel':'INFO',
-                    'dataTraceEnabled':False
+                    'loggingLevel':'INFO'
                 },
                 '*/*':{
-                    'loggingLevel':'INFO',
-                    'dataTraceEnabled':False
+                    'loggingLevel':'INFO'
                 }
             }
         }
@@ -206,8 +206,7 @@ class LoggingLevelTest(unittest.TestCase):
         stage_settings = {
             'methodSettings':{
                 '*/*':{
-                    'loggingLevel':'ERROR',
-                    'dataTraceEnabled':False
+                    'loggingLevel':'ERROR'
                 }
             }
         }
@@ -223,8 +222,7 @@ class LoggingLevelTest(unittest.TestCase):
     def test_apiv2_change_loglevel_to_off(self):
         stage_settings = {
             'defaultRouteSettings':{
-                'loggingLevel':'OFF',
-                'dataTraceEnabled':False,
+                'loggingLevel':'OFF'
             },
         }
         RULE.ASSUME_ROLE_MODE = False
@@ -238,8 +236,7 @@ class LoggingLevelTest(unittest.TestCase):
     def test_apiv2_change_loglevel_to_info(self):
         stage_settings = {
             'defaultRouteSettings':{
-                'loggingLevel':'INFO',
-                'dataTraceEnabled':False
+                'loggingLevel':'INFO'
             }
         }
         invoking_event = build_invoking_event(stage_settings, 'AWS::ApiGatewayV2::Stage', 'arn:aws:apigateway:us-east-1::/apis/qwert123yu/stages/test')
@@ -248,7 +245,6 @@ class LoggingLevelTest(unittest.TestCase):
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'arn:aws:apigateway:us-east-1::/apis/qwert123yu/stages/test', 'AWS::ApiGatewayV2::Stage'))
         assert_successful_evaluation(self, response, resp_expected)
-
 
 ####################
 # Helper Functions #
