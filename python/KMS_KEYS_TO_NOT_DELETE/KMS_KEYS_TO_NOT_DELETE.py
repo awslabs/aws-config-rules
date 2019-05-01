@@ -32,41 +32,40 @@ Rule Parameters:
 
 Scenarios:
     	Scenario 1:
-    	Given: At least 1 CMK is present in the AWS Account
-      	  And: Rule parameter kmsKeyIds are configured and not valid
+      	Given: Rule parameter kmsKeyIds are configured and not valid
      	 Then: Return ERROR
 
     	Scenario 2:
     	Given: No CMKs present
          Then: Return NOT_APPLICABLE
-
-    	Scenario 3:
-    	Given: At least 1 CMK is present in the AWS Account
-      	  And: Rule parameter kmsKeyIds are configured and valid
-      	  And: The KMS key in the parameter is not in list of kms keys
-     	 Then: Return NOT_APPLICABLE
-
-	Scenario 4:
-	Given: At least 1 CMK is present in the AWS Account
+	 
+	Scenario 3:
+	Given: At least 1 CMK is present
 	  And: Rule parameter kmsKeyIds are not configured
 	  And: The KMS Key is not scheduled for deletion
 	 Then: Return COMPLIANT
 
-	Scenario 5:
-	Given: At least 1 CMK is present in the AWS Account
+	Scenario 4:
+	Given: At least 1 CMK is present
 	  And: Rule parameter kmsKeyIds are not configured
 	  And: The KMS Key in the account is scheduled for deletion
 	 Then: Return NON_COMPLIANT
+	
+	Scenario 5:
+    	Given: At least 1 CMK is present
+      	  And: Rule parameter kmsKeyIds are configured and valid
+      	  And: The KMS key in the parameter is not an existing kms key
+     	 Then: Return NOT_APPLICABLE
 
 	Scenario 6:
-	Given: At least 1 CMK is present in the AWS Account
+	Given: At least 1 CMK is present
 	  And: Rule parameter kmsKeyIds are configured and valid
 	  And: The CMK is one of the keys in the parameter
 	  And: The CMK is not scheduled for deletion
 	 Then: Return COMPLIANT
 
 	Scenario 7:
-	Given: At least 1 CMK is present in the AWS Account
+	Given: At least 1 CMK is present
 	  And: Rule parameter kmsKeyIds are configured and valid
 	  And: The CMK is one of the keys in the parameter
 	  And: The CMK is scheduled for deletion
@@ -119,7 +118,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                         evaluations.append(build_evaluation(key_id, 'NON_COMPLIANT', event, annotation='The KMS Key is scheduled for deletion.'))
                         continue
                     evaluations.append(build_evaluation(key_id, 'COMPLIANT', event))
-            if not key_id in all_kms_key_list:
+            else:
                 evaluations.append(build_evaluation(key_id, 'NOT_APPLICABLE', event, 'AWS::::Account', annotation='The given kmsKeyId does not exist. Please verify the kmsKeyId and try again.'))
 
         return evaluations
