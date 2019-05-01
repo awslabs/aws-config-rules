@@ -49,8 +49,7 @@ RULE = __import__('S3_BUCKET_NAMING_CONVENTION')
 class ComplianceTest(unittest.TestCase):
 
     invoking_event_bucket = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"apps-us-east-1","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-    invoking_event_bucket_compliant = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"apps-test-us-east-1","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-    s3_bucket_list = {"Buckets": [{"Name": "852640994763-awsmacietrail-dataevent", "CreationDate": "2018-07-12T05:26:16.000Z"}]}
+    invoking_event_bucket_compliant = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"apps-test-us-east-1","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}
 
     def setUp(self):
         pass
@@ -71,7 +70,6 @@ class ComplianceTest(unittest.TestCase):
 
     def test_scenario_2_non_compliant(self):
         rule_param = "{\"regexPattern\":\".*test.*\"}"
-        S3_CLIENT_MOCK.list_buckets = MagicMock(return_value=self.s3_bucket_list)
         invoking_event = self.invoking_event_bucket
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
@@ -81,7 +79,6 @@ class ComplianceTest(unittest.TestCase):
 
     def test_scenario_3_compliant(self):
         rule_param = "{\"regexPattern\":\".*test.*\"}"
-        S3_CLIENT_MOCK.list_buckets = MagicMock(return_value=self.s3_bucket_list)
         invoking_event = self.invoking_event_bucket_compliant
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
