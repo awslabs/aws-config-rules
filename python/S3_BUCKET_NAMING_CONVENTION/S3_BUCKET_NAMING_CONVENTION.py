@@ -98,8 +98,7 @@ def evaluate_parameters(rule_parameters):
     except:
         raise ValueError('This Config Rule must have a validate regex value specified for the parameter "regexPattern".')
 
-    valid_rule_parameters = rule_parameters
-    return valid_rule_parameters
+    return rule_parameters
 
 ####################
 # Helper Functions #
