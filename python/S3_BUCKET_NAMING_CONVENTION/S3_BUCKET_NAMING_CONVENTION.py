@@ -37,14 +37,12 @@ Scenarios:
    Then: Return ERROR
 
   Scenario 2:
-  Given: At least 1 S3 bucket present
-    And: Rule parameter regexPattern is configured and valid
+  Given: Rule parameter regexPattern is configured and valid
     And: The Bucket name match the regexPattern
    Then: Return COMPLIANT
 
   Scenario 3:
-  Given: At least 1 S3 bucket present
-    And: Rule parameter regexPattern is configured and valid
+  Given: Rule parameter regexPattern is configured and valid
     And: The Bucket name does not match the regexPattern
    Then: Return NON_COMPLIANT
 
@@ -86,13 +84,11 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     pattern = re.compile(f"{pattern_str}")
 
     if pattern.match(s3_bucket_name):
-        return build_evaluation(s3_bucket_name, 'COMPLIANT', event)
+        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT', event)
 
-    return build_evaluation(s3_bucket_name, 'NON_COMPLIANT', event, annotation='The regex ({}) does not match ({}).'.format(pattern_str, s3_bucket_name))
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', event, annotation='The regex ({}) does not match ({}).'.format(pattern_str, s3_bucket_name))
 
 def evaluate_parameters(rule_parameters):
-    if not rule_parameters['regexPattern']:
-        raise ValueError('The regex value cannot be empty for the parameter "regexPattern".')
     try:
         re.compile(rule_parameters['regexPattern'])
     except:
