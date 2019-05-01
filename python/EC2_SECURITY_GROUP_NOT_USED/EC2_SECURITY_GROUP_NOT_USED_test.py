@@ -37,18 +37,18 @@ class SampleTest(unittest.TestCase):
 
     #Gherkin Scenario 1: Security group is not associated with any ENI/EC2
     def test_security_group_not_associated(self):
-        invoking_event = '{"configurationItem":{"configuration":{"groupName":"sg1"}, "relationships":[{"resourceId":"vpc-8b0422e2","resourceName":null,"resourceType":"AWS::EC2::VPC","name":"Is contained in Vpc"}], "configurationItemStatus":"OK", "resourceType":"AWS::EC2::SecurityGroup", "configurationItemCaptureTime":"2019-04-28T07:49:40.797Z", "resourceId":"sg-011af0a7f107d6256"}, "messageType":"ConfigurationItemChangeNotification"}'
+        invoking_event = '{"configurationItem":{"configuration":{"groupName":"security-group-1"}, "relationships":[{"resourceId":"vpc-8b04sge2","resourceName":null,"resourceType":"AWS::EC2::VPC","name":"Is contained in Vpc"}], "configurationItemStatus":"OK", "resourceType":"AWS::EC2::SecurityGroup", "configurationItemCaptureTime":"2019-04-28T07:49:40.797Z", "resourceId":"sg-011af0a7f107d6sg6"}, "messageType":"ConfigurationItemChangeNotification"}'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), '{}')
         resp_expected = []
-        resp_expected.append(build_expected_response("NON_COMPLIANT", "sg-011af0a7f107d6256", DEFAULT_RESOURCE_TYPE, "The security group sg1 is not associated with any ENI/EC2"))
+        resp_expected.append(build_expected_response("NON_COMPLIANT", "sg-011af0a7f107d6sg6", annotation="This Amazon EC2 Security Group is not associated with any Amazon Elastic Network Interface."))
         assert_successful_evaluation(self, response, resp_expected)
 
     #Gherkin Scenario 2: Security group is associated with atleast 1 ENI/EC2
     def test_security_group_associated(self):
-        invoking_event = '{"configurationItem":{"configuration":{"groupName":"sg2"}, "relationships":[{"resourceId":"vpc-8b0422e2","resourceName":null,"resourceType":"AWS::EC2::VPC","name":"Is contained in Vpc"},{"resourceId":"eni-07cd2307b857000e6","resourceName":null,"resourceType":"AWS::EC2::NetworkInterface","name":"Is associated with NetworkInterface"}], "configurationItemStatus":"OK", "resourceType":"AWS::EC2::SecurityGroup", "configurationItemCaptureTime":"2019-04-28T07:49:40.797Z", "resourceId":"sg-011af0a7f107d6257"}, "messageType":"ConfigurationItemChangeNotification"}'
+        invoking_event = '{"configurationItem":{"configuration":{"groupName":"security-group-2"}, "relationships":[{"resourceId":"vpc-8b04sge2","resourceName":null,"resourceType":"AWS::EC2::VPC","name":"Is contained in Vpc"},{"resourceId":"eni-123456abcdefghi18","resourceName":null,"resourceType":"AWS::EC2::NetworkInterface","name":"Is associated with NetworkInterface"}], "configurationItemStatus":"OK", "resourceType":"AWS::EC2::SecurityGroup", "configurationItemCaptureTime":"2019-04-28T07:49:40.797Z", "resourceId":"sg-011af0a7f107d6sg7"}, "messageType":"ConfigurationItemChangeNotification"}'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), '{}')
         resp_expected = []
-        resp_expected.append(build_expected_response("COMPLIANT", "sg-011af0a7f107d6257", DEFAULT_RESOURCE_TYPE))
+        resp_expected.append(build_expected_response("COMPLIANT", "sg-011af0a7f107d6sg7"))
         assert_successful_evaluation(self, response, resp_expected)
 
 ####################

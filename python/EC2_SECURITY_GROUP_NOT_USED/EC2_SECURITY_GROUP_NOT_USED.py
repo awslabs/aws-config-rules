@@ -57,10 +57,10 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     for relation in configuration_item["relationships"]:
-        #resourceId for eni: 'eni-07cd2307b857000e6'
+        #resourceId for eni: 'eni-123456abcdefghi12'
         if relation['resourceId'][0:3] == "eni":
             return build_evaluation_from_config_item(configuration_item, "COMPLIANT")
-    return build_evaluation_from_config_item(configuration_item, "NON_COMPLIANT", "The security group " + configuration_item["configuration"]["groupName"] + " is not associated with any ENI/EC2")
+    return build_evaluation_from_config_item(configuration_item, "NON_COMPLIANT", "This Amazon EC2 Security Group is not associated with any Amazon Elastic Network Interface.")
 
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = rule_parameters
