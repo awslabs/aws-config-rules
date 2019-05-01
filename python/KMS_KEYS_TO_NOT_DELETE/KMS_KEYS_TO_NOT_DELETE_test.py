@@ -21,7 +21,7 @@ except ImportError:
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::KMS::Key'
 
 #############
 # Main Code #
@@ -70,34 +70,34 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::::Account'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_3_param_not(self):
-        rule_param = "{\"kmsKeyIds\":\"fe727d4a-1bb7-4226-82d8-9d50b9aece5t\"}"
-        KMS_CLIENT_MOCK.list_keys = MagicMock(return_value=self.kms_key_list)
-        KMS_CLIENT_MOCK.describe_key = MagicMock(return_value={"KeyMetadata": {"KeyState": "PendingDeletion", "Origin": "AWS_KMS", "KeyManager": "CUSTOMER"}})
-        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
-        response = RULE.lambda_handler(lambda_event, {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', 'fe727d4a-1bb7-4226-82d8-9d50b9aece5t', 'AWS::::Account', annotation='The given kmsKeyId does not exist. Please verify the kmsKeyId and try again.'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    def test_scenario_4_no_param(self):
+    def test_scenario_3_no_param(self):
         rule_param = {}
         KMS_CLIENT_MOCK.list_keys = MagicMock(return_value=self.kms_key_list)
         KMS_CLIENT_MOCK.describe_key = MagicMock(return_value={"KeyMetadata": {"KeyState": "Enabled", "Origin": "AWS_KMS", "KeyManager": "CUSTOMER"}})
         lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', '83de41d6-6530-49c1-9cb7-1de1560ce5tg', 'AWS::KMS::Key'))
+        resp_expected.append(build_expected_response('COMPLIANT', '83de41d6-6530-49c1-9cb7-1de1560ce5tg'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario_5_noncomplaint(self):
+    def test_scenario_4_noncomplaint(self):
         rule_param = {}
         KMS_CLIENT_MOCK.list_keys = MagicMock(return_value=self.kms_key_list)
         KMS_CLIENT_MOCK.describe_key = MagicMock(return_value={"KeyMetadata": {"KeyState": "PendingDeletion", "Origin": "AWS_KMS", "KeyManager": "CUSTOMER"}})
         lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '83de41d6-6530-49c1-9cb7-1de1560ce5tg', 'AWS::KMS::Key', annotation='The KMS Key is scheduled for deletion.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', '83de41d6-6530-49c1-9cb7-1de1560ce5tg', annotation='The KMS Key is scheduled for deletion.'))
+        assert_successful_evaluation(self, response, resp_expected)
+
+    def test_scenario_5_param_not(self):
+        rule_param = "{\"kmsKeyIds\":\"fe727d4a-1bb7-4226-82d8-9d50b9aece5t\"}"
+        KMS_CLIENT_MOCK.list_keys = MagicMock(return_value=self.kms_key_list)
+        KMS_CLIENT_MOCK.describe_key = MagicMock(return_value={"KeyMetadata": {"KeyState": "PendingDeletion", "Origin": "AWS_KMS", "KeyManager": "CUSTOMER"}})
+        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
+        response = RULE.lambda_handler(lambda_event, {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', 'fe727d4a-1bb7-4226-82d8-9d50b9aece5t', annotation='The given kmsKeyId does not exist. Please verify the kmsKeyId and try again.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_scenario_6_complaint(self):
@@ -107,7 +107,7 @@ class ComplianceTest(unittest.TestCase):
         lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', '83de41d6-6530-49c1-9cb7-1de1560ce5tg', 'AWS::KMS::Key'))
+        resp_expected.append(build_expected_response('COMPLIANT', '83de41d6-6530-49c1-9cb7-1de1560ce5tg'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_scenario_7_noncomplaint(self):
@@ -117,9 +117,8 @@ class ComplianceTest(unittest.TestCase):
         lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '83de41d6-6530-49c1-9cb7-1de1560ce5tg', 'AWS::KMS::Key', annotation='The KMS Key is scheduled for deletion.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', '83de41d6-6530-49c1-9cb7-1de1560ce5tg', annotation='The KMS Key is scheduled for deletion.'))
         assert_successful_evaluation(self, response, resp_expected)
-
 
 ####################
 # Helper Functions #
