@@ -84,9 +84,9 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     pattern = re.compile(f"{pattern_str}")
 
     if pattern.match(s3_bucket_name):
-        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT', event)
+        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
 
-    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', event, annotation='The regex ({}) does not match ({}).'.format(pattern_str, s3_bucket_name))
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'The regex ({}) does not match ({}).'.format(pattern_str, s3_bucket_name))
 
 def evaluate_parameters(rule_parameters):
     try:
