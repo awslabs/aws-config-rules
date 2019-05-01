@@ -29,7 +29,6 @@ DEFAULT_RESOURCE_TYPE = 'AWS::S3::Bucket'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-S3_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
@@ -38,8 +37,6 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 's3':
-            return S3_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
