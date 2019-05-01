@@ -45,39 +45,29 @@ RULE = __import__('S3_BUCKET_NAMING_CONVENTION')
 
 class ComplianceTest(unittest.TestCase):
 
-    invoking_event_bucket = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"apps-us-east-1","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-    invoking_event_bucket_compliant = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"apps-test-us-east-1","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-
+    invoking_event_bucket = '{"configurationItem":{"configurationItemStatus":"ResourceDiscovered","configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","resourceType":"AWS::S3::Bucket","resourceId":"apps-us-east-1","resourceName":"apps-us-east-1"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
+    invoking_event_bucket_compliant = '{"configurationItem":{"configurationItemStatus":"ResourceDiscovered","configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","resourceType":"AWS::S3::Bucket","resourceId":"apps-test-us-east-1","resourceName":"apps-test-us-east-1"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
+    
     def setUp(self):
         pass
 
-    def test_scenario_1a_not_given(self):
-        rule_param = "{\"regexPattern\":\"\"}"
+    def test_scenario_1_invalid(self):
         invoking_event = self.invoking_event_bucket
-        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
-        response = RULE.lambda_handler(lambda_event, {})
-        assert_customer_error_response(self, response, "InvalidParameterValueException")
-
-    def test_scenario_1b_invalid(self):
-        rule_param = "{\"regexPattern\":\"[bad\"}"
-        invoking_event = self.invoking_event_bucket
-        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
+        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters="{\"regexPattern\":\"[bad\"}")
         response = RULE.lambda_handler(lambda_event, {})
         assert_customer_error_response(self, response, "InvalidParameterValueException")
 
     def test_scenario_2_non_compliant(self):
-        rule_param = "{\"regexPattern\":\".*test.*\"}"
         invoking_event = self.invoking_event_bucket
-        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
+        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters="{\"regexPattern\":\".*test.*\"}")
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', "apps-us-east-1", annotation='The regex (.*test.*) does not match (apps-us-east-1).'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_scenario_3_compliant(self):
-        rule_param = "{\"regexPattern\":\".*test.*\"}"
         invoking_event = self.invoking_event_bucket_compliant
-        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=rule_param)
+        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters="{\"regexPattern\":\".*test.*\"}")
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', "apps-test-us-east-1"))
