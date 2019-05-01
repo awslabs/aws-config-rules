@@ -47,7 +47,7 @@ class ComplianceTest(unittest.TestCase):
 
     invoking_event_bucket = '{"configurationItem":{"configurationItemStatus":"ResourceDiscovered","configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","resourceType":"AWS::S3::Bucket","resourceId":"apps-us-east-1","resourceName":"apps-us-east-1"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
     invoking_event_bucket_compliant = '{"configurationItem":{"configurationItemStatus":"ResourceDiscovered","configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","resourceType":"AWS::S3::Bucket","resourceId":"apps-test-us-east-1","resourceName":"apps-test-us-east-1"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-    
+
     def setUp(self):
         pass
 
