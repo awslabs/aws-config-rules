@@ -36,7 +36,6 @@ Scenarios:
     Given: AWS Shield Advanced is enabled
     And: Autorenew is ENABLED
     Then: Return COMPLIANT
-
 '''
 import json
 import sys
