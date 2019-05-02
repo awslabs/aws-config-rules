@@ -60,7 +60,6 @@ class NonCompliantTest(unittest.TestCase):
                                                               annotation=
                                                               'AWS Shield Advanced subscription is not set to Autorenew.')])
 
-
 class CompliantTest(unittest.TestCase):
     def test_scenario_3(self):
         SHIELD_CLIENT_MOCK.describe_subscription = MagicMock(return_value={'Subscription':{'AutoRenew':'ENABLED'}})
@@ -69,13 +68,6 @@ class CompliantTest(unittest.TestCase):
                                      lambda_result,
                                      [build_expected_response('COMPLIANT',
                                                               '123456789012')])
-
-    #def test_sample_2(self):
-    #    RULE.ASSUME_ROLE_MODE = False
-    #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
-    #    resp_expected = []
-    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-    #    assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #
