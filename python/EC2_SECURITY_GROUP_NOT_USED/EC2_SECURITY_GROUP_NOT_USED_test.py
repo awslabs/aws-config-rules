@@ -33,7 +33,7 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('EC2_SECURITY_GROUP_NOT_USED')
 
-class SampleTest(unittest.TestCase):
+class ComplianceTest(unittest.TestCase):
 
     #Gherkin Scenario 1: Security group is not associated with any ENI/EC2
     def test_security_group_not_associated(self):
