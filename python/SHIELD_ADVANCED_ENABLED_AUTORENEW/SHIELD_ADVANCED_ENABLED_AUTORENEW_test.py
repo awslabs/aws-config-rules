@@ -48,7 +48,7 @@ class NonCompliantTest(unittest.TestCase):
                                      lambda_result,
                                      [build_expected_response('NON_COMPLIANT',
                                                               '123456789012',
-                                                              annotation='AWS Shield Advanced is not enabled')])
+                                                              annotation='AWS Shield Advanced is not enabled.')])
 
     def test_scenario_2(self):
         SHIELD_CLIENT_MOCK.describe_subscription = MagicMock(return_value={'Subscription':{'AutoRenew':'DISABLED'}})
@@ -58,7 +58,7 @@ class NonCompliantTest(unittest.TestCase):
                                      [build_expected_response('NON_COMPLIANT',
                                                               '123456789012',
                                                               annotation=
-                                                              'AWS Shield Advanced subscription is not set to Autorenew')])
+                                                              'AWS Shield Advanced subscription is not set to Autorenew.')])
 
 
 class CompliantTest(unittest.TestCase):

@@ -27,11 +27,11 @@ Reports on:
 Scenarios:
  Scenario: 1
     Given: AWS Shield Advanced is not enabled
-    Then: Return NON_COMPLIANT with annotation "AWS Shield Advanced is not enabled"
+    Then: Return NON_COMPLIANT with annotation "AWS Shield Advanced is not enabled."
   Scenario: 2
     Given: AWS Shield Advanced is enabled
     And: Autorenew is DISABLED
-    Then: Return NON_COMPLIANT with annotation "AWS Shield Advanced subscription is not set to Autorenew"
+    Then: Return NON_COMPLIANT with annotation "AWS Shield Advanced subscription is not set to Autorenew."
   Scenario: 3
     Given: AWS Shield Advanced is enabled
     And: Autorenew is ENABLED
@@ -76,12 +76,12 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         return [build_evaluation(event['accountId'],
                                  'NON_COMPLIANT',
                                  event,
-                                 annotation='AWS Shield Advanced is not enabled')]
+                                 annotation='AWS Shield Advanced is not enabled.')]
     if shield_advanced_enabled == 'DISABLED':
         return [build_evaluation(event['accountId'],
                                  'NON_COMPLIANT',
                                  event,
-                                 annotation='AWS Shield Advanced subscription is not set to Autorenew')]
+                                 annotation='AWS Shield Advanced subscription is not set to Autorenew.')]
     return [build_evaluation(event['accountId'],
                              'COMPLIANT',
                              event)]
