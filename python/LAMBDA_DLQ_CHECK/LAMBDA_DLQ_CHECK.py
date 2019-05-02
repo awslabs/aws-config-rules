@@ -86,9 +86,9 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT',
                                                  annotation='This Lambda function is not configured for DLQ.')
     if not valid_rule_parameters:
-            return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
+        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
     if configuration_item['configuration']['deadLetterConfig'] in valid_rule_parameters:
-            return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
+        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
     return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT',
                                              annotation='This Lambda Function is not associated with the DLQ specified in the dlqArn input parameter.')
 
