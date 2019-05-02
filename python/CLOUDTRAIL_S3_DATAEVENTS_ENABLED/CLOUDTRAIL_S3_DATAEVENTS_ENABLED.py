@@ -10,7 +10,7 @@
 # the specific language governing permissions and limitations under the License.
 '''
 Description:
-  Checks that at least one AWS CloudTrail trail logs data events for the Amazon S3 service buckets. The rule returns NON_COMPLIANT if none of the trails log data events for Amazon S3 service buckets.
+  Checks that at least one AWS CloudTrail trail logs data events for the Amazon S3 service buckets. The rule returns NON_COMPLIANT if none of the trails log data events for Amazon S3 service buckets. The rule checks for trails in their HomeRegion only. The rule does not support S3 prefixes.
 Trigger:
   Periodic
 Reports on:
@@ -96,38 +96,40 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     compliant_buckets = []
     non_compliant_buckets = []
     trail_list = get_all_trails(ct_client)
+    region = event["configRuleArn"][15:].split(':')[0]
 
     #No trails configured: return NON_COMPLIANT
     if not trail_list:
-        evaluations.append(build_evaluation(event['accountId'], 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, 'There are no AWS CloudTrail Trails in the region.'))
+        evaluations.append(build_evaluation(event['accountId'], 'NON_COMPLIANT', event, annotation='No AWS CloudTrail Trails are present to log events in this region.'))
         return evaluations
 
     #No rule parameter specified, default check for all S3 buckets
     if not valid_rule_parameters:
         for trail in trail_list:
-            if trail['HasCustomEventSelectors']:
-                #example arn: arn:aws:cloudtrail:us-east-1:123456789012:trail/test
-                region = trail['TrailARN'][19:].split(':')[0]
-                ct_regional_client = boto3.client('cloudtrail', region_name=region)
-                event_selector_output = ct_regional_client.get_event_selectors(TrailName=trail['Name'])['EventSelectors']
-                data_resource_values = get_data_resource_s3_values(event_selector_output)
-                if isinstance(data_resource_values, bool):
-                    evaluations.append(build_evaluation(event['accountId'], 'COMPLIANT', event, DEFAULT_RESOURCE_TYPE))
-                    return evaluations
+            trail_region = trail['HomeRegion']
+            if trail_region == region:
+                if trail['HasCustomEventSelectors']:
+                    event_selector_output = ct_client.get_event_selectors(TrailName=trail['Name'])['EventSelectors']
+                    data_resource_values = get_data_resource_s3_values(event_selector_output)
+                    if isinstance(data_resource_values, bool):
+                        evaluations.append(build_evaluation(event['accountId'], 'COMPLIANT', event))
+                        return evaluations
 
     #Rule parameter S3BucketName is specified
     else:
         for trail in trail_list:
-            if trail['HasCustomEventSelectors']:
-                #example arn: arn:aws:cloudtrail:us-east-1:123456789012:trail/test
-                region = trail['TrailARN'][19:].split(':')[0]
-                ct_regional_client = boto3.client('cloudtrail', region_name=region)
-                event_selector_output = ct_regional_client.get_event_selectors(TrailName=trail['Name'])['EventSelectors']
-                data_resource_values = get_data_resource_s3_values(event_selector_output)
-                #if logging is enabled for 'arn:aws:s3', return COMPLIANT
-                if isinstance(data_resource_values, bool):
-                    evaluations.append(build_evaluation(event['accountId'], 'COMPLIANT', event, DEFAULT_RESOURCE_TYPE))
-                    return evaluations
+            trail_region = trail['HomeRegion']
+            if trail_region == region:
+                if trail['HasCustomEventSelectors']:
+                    #example arn: arn:aws:cloudtrail:us-east-1:123456789012:trail/test
+                    region = trail['TrailARN'][19:].split(':')[0]
+                    ct_client = boto3.client('cloudtrail', region_name=region)
+                    event_selector_output = ct_client.get_event_selectors(TrailName=trail['Name'])['EventSelectors']
+                    data_resource_values = get_data_resource_s3_values(event_selector_output)
+                    #if logging is enabled for 'arn:aws:s3', return COMPLIANT
+                    if isinstance(data_resource_values, bool):
+                        evaluations.append(build_evaluation(event['accountId'], 'COMPLIANT', event))
+                        return evaluations
 
                 #get bucket names from data resource values to store them in a list
                 for value in data_resource_values:
@@ -139,13 +141,13 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         non_compliant_buckets = (list(set(valid_rule_parameters) - set(compliant_buckets)))
         #If non_compliant_buckets is empty, logging is enabled for all required buckets
         if not non_compliant_buckets:
-            evaluations.append(build_evaluation(event['accountId'], 'COMPLIANT', event, DEFAULT_RESOURCE_TYPE))
+            evaluations.append(build_evaluation(event['accountId'], 'COMPLIANT', event))
             return evaluations
 
-        evaluations.append(build_evaluation(event['accountId'], 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, 'Not valid for some buckets: ' + str(non_compliant_buckets) + '.'))
+        evaluations.append(build_evaluation(event['accountId'], 'NON_COMPLIANT', event, annotation='AWS CloudTrail trails do not log S3 data events for buckets: ' + str(non_compliant_buckets) + '.'))
         return evaluations
 
-    evaluations.append(build_evaluation(event['accountId'], 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, 'No AWS CloudTrail Trail is configured to log data events for Amazon S3.'))
+    evaluations.append(build_evaluation(event['accountId'], 'NON_COMPLIANT', event, annotation='No AWS CloudTrail Trail is configured to log data events for Amazon S3.'))
     return evaluations
 
 def get_all_trails(ct_client):
