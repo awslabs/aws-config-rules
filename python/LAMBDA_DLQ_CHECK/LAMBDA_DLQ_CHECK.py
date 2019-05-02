@@ -28,22 +28,23 @@ Reports on:
 
 Rule Parameters:
   dlqArn
-  (Optional) Comma-separated list of SQS and SNS ARN that Lambda function must be configured for as a DLQ
+      (Optional) Comma-separated list of SQS and SNS ARN that Lambda function must be configured for as a DLQ
 
 Scenarios:
   Scenario: 1
-     Given: The dlqArn rule parameter is not valid (not a valid SNS/SQS ARN)
+     Given: The dlqArn rule parameter is configured but not valid (not a valid SNS/SQS ARN)
       Then: Return Error
   Scenario: 2
      Given: Lambda function is not configured for DLQ i.e. DeadLetterConfig is not present
+       And: The rule parameter dlqArn is not configured
       Then: Return NON_COMPLIANT with Annotation "This Lambda function is not configured for DLQ"
   Scenario: 3
      Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
-       And: The rule parameter dlqArn is empty
+       And: The rule parameter dlqArn is not configured
       Then: Return COMPLIANT
   Scenario: 4
       Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
-        And: No ARN in the dlqArn rule parameter doesn't match with the DeadLetterConfig ARN
+        And: No ARN in the dlqArn rule parameter matches with the DeadLetterConfig ARN
        Then: Return NON_COMPLIANT with Annotation "This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter"
   Scenario: 5
       Given: Lambda function is configured for DLQ i.e. DeadLetterConfig is present
@@ -76,7 +77,6 @@ ASSUME_ROLE_MODE = False
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
-
 #############
 # Main Code #
 #############
@@ -84,26 +84,15 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     if 'deadLetterConfig' not in configuration_item['configuration']:
         return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT',
-                                                 annotation='This Lambda function is not configured for DLQ')
-    if 'deadLetterConfig' in configuration_item['configuration']:
-        if not valid_rule_parameters:
+                                                 annotation='This Lambda function is not configured for DLQ.')
+    if not valid_rule_parameters:
             return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-        if configuration_item['configuration']['deadLetterConfig'] in valid_rule_parameters:
+    if configuration_item['configuration']['deadLetterConfig'] in valid_rule_parameters:
             return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
     return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT',
-                                             annotation='This Lambda Function is not associated with the DLQ specified in the "dlqArn" input parameter.')
-
+                                             annotation='This Lambda Function is not associated with the DLQ specified in the dlqArn input parameter.')
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameterbuild_expected_responses dictionary validity. Raise a ValueError for invalid parameters.
-
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
-
     if "dlqArn" not in rule_parameters:
         return {}
     dlqarn_list = [dlqarn.strip() for dlqarn in rule_parameters['dlqArn'].split(',')]
@@ -112,7 +101,7 @@ def evaluate_parameters(rule_parameters):
     for arn in dlqarn_list:
         if not (arn.startswith("arn:aws:sns:") or arn.startswith("arn:aws:sqs:")):
             raise ValueError(
-                'Invalid value for the parameter "dlqArn", Expected Comma-separated list of valid SQS or SNS ARNs')
+                'Invalid value for the parameter "dlqArn", Expected Comma-separated list of valid SQS or SNS ARNs.')
     return dlqarn_list
 
 def build_parameters_value_error_response(ex):
@@ -125,7 +114,6 @@ def build_parameters_value_error_response(ex):
                                 internal_error_details="An ValueError was raised during the validation of the Parameter value",
                                 customer_error_code="InvalidParameterValueException",
                                 customer_error_message=str(ex))
-
 
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
@@ -141,9 +129,7 @@ def get_client(service, event):
     credentials = get_assume_role_credentials(event["executionRoleArn"])
     return boto3.client(service, aws_access_key_id=credentials['AccessKeyId'],
                         aws_secret_access_key=credentials['SecretAccessKey'],
-                        aws_session_token=credentials['SessionToken']
-                       )
-
+                        aws_session_token=credentials['SessionToken'])
 
 # This generate an evaluation for config
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
@@ -165,7 +151,6 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     eval_cc['OrderingTimestamp'] = str(json.loads(event['invokingEvent'])['notificationCreationTime'])
     return eval_cc
 
-
 def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
     """Form an evaluation as a dictionary. Usually suited to report on configuration change rules.
 
@@ -183,7 +168,6 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
     eval_ci['OrderingTimestamp'] = configuration_item['configurationItemCaptureTime']
     return eval_ci
 
-
 ####################
 # Boilerplate Code #
 ####################
@@ -194,18 +178,15 @@ def check_defined(reference, reference_name):
         raise Exception('Error: ', reference_name, 'is not defined')
     return reference
 
-
 # Check whether the message is OversizedConfigurationItemChangeNotification or not
 def is_oversized_changed_notification(message_type):
     check_defined(message_type, 'messageType')
     return message_type == 'OversizedConfigurationItemChangeNotification'
 
-
 # Check whether the message is a ScheduledNotification or not.
 def is_scheduled_notification(message_type):
     check_defined(message_type, 'messageType')
     return message_type == 'ScheduledNotification'
-
 
 # Get configurationItem using getResourceConfigHistory API
 # in case of OversizedConfigurationItemChangeNotification
@@ -217,7 +198,6 @@ def get_configuration(resource_type, resource_id, configuration_capture_time):
         limit=1)
     configuration_item = result['configurationItems'][0]
     return convert_api_configuration(configuration_item)
-
 
 # Convert from the API model to the original invocation model
 def convert_api_configuration(configuration_item):
@@ -234,7 +214,6 @@ def convert_api_configuration(configuration_item):
             configuration_item['relationships'][i]['name'] = configuration_item['relationships'][i]['relationshipName']
     return configuration_item
 
-
 # Based on the type of message get the configuration item
 # either from configurationItem in the invoking event
 # or using the getResourceConfigHistiry API in getConfiguration function.
@@ -249,7 +228,6 @@ def get_configuration_item(invoking_event):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
-
 # Check whether the resource has been deleted. If it has, then the evaluation is unnecessary.
 def is_applicable(configuration_item, event):
     try:
@@ -262,7 +240,6 @@ def is_applicable(configuration_item, event):
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
     return status in ['OK', 'ResourceDiscovered'] and not event_left_scope
-
 
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')
@@ -282,7 +259,6 @@ def get_assume_role_credentials(role_arn):
             ex.response['Error']['Message'] = "InternalError"
             ex.response['Error']['Code'] = "InternalError"
         raise ex
-
 
 # This removes older evaluation (usually useful for periodic rule not reporting on AWS::::Account).
 def clean_up_old_evaluations(latest_evaluations, event):
@@ -318,7 +294,6 @@ def clean_up_old_evaluations(latest_evaluations, event):
             cleaned_evaluations.append(build_evaluation(old_resource_id, "NOT_APPLICABLE", event))
 
     return cleaned_evaluations + latest_evaluations
-
 
 def lambda_handler(event, context):
     if 'liblogging' in sys.modules:
@@ -410,17 +385,14 @@ def lambda_handler(event, context):
     # Used solely for RDK test to be able to test Lambda function
     return evaluations
 
-
 def is_internal_error(exception):
     return ((not isinstance(exception, botocore.exceptions.ClientError)) or exception.response['Error'][
         'Code'].startswith('5')
             or 'InternalError' in exception.response['Error']['Code'] or 'ServiceError' in exception.response['Error'][
                 'Code'])
 
-
 def build_internal_error_response(internal_error_message, internal_error_details=None):
     return build_error_response(internal_error_message, internal_error_details, 'InternalError', 'InternalError')
-
 
 def build_error_response(internal_error_message, internal_error_details=None, customer_error_code=None,
                          customer_error_message=None):
