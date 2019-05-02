@@ -34,7 +34,7 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('CLOUDFRONT_VIEWER_POLICY_HTTPS')
 
-class SampleTest(unittest.TestCase):
+class ComplianceTest(unittest.TestCase):
 
     invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
 
