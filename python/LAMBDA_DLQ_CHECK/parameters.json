@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.6",
     "RuleName": "LAMBDA_DLQ_CHECK",
     "SourceEvents": "AWS::Lambda::Function",
-    "OptionalParameters": "{}",
+    "OptionalParameters": "{\"dlqArn\":\"\"}",
     "InputParameters": "{}"
   },
   "Tags": "[]"

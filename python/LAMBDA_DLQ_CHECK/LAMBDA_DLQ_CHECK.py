@@ -18,7 +18,7 @@
 
 Rule Name: LAMBDA_DLQ_CHECK
 
-Description: Checks whether the AWS Lambda function is configured for a Dead Letter Queue(DLQ). The rule is NON_COMPLIANT if the Lambda function is not configured for DLQ. Trigger: Periodic
+Description: Checks whether the AWS Lambda function is configured for a Dead Letter Queue(DLQ). The rule is NON_COMPLIANT if the Lambda function is not configured for DLQ.
 
 Trigger:
   Configuration Change
@@ -28,7 +28,7 @@ Reports on:
 
 Rule Parameters:
   dlqArn
-      (Optional) Comma-separated list of SQS and SNS ARN that Lambda function must be configured for as a DLQ
+  (Optional) Comma-separated list of SQS and SNS ARN that Lambda function must be configured for as a DLQ
 
 Scenarios:
   Scenario: 1
