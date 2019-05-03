@@ -120,7 +120,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         for trail in trail_list:
             trail_region = trail['HomeRegion']
             if trail_region == region:
-                if trail['HasCustomEventSelectors']:                    
+                if trail['HasCustomEventSelectors']:
                     event_selector_output = ct_client.get_event_selectors(TrailName=trail['Name'])['EventSelectors']
                     data_resource_values = get_data_resource_s3_values(event_selector_output)
                     #if logging is enabled for 'arn:aws:s3', return COMPLIANT
