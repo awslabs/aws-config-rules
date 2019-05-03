@@ -16,7 +16,7 @@ Rule Name:
   SHIELD_ADVANCED_ENABLED_AUTORENEW
 
 Description:
-  Check whether AWS Shield Advanced is enabled and is set to autorenew. This service's API is only available in us-east-1
+  Check whether AWS Shield Advanced is enabled and is set to autorenew. As the API Endpoint of this service is only available in us-east-1, this rule should only be scheduled to run in us-east-1 region.
 
 Trigger:
   Periodic
@@ -87,14 +87,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                              event)]
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
-
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
