@@ -84,9 +84,6 @@ class NotApplicableResourceTest(unittest.TestCase):
         ELBV2_CLIENT_MOCK.describe_load_balancers = MagicMock(
             return_value={'LoadBalancers': [{'LoadBalancerArn': 'arn1', 'Type': 'other'}]}
         )
-        ELBV2_CLIENT_MOCK.describe_listeners = MagicMock(
-            return_value={'Listeners': [{'ListenerArn': 'arn1'}]}
-        )
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         assert_successful_evaluation(self, response, [build_expected_response('NOT_APPLICABLE', 'arn1')], 1)
 

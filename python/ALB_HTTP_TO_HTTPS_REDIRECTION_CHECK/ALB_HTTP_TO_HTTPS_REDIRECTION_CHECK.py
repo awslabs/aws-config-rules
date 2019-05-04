@@ -95,9 +95,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                     if(action['Type'] == 'redirect' and action['RedirectConfig']['Protocol'] == 'HTTPS'):
                         overall_listeners_eval = 'COMPLIANT'
                         continue
-                    else:
-                        overall_listeners_eval = 'NON_COMPLIANT'
-                        break
+                    overall_listeners_eval = 'NON_COMPLIANT'
             else:
                 overall_listeners_eval = 'COMPLIANT'
 
@@ -113,7 +111,7 @@ def get_str(compliance_value):
     return None
 
 def is_https_listener(listener):
-    if 'SslPolicy' in listener.keys():
+    if 'SslPolicy' in listener:
         return True
     return False
 
