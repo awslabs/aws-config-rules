@@ -76,19 +76,14 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     evaluations = []
     alb_client = get_client("elbv2", event)
     all_elbv2 = get_all_elbv2(alb_client)
-
     if not all_elbv2:
         return [build_evaluation(event['accountId'], 'NOT_APPLICABLE', event, resource_type=ACCOUNT_RESOURCE_TYPE)]
-
     for elb in all_elbv2:
         if elb['Type'] != 'application':
             evaluations.append(build_evaluation(elb['LoadBalancerArn'], 'NOT_APPLICABLE', event))
             continue
-
         alb_all_listeners = get_all_listeners(alb_client, elb['LoadBalancerArn'])
-
         overall_listeners_eval = 'NON_COMPLIANT'
-
         for lis in alb_all_listeners:
             if not is_https_listener(lis):
                 for action in lis['DefaultActions']:
@@ -98,10 +93,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                     overall_listeners_eval = 'NON_COMPLIANT'
             else:
                 overall_listeners_eval = 'COMPLIANT'
-
             if overall_listeners_eval == 'NON_COMPLIANT':
                 break
-
         evaluations.append(build_evaluation(elb['LoadBalancerArn'], overall_listeners_eval, event, annotation=get_str(overall_listeners_eval)))
     return evaluations
 
