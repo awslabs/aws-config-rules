@@ -59,21 +59,12 @@ class ComplianceTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected)
 
     #Gerkin Scenario 3: COMPLIANT
-    def test_scenario2(self):
+    def test_scenario3(self):
         invoking_event = construct_invoking_event(self.configurations[2], self.resource_id[2])
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'E234567890123', 'AWS::CloudFront::Distribution'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    #Gerkin Scenario 3: Viewer protocol policy of custom cache behavior is set to 'allow-all'
-    def test_scenario3(self):
-        invoking_event = construct_invoking_event(self.configurations[0], self.resource_id[0])
-        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
-        response = RULE.lambda_handler(lambda_event, {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'E0123456789012', 'AWS::CloudFront::Distribution', annotation='''ViewerProtocolPolicy for CacheBehavior with path pattern "images/*.jpg" is set to 'allow-all.' '''))
         assert_successful_evaluation(self, response, resp_expected)
 
 def construct_invoking_event(config, resource_id):
