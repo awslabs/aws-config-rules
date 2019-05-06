@@ -36,14 +36,12 @@ RULE = __import__('CLOUDFRONT_VIEWER_POLICY_HTTPS')
 
 class ComplianceTest(unittest.TestCase):
 
-    invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-
     resource_id = ['E0123456789012', 'E1234567891234', 'E234567890123']
 
     configurations = [{'distributionConfig':{'cacheBehaviors':{'quantity':2, 'items':[{'viewerProtocolPolicy':'allow-all', 'pathPattern':'images/*.jpg'}, {'viewerProtocolPolicy':'allow-all', 'pathPattern':'videos/*.mp4'}]}, 'defaultCacheBehavior': {'viewerProtocolPolicy':'redirect-to-https'}}}, {'distributionConfig':{'cacheBehaviors':{'quantity':0}, 'defaultCacheBehavior':{'viewerProtocolPolicy':'allow-all'}}}, {'distributionConfig':{'cacheBehaviors':{'quantity':0}, 'defaultCacheBehavior':{'viewerProtocolPolicy':'redirect-to-https'}}}]
 
-    #Gerkin Scenario 1a: Default viewer protocol policy is set to 'allow-all'
-    def test_scenario1a(self):
+    #Gerkin Scenario 1: Default viewer protocol policy is set to 'allow-all'
+    def test_scenario1(self):
         invoking_event = construct_invoking_event(self.configurations[1], self.resource_id[1])
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
@@ -51,8 +49,17 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'E1234567891234', 'AWS::CloudFront::Distribution', annotation='''Default ViewerProtocolPolicy is set to 'allow-all' for this Amazon CloudFront distribution.'''))
         assert_successful_evaluation(self, response, resp_expected)
 
-    #Gerkin Scenario 1b: COMPLIANT
-    def test_scenario1b(self):
+    #Gerkin Scenario 2: Viewer protocol policy of custom cache behavior is set to 'allow-all'
+    def test_scenario2(self):
+        invoking_event = construct_invoking_event(self.configurations[0], self.resource_id[0])
+        lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
+        response = RULE.lambda_handler(lambda_event, {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'E0123456789012', 'AWS::CloudFront::Distribution', annotation='''ViewerProtocolPolicy for CacheBehavior with path pattern "images/*.jpg" is set to 'allow-all.' '''))
+        assert_successful_evaluation(self, response, resp_expected)
+
+    #Gerkin Scenario 3: COMPLIANT
+    def test_scenario2(self):
         invoking_event = construct_invoking_event(self.configurations[2], self.resource_id[2])
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
@@ -60,8 +67,8 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', 'E234567890123', 'AWS::CloudFront::Distribution'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    #Gerkin Scenario 2: Viewer protocol policy of custom cache behavior is set to 'allow-all'
-    def test_scenario2(self):
+    #Gerkin Scenario 3: Viewer protocol policy of custom cache behavior is set to 'allow-all'
+    def test_scenario3(self):
         invoking_event = construct_invoking_event(self.configurations[0], self.resource_id[0])
         lambda_event = build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
