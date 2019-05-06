@@ -137,7 +137,7 @@ class ComplianceTest(unittest.TestCase):
         }
     }
 
-    # Scenario 1: If caching is not enabled, return NON_COMPLIANT
+    # Scenario 1: If caching is not enabled for the stage, return NON_COMPLIANT
     def test_scenario_1_cache_not_enabled(self):
         resp_expected = []
         invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.cache_not_enabled)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
@@ -146,35 +146,17 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'This Amazon API Gateway Stage is not configured for cache.'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    # Scenario 1: If caching is enabled for the stage but not enabled for one of the methods, return NON_COMPLIANT
-    def test_scenario_1_method_cache_not_enabled(self):
+    # Scenario 2: If caching is enabled for the stage but not enabled for one or more of the methods, return NON_COMPLIANT
+    def test_scenario_2_method_cache_not_enabled(self):
         resp_expected = []
         invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.method_cache_not_enabled)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
 
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'A cache is not configured in this Amazon API Gateway Stage for the following method(s): ~1/HEAD'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'Cache is not configured in this Amazon API Gateway Stage for the following method(s): ~1/HEAD'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    # Scenario 2: If caching is enabled but not encrypted for the stage, return NON_COMPLIANT
-    def test_scenario_2_cache_enabled_not_encrypted(self):
-        resp_expected = []
-        invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.cache_enabled_not_encrypted)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
-
-        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache is not encrypted in this Amazon API Gateway Stage for the following method(s): */*'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    # Scenario 2: If caching is enabled but not encrypted for one of the methods, return NON_COMPLIANT
-    def test_scenario_2_method_encryption_not_enabled(self):
-        resp_expected = []
-        invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.method_encryption_not_enabled)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
-
-        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache is not encrypted in this Amazon API Gateway Stage for the following method(s): ~1/HEAD'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    # Scenario 2: If caching is either not enabled or not encrypted for one of the methods, return NON_COMPLIANT
-    def test_scenario_2_method_cache_encryption_false(self):
+    # Scenario 3: If caching is enabled for the stage but not enabled or encrypted for one or more of the methods, return NON_COMPLIANT
+    def test_scenario_3_method_cache_encryption_false(self):
         resp_expected = []
         invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.method_cache_encryption_false)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
 
@@ -182,8 +164,26 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache is either not configured or not encrypted in this Amazon API Gateway Stage for the following method(s): ~1/POST ~1/HEAD'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    # Scenario 3: If caching is enabled and encrypted, return COMPLIANT
-    def test_scenario_3_cache_enabled_encrypted(self):
+    # Scenario 4: If caching is enabled but not encrypted for the stage, return NON_COMPLIANT
+    def test_scenario_4_cache_enabled_not_encrypted(self):
+        resp_expected = []
+        invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.cache_enabled_not_encrypted)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
+
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), {})
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache is not encrypted in this Amazon API Gateway Stage for the following method(s): */*'))
+        assert_successful_evaluation(self, response, resp_expected)
+
+    # Scenario 4: If caching is enabled for the stage and all methods but not encrypted for one or more of the methods, return NON_COMPLIANT
+    def test_scenario_4_method_encryption_not_enabled(self):
+        resp_expected = []
+        invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.method_encryption_not_enabled)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
+
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), {})
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache is not encrypted in this Amazon API Gateway Stage for the following method(s): ~1/HEAD'))
+        assert_successful_evaluation(self, response, resp_expected)
+
+    # Scenario 5: If caching is enabled and encrypted for the stage, return COMPLIANT
+    def test_scenario_5_cache_enabled_encrypted(self):
         resp_expected = []
         invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.cache_enabled_encrypted)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
 
@@ -191,8 +191,8 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    # Scenario 3: If caching is enabled and encrypted for all methods, return COMPLIANT
-    def test_scenario_3_method_cache_enabled_encrypted(self):
+    # Scenario 5: If caching is enabled amd encrypted for the stage and all methods, return COMPLIANT
+    def test_scenario_5_method_cache_enabled_encrypted(self):
         resp_expected = []
         invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.method_cache_enabled_encrypted)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
 
