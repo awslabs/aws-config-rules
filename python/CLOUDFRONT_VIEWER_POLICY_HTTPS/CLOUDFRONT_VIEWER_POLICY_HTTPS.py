@@ -11,19 +11,21 @@
 
 """
 Description:
-  Checks whether your Amazon CloudFront Distributions use HTTPS (directly or via a redirection). The rule returns NON_COMPLIANT if the ViewerProtocolPolicy is set to 'allow-all' (i.e Viewers can use HTTP or HTTPS).
+  Checks whether your Amazon CloudFront Distributions use HTTPS (directly or via a redirection). The rule returns NON_COMPLIANT if the ViewerProtocolPolicy is set to 'allow-all' in the defaultCacheBehavior or in the cacheBehaviors (i.e Viewers can use HTTP or HTTPS).
 Trigger:
   Configuration Change on AWS::CloudFront::Distribution
 Reports on:
   AWS::CloudFront::Distribution
 Rule Parameters:
   None
-Scenarios:
-  Scenario: 1
-     Given: The value for 'ViewerProtocolPolicy' is 'allow-all' for at least one CacheBehavior
+Scenario: 1
+     Given: The value for 'ViewerProtocolPolicy' is 'allow-all' for the default cacheBehavior
       Then: Return NON_COMPLIANT
-  Scenario: 2
-     Given: The value for 'ViewerProtocolPolicy' is not 'allow-all' for all the CacheBehaviors
+Scenario: 2
+     Given: The value for 'ViewerProtocolPolicy' is 'allow-all' for at least one custom cacheBehavior
+      Then: Return NON_COMPLIANT
+Scenario: 3
+     Given: The value for 'ViewerProtocolPolicy' is not 'allow-all' for all the cacheBehaviors
       Then: Return COMPLIANT
 """
 
