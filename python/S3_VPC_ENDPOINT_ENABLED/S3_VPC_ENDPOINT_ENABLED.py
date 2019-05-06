@@ -76,16 +76,20 @@ def get_vpcendpoints(vpc_id, event):
     compliance_results = {}
     ec2_client = get_client('ec2', event)
     compliance = 'NON_COMPLIANT'
+    region = get_region_from_config_arn(event)
     annotate = 'There are no Amazon S3 VPC endpoints present in '+ vpc_id+'.'
     response = ec2_client.describe_vpc_endpoints(Filters=[
                 {
                     'Name':'vpc-id',
                     'Values':[vpc_id]
+                },
+                {
+                    'Name':'service-name',
+                    'Values': ['com.amazonaws.'+region+'.s3']
                 }])
-    for vpce in response['VpcEndpoints']:
-        endpoint_name = vpce['ServiceName']
-        endpoint_state = vpce['State']
-        if is_s3endpoint(endpoint_name):
+    if response['VpcEndpoints'] != []:
+        for vpce in response['VpcEndpoints']:
+            endpoint_state = vpce['State']
             annotate = 'The Amazon S3 VPC endpoint is not in Available state '+vpc_id+'.'
             if is_available(endpoint_state):
                 annotate = None
@@ -93,34 +97,24 @@ def get_vpcendpoints(vpc_id, event):
     compliance_results['%s' %(vpc_id)] = [annotate, compliance]
     return compliance_results
 
-
-def is_s3endpoint(endpointname):
-    if 's3' not in endpointname:
-        return False
-    return True
+def get_region_from_config_arn(event):
+    return event['configRuleArn'].split(':')[3]
 
 def is_available(endpointstate):
-    if endpointstate == 'available':
-        return True
-    return False
+    return endpointstate == 'available'
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     vpc_list = []
     evaluations = []
     ec2_client = get_client('ec2', event)
-    account_id = event['accountId']
     vpc_response = ec2_client.describe_vpcs()
-
-    try:
-        if not vpc_response['Vpcs']:
-            evaluations.append(build_evaluation(account_id, 'NOT_APPLICABLE', event))
-        for vpc in vpc_response['Vpcs']:
-            vpc_list.append(vpc['VpcId'])
-        for vpc in vpc_list:
-            evaluation_payload = get_vpcendpoints(vpc, event)
-            evaluations.append(build_evaluation(vpc, evaluation_payload[vpc][1], event, annotation=evaluation_payload[vpc][0]))
-    except Exception as exception:
-        return build_internal_error_response(exception, internal_error_details=None)
+    if not vpc_response['Vpcs']:
+        evaluations.append(build_evaluation(event['accountId'], 'NOT_APPLICABLE', event))
+    for vpc in vpc_response['Vpcs']:
+        vpc_list.append(vpc['VpcId'])
+    for vpc in vpc_list:
+        evaluation_payload = get_vpcendpoints(vpc, event)
+        evaluations.append(build_evaluation(vpc, evaluation_payload[vpc][1], event, annotation=evaluation_payload[vpc][0]))
     return evaluations
 
 def evaluate_parameters(rule_parameters):
