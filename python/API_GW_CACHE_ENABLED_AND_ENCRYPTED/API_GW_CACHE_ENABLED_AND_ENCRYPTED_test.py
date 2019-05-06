@@ -173,6 +173,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache is not encrypted in this Amazon API Gateway Stage for the following method(s): ~1/HEAD'))
         assert_successful_evaluation(self, response, resp_expected)
 
+    # Scenario 2: If caching is either not enabled or not encrypted for one of the methods, return NON_COMPLIANT
     def test_scenario_2_method_cache_encryption_false(self):
         resp_expected = []
         invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.method_cache_encryption_false)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
