@@ -40,34 +40,19 @@ class ComplianceTest(unittest.TestCase):
         "stageName": "StageV1",
         "cacheClusterEnabled": False,
         "cacheClusterStatus": "NOT_AVAILABLE",
-        "methodSettings": {},
-        "createdDate": "Sep 18, 2018 4:17:40 PM",
-        "lastUpdatedDate": "Sep 18, 2018 4:17:40 PM"
+        "methodSettings": {}
     }
 
     cache_enabled_not_encrypted = {
         "deploymentId": "upwjvm",
         "stageName": "StageV1",
         "cacheClusterEnabled": True,
-        "cacheClusterSize": "0.5",
-        "cacheClusterStatus": "AVAILABLE",
         "methodSettings": {
             "*/*": {
-                "metricsEnabled": False,
-                "loggingLevel": "INFO",
-                "dataTraceEnabled": False,
-                "throttlingBurstLimit": 5000,
-                "throttlingRateLimit": 10000,
                 "cachingEnabled": True,
-                "cacheTtlInSeconds": 300,
-                "cacheDataEncrypted": False,
-                "requireAuthorizationForCacheControl": True,
-                "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                "cacheDataEncrypted": False
             }
-        },
-        "tracingEnabled": False,
-        "createdDate": "Mar 15, 2019 8:58:54 PM",
-        "lastUpdatedDate": "Mar 15, 2019 8:59:02 PM"
+        }
     }
 
 
@@ -75,136 +60,81 @@ class ComplianceTest(unittest.TestCase):
         "deploymentId": "upwjvm",
         "stageName": "StageV1",
         "cacheClusterEnabled": True,
-        "cacheClusterSize": "0.5",
-        "cacheClusterStatus": "AVAILABLE",
         "methodSettings": {
             "*/*": {
-                "metricsEnabled": False,
-                "loggingLevel": "INFO",
-                "dataTraceEnabled": False,
-                "throttlingBurstLimit": 5000,
-                "throttlingRateLimit": 10000,
                 "cachingEnabled": True,
-                "cacheTtlInSeconds": 300,
-                "cacheDataEncrypted": True,
-                "requireAuthorizationForCacheControl": True,
-                "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                "cacheDataEncrypted": True
             },
             "~1/HEAD": {
-                "metricsEnabled": False,
-                "loggingLevel": "INFO",
-                "dataTraceEnabled": True,
-                "throttlingBurstLimit": 5000,
-                "throttlingRateLimit": 10000.0,
                 "cachingEnabled": False,
-                "cacheTtlInSeconds": 300,
-                "cacheDataEncrypted": False,
-                "requireAuthorizationForCacheControl": True,
-                "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                "cacheDataEncrypted": False
             }
-        },
-        "tracingEnabled": False,
-        "createdDate": "Mar 15, 2019 8:58:54 PM",
-        "lastUpdatedDate": "Mar 15, 2019 8:59:02 PM"
+        }
     }
 
     method_encryption_not_enabled = {
         "deploymentId": "upwjvm",
         "stageName": "StageV1",
         "cacheClusterEnabled": True,
-        "cacheClusterSize": "0.5",
-        "cacheClusterStatus": "AVAILABLE",
         "methodSettings": {
             "*/*": {
-                "metricsEnabled": False,
-                "loggingLevel": "INFO",
-                "dataTraceEnabled": False,
-                "throttlingBurstLimit": 5000,
-                "throttlingRateLimit": 10000,
                 "cachingEnabled": True,
-                "cacheTtlInSeconds": 300,
-                "cacheDataEncrypted": True,
-                "requireAuthorizationForCacheControl": True,
-                "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                "cacheDataEncrypted": True
             },
             "~1/HEAD": {
-                "metricsEnabled": False,
-                "loggingLevel": "INFO",
-                "dataTraceEnabled": True,
-                "throttlingBurstLimit": 5000,
-                "throttlingRateLimit": 10000.0,
                 "cachingEnabled": True,
-                "cacheTtlInSeconds": 300,
-                "cacheDataEncrypted": False,
-                "requireAuthorizationForCacheControl": True,
-                "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                "cacheDataEncrypted": False
             }
-        },
-        "tracingEnabled": False,
-        "createdDate": "Mar 15, 2019 8:58:54 PM",
-        "lastUpdatedDate": "Mar 15, 2019 8:59:02 PM"
+        }
     }
 
     cache_enabled_encrypted = {
         "deploymentId": "upwjvm",
         "stageName": "StageV1",
         "cacheClusterEnabled": True,
-        "cacheClusterSize": "0.5",
-        "cacheClusterStatus": "AVAILABLE",
         "methodSettings": {
             "*/*": {
-                "metricsEnabled": False,
-                "loggingLevel": "INFO",
-                "dataTraceEnabled": False,
-                "throttlingBurstLimit": 5000,
-                "throttlingRateLimit": 10000,
                 "cachingEnabled": True,
-                "cacheTtlInSeconds": 300,
-                "cacheDataEncrypted": True,
-                "requireAuthorizationForCacheControl": True,
-                "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
-                }
-        },
-        "tracingEnabled": False,
-        "createdDate": "Mar 15, 2019 8:58:54 PM",
-        "lastUpdatedDate": "Mar 15, 2019 8:59:02 PM"
+                "cacheDataEncrypted": True
+            }
+        }
     }
+
+    method_cache_encryption_false = {
+        "deploymentId": "upwjvm",
+        "stageName": "StageV1",
+        "cacheClusterEnabled": True,
+        "methodSettings": {
+            "*/*": {
+                "cachingEnabled": True,
+                "cacheDataEncrypted": True
+            },
+            "~1/HEAD": {
+                "cachingEnabled": True,
+                "cacheDataEncrypted": False,
+            },
+            "~1/POST": {
+                "cachingEnabled": False,
+                "cacheDataEncrypted": False,
+            }
+        }
+    }
+
 
     method_cache_enabled_encrypted = {
         "deploymentId": "upwjvm",
         "stageName": "StageV1",
         "cacheClusterEnabled": True,
-        "cacheClusterSize": "0.5",
-        "cacheClusterStatus": "AVAILABLE",
         "methodSettings": {
             "*/*": {
-                "metricsEnabled": False,
-                "loggingLevel": "INFO",
-                "dataTraceEnabled": False,
-                "throttlingBurstLimit": 5000,
-                "throttlingRateLimit": 10000,
                 "cachingEnabled": True,
-                "cacheTtlInSeconds": 300,
-                "cacheDataEncrypted": True,
-                "requireAuthorizationForCacheControl": True,
-                "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                "cacheDataEncrypted": True
             },
             "~1/HEAD": {
-                "metricsEnabled": False,
-                "loggingLevel": "ERROR",
-                "dataTraceEnabled": True,
-                "throttlingBurstLimit": 500,
-                "throttlingRateLimit": 10000.0,
                 "cachingEnabled": True,
-                "cacheTtlInSeconds": 300,
                 "cacheDataEncrypted": True,
-                "requireAuthorizationForCacheControl": True,
-                "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
-                }
-        },
-        "tracingEnabled": False,
-        "createdDate": "Mar 15, 2019 8:58:54 PM",
-        "lastUpdatedDate": "Mar 15, 2019 8:59:02 PM"
+            }
+        }
     }
 
     # Scenario 1: If caching is not enabled, return NON_COMPLIANT
@@ -222,7 +152,7 @@ class ComplianceTest(unittest.TestCase):
         invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.method_cache_not_enabled)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
 
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'This Amazon API Gateway Stage is not configured for cache.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'A cache is not configured in this Amazon API Gateway Stage for the following method(s): ~1/HEAD'))
         assert_successful_evaluation(self, response, resp_expected)
 
     # Scenario 2: If caching is enabled but not encrypted for the stage, return NON_COMPLIANT
@@ -231,7 +161,7 @@ class ComplianceTest(unittest.TestCase):
         invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.cache_enabled_not_encrypted)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
 
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache for this Amazon API Gateway Stage is not encrypted.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache is not encrypted in this Amazon API Gateway Stage for the following method(s): */*'))
         assert_successful_evaluation(self, response, resp_expected)
 
     # Scenario 2: If caching is enabled but not encrypted for one of the methods, return NON_COMPLIANT
@@ -240,7 +170,15 @@ class ComplianceTest(unittest.TestCase):
         invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.method_encryption_not_enabled)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
 
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache for this Amazon API Gateway Stage is not encrypted.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache is not encrypted in this Amazon API Gateway Stage for the following method(s): ~1/HEAD'))
+        assert_successful_evaluation(self, response, resp_expected)
+
+    def test_scenario_2_method_cache_encryption_false(self):
+        resp_expected = []
+        invoking_event = '{"configurationItem": {"configuration":' + json.dumps(self.method_cache_encryption_false)+ ',"configurationItemCaptureTime": "2019-03-20T04:54:40.620Z", "awsAccountId": "123456789012", "configurationItemStatus": "ResourceDiscovered", "resourceType": "AWS::ApiGateway::Stage", "resourceId": "arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1", "resourceName": "dev", "resourceCreationTime": "2018-09-18T16:17:40.430Z"}, "messageType": "ConfigurationItemChangeNotification"}'
+
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), {})
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'arn:aws:apigateway:us-east-1::/restapis/1ab2cd34ef/stages/StageV1', 'AWS::ApiGateway::Stage', 'The cache is either not configured or not encrypted in this Amazon API Gateway Stage for the following method(s): ~1/POST ~1/HEAD'))
         assert_successful_evaluation(self, response, resp_expected)
 
     # Scenario 3: If caching is enabled and encrypted, return COMPLIANT
