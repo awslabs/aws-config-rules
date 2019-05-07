@@ -89,13 +89,7 @@ class ComplianceTest(unittest.TestCase):
                     "PolicyDocument": "{\"Version\":\"2008-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"*\",\"Resource\":\"*\"}]}",
                     "RouteTableIds": [
                         "rtb-0ba1ba4f40636b1fd"
-                    ],
-                    "SubnetIds": [],
-                    "Groups": [],
-                    "PrivateDnsEnabled": 'false',
-                    "NetworkInterfaceIds": [],
-                    "DnsEntries": [],
-                    "CreationTimestamp": "2019-03-29T18:25:47.000Z"
+                    ]
                 }
             ]
         }
@@ -121,13 +115,7 @@ class ComplianceTest(unittest.TestCase):
                     "PolicyDocument": "{\"Version\":\"2008-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"*\",\"Resource\":\"*\"}]}",
                     "RouteTableIds": [
                         "rtb-0ba1ba4f40636b1fd"
-                    ],
-                    "SubnetIds": [],
-                    "Groups": [],
-                    "PrivateDnsEnabled": 'false',
-                    "NetworkInterfaceIds": [],
-                    "DnsEntries": [],
-                    "CreationTimestamp": "2019-03-29T18:25:47.000Z"
+                    ]
                 },
                 {
                     "VpcEndpointId": "vpce-03ff48d1f2709aa88",
@@ -139,32 +127,7 @@ class ComplianceTest(unittest.TestCase):
                     "RouteTableIds": [],
                     "SubnetIds": [
                         "subnet-711b7d3b"
-                    ],
-                    "Groups": [
-                        {
-                            "GroupId": "sg-ceee1485",
-                            "GroupName": "default"
-                        }
-                    ],
-                    "PrivateDnsEnabled": 'True',
-                    "NetworkInterfaceIds": [
-                        "eni-0d20d888cf4ecb0ef"
-                    ],
-                    "DnsEntries": [
-                        {
-                            "DnsName": "secretsmanager.us-east-1.amazonaws.com",
-                            "HostedZoneId": "ZI25M5QAN720W"
-                        },
-                        {
-                            "DnsName": "vpce-03ff48d1f2709aa88-oqdrglvo.secretsmanager.us-east-1.vpce.amazonaws.com",
-                            "HostedZoneId": "Z7HUB22UULQXV"
-                        },
-                        {
-                            "DnsName": "vpce-03ff48d1f2709aa88-oqdrglvo-us-east-1b.secretsmanager.us-east-1.vpce.amazonaws.com",
-                            "HostedZoneId": "Z7HUB22UULQXV"
-                        }
-                    ],
-                    "CreationTimestamp": "2018-08-15T14:29:07.000Z"
+                    ]
                 }
             ]
         }
