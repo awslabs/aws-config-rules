@@ -69,29 +69,30 @@ ALLOWED_LOGGING_LEVEL_VALUES = ["ERROR", "INFO"]
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-
     stage = configuration_item['configuration']
+    methods_logging_not_enabled = []
 
     #Resource Type AWS::ApiGateway::Stage
     if configuration_item['resourceType'] == 'AWS::ApiGateway::Stage':
         if stage["methodSettings"]:
             for method in stage["methodSettings"]:
-                #Scenario 2: If at least one method in 'methodSettings' has the 'loggingLevel' set to a value not in rule parameter return non_compliant.
                 if stage["methodSettings"][method]["loggingLevel"] not in valid_rule_parameters:
-                    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'The Logging Level for this API Gateway Stage does not match the value for rule parameter (loggingLevel): ' + str(valid_rule_parameters) + '.')
+                    methods_logging_not_enabled.append(method)
+            if methods_logging_not_enabled:
+                #Scenario 2: If at least one method in 'methodSettings' has the 'loggingLevel' set to a value not in rule parameter return non_compliant.
+                return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'Logging Level of this API Gateway Stage does not match the value for rule parameter (loggingLevel): ' + str(valid_rule_parameters) + ' for the following method(s): [' + ', '.join(methods_logging_not_enabled) + '].')
             #Scenario 3: If all methods in 'methodSettings' have the 'loggingLevel' set to a value in rule parameter return compliant.
             return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'The Logging Level for this API Gateway Stage does not match the value for rule parameter (loggingLevel): ' + str(valid_rule_parameters) + '.')
+        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'Logging is not configured for this API Gateway Stage.')
 
     #Resource Type AWS::ApiGatewayV2::Stage
     if stage["defaultRouteSettings"]["loggingLevel"] in valid_rule_parameters:
          #Scenario 3: If all methods in 'methodSettings' have the 'loggingLevel' set to a value in rule parameter return compliant.
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
     #Scenario 2: If at least one method in 'methodSettings' has the 'loggingLevel' set to a value not in rule parameter return non_compliant.
-    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'The Logging Level for this API Gateway Stage does not match the value for rule parameter (loggingLevel): ' + str(valid_rule_parameters) + '.')
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', 'Logging Level of this API Gateway Stage does not match the value for rule parameter (loggingLevel): ' + str(valid_rule_parameters) + '.')
 
 def evaluate_parameters(rule_parameters):
-
     valid_rule_parameters = ALLOWED_LOGGING_LEVEL_VALUES
     #Scenario 1: The rule parameter is invalid
     if "loggingLevel" in rule_parameters:
