@@ -76,7 +76,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     alb_client = get_client("elbv2", event)
     all_elbv2 = get_all_elbv2(alb_client)
     if not all_elbv2:
-        return [build_evaluation(event['accountId'], 'NOT_APPLICABLE', event, resource_type='AWS::::Account')]
+        return build_evaluation(event['accountId'], 'NOT_APPLICABLE', event, resource_type='AWS::::Account')
     for elb in all_elbv2:
         if elb['Type'] != 'application':
             evaluations.append(build_evaluation(elb['LoadBalancerArn'], 'NOT_APPLICABLE', event))
