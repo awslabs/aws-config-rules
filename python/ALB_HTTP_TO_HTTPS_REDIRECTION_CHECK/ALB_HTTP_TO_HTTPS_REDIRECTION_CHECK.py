@@ -60,7 +60,6 @@ except ImportError:
 
 # Define the default resource to report to Config Rules
 DEFAULT_RESOURCE_TYPE = 'AWS::ElasticLoadBalancingV2::LoadBalancer'
-ACCOUNT_RESOURCE_TYPE = 'AWS::::Account'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
@@ -77,7 +76,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     alb_client = get_client("elbv2", event)
     all_elbv2 = get_all_elbv2(alb_client)
     if not all_elbv2:
-        return [build_evaluation(event['accountId'], 'NOT_APPLICABLE', event, resource_type=ACCOUNT_RESOURCE_TYPE)]
+        return [build_evaluation(event['accountId'], 'NOT_APPLICABLE', event, resource_type='AWS::::Account')]
     for elb in all_elbv2:
         if elb['Type'] != 'application':
             evaluations.append(build_evaluation(elb['LoadBalancerArn'], 'NOT_APPLICABLE', event))
@@ -85,14 +84,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         alb_all_listeners = get_all_listeners(alb_client, elb['LoadBalancerArn'])
         overall_listeners_eval = 'NON_COMPLIANT'
         for lis in alb_all_listeners:
-            if not is_https_listener(lis):
-                for action in lis['DefaultActions']:
-                    if(action['Type'] == 'redirect' and action['RedirectConfig']['Protocol'] == 'HTTPS'):
-                        overall_listeners_eval = 'COMPLIANT'
-                        continue
-                    overall_listeners_eval = 'NON_COMPLIANT'
-            else:
+            if is_https_listener(lis):
                 overall_listeners_eval = 'COMPLIANT'
+                continue
+            for action in lis['DefaultActions']:
+                if action['Type'] == 'redirect' and action['RedirectConfig']['Protocol'] == 'HTTPS':
+                    overall_listeners_eval = 'COMPLIANT'
+                    continue
+                overall_listeners_eval = 'NON_COMPLIANT'
+                break
             if overall_listeners_eval == 'NON_COMPLIANT':
                 break
         evaluations.append(build_evaluation(elb['LoadBalancerArn'], overall_listeners_eval, event, annotation=get_str(overall_listeners_eval)))
