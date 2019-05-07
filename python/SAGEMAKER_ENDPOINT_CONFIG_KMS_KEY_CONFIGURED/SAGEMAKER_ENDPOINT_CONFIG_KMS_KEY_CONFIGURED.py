@@ -89,8 +89,7 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 def get_all_endpoint_config_names(client):
-    """This function returns all the\
-    Sage maker endpoint configs """
+    """This function returns all the Sage maker endpoint configs """
 
     list_of_endpoint_config = []
     paginator = client.get_paginator('list_endpoint_configs')
@@ -130,22 +129,24 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     #SCE 2
     if not endpoint_config_list:
         return "NOT_APPLICABLE"
+
     for endpoint_config in endpoint_config_list:
         sagemaker_endpoint_details = sagemaker_client.describe_endpoint_config(EndpointConfigName=endpoint_config)
+
         if 'KmsKeyId' in sagemaker_endpoint_details:
-        #SCENARIO 6: KmsKey sepcified in sagemaker endpoint and no rule parameters
+
+            #SCENARIO 6: KmsKey sepcified in sagemaker endpoint and no rule parameters
             if not valid_rule_parameters:
                 evaluations.append(build_evaluation(endpoint_config, 'COMPLIANT', event))
 
-            #SCENARIO 5: KmsKey specified in the sagemaker endpoint \
-            # and it matches with the rule parameters
+            #SCENARIO 5: KmsKey specified in the sagemaker endpoint and it matches with the rule parameters
             elif sagemaker_endpoint_details['KmsKeyId'] in valid_rule_parameters:
                 evaluations.append(build_evaluation(endpoint_config, 'COMPLIANT', event))
 
-            #SCENARIO 4: KmsKey specified in the sagemaker endpoint \
-            # and does not it matches with the rule parameters
+            #SCENARIO 4: KmsKey specified in the sagemaker endpoint and does not it matches with the rule parameters
             else:
                 evaluations.append(build_evaluation(endpoint_config, 'NON_COMPLIANT', event, annotation="AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyIds)"))
+
         #SCENARIO 3: KmsKey is not specified in the sagemaker endpoint
         else:
             evaluations.append(build_evaluation(endpoint_config, 'NON_COMPLIANT', event, annotation="No AWS KMS Key is configured for this Amazon SageMaker Endpoint Config."))
