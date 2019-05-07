@@ -73,18 +73,18 @@ def shield_advanced_check(client):
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     shield_advanced_enabled = shield_advanced_check(get_client('shield', event))
     if shield_advanced_enabled == 'ResourceNotFoundException':
-        return [build_evaluation(event['accountId'],
+        return build_evaluation(event['accountId'],
                                  'NON_COMPLIANT',
                                  event,
-                                 annotation='AWS Shield Advanced is not enabled.')]
+                                 annotation='AWS Shield Advanced is not enabled.')
     if shield_advanced_enabled == 'DISABLED':
-        return [build_evaluation(event['accountId'],
+        return build_evaluation(event['accountId'],
                                  'NON_COMPLIANT',
                                  event,
-                                 annotation='AWS Shield Advanced subscription is not set to Autorenew.')]
-    return [build_evaluation(event['accountId'],
+                                 annotation='AWS Shield Advanced subscription is not set to Autorenew.')
+    return build_evaluation(event['accountId'],
                              'COMPLIANT',
-                             event)]
+                             event)
 
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = rule_parameters
