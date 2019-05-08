@@ -49,21 +49,25 @@ RULE = __import__('SAGEMAKER_ENDPOINT_CONFIG_KMS_KEY_CONFIGURED')
 
 class ComplianceTest(unittest.TestCase):
 
-    rule_parameters_scenario3 = '{"keyIds":"arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487h3d, arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4edg-8131-7c98e9487e3d"}'
+    rule_parameters_scenario3 = '{"keyArns":"arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487h3d, arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4edg-8131-7c98e9487e3d"}'
     list_endpoints_scenario3 = [{'EndpointConfigs':[{'EndpointConfigName':'endpoint1'}, {'EndpointConfigName':'endpoint2'}]}]
     described_endpoints_scenario3 = [{'EndpointConfigName':'endpoint1', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint1'}, {'EndpointConfigName': 'endpoint2', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint2'}]
 
-    rule_parameters_scenario4 = '{"keyIds":"arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487h3d, arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4edg-8131-7c98e9487e3d"}'
-    list_endpoints_scenario4 = [{'EndpointConfigs':[{'EndpointConfigName':'endpoint1'}, {'EndpointConfigName':'endpoint2'}]}]
-    described_endpoints_scenario4 = [{'EndpointConfigName':'endpoint1', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint1'}, {'EndpointConfigName': 'endpoint2', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint2', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d'}]
+    rule_parameters_scenario4 = '{"keyArns":"arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487h3d, arn:aws:kms:us-south-1:305333957852:key/ae27766l-b0d4-4ed2-8131-7c13e9487e3d"}'
+    list_endpoints_scenario4 = [{'EndpointConfigs':[{'EndpointConfigName':'endpoint3'}, {'EndpointConfigName':'endpoint4'}]}]
+    described_endpoints_scenario4 = [{'EndpointConfigName':'endpoint3', 'KmsKeyId': 'arn:aws:kms:us-west-1:305333956852:key/ae34566a-b0k4-4ed2-8131-7c00f1487s3d', 'EndpointConfigArn': 'arn:aws:sagemaker:us-west-1:305333956852:endpoint-config/endpoint3'}, {'EndpointConfigName': 'endpoint4', 'EndpointConfigArn': 'arn:aws:sagemaker:us-apsoutheast-1-1:305333956852:endpoint-config/endpoint4', 'KmsKeyId': 'arn:aws:kms:us-apsoutheast-1:305333957852:key/ae27766a-b0d4-4ed2-8131-7c13e9487e3d'}]
 
-    rule_parameters_scenario5 = '{"keyIds":"arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d, arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3f"}'
-    list_endpoints_scenario5 = [{'EndpointConfigs':[{'EndpointConfigName':'endpoint1'}, {'EndpointConfigName':'endpoint2'}]}]
-    described_endpoints_scenario5 = [{'EndpointConfigName':'endpoint1', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint1'}, {'EndpointConfigName': 'endpoint2', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint2', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3f'}]
+    rule_parameters_scenario5 = '{"keyArns":"arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d, arn:aws:kms:us-southeast-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d"}'
+    list_endpoints_scenario5 = [{'EndpointConfigs':[{'EndpointConfigName':'endpoint5'}, {'EndpointConfigName':'endpoint6'}]}]
+    described_endpoints_scenario5 = [{'EndpointConfigName':'endpoint5', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint5'}, {'EndpointConfigName': 'endpoint6', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint6', 'KmsKeyId': 'arn:aws:kms:us-southeast-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d'}]
 
     rule_parameters_scenario6 = '{}'
-    list_endpoints_scenario6 = [{'EndpointConfigs':[{'EndpointConfigName':'endpoint1'}, {'EndpointConfigName':'endpoint2'}]}]
-    described_endpoints_scenario6 = [{'EndpointConfigName':'endpoint1', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint1'}, {'EndpointConfigName': 'endpoint2', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint2', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3f'}]
+    list_endpoints_scenario6 = [{'EndpointConfigs':[{'EndpointConfigName':'endpoint7'}, {'EndpointConfigName':'endpoint8'}]}]
+    described_endpoints_scenario6 = [{'EndpointConfigName':'endpoint7', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint7'}, {'EndpointConfigName': 'endpoint8', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint8', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3f'}]
+
+    rule_parameters_scenario7 = '{"keyArns":"arn:aws:kms:us-east-1:305333956852:key/fd21166a-k9c0-1sj3-7225-1klqm8170a2z, arn:aws:kms:us-east-1:305333956852:key/fd21166a-k1c0-1vj3-7225-1klqm4170a2z"}'
+    list_endpoints_scenario7 = [{'EndpointConfigs':[{'EndpointConfigName':'endpoint9'}, {'EndpointConfigName':'endpoint10'}, {'EndpointConfigName':'endpoint11'}]}]
+    described_endpoints_scenario7 = [{'EndpointConfigName':'endpoint9', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/fd21166a-k9c0-1sj3-7225-1klqm8170a2z', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint9'}, {'EndpointConfigName':'endpoint10', 'KmsKeyId': 'arn:aws:kms:us-east-1:305333956852:key/fd21436a-k9c0-1sj3-7225-1mnbm8170a9g', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint10'}, {'EndpointConfigName':'endpoint11', 'EndpointConfigArn': 'arn:aws:sagemaker:us-east-1:305333956852:endpoint-config/endpoint11'}]
 
 
     invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
@@ -94,6 +98,12 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'endpoint2', annotation="No AWS KMS Key is configured for this Amazon SageMaker Endpoint Config."))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
+    #Scenario 4 Given: The rule parameter 'keyArns' is provided and is valid
+    #And: At least one Amazon SageMaker endpoint config exists
+    #And: 'KmsKeyId' is specified for the Amazon SageMaker Endpoint Config
+    #And: None of the AWS KMS key IDs specified in the rule parameter 'keyArns' match 'KmsKeyId'
+    #Then: Return NON_COMPLIANT with annotation "AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyArns): <allowed key IDs>."
+
     def test_scenario_4_no_matching_keyids(self):
         SAGEMAKER_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
@@ -102,9 +112,14 @@ class ComplianceTest(unittest.TestCase):
         SAGEMAKER_CLIENT_MOCK.describe_endpoint_config = MagicMock(side_effect=self.described_endpoints_scenario4)
         resp_expected = []
         response = RULE.lambda_handler(lambda_event, {})
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'endpoint1', annotation="AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyIds)"))
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'endpoint2', annotation="AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyIds)"))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'endpoint3', annotation="AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyArns)"))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'endpoint4', annotation="AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyArns)"))
         assert_successful_evaluation(self, response, resp_expected, 2)
+
+    #Scenario 5 Given: The rule parameter 'keyArns' is provided and is valid
+    #And: At least one Amazon SageMaker endpoint config exists
+    #And: 'KmsKeyId' is specified in the Amazon SageMaker Endpoint Config
+    #And: One of the AWS KMS key IDs specified in the rule parameter 'keyArns' matches 'KmsKeyId'
 
     def test_scenario_5_compliant(self):
         SAGEMAKER_CLIENT_MOCK.configure_mock(**{
@@ -114,9 +129,14 @@ class ComplianceTest(unittest.TestCase):
         lambda_event = build_lambda_scheduled_event(rule_parameters=self.rule_parameters_scenario5)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'endpoint1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'endpoint2'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'endpoint5'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'endpoint6'))
         assert_successful_evaluation(self, response, resp_expected, 2)
+
+    #Scenario 6 Given: The rule parameter 'keyArns' is not provided
+    #And: At least one Amazon SageMaker endpoint config exists
+    #And: 'KmsKeyId' is specified in the Amazon SageMaker Endpoint Config
+
 
     def test_scenario_6_compliant(self):
         SAGEMAKER_CLIENT_MOCK.configure_mock(**{
@@ -126,17 +146,34 @@ class ComplianceTest(unittest.TestCase):
         lambda_event = build_lambda_scheduled_event(rule_parameters=self.rule_parameters_scenario6)
         resp_expected = []
         response = RULE.lambda_handler(lambda_event, {})
-        resp_expected.append(build_expected_response('COMPLIANT', 'endpoint1'))
-        resp_expected.append(build_expected_response('COMPLIANT', 'endpoint2'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'endpoint7'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'endpoint8'))
         assert_successful_evaluation(self, response, resp_expected, 2)
 
+    def test_scenario7_mix(self):
+        SAGEMAKER_CLIENT_MOCK.configure_mock(**{
+            "get_paginator.return_value":SAGEMAKER_CLIENT_MOCK,
+            "paginate.return_value":self.list_endpoints_scenario7
+            })
+        SAGEMAKER_CLIENT_MOCK.describe_endpoint_config = MagicMock(side_effect=self.described_endpoints_scenario7)
+        lambda_event = build_lambda_scheduled_event(rule_parameters=self.rule_parameters_scenario7)
+        resp_expected = []
+        response = RULE.lambda_handler(lambda_event, {})
+        resp_expected.append(build_expected_response('COMPLIANT', 'endpoint9'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'endpoint10', annotation="AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyArns)"))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'endpoint11', annotation="No AWS KMS Key is configured for this Amazon SageMaker Endpoint Config."))
+        assert_successful_evaluation(self, response, resp_expected, 3)
+
 class ParametersTest(unittest.TestCase):
-    rule_parameters_scenario1 = '{"keyIds":"arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d, arn:als:kms:us-east-1:305333956852:keys/ae25566a-c0d4-4ed2-8131-7c98e9487e3d"}'
+    rule_parameters_scenario1 = '{"keyArns":"arn:aws:kms:us-east-1:305333956852:key/ae25566a-c0d4-4ed2-8131-7c98e9487e3d, arn:als:kms:us-east-1:305333956852:keys/ae25566a-c0d4-4ed2-8131-7c98e9487e3d"}'
+
+    #Scenario: 1
+    #Given: The rule parameter 'keyArns' is provided and is invalid
 
     def test_scenario1(self):
         lambda_event = build_lambda_scheduled_event(rule_parameters=self.rule_parameters_scenario1)
         response = RULE.lambda_handler(lambda_event, {})
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', customer_error_message='The KMS Key id should be in the right format.')
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', customer_error_message='The KMS Key arn should be in the right format.')
 
 ####################
 # Helper Functions #

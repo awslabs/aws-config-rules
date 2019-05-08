@@ -14,6 +14,7 @@
 #####################################
 Rule Name:
     SAGEMAKER_ENDPOINT_CONFIG_KMS_KEY_CONFIGURED
+
 Description:
   Check whether an AWS KMS key is configured for an Amazon SageMaker Endpoint Config.
 
@@ -24,11 +25,11 @@ Reports on:
   AWS::SageMaker::EndpointConfig
 
 Rule Parameters:
-  keyIds(Optional) Comma-separated list of allowed AWS KMS key IDs.
+  keyArns(Optional) Comma-separated list of allowed AWS KMS key IDs.
 
 Scenarios:
   Scenario: 1
-     Given: The rule parameter 'keyIds' is provided and is invalid
+     Given: The rule parameter 'keyArns' is provided and is invalid
       Then: Return ERROR
   Scenario: 2
      Given: No Amazon SageMaker endpoint configs exist
@@ -36,24 +37,21 @@ Scenarios:
   Scenario: 3
      Given: At least one Amazon SageMaker endpoint config exists
        And: 'KmsKeyId' is not specified for the Amazon SageMaker Endpoint Config
-      Then: Return NON_COMPLIANT with annotation\
-       "No AWS KMS Key is configured for this Amazon SageMaker Endpoint Config."
+      Then: Return NON_COMPLIANT with annotation "No AWS KMS Key is configured for this Amazon SageMaker Endpoint Config."
   Scenario: 4
-     Given: The rule parameter 'keyIds' is provided and is valid
+     Given: The rule parameter 'keyArns' is provided and is valid
        And: At least one Amazon SageMaker endpoint config exists
        And: 'KmsKeyId' is specified for the Amazon SageMaker Endpoint Config
-       And: None of the AWS KMS key IDs specified in the rule parameter 'keyIds' match 'KmsKeyId'
-      Then: Return NON_COMPLIANT with annotation "AWS KMS Key configured\
-           for this Amazon SageMaker Endpoint Config\
-       is not an KMS Key allowed in the rule parameter (keyIds): <allowed key IDs>."
+       And: None of the AWS KMS key IDs specified in the rule parameter 'keyArns' match 'KmsKeyId'
+      Then: Return NON_COMPLIANT with annotation "AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyArns): <allowed key IDs>."
   Scenario: 5
-     Given: The rule parameter 'keyIds' is provided and is valid
+     Given: The rule parameter 'keyArns' is provided and is valid
        And: At least one Amazon SageMaker endpoint config exists
        And: 'KmsKeyId' is specified in the Amazon SageMaker Endpoint Config
-       And: One of the AWS KMS key IDs specified in the rule parameter 'keyIds' matches 'KmsKeyId'
+       And: One of the AWS KMS key IDs specified in the rule parameter 'keyArns' matches 'KmsKeyId'
       Then: Return COMPLIANT
   Scenario: 6
-     Given: The rule parameter 'keyIds' is not provided
+     Given: The rule parameter 'keyArns' is not provided
        And: At least one Amazon SageMaker endpoint config exists
        And: 'KmsKeyId' is specified in the Amazon SageMaker Endpoint Config
       Then: Return COMPLIANT
@@ -65,7 +63,6 @@ import datetime
 import re
 import boto3
 import botocore
-
 
 try:
     import liblogging
@@ -99,53 +96,31 @@ def get_all_endpoint_config_names(client):
             list_of_endpoint_config.append(endpoint_config['EndpointConfigName'])
     return list_of_endpoint_config
 
-
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
-
-    ###############################
-    # Add your custom logic here. #
-    ###############################
     evaluations = []
     sagemaker_client = get_client('sagemaker', event)
     endpoint_config_list = get_all_endpoint_config_names(sagemaker_client)
-    #SCE 2
+
+    #SCENARIO 2: No Amazon SageMaker endpoint configs exist
     if not endpoint_config_list:
-        return "NOT_APPLICABLE"
+        return None
 
     for endpoint_config in endpoint_config_list:
         sagemaker_endpoint_details = sagemaker_client.describe_endpoint_config(EndpointConfigName=endpoint_config)
 
         if 'KmsKeyId' in sagemaker_endpoint_details:
 
-            #SCENARIO 6: KmsKey sepcified in sagemaker endpoint and no rule parameters
+            #SCENARIO 6: The rule parameter 'keyArns' is not provided and at least one Amazon SageMaker endpoint config exists and 'KmsKeyId' is specified in the Amazon SageMaker Endpoint Config
             if not valid_rule_parameters:
                 evaluations.append(build_evaluation(endpoint_config, 'COMPLIANT', event))
 
-            #SCENARIO 5: KmsKey specified in the sagemaker endpoint and it matches with the rule parameters
+            #SCENARIO 5: The rule parameter 'keyArns' is provided and is valid and at least one Amazon SageMaker endpoint config exists and KmsKeyId' is specified in the Amazon SageMaker Endpoint Config and one of the AWS KMS key IDs specified in the rule parameter 'keyArns' matches 'KmsKeyId'
             elif sagemaker_endpoint_details['KmsKeyId'] in valid_rule_parameters:
                 evaluations.append(build_evaluation(endpoint_config, 'COMPLIANT', event))
 
-            #SCENARIO 4: KmsKey specified in the sagemaker endpoint and does not it matches with the rule parameters
+            #SCENARIO 4: The rule parameter 'keyArns' is provided and is valid and at least one Amazon SageMaker endpoint config exists and 'KmsKeyId' is specified for the Amazon SageMaker Endpoint Config and None of the AWS KMS key IDs specified in the rule parameter 'keyArns' match 'KmsKeyId'.
             else:
-                evaluations.append(build_evaluation(endpoint_config, 'NON_COMPLIANT', event, annotation="AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyIds)"))
+                evaluations.append(build_evaluation(endpoint_config, 'NON_COMPLIANT', event, annotation="AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyArns)"))
 
         #SCENARIO 3: KmsKey is not specified in the sagemaker endpoint
         else:
@@ -154,31 +129,23 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     return evaluations
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
-
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
     if not rule_parameters:
         return {}
 
-    if not 'keyIds' in rule_parameters:
+    if not 'keyArns' in rule_parameters:
         return {}
 
-    given_keyids = rule_parameters['keyIds'].replace(' ', '').split(',')
-    valid_keyids = []
+    given_keyarns = rule_parameters['keyArns'].replace(' ', '').split(',')
+    valid_keyarns = []
 
-    #SCENARIO1: The rule parameter'keyIds'is provided and is invalid.
+    #SCENARIO1: The rule parameter'keyArns'is provided and is invalid.
 
-    for given_keyid in given_keyids:
+    for given_keyid in given_keyarns:
         if not re.match('arn:aws:kms:[a-z0-9-]+:[0-9]{12}:key/[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}', given_keyid):
-            raise ValueError('The KMS Key id should be in the right format.')
-        valid_keyids.append(given_keyid)
+            raise ValueError('The KMS Key arn should be in the right format.')
+        valid_keyarns.append(given_keyid)
 
-    return valid_keyids
+    return valid_keyarns
 
 
 
