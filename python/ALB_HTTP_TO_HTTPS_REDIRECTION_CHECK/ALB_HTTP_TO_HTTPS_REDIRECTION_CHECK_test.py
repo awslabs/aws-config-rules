@@ -85,7 +85,7 @@ class NotApplicableResourceTest(unittest.TestCase):
             return_value={'LoadBalancers': [{'LoadBalancerArn': 'arn1', 'Type': 'other'}]}
         )
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-        assert_successful_evaluation(self, response, [build_expected_response('NOT_APPLICABLE', '123456789012','AWS::::Account')], 1)
+        assert_successful_evaluation(self, response, [build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::::Account')], 1)
 
 ####################
 # Helper Functions #
