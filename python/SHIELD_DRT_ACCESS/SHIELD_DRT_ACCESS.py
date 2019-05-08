@@ -81,7 +81,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                                 event)
     return build_evaluation(event['accountId'],
                             'NON_COMPLIANT',
-                            event,annotation='DRT team does not have access to account.')
+                            event, annotation='DRT team does not have access to account.')
 
 def evaluate_parameters(rule_parameters):
     
