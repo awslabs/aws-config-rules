@@ -38,13 +38,11 @@ RULE = __import__('SHIELD_DRT_ACCESS')
 
 class SampleTest(unittest.TestCase):
 
-    event_drt_access = { 'RoleArn': 'arn:aws:iam::123456789012:role/test', 'LogBucketList': [ 'some_string', ] }
-    event_drt_not_enabled = botocore.exceptions.ClientError( {'Error': {'Code': 'ResourceNotFoundException', 
-                                                                        'Message': 'The subscription does not exist.'}},
-                                                             'operation')
+    event_drt_access = {'RoleArn':'arn:aws:iam::123456789012:role/test','LogBucketList':['some_string']}
+    event_drt_not_enabled = botocore.exceptions.ClientError({'Error':{'Code':'ResourceNotFoundException','Message': 'The subscription does not exist.'}},'operation')
 
     def test_scenario_1(self):
-        SHIELD_CLIENT_MOCK.describe_drt_access = MagicMock(side_effect=self.event_drt_not_enabled)
+        SHIELD_CLIENT_MOCK.describe_drt_access=MagicMock(side_effect=self.event_drt_not_enabled)
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         assert_successful_evaluation(self,
                                      response,
