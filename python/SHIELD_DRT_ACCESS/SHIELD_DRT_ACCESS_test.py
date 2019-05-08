@@ -42,7 +42,7 @@ class SampleTest(unittest.TestCase):
     event_drt_not_enabled = botocore.exceptions.ClientError({'Error':{'Code':'ResourceNotFoundException', 'Message': 'The subscription does not exist.'}}, 'operation')
 
     def test_scenario_1(self):
-        SHIELD_CLIENT_MOCK.describe_drt_access=MagicMock(side_effect=self.event_drt_not_enabled)
+        SHIELD_CLIENT_MOCK.describe_drt_access = MagicMock(side_effect=self.event_drt_not_enabled)
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         assert_successful_evaluation(self,
                                      response,
@@ -51,7 +51,7 @@ class SampleTest(unittest.TestCase):
                                                               annotation='AWS Shield Advanced is not enabled.')])
 
     def test_scenario_2(self):
-        SHIELD_CLIENT_MOCK.describe_drt_access=MagicMock(return_value={})
+        SHIELD_CLIENT_MOCK.describe_drt_access = MagicMock(return_value={})
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         assert_successful_evaluation(self,
                                      response,
@@ -60,7 +60,7 @@ class SampleTest(unittest.TestCase):
                                                               annotation='DRT team does not have access to account.')])
 
     def test_scenario_3(self):
-        SHIELD_CLIENT_MOCK.describe_drt_access=MagicMock(return_value=self.event_drt_access)
+        SHIELD_CLIENT_MOCK.describe_drt_access = MagicMock(return_value=self.event_drt_access)
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         assert_successful_evaluation(self,
                                      response,
