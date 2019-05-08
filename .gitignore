@@ -1,9 +1,0 @@
-*.zip
-*.DS_Store
-__pycache__/
-*.pyc
-bin/
-lib/
-.Python/
-include/
-
