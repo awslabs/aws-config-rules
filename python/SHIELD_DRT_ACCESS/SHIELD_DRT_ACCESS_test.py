@@ -39,10 +39,7 @@ RULE = __import__('SHIELD_DRT_ACCESS')
 class SampleTest(unittest.TestCase):
 
     def test_scenario_1(self):
-        SHIELD_CLIENT_MOCK.describe_drt_access = MagicMock(side_effect=botocore.exceptions.ClientError(
-                                                                                    {'Error':{'Code':'ResourceNotFoundException', 
-                                                                                              'Message': 'The subscription does not exist.'}}, 
-                                                                                    'operation'))
+        SHIELD_CLIENT_MOCK.describe_drt_access = MagicMock(side_effect=botocore.exceptions.ClientError({'Error':{'Code':'ResourceNotFoundException', 'Message': 'The subscription does not exist.'}}, 'operation'))
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         assert_successful_evaluation(self,
                                      response,
