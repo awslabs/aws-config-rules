@@ -507,4 +507,3 @@ def build_error_response(internal_error_message, internal_error_details=None, cu
     }
     print(error_response)
     return error_response
-
