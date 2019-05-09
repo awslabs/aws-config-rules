@@ -13,7 +13,7 @@ Rule Name:
   SHIELD_DRT_ACCESS
 
 Description:
-  Verify that DRT can access the AWS account
+  Verify that DRT can access the AWS account. As the API Endpoint of this service is only available in us-east-1, this rule should only be scheduled to run in us-east-1 region.
 
 Trigger:
   Periodic
