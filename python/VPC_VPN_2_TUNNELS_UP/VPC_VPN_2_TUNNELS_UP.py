@@ -76,7 +76,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     return None  # throwing pylint error Either all return statements in a function should return an expression, or none of them should without this
 
 def evaluate_parameters(rule_parameters):
-
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
