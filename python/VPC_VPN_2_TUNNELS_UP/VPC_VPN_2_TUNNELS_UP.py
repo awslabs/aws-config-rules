@@ -56,26 +56,23 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
+    tunnel_1_status = configuration_item['configuration']['vgwTelemetry'][0]['status']
+    tunnel_2_status = configuration_item['configuration']['vgwTelemetry'][1]['status']
 
-    tunnel_status_1 = configuration_item['configuration']['vgwTelemetry'][0]['status']
-    tunnel_status_2 = configuration_item['configuration']['vgwTelemetry'][1]['status']
-
-    if tunnel_status_1=="DOWN":
+    if tunnel_1_status == "DOWN":
         return build_evaluation_from_config_item(
             configuration_item,
             'NON_COMPLIANT',
-            annotation='This AWS VPN Connection has at least one VPN tunnel down with the ' + configuration_item['configuration']['vgwTelemetry'][0]['statusMessage']
+            annotation='This AWS VPN Connection has at least one VPN tunnel down with statusMessage: ' + configuration_item['configuration']['vgwTelemetry'][0]['statusMessage']
             )
-    elif tunnel_status_1=="DOWN":
+    if tunnel_1_status == "DOWN":
         return build_evaluation_from_config_item(
             configuration_item,
             'NON_COMPLIANT',
-            annotation='This AWS VPN Connection has at least one VPN tunnel down with the ' + configuration_item['configuration']['vgwTelemetry'][1]['statusMessage']
+            annotation='This AWS VPN Connection has at least one VPN tunnel down with statusMessage: ' + configuration_item['configuration']['vgwTelemetry'][1]['statusMessage']
             )
-    elif tunnel_status_1=="UP" and tunnel_status_2=="UP":
+    if tunnel_1_status=="UP" and tunnel_2_status=="UP":
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-    else:
-        return build_evaluation_from_config_item(configuration_item, 'NOT_APPLICABLE')
 
 def evaluate_parameters(rule_parameters):
 
