@@ -73,6 +73,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             )
     if tunnel_1_status == "UP" and tunnel_2_status == "UP":
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
+    return None  # throwing pylint error Either all return statements in a function should return an expression, or none of them should without this
 
 def evaluate_parameters(rule_parameters):
 
