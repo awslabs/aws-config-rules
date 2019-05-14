@@ -71,7 +71,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             'NON_COMPLIANT',
             annotation='This AWS VPN Connection has at least one VPN tunnel down with statusMessage: ' + configuration_item['configuration']['vgwTelemetry'][1]['statusMessage']
             )
-    if tunnel_1_status=="UP" and tunnel_2_status=="UP":
+    if tunnel_1_status == "UP" and tunnel_2_status == "UP":
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
 
 def evaluate_parameters(rule_parameters):

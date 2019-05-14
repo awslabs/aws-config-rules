@@ -16,7 +16,7 @@ try:
 except ImportError:
     from mock import MagicMock
 import botocore
-from botocore.exceptions import ClientError
+#from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -50,7 +50,7 @@ class ComplianceTest(unittest.TestCase):
     rule_parameters = '{}'
 
     def test_scenario_1_atleast_one_tunnel_is_down(self):
-           invoking_event_iam_role_sample = '{ \
+        invoking_event_iam_role_sample = '{ \
             	"messageType": "ConfigurationItemChangeNotification", \
             	"configurationItem": { \
                     "configurationItemStatus": "OK", \
@@ -68,13 +68,13 @@ class ComplianceTest(unittest.TestCase):
             		} \
             	} \
             }'
-           response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample, self.rule_parameters), {})
-           resp_expected = []
-           resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', annotation="This AWS VPN Connection has at least one VPN tunnel down with statusMessage: IPSEC IS DOWN"))
-           assert_successful_evaluation(self, response, resp_expected)
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample, self.rule_parameters), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', annotation="This AWS VPN Connection has at least one VPN tunnel down with statusMessage: IPSEC IS DOWN"))
+        assert_successful_evaluation(self, response, resp_expected)
 
     def test_scenario_2_both_tunnels_are_up(self):
-       invoking_event_iam_role_sample = '{ \
+        invoking_event_iam_role_sample = '{ \
          "messageType": "ConfigurationItemChangeNotification", \
          "configurationItem": { \
                 "configurationItemStatus": "OK", \
@@ -92,10 +92,10 @@ class ComplianceTest(unittest.TestCase):
              } \
          } \
         }'
-       response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample, self.rule_parameters), {})
-       resp_expected = []
-       resp_expected.append(build_expected_response('COMPLIANT', 'some-resource-id'))
-       assert_successful_evaluation(self, response, resp_expected)
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample, self.rule_parameters), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('COMPLIANT', 'some-resource-id'))
+        assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #
