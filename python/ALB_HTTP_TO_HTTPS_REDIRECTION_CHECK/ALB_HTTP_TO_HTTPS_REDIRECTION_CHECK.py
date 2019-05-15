@@ -91,12 +91,9 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                     if action['Type'] == 'redirect' and action['RedirectConfig']['Protocol'] == 'HTTPS':
                         overall_listeners_eval = 'COMPLIANT'
                         continue
-                    overall_listeners_eval = 'NON_COMPLIANT'
                     break
-                if overall_listeners_eval == 'NON_COMPLIANT':
-                    break
-            if overall_listeners_eval == 'NON_COMPLIANT':
                 break
+            break
         evaluations.append(build_evaluation(elb['LoadBalancerArn'], overall_listeners_eval, event, annotation=get_str(overall_listeners_eval)))
     return evaluations
 
