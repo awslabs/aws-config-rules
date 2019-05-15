@@ -14,7 +14,7 @@
 ##           Gherkin               ##
 #####################################
 Description:
-  Checks whether the API GW stage has cache enabled and is encrypted. The rule is NON_COMPLIANT if the API GW stage is not configured for cache and is not encrypted.
+  Checks whether all methods in the API GW stage have cache enabled and the cache is encrypted. The rule is NON_COMPLIANT if any method in the API GW stage is not configured for cache or the cache is not encrypted.
 
 Trigger:
   Configuration Change
@@ -31,22 +31,12 @@ Scenarios:
       Then: Return NON_COMPLIANT
   Scenario: 2
      Given: Cache is enabled for the API Gateway Stage
-       And: Cache is not enabled for one or more methods in the API Gateway Stage
+       And: Cache is not enabled or is not encypted for one or more methods in the API Gateway Stage
       Then: Return NON_COMPLIANT
   Scenario: 3
      Given: Cache is enabled for the API Gateway Stage
-       And: Cache is not enabled for one or more methods in the API Gateway Stage
-       And: The cache is not encrypted for one or more methods in the API Gateway Stage
-      Then: Return NON_COMPLIANT
-  Scenario: 4
-     Given: Cache is enabled for the API Gateway Stage
        And: Cache is enabled for all methods in the API Gateway Stage
-       And: The cache is not encrypted for one or more methods in the API Gateway Stage
-      Then: Return NON_COMPLIANT
-  Scenario: 5
-     Given: Cache is enabled for the API Gateway Stage
-       And: Cache is enabled for all methods in the API Gateway Stage
-       And: The cache is encrypted for all methods in the API Gateway Stage
+       And: Cache is encrypted for all methods in the API Gateway Stage
       Then: Return COMPLIANT
 """
 
