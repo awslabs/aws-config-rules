@@ -104,17 +104,15 @@ def is_available(endpointstate):
     return endpointstate == 'available'
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    vpc_list = []
     evaluations = []
     ec2_client = get_client('ec2', event)
     vpc_response = ec2_client.describe_vpcs()
     if not vpc_response['Vpcs']:
         evaluations.append(build_evaluation(event['accountId'], 'NOT_APPLICABLE', event))
+        return evaluations
     for vpc in vpc_response['Vpcs']:
-        vpc_list.append(vpc['VpcId'])
-    for vpc in vpc_list:
-        evaluation_payload = get_vpcendpoints(vpc, event)
-        evaluations.append(build_evaluation(vpc, evaluation_payload[vpc][1], event, annotation=evaluation_payload[vpc][0]))
+        evaluation_payload = get_vpcendpoints(vpc['VpcId'], event)
+        evaluations.append(build_evaluation(vpc['VpcId'], evaluation_payload[vpc['VpcId']][1], event, annotation=evaluation_payload[vpc['VpcId']][0]))
     return evaluations
 
 def evaluate_parameters(rule_parameters):
