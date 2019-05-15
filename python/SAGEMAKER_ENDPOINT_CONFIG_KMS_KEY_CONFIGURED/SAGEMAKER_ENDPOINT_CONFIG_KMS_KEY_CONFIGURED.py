@@ -86,7 +86,7 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 def get_all_endpoint_config_names(client):
-    """This function returns all the Sage maker endpoint configs """
+    #This function returns all the SageMaker Endpoint Configs
 
     list_of_endpoint_config = []
     paginator = client.get_paginator('list_endpoint_configs')
@@ -129,22 +129,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     return evaluations
 
 def evaluate_parameters(rule_parameters):
-    if not rule_parameters:
-        return {}
-
-    if not 'keyArns' in rule_parameters:
-        return {}
-
-    given_keyarns = rule_parameters['keyArns'].replace(' ', '').split(',')
     valid_keyarns = []
-
-    #SCENARIO1: The rule parameter'keyArns'is provided and is invalid.
-
-    for given_keyid in given_keyarns:
-        if not re.match('arn:aws:kms:[a-z0-9-]+:[0-9]{12}:key/[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}', given_keyid):
-            raise ValueError('The KMS Key arn should be in the right format.')
-        valid_keyarns.append(given_keyid)
-
+    if 'keyArns' in rule_parameters:
+        given_keyarns = rule_parameters['keyArns'].replace(' ', '').split(',')
+        for given_keyid in given_keyarns:
+            if re.match('arn:aws:kms:[a-z0-9-]+:[0-9]{12}:key/[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}', given_keyid):
+                #SCENARIO1: The rule parameter'keyArns'is provided and is invalid.
+                valid_keyarns.append(given_keyid)
+            else:
+                raise ValueError('The KMS Key arn should be in the right format.')
     return valid_keyarns
 
 
