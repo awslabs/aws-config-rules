@@ -85,12 +85,16 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             if is_https_listener(lis):
                 overall_listeners_eval = 'COMPLIANT'
                 continue
-            for action in lis['DefaultActions']:
-                if action['Type'] == 'redirect' and action['RedirectConfig']['Protocol'] == 'HTTPS':
-                    overall_listeners_eval = 'COMPLIANT'
-                    continue
-                overall_listeners_eval = 'NON_COMPLIANT'
-                break
+            rules = get_all_listener_rules(alb_client, lis['ListenerArn'])
+            for rule in rules:
+                for action in rule['Actions']:
+                    if action['Type'] == 'redirect' and action['RedirectConfig']['Protocol'] == 'HTTPS':
+                        overall_listeners_eval = 'COMPLIANT'
+                        continue
+                    overall_listeners_eval = 'NON_COMPLIANT'
+                    break
+                if overall_listeners_eval == 'NON_COMPLIANT':
+                    break
             if overall_listeners_eval == 'NON_COMPLIANT':
                 break
         evaluations.append(build_evaluation(elb['LoadBalancerArn'], overall_listeners_eval, event, annotation=get_str(overall_listeners_eval)))
@@ -120,6 +124,14 @@ def get_all_listeners(client, elbv2_arn):
     while resp:
         items += resp['Listeners']
         resp = client.describe_listeners(LoadBalancerArn=elbv2_arn, Marker=resp['NextMarker']) if 'NextMarker' in resp else None
+    return items
+
+def get_all_listener_rules(client, listener_arn):
+    resp = client.describe_rules(ListenerArn=listener_arn, PageSize=400)
+    items = []
+    while resp:
+        items += resp['Rules']
+        resp = client.describe_rules(ListenerArn=listener_arn, Marker=resp['NextMarker']) if 'NextMarker' in resp else None
     return items
 
 def evaluate_parameters(rule_parameters):

@@ -58,6 +58,13 @@ class CompliantResourceTest(unittest.TestCase):
                 {'ListenerArn': 'arn2', 'DefaultActions': [{'RedirectConfig': {'Protocol': 'HTTPS'}, 'Type': 'redirect'}]},
             ]}
         )
+
+        ELBV2_CLIENT_MOCK.describe_rules = MagicMock(
+            return_value={'Rules': [
+                {'RuleArn': 'arn1', 'Actions': [{'RedirectConfig': {'Protocol': 'HTTPS'}, 'Type': 'redirect'}]},
+                {'RuleArn': 'arn2', 'Actions': [{'RedirectConfig': {'Protocol': 'HTTPS'}, 'Type': 'redirect'}]},
+            ]}
+        )
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         resp_expected = [build_expected_response('COMPLIANT', 'arn1'), build_expected_response('COMPLIANT', 'arn2')]
         assert_successful_evaluation(self, response, resp_expected, 2)
@@ -71,6 +78,12 @@ class NonCompliantResourceTest(unittest.TestCase):
             return_value={'Listeners': [
                 {'ListenerArn': 'arn1', 'DefaultActions': [{'RedirectConfig': {'Protocol': 'HTTP'}, 'Type': 'other'}]},
                 {'ListenerArn': 'arn2', 'DefaultActions': [{'RedirectConfig': {'Protocol': 'HTTP'}, 'Type': 'other'}]},
+            ]}
+        )
+        ELBV2_CLIENT_MOCK.describe_rules = MagicMock(
+            return_value={'Rules': [
+                {'RuleArn': 'arn1', 'Actions': [{'RedirectConfig': {'Protocol': 'HTTPS'}, 'Type': 'other'}]},
+                {'RuleArn': 'arn2', 'Actions': [{'RedirectConfig': {'Protocol': 'HTTPS'}, 'Type': 'other'}]},
             ]}
         )
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
