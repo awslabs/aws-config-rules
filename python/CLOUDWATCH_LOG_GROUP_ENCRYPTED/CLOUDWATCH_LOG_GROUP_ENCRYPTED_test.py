@@ -50,12 +50,8 @@ class ComplianceTest(unittest.TestCase):
     log_group_encrypted = {
         "logGroups": [
             {
-                "storedBytes": 0,
-                "metricFilterCount": 0,
-                "creationTime": 1543925259496,
                 "logGroupName": "/aws/lambda/ALBLambda",
                 "kmsKeyId": "arn:aws:kms:us-west-2:123456789012:key/47ef70c0-ea07-46e2-a421-2d75d4ca7b57",
-                "arn": "arn:aws:logs:us-west-2:123456789012:log-group:/aws/lambda/ALBLambda:*"
             }
         ]
     }
@@ -63,12 +59,8 @@ class ComplianceTest(unittest.TestCase):
     log_group_encrypted_diff_key = {
         "logGroups": [
             {
-                "storedBytes": 0,
-                "metricFilterCount": 0,
-                "creationTime": 1543925259496,
                 "logGroupName": "/aws/lambda/ALBLambda",
                 "kmsKeyId": "arn:aws:kms:us-west-2:123456789012:key/00000-0000-000-0000-0000000",
-                "arn": "arn:aws:logs:us-west-2:123456789012:log-group:/aws/lambda/ALBLambda:*"
             }
         ]
     }
@@ -76,11 +68,7 @@ class ComplianceTest(unittest.TestCase):
     log_group_not_encrypted = {
         "logGroups": [
             {
-                "arn": "arn:aws:logs:us-west-2:123456789012:log-group:/aws/lambda/RDK-Rule-Function-AMI_CHECK:*",
-                "creationTime": 1540384026006,
-                "metricFilterCount": 0,
                 "logGroupName": "/aws/lambda/ALBLambda",
-                "storedBytes": 0
             }
         ]
     }

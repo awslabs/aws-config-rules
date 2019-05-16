@@ -114,7 +114,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             continue
 
         #if valid parameter is provided then compare with 'kmsKeyId' name/value pair.
-        if each_loggroup['kmsKeyId'] == valid_rule_parameters:
+        if each_loggroup['kmsKeyId'] == valid_rule_parameters['KmsKeyId']:
             evaluations.append(build_evaluation(each_loggroup['logGroupName'], 'COMPLIANT', event))
         else:
             evaluations.append(build_evaluation(each_loggroup['logGroupName'], 'NON_COMPLIANT', event, annotation='This CloudWatch Log Group is not encrypted with the KMS key specified in "KmsKeyId" input parameter.'))
@@ -144,7 +144,7 @@ def evaluate_parameters(rule_parameters):
     if 'arn:aws:kms' not in rule_parameters['KmsKeyId']:
         raise ValueError('Invalid value for paramter KmsKeyId, Expected KMS Key ARN')
 
-    return rule_parameters['KmsKeyId']
+    return rule_parameters
 
 ####################
 # Helper Functions #
