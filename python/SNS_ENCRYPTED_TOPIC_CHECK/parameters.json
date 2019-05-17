@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "SNS_ENCRYPTED_TOPIC_CHECK",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "SNS_ENCRYPTED_TOPIC_CHECK.zip",
+    "InputParameters": "{\"KmsKeyId\": \"alias/rcsflex\"}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
