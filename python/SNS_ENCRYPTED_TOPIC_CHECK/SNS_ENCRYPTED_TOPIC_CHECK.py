@@ -102,7 +102,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             if "KmsMasterKeyId" in response_topic_attributes_dict['Attributes'] and response_topic_attributes_dict['Attributes']['KmsMasterKeyId'] in valid_rule_parameters:
                 result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
             else:
-                result.append(build_evaluation(topic_dict['TopicArn'], 'NON_COMPLIANT', event, annotation="The Amazon Simple Notification Service topic is not encrypted with KMS Key(s) "+str(valid_rule_parameters)))
+                result.append(build_evaluation(topic_dict['TopicArn'], 'NON_COMPLIANT', event, annotation="The Amazon Simple Notification Service topic is not encrypted with following KMS Key(s): "+str(valid_rule_parameters)))
     return result
 
 
@@ -112,12 +112,10 @@ def get_all_topic(sns_client):
     result_list = []
 
     while True:
-
         if not next_token:
             response_list_topics_dict = sns_client.list_topics()
         else:
             response_list_topics_dict = sns_client.list_topics(NextToken=next_token)
-
         result_list.extend(response_list_topics_dict['Topics'])
         if 'NextToken' in response_list_topics_dict:
             next_token = response_list_topics_dict['NextToken']
@@ -126,16 +124,15 @@ def get_all_topic(sns_client):
 
 #Return valid list of KMS Key Ids
 def evaluate_parameters(rule_parameters):
+    kmskeyid_list = {}
+    if "KmsKeyId" in rule_parameters:
+        kmskeyid_list = [kmskeyid.strip() for kmskeyid in rule_parameters['KmsKeyId'].split(',')]
+        kmskeyid_list = list(filter(None, kmskeyid_list))
 
-    if "KmsKeyId" not in rule_parameters:
-        return {}
-    kmskeyid_list = [kmskeyid.strip() for kmskeyid in rule_parameters['KmsKeyId'].split(',')]
-    kmskeyid_list = list(filter(None, kmskeyid_list))
-
-    for arn in kmskeyid_list:
-        if not arn.startswith("arn:aws:kms:"):
-            raise ValueError(
-                'Invalid value for the parameter "KmsKeyId", expected valid ARN(s) of Kms Key(s)')
+        for arn in kmskeyid_list:
+            if not arn.startswith("arn:aws:kms:"):
+                raise ValueError(
+                    'Invalid value for the parameter "KmsKeyId", expected valid ARN(s) of Kms Key(s)')
     return kmskeyid_list
 
 ####################
