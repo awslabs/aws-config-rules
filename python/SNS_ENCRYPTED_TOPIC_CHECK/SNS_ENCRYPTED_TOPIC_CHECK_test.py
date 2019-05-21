@@ -39,7 +39,7 @@ RULE = __import__('SNS_ENCRYPTED_TOPIC_CHECK')
 
 class CompliantResourcesTest(unittest.TestCase):
 
-    def test_scenario_4_compliant_resources(self):
+    def test_scenario_4_compliant_resources_without_key(self):
         list_topics_result = {"Topics": [{"TopicArn":"arn:aws:sns:ap-southeast-1:123456789012:testSNS"}]}
 
         get_topic_attributes_result = {
@@ -56,7 +56,7 @@ class CompliantResourcesTest(unittest.TestCase):
         )]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
-    def test_scenario_6_compliant_resources(self):
+    def test_scenario_6_compliant_resources_with_key(self):
         list_topics_result = {"Topics": [{"TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS"}]}
 
         get_topic_attributes_result = {
@@ -76,7 +76,7 @@ class CompliantResourcesTest(unittest.TestCase):
 
 class NonCompliantResourcesTest(unittest.TestCase):
 
-    def test_scenario_3_non_compliant_resources(self):
+    def test_scenario_3_non_compliant_resources_without_key(self):
         list_topics_result = {"Topics": [{"TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic"}]}
 
         get_topic_attributes_result = {"Attributes": {}}
@@ -90,7 +90,7 @@ class NonCompliantResourcesTest(unittest.TestCase):
         )]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
-    def test_scenario_5_non_compliant_resources(self):
+    def test_scenario_5_non_compliant_resources_with_key(self):
         list_topics_result = {"Topics": [{"TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS"}]}
 
         get_topic_attributes_result = {
@@ -126,7 +126,7 @@ class NotApplicable(unittest.TestCase):
 
 class InvalidRuleParameter(unittest.TestCase):
 
-    def test_scenario_2_not_applicable(self):
+    def test_scenario_2_error(self):
         list_topics_result = {"Topics": [{"TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS"}]}
 
         get_topic_attributes_result = {
