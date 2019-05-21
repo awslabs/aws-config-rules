@@ -87,15 +87,25 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                 continue
             rules = get_all_listener_rules(alb_client, lis['ListenerArn'])
             for rule in rules:
-                for action in rule['Actions']:
-                    if action['Type'] == 'redirect' and action['RedirectConfig']['Protocol'] == 'HTTPS':
-                        overall_listeners_eval = 'COMPLIANT'
-                        continue
-                    break
+                if is_rule_compliant(rule):
+                    overall_listeners_eval = 'COMPLIANT'
+                    continue
+                overall_listeners_eval = 'NON_COMPLIANT'
                 break
-            break
+            if overall_listeners_eval == 'NON_COMPLIANT':
+                break
         evaluations.append(build_evaluation(elb['LoadBalancerArn'], overall_listeners_eval, event, annotation=get_str(overall_listeners_eval)))
     return evaluations
+
+def is_rule_compliant(rule):
+    compliant = True
+    for action in rule['Actions']:
+        if action['Type'] == 'redirect' and action['RedirectConfig']['Protocol'] == 'HTTPS':
+            compliant = True
+            continue
+        compliant = False
+        break
+    return compliant
 
 def get_str(compliance_value):
     if compliance_value == 'NON_COMPLIANT':
