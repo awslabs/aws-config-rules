@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "CLOUDWATCH_LOG_GROUP_ENCRYPTED.zip", 
+    "SourceRuntime": "python3.6", 
+    "SourcePeriodic": "One_Hour", 
+    "RuleName": "CLOUDWATCH_LOG_GROUP_ENCRYPTED", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{\"KmsKeyId\": \"\"}"
+  }, 
+  "Tags": "[]"
+}
