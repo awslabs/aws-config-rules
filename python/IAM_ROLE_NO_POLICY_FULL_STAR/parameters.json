@@ -6,6 +6,13 @@
     "CodeKey": "IAM_ROLE_NO_POLICY_FULL_STAR.zip",
     "InputParameters": "{}",
     "OptionalParameters": "{}",
-    "SourceEvents": "AWS::IAM::Role"
+    "SourceEvents": "AWS::IAM::Role",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:7.1",
+      "iam"
+    ]
   }
 }

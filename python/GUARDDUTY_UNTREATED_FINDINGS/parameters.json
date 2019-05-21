@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "GUARDDUTY_UNTREATED_FINDINGS",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "GUARDDUTY_UNTREATED_FINDINGS.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"daysLowSev\": \"30\", \"daysMediumSev\": \"7\", \"daysHighSev\": \"1\"}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}

@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "BUSINESS_SUPPORT_OR_ABOVE_ENABLED.zip", 
+    "SourceRuntime": "python3.6", 
+    "SourcePeriodic": "TwentyFour_Hours", 
+    "RuleName": "BUSINESS_SUPPORT_OR_ABOVE_ENABLED", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}

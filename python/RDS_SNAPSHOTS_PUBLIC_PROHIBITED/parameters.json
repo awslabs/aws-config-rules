@@ -8,9 +8,10 @@
     "SourceEvents": "AWS::RDS::DBInstance",
     "SourceIdentifier": "RDS_SNAPSHOTS_PUBLIC_PROHIBITED",   
     "RuleSets": [
-      "baseline",
       "rulecriticity:critical", 
-      "pci"
+      "pci",
+      "pci:1.2",
+      "rds"
     ]
   }
 }

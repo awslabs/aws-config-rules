@@ -1,16 +1,18 @@
 {
+  "Version": "1.0",
   "Parameters": {
     "RuleName": "VPC_FLOW_LOGS_ENABLED",
-    "SourceRuntime": "python3.6",
-    "CodeKey": "VPC_FLOW_LOGS_ENABLED.zip",
-    "InputParameters": "{\"trafficType\":\"\",\"LogGroupName\":\"\",\"WhiteListedVPC\":\"\"}",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"trafficType\":\"\"}",
     "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "VPC_FLOW_LOGS_ENABLED",
     "RuleSets": [
-      "accountclassification:secret",
-      "accountclassification:confidential",
-      "accountclassification:restricted",
       "rulecriticity:medium",
-      "pci"
+      "pci",
+      "pci:10.1",
+      "vpc"
     ]
   }
 }

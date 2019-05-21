@@ -1,0 +1,18 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "DYNAMODB_TABLE_ENCRYPTION_ENABLED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::DynamoDB::Table",
+    "SourceIdentifier": "DYNAMODB_TABLE_ENCRYPTION_ENABLED",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:3.4"
+    ]
+  }
+}

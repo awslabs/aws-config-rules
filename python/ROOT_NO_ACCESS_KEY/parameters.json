@@ -6,6 +6,13 @@
     "CodeKey": "ROOT_NO_ACCESS_KEY.zip",
     "InputParameters": "{}",
     "OptionalParameters": "{}",
-    "SourcePeriodic": "TwentyFour_Hours"
+    "SourcePeriodic": "TwentyFour_Hours",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:critical",
+      "pci",
+      "pci:7.1",
+      "root"
+    ]
   }
 }

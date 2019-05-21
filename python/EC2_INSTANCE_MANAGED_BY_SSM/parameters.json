@@ -1,0 +1,19 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "RuleName": "EC2_INSTANCE_MANAGED_BY_SSM",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "SourceEvents": "AWS::EC2::Instance,AWS::SSM::ManagedInstanceInventory",
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}",
+    "SourceIdentifier": "EC2_INSTANCE_MANAGED_BY_SSM",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:6.2",
+      "ssm"
+    ]
+  }
+}
