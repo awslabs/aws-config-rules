@@ -44,17 +44,16 @@ class CompliantResourcesTest(unittest.TestCase):
 
         get_topic_attributes_result = {
             "Attributes": {
-                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc"}}
-
+                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc"
+            }}
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
-
-        rule_parameters = ''
-
-        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
-        expected_response = [build_expected_response(compliance_type='COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:testSNS', annotation=None)]
-
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event({}), {})
+        expected_response = [build_expected_response(
+            'COMPLIANT',
+            'arn:aws:sns:ap-southeast-1:123456789012:testSNS'
+        )]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
     def test_scenario_6_compliant_resources(self):
@@ -62,36 +61,33 @@ class CompliantResourcesTest(unittest.TestCase):
 
         get_topic_attributes_result = {
             "Attributes": {
-                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc"}}
+                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc"
+            }}
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
-
-        rule_parameters = '{\"KmsKeyId\": \"arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc\"}'
-
+        rule_parameters = '{"KmsKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc"}'
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
-        expected_response = [build_expected_response(compliance_type='COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:testSNS', annotation=None)]
-
+        expected_response = [build_expected_response(
+            'COMPLIANT',
+            'arn:aws:sns:ap-southeast-1:123456789012:testSNS'
+        )]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
-
-
 
 class NonCompliantResourcesTest(unittest.TestCase):
 
     def test_scenario_3_non_compliant_resources(self):
         list_topics_result = {"Topics": [{"TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic"}]}
 
-        get_topic_attributes_result = {
-            "Attributes": {}}
+        get_topic_attributes_result = {"Attributes": {}}
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
-
-        rule_parameters = ''
-
-        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
-        expected_response = [build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic', annotation="The Amazon Simple Notification Service topic is not encrypted.")]
-
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event({}), {})
+        expected_response = [build_expected_response(
+             'NON_COMPLIANT',
+             'arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic', annotation="The Amazon Simple Notification Service topic is not encrypted."
+        )]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
     def test_scenario_5_non_compliant_resources(self):
@@ -99,16 +95,18 @@ class NonCompliantResourcesTest(unittest.TestCase):
 
         get_topic_attributes_result = {
             "Attributes": {
-                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc"}}
+                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc"
+            }}
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
-
-        rule_parameters = '{\"KmsKeyId\": \"arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc\"}'
-
+        rule_parameters = '{"KmsKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc"}'
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
-        expected_response = [build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:testSNS', annotation="The Amazon Simple Notification Service topic is not encrypted with following KMS Key(s): ['arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc']")]
-
+        expected_response = [build_expected_response(
+             'NON_COMPLIANT',
+             'arn:aws:sns:ap-southeast-1:123456789012:testSNS',
+             annotation="The Amazon Simple Notification Service topic is not encrypted with following KMS Key(s): ['arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc']"
+        )]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
 
@@ -121,12 +119,9 @@ class NotApplicable(unittest.TestCase):
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
-
-        rule_parameters = '{\"KmsKeyId\": \"arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc\"}'
-
+        rule_parameters = '{"KmsKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc"}'
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
         expected_response = [build_expected_response("NOT_APPLICABLE", '123456789012', 'AWS::::Account')]
-
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
 class InvalidRuleParameter(unittest.TestCase):
@@ -136,19 +131,19 @@ class InvalidRuleParameter(unittest.TestCase):
 
         get_topic_attributes_result = {
             "Attributes": {
-                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc"}}
+                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc"
+            }}
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
-
-        rule_parameters = '{\"KmsKeyId\": \"99a9f661-c02f-4046-9360-9334dex68gdc\"}'
-
+        rule_parameters = '{"KmsKeyId": "99a9f661-c02f-4046-9360-9334dex68gdc"}'
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
         assert_customer_error_response(
-            self, lambda_result, 'InvalidParameterValueException', 'Invalid value for the parameter "KmsKeyId", expected valid ARN(s) of Kms Key(s)')
-
-
-
+            self,
+            lambda_result,
+            'InvalidParameterValueException',
+            'Invalid value for the parameter "KmsKeyId", expected valid ARN(s) of Kms Key'
+        )
 
 ####################
 # Helper Functions #

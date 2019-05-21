@@ -132,7 +132,7 @@ def evaluate_parameters(rule_parameters):
         for arn in kmskeyid_list:
             if not arn.startswith("arn:aws:kms:"):
                 raise ValueError(
-                    'Invalid value for the parameter "KmsKeyId", expected valid ARN(s) of Kms Key(s)')
+                    'Invalid value for the parameter "KmsKeyId", expected valid ARN(s) of Kms Key')
     return kmskeyid_list
 
 ####################
