@@ -3,10 +3,8 @@ import unittest
 try:
     from unittest.mock import MagicMock
 except ImportError:
-    import mock
     from mock import MagicMock
 import botocore
-from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -24,7 +22,8 @@ STS_CLIENT_MOCK = MagicMock()
 SNS_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
-    def client(self, client_name, *args, **kwargs):
+    @staticmethod
+    def client(client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
@@ -85,8 +84,9 @@ class NonCompliantResourcesTest(unittest.TestCase):
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event({}), {})
         expected_response = [build_expected_response(
-             'NON_COMPLIANT',
-             'arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic', annotation="The Amazon Simple Notification Service topic is not encrypted."
+            'NON_COMPLIANT',
+            'arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic',
+            annotation="The Amazon Simple Notification Service topic is not encrypted."
         )]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
@@ -103,9 +103,9 @@ class NonCompliantResourcesTest(unittest.TestCase):
         rule_parameters = '{"KmsKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc"}'
         lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
         expected_response = [build_expected_response(
-             'NON_COMPLIANT',
-             'arn:aws:sns:ap-southeast-1:123456789012:testSNS',
-             annotation="The Amazon Simple Notification Service topic is not encrypted with following KMS Key(s): ['arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc']"
+            'NON_COMPLIANT',
+            'arn:aws:sns:ap-southeast-1:123456789012:testSNS',
+            annotation="The Amazon Simple Notification Service topic is not encrypted with following KMS Key(s): ['arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc']"
         )]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
