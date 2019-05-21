@@ -1,0 +1,19 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": " REDSHIFT_CLUSTER_CONFIGURATION_CHECK",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{\"clusterDbEncrypted\":\"true\",\"loggingEnabled\":\"true\"}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::Redshift::Cluster",
+    "SourceIdentifier": " REDSHIFT_CLUSTER_CONFIGURATION_CHECK",
+    "RuleSets": [
+      "rulecriticity:high",
+      "pci",
+      "pci:3.4",
+      "pci:10.1",
+      "redshift"
+    ]
+  }
+}

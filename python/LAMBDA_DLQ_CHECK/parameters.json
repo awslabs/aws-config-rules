@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "CodeKey": "LAMBDA_DLQ_CHECK.zip",
+    "SourceRuntime": "python3.6",
+    "RuleName": "LAMBDA_DLQ_CHECK",
+    "SourceEvents": "AWS::Lambda::Function",
+    "OptionalParameters": "{\"dlqArn\":\"\"}",
+    "InputParameters": "{}"
+  },
+  "Tags": "[]"
+}

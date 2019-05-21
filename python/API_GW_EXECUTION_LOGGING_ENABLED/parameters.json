@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "API_GW_EXECUTION_LOGGING_ENABLED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "API_GW_EXECUTION_LOGGING_ENABLED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"loggingLevel\": \"\"}",
+    "SourceEvents": "AWS::ApiGateway::Stage,AWS::ApiGatewayV2::Stage"
+  },
+  "Tags": "[]"
+}

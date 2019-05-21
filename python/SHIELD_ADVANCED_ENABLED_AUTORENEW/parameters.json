@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "SHIELD_ADVANCED_ENABLED_AUTORENEW",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "SHIELD_ADVANCED_ENABLED_AUTORENEW.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}

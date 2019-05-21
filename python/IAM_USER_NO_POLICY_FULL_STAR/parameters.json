@@ -6,6 +6,13 @@
     "CodeKey": "IAM_USER_NO_POLICY_FULL_STAR.zip",
     "InputParameters": "{}",
     "OptionalParameters": "{}",
-    "SourceEvents": "AWS::IAM::User"
+    "SourceEvents": "AWS::IAM::User",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:7.1",
+      "iam"
+    ]
   }
 }

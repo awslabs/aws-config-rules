@@ -9,7 +9,10 @@
     "SourceIdentifier": "VPC_DEFAULT_SECURITY_GROUP_CLOSED",
     "RuleSets": [
       "baseline",
-      "rulecriticity:medium"
+      "rulecriticity:medium",
+      "pci",
+      "pci:1.2",
+      "vpc"
     ]
   }
 }

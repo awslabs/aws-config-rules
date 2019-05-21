@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "SNS_TOPIC_EMAIL_SUB_IN_DOMAINS.zip", 
+    "SourceRuntime": "python3.6", 
+    "SourcePeriodic": "One_Hour", 
+    "RuleName": "SNS_TOPIC_EMAIL_SUB_IN_DOMAINS", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{\"domainNames\":\"gmail.com,notyourwish.net,merachelega.org\"}"
+  }, 
+  "Tags": "[]"
+}

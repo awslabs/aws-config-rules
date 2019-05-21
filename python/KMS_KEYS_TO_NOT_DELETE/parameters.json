@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "KMS_KEYS_TO_NOT_DELETE",
+    "SourceRuntime": "python3.6",
+    "SourcePeriodic": "One_Hour",
+    "CodeKey": "KMS_KEYS_TO_NOT_DELETE.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"kmsKeyIds\":\"\"}",
+  },
+  "Tags": "[]"
+}

@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "CLOUDFRONT_VIEWER_POLICY_HTTPS.zip", 
+    "SourceRuntime": "python3.6", 
+    "RuleName": "CLOUDFRONT_VIEWER_POLICY_HTTPS", 
+    "SourceEvents": "AWS::CloudFront::Distribution", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}

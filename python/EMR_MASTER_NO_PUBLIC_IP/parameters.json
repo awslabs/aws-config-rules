@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EMR_MASTER_NO_PUBLIC_IP",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "EMR_MASTER_NO_PUBLIC_IP.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
