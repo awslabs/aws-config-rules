@@ -47,9 +47,8 @@ RULE = __import__('VPC_VPN_2_TUNNELS_UP')
 
 class ComplianceTest(unittest.TestCase):
 
-    rule_parameters = '{}'
-
-    def test_scenario_1_atleast_one_tunnel_is_down(self):
+    #Gherkin scenario 1: At least one tunnel down.
+    def test_scenario_1_one_tunnel_is_down(self):
         invoking_event_iam_role_sample = '{ \
             	"messageType": "ConfigurationItemChangeNotification", \
             	"configurationItem": { \
@@ -73,6 +72,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', annotation="This AWS VPN Connection has at least one VPN tunnel down with statusMessage: IPSEC IS DOWN"))
         assert_successful_evaluation(self, response, resp_expected)
 
+    #Gherkin scenario 2: Both tunnels are up.
     def test_scenario_2_both_tunnels_are_up(self):
         invoking_event_iam_role_sample = '{ \
          "messageType": "ConfigurationItemChangeNotification", \
