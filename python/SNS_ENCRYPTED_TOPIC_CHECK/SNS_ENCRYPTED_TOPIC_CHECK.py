@@ -89,7 +89,12 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     topic_list_of_dict = get_all_topic(sns_client)
     result = []
     if not topic_list_of_dict:
-        return build_evaluation(event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::::Account')
+        return build_evaluation(
+            event['accountId'],
+            'NOT_APPLICABLE',
+            event,
+            resource_type='AWS::::Account'
+        )
 
     for topic_dict in topic_list_of_dict:
         response_topic_attributes_dict = sns_client.get_topic_attributes(TopicArn=topic_dict['TopicArn'])
@@ -97,12 +102,23 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             if "KmsMasterKeyId" in response_topic_attributes_dict['Attributes']:
                 result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
             else:
-                result.append(build_evaluation(topic_dict['TopicArn'], 'NON_COMPLIANT', event, annotation="The Amazon Simple Notification Service topic is not encrypted."))
+                result.append(build_evaluation(
+                    topic_dict['TopicArn'],
+                    'NON_COMPLIANT',
+                    event,
+                    annotation="The Amazon Simple Notification Service topic is not encrypted."
+                ))
         else:
-            if "KmsMasterKeyId" in response_topic_attributes_dict['Attributes'] and response_topic_attributes_dict['Attributes']['KmsMasterKeyId'] in valid_rule_parameters:
+            if "KmsMasterKeyId" in response_topic_attributes_dict['Attributes'] and \
+                    response_topic_attributes_dict['Attributes']['KmsMasterKeyId'] in valid_rule_parameters:
                 result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
             else:
-                result.append(build_evaluation(topic_dict['TopicArn'], 'NON_COMPLIANT', event, annotation="The Amazon Simple Notification Service topic is not encrypted with following KMS Key(s): "+str(valid_rule_parameters)))
+                result.append(build_evaluation(
+                    topic_dict['TopicArn'],
+                    'NON_COMPLIANT',
+                    event,
+                    annotation="The Amazon Simple Notification Service topic is not encrypted with following KMS Key(s): "+str(valid_rule_parameters)
+                ))
     return result
 
 
@@ -132,7 +148,8 @@ def evaluate_parameters(rule_parameters):
         for arn in kmskeyid_list:
             if not arn.startswith("arn:aws:kms:"):
                 raise ValueError(
-                    'Invalid value for the parameter "KmsKeyId", expected valid ARN(s) of Kms Key')
+                    'Invalid value for the parameter "KmsKeyId", expected valid ARN(s) of Kms Key'
+                )
     return kmskeyid_list
 
 ####################
