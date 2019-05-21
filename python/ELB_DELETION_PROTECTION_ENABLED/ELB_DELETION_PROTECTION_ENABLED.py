@@ -65,8 +65,9 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     for attribute in configuration_item['supplementaryConfiguration']['LoadBalancerAttributes']:
         # Scenario 2: deletion_protection.enabled is set to True in 'LoadBalancerAttributes' in the configuration item
-        if attribute['key'] == 'deletion_protection.enabled' and attribute['value'] == 'true':
-            return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
+        if attribute['key'] == 'deletion_protection.enabled':
+            if attribute['value'] == 'true':
+                return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
     # Scenario 1: deletion_protection.enabled in is set to False in 'LoadBalancerAttributes' in the configuration item
     return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='This Elastic Load Balancer does not have deletion protection enabled.')
 
