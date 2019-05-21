@@ -80,8 +80,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             if service['AcceptanceRequired']:
                 evaluations.append(build_evaluation(service['ServiceName'], 'COMPLIANT', event, DEFAULT_RESOURCE_TYPE))
                 continue
-            if not service['AcceptanceRequired']:
-                evaluations.append(build_evaluation(service['ServiceName'], 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='The Endpoint Service has "AcceptanceRequired" set to False.'))
+            evaluations.append(build_evaluation(service['ServiceName'], 'NON_COMPLIANT', event, DEFAULT_RESOURCE_TYPE, annotation='The Endpoint Service has "AcceptanceRequired" set to False.'))
     return evaluations
 
 def get_endpoint_services(ec2_client):

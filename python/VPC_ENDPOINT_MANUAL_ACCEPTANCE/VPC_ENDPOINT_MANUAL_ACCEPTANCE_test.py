@@ -64,7 +64,6 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::::Account'))
         assert_successful_evaluation(self, response, resp_expected)
 
-
     def test_sample_cx_es_true(self):
         EC2_CLIENT_MOCK.describe_vpc_endpoint_services = MagicMock(return_value=self.customer_es_true)
         RULE.ASSUME_ROLE_MODE = False
@@ -80,8 +79,6 @@ class ComplianceTest(unittest.TestCase):
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'com.amazonaws.vpce.us-west-2.vpce-svc-0000000000', 'AWS::EC2::VPCEndpointService', 'The Endpoint Service has "AcceptanceRequired" set to False.'))
         assert_successful_evaluation(self, response, resp_expected)
-
-
 
 ####################
 # Helper Functions #
