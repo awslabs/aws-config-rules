@@ -27,12 +27,12 @@ class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        elif client_name == 'sts':
+        if client_name == 'sts':
             return STS_CLIENT_MOCK
-        elif client_name == 'sns' :
+        if client_name == 'sns':
             return SNS_CLIENT_MOCK
-        else:
-            raise Exception("Attempting to create an unknown client")
+
+        raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
@@ -41,80 +41,77 @@ RULE = __import__('SNS_ENCRYPTED_TOPIC_CHECK')
 class CompliantResourcesTest(unittest.TestCase):
 
     def test_scenario_4_compliant_resources(self):
-        list_topics_result = { "Topics": [{  "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS"}] }
+        list_topics_result = {"Topics": [{"TopicArn":"arn:aws:sns:ap-southeast-1:123456789012:testSNS"}]}
 
         get_topic_attributes_result = {
-    "Attributes": {
-        "LambdaFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc",
-        "LambdaSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "HTTPSuccessFeedbackSampleRate": "100",
-        "SQSFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "SubscriptionsDeleted": "0",
-        "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
-        "SQSSuccessFeedbackSampleRate": "100",
-        "HTTPSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "LambdaSuccessFeedbackSampleRate": "100",
-        "SubscriptionsConfirmed": "1",
-        "HTTPFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationSuccessFeedbackSampleRate": "100",
-        "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:ap-southeast-1:123456789012:testSNS\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}}]}",
-        "DisplayName": "SNStesting",
-        "SQSSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "Owner": "123456789012",
-        "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS",
-        "SubscriptionsPending": "0"
-    }
-}
+            "Attributes": {
+                "LambdaFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc",
+                "LambdaSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "HTTPSuccessFeedbackSampleRate": "100",
+                "SQSFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "SubscriptionsDeleted": "0",
+                "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
+                "SQSSuccessFeedbackSampleRate": "100",
+                "HTTPSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "LambdaSuccessFeedbackSampleRate": "100",
+                "SubscriptionsConfirmed": "1",
+                "HTTPFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationSuccessFeedbackSampleRate": "100",
+                "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:ap-southeast-1:123456789012:testSNS\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}}]}",
+                "DisplayName": "SNStesting",
+                "SQSSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "Owner": "123456789012",
+                "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS",
+                "SubscriptionsPending": "0"}}
+
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
 
         rule_parameters = ''
 
-        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters),{})
-        expected_response = [build_expected_response(compliance_type='COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:testSNS', annotation=None) ]
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
+        expected_response = [build_expected_response(compliance_type='COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:testSNS', annotation=None)]
 
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
     def test_scenario_6_compliant_resources(self):
-        list_topics_result = { "Topics": [{  "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS"}] }
+        list_topics_result = {"Topics": [{"TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS"}]}
 
         get_topic_attributes_result = {
-    "Attributes": {
-        "LambdaFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc",
-        "LambdaSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "HTTPSuccessFeedbackSampleRate": "100",
-        "SQSFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "SubscriptionsDeleted": "0",
-        "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
-        "SQSSuccessFeedbackSampleRate": "100",
-        "HTTPSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "LambdaSuccessFeedbackSampleRate": "100",
-        "SubscriptionsConfirmed": "1",
-        "HTTPFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationSuccessFeedbackSampleRate": "100",
-        "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:ap-southeast-1:123456789012:testSNS\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}}]}",
-        "DisplayName": "SNStesting",
-        "SQSSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "Owner": "123456789012",
-        "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS",
-        "SubscriptionsPending": "0"
-    }
-}
+            "Attributes": {
+                "LambdaFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc",
+                "LambdaSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "HTTPSuccessFeedbackSampleRate": "100",
+                "SQSFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "SubscriptionsDeleted": "0",
+                "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
+                "SQSSuccessFeedbackSampleRate": "100",
+                "HTTPSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "LambdaSuccessFeedbackSampleRate": "100",
+                "SubscriptionsConfirmed": "1",
+                "HTTPFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationSuccessFeedbackSampleRate": "100",
+                "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:ap-southeast-1:123456789012:testSNS\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}}]}",
+                "DisplayName": "SNStesting",
+                "SQSSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "Owner": "123456789012",
+                "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS",
+                "SubscriptionsPending": "0"}}
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
 
         rule_parameters = '{\"KmsKeyId\": \"arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc\"}'
 
-        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters),{})
-        expected_response = [build_expected_response(compliance_type='COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:testSNS', annotation=None) ]
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
+        expected_response = [build_expected_response(compliance_type='COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:testSNS', annotation=None)]
 
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
@@ -123,67 +120,63 @@ class CompliantResourcesTest(unittest.TestCase):
 class NonCompliantResourcesTest(unittest.TestCase):
 
     def test_scenario_3_non_compliant_resources(self):
-        list_topics_result = { "Topics": [{  "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic"}] }
+        list_topics_result = {"Topics": [{"TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic"}]}
 
         get_topic_attributes_result = {
-    "Attributes": {
-        "SubscriptionsConfirmed": "0",
-        "DisplayName": "",
-        "SubscriptionsDeleted": "0",
-        "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
-        "Owner": "990138122148",
-        "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}}]}",
-        "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic",
-        "SubscriptionsPending": "0"
-    }
-}
+            "Attributes": {
+                "SubscriptionsConfirmed": "0",
+                "DisplayName": "",
+                "SubscriptionsDeleted": "0",
+                "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
+                "Owner": "990138122148",
+                "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}}]}",
+                "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic",
+                "SubscriptionsPending": "0"}}
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
 
         rule_parameters = ''
 
-        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters),{})
-        expected_response = [build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic', annotation="The Amazon Simple Notification Service topic is not encrypted.") ]
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
+        expected_response = [build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:dynamodbtopic', annotation="The Amazon Simple Notification Service topic is not encrypted.")]
 
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
     def test_scenario_5_non_compliant_resources(self):
-        list_topics_result = { "Topics": [{  "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS"}] }
+        list_topics_result = {"Topics": [{"TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS"}]}
 
         get_topic_attributes_result = {
-    "Attributes": {
-        "LambdaFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc",
-        "LambdaSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "HTTPSuccessFeedbackSampleRate": "100",
-        "SQSFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "SubscriptionsDeleted": "0",
-        "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
-        "SQSSuccessFeedbackSampleRate": "100",
-        "HTTPSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "LambdaSuccessFeedbackSampleRate": "100",
-        "SubscriptionsConfirmed": "1",
-        "HTTPFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationSuccessFeedbackSampleRate": "100",
-        "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:ap-southeast-1:123456789012:testSNS\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}}]}",
-        "DisplayName": "SNStesting",
-        "SQSSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "Owner": "123456789012",
-        "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS",
-        "SubscriptionsPending": "0"
-    }
-}
+            "Attributes": {
+                "LambdaFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc",
+                "LambdaSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "HTTPSuccessFeedbackSampleRate": "100",
+                "SQSFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "SubscriptionsDeleted": "0",
+                "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
+                "SQSSuccessFeedbackSampleRate": "100",
+                "HTTPSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "LambdaSuccessFeedbackSampleRate": "100",
+                "SubscriptionsConfirmed": "1",
+                "HTTPFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationSuccessFeedbackSampleRate": "100",
+                "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:ap-southeast-1:123456789012:testSNS\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}}]}",
+                "DisplayName": "SNStesting",
+                "SQSSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "Owner": "123456789012",
+                "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS",
+                "SubscriptionsPending": "0"}}
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
 
         rule_parameters = '{\"KmsKeyId\": \"arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc\"}'
 
-        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters),{})
-        expected_response = [build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:testSNS', annotation="The Amazon Simple Notification Service topic is not encrypted with KMS Key ['arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc']") ]
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
+        expected_response = [build_expected_response(compliance_type='NON_COMPLIANT', compliance_resource_id='arn:aws:sns:ap-southeast-1:123456789012:testSNS', annotation="The Amazon Simple Notification Service topic is not encrypted with KMS Key ['arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc']")]
 
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
@@ -191,7 +184,7 @@ class NonCompliantResourcesTest(unittest.TestCase):
 class NotApplicable(unittest.TestCase):
 
     def test_scenario_1_not_applicable(self):
-        list_topics_result = { "Topics": [] }
+        list_topics_result = {"Topics": []}
 
         get_topic_attributes_result = {}
 
@@ -200,48 +193,46 @@ class NotApplicable(unittest.TestCase):
 
         rule_parameters = '{\"KmsKeyId\": \"arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc\"}'
 
-        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters),{})
-        expected_response = [build_expected_response("NOT_APPLICABLE", '123456789012', 'AWS::SNS::Topic') ]
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
+        expected_response = [build_expected_response("NOT_APPLICABLE", '123456789012', 'AWS::::Account')]
 
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
 class InvalidRuleParameter(unittest.TestCase):
 
     def test_scenario_2_not_applicable(self):
-        list_topics_result = { "Topics": [{  "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS"}] }
+        list_topics_result = {"Topics": [{"TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS"}]}
 
         get_topic_attributes_result = {
-    "Attributes": {
-        "LambdaFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc",
-        "LambdaSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "HTTPSuccessFeedbackSampleRate": "100",
-        "SQSFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "SubscriptionsDeleted": "0",
-        "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
-        "SQSSuccessFeedbackSampleRate": "100",
-        "HTTPSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "LambdaSuccessFeedbackSampleRate": "100",
-        "SubscriptionsConfirmed": "1",
-        "HTTPFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
-        "ApplicationSuccessFeedbackSampleRate": "100",
-        "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:ap-southeast-1:123456789012:testSNS\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}}]}",
-        "DisplayName": "SNStesting",
-        "SQSSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
-        "Owner": "123456789012",
-        "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS",
-        "SubscriptionsPending": "0"
-    }
-}
+            "Attributes": {
+                "LambdaFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "KmsMasterKeyId": "arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc",
+                "LambdaSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "HTTPSuccessFeedbackSampleRate": "100",
+                "SQSFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "SubscriptionsDeleted": "0",
+                "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
+                "SQSSuccessFeedbackSampleRate": "100",
+                "HTTPSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "LambdaSuccessFeedbackSampleRate": "100",
+                "SubscriptionsConfirmed": "1",
+                "HTTPFailureFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSFailureFeedback",
+                "ApplicationSuccessFeedbackSampleRate": "100",
+                "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:ap-southeast-1:123456789012:testSNS\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}}]}",
+                "DisplayName": "SNStesting",
+                "SQSSuccessFeedbackRoleArn": "arn:aws:iam::123456789012:role/SNSSuccessFeedback",
+                "Owner": "123456789012",
+                "TopicArn": "arn:aws:sns:ap-southeast-1:123456789012:testSNS",
+                "SubscriptionsPending": "0"}}
 
         SNS_CLIENT_MOCK.list_topics = MagicMock(return_value=list_topics_result)
         SNS_CLIENT_MOCK.get_topic_attributes = MagicMock(return_value=get_topic_attributes_result)
 
         rule_parameters = '{\"KmsKeyId\": \"99a9f661-c02f-4046-9360-9334dex68gdc\"}'
 
-        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters),{})
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
         assert_customer_error_response(
             self, lambda_result, 'InvalidParameterValueException', 'Invalid value for the parameter "KmsKeyId", Expected Comma-separated list of valid Kms Key ARNs.')
 

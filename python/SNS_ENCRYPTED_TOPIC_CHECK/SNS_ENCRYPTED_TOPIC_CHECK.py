@@ -55,6 +55,7 @@ Scenarios:
        And: SNS topic encryption Key matching one of the KMS key in KmsKeyId
       Then: Return COMPLIANT
 '''
+
 import json
 import sys
 import datetime
@@ -84,50 +85,24 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
     sns_client = get_client('sns', event)
     topic_list_of_dict = get_all_topic(sns_client)
     result = []
-    if not topic_list_of_dict :
-        return 'NOT_APPLICABLE'
+    if not topic_list_of_dict:
+        return build_evaluation(event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::::Account')
 
-    for topic_dict in topic_list_of_dict :
-        topic_arn = topic_dict['TopicArn']
-        response_topic_attributes_dict = sns_client.get_topic_attributes(TopicArn=topic_arn)
-        resource_id = topic_arn
+    for topic_dict in topic_list_of_dict:
+        response_topic_attributes_dict = sns_client.get_topic_attributes(TopicArn=topic_dict['TopicArn'])
         if not valid_rule_parameters:
-
             if "KmsMasterKeyId" in response_topic_attributes_dict['Attributes']:
-                compliance_type = 'COMPLIANT'
-                result.append(build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None))
+                result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
             else:
-                compliance_type = 'NON_COMPLIANT'
-                result.append(build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="The Amazon Simple Notification Service topic is not encrypted."))
+                result.append(build_evaluation(topic_dict['TopicArn'], 'NON_COMPLIANT', event, annotation="The Amazon Simple Notification Service topic is not encrypted."))
         else:
-            print(response_topic_attributes_dict)
             if "KmsMasterKeyId" in response_topic_attributes_dict['Attributes'] and response_topic_attributes_dict['Attributes']['KmsMasterKeyId'] in valid_rule_parameters:
-                compliance_type = 'COMPLIANT'
-                result.append(build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None))
+                result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
             else:
-                compliance_type = 'NON_COMPLIANT'
-                result.append(build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation="The Amazon Simple Notification Service topic is not encrypted with KMS Key "+str(valid_rule_parameters)))
+                result.append(build_evaluation(topic_dict['TopicArn'], 'NON_COMPLIANT', event, annotation="The Amazon Simple Notification Service topic is not encrypted with KMS Key(s) "+str(valid_rule_parameters)))
     return result
 
 
@@ -137,13 +112,13 @@ def get_all_topic(sns_client):
     result_list = []
 
     while True:
-        if not next_token :
+
+        if not next_token:
             response_list_topics_dict = sns_client.list_topics()
-            topic_arn_list = response_list_topics_dict['Topics']
-        else :
+        else:
             response_list_topics_dict = sns_client.list_topics(NextToken=next_token)
-            topic_arn_list = response_list_topics_dict['Topics']
-        result_list.extend(topic_arn_list)
+
+        result_list.extend(response_list_topics_dict['Topics'])
         if 'NextToken' in response_list_topics_dict:
             next_token = response_list_topics_dict['NextToken']
         else:
@@ -158,10 +133,9 @@ def evaluate_parameters(rule_parameters):
     kmskeyid_list = list(filter(None, kmskeyid_list))
 
     for arn in kmskeyid_list:
-        if not (arn.startswith("arn:aws:kms:")):
+        if not arn.startswith("arn:aws:kms:"):
             raise ValueError(
-                'Invalid value for the parameter "KmsKeyId", Expected Comma-separated list of valid Kms Key ARNs.')
-
+                'Invalid value for the parameter "KmsKeyId", expected valid ARN(s) of Kms Key(s)')
     return kmskeyid_list
 
 ####################
@@ -288,7 +262,7 @@ def get_configuration_item(invoking_event):
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invoking_event['messageType']):
+    if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
@@ -303,7 +277,7 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
+    return status in ('OK', 'ResourceDiscovered') and not event_left_scope
 
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')
