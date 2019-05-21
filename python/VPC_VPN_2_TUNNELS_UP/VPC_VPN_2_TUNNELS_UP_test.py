@@ -16,7 +16,6 @@ try:
 except ImportError:
     from mock import MagicMock
 import botocore
-#from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
