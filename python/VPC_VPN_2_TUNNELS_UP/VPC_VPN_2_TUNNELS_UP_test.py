@@ -67,7 +67,7 @@ class ComplianceTest(unittest.TestCase):
             		} \
             	} \
             }'
-        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample, self.rule_parameters), {})
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample), {})
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'some-resource-id', annotation="This AWS VPN Connection has at least one VPN tunnel down with statusMessage: IPSEC IS DOWN"))
         assert_successful_evaluation(self, response, resp_expected)
@@ -92,7 +92,7 @@ class ComplianceTest(unittest.TestCase):
              } \
          } \
         }'
-        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample, self.rule_parameters), {})
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event_iam_role_sample), {})
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'some-resource-id'))
         assert_successful_evaluation(self, response, resp_expected)
