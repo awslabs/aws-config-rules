@@ -9,6 +9,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
 
+"""
+#####################################
+##           Gherkin               ##
+#####################################
+Description:
+  Checks whether AWS DMS replication instance does have public access.
+
+Trigger:
+    Periodic
+
+Reports on:
+      AWS::DMS::ReplicationInstance
+
+Scenarios:
+  Scenario: 1
+    Given: No AWS Replication instance exists
+     Then: Return Empty list
+  Scenario: 2
+    Given: At least one AWS Replication instance exists
+      And: PubliclyAccessible is set to True for the AWS Replication instance
+      Then: Return NON_COMPLIANT with annotation "This AWS Replication instance has public internet access."
+  Scenario: 3
+    Given: At least one AWS Replication instance exists
+      And: PubliclyAccessible is set to False for the AWS Replication instance
+     Then: Return COMPLIANT
+
+"""
+
 import json
 import sys
 import datetime
@@ -25,7 +53,7 @@ except ImportError:
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::DMS::ReplicationInstance'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
