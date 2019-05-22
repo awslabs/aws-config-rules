@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "DMS_REPLICATION_NOT_PUBLIC.zip", 
+    "SourceRuntime": "python3.6", 
+    "SourcePeriodic": "One_Hour", 
+    "RuleName": "DMS_REPLICATION_NOT_PUBLIC", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}
