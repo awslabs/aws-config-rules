@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "SHIELD_DRT_ACCESS.zip", 
+    "SourceRuntime": "python3.6", 
+    "SourcePeriodic": "One_Hour", 
+    "RuleName": "SHIELD_DRT_ACCESS", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}

@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "EC2_SECURITY_GROUP_NOT_USED.zip", 
+    "SourceRuntime": "python3.6", 
+    "RuleName": "EC2_SECURITY_GROUP_NOT_USED", 
+    "SourceEvents": "AWS::EC2::SecurityGroup", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}

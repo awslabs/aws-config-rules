@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "LAMBDA_CONCURRENCY_CHECK",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "LAMBDA_CONCURRENCY_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"ConcurrencyLimitLow\":\"\", \"ConcurrencyLimitHigh\":\"\"}",
+    "SourceEvents": "AWS::Lambda::Function"
+  },
+  "Tags": "[]"
+}

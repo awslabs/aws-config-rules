@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "API_GW_CACHE_ENABLED_AND_ENCRYPTED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "API_GW_CACHE_ENABLED_AND_ENCRYPTED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::ApiGateway::Stage"
+  },
+  "Tags": "[]"
+}

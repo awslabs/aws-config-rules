@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
