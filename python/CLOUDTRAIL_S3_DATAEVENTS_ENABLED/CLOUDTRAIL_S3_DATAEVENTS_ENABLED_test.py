@@ -42,28 +42,23 @@ class ComplianceTest(unittest.TestCase):
     rule_parameter_valid = '{"S3BucketName":"test, test2, test3"}'
     trail_list = {'trailList':[{"Name":"trail1", "HasCustomEventSelectors": True, "TrailARN": "arn:aws:cloudtrail:us-east-1:123456789012:trail/test", "HomeRegion": "us-east-1"}, {"Name":"trail2", "HasCustomEventSelectors": True, "TrailARN": "arn:aws:cloudtrail:us-east-1:123456789012:trail/test", "HomeRegion": "us-east-1"}, {"Name":"trail3", "HasCustomEventSelectors": False, "TrailARN": "arn:aws:cloudtrail:us-east-1:123456789012:trail/test", "HomeRegion": "us-east-1"}]}
 
-    #Gherkin scenario 1: Invalid rule parameter name
-    def test_invalid_rule_parameter_name(self):
-        invalid_rule_parameter_name = '{"wrong":"blah"}'
-        response = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters=invalid_rule_parameter_name), '{}')
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', "S3BucketName is the only supported rule parameter")
 
-    #Gherkin scenario 2: Invalid rule parameter value
+    #Gherkin scenario 1: Invalid rule parameter value
     def test_invalid_rule_parameter_value(self):
         invalid_rule_parameter_value = '{"S3BucketName":"abcd,a_bcd,1.2.3.4,ab,qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm"}'
         response = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters=invalid_rule_parameter_value), '{}')
         assert_customer_error_response(self, response, 'InvalidParameterValueException', "The following value in S3BucketName rule parameter is not valid: a_bcd.")
 
-    #Gherkin scenario 3: No trail
+    #Gherkin scenario 2: No trail
     def test_no_trail(self):
         empty_trail_list = {'trailList':[]}
         CLOUDTRAIL_CLIENT_MOCK.describe_trails = MagicMock(return_value=empty_trail_list)
         response = RULE.lambda_handler(build_lambda_scheduled_event(), '{}')
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', "No AWS CloudTrail Trails are present to log events in this region."))
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::::Account'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    #Gherkin scenario 4: Trail with no custom event selector
+    #Gherkin scenario 3: Trail with no custom event selector
     def test_trails_with_no_event_selectors(self):
         trail_list = {'trailList':[{"Name":"trail1", "HasCustomEventSelectors": False, "HomeRegion": "us-east-1"}, {"Name":"trail2", "HasCustomEventSelectors": False, "HomeRegion": "us-east-1"}]}
         CLOUDTRAIL_CLIENT_MOCK.describe_trails = MagicMock(return_value=trail_list)
@@ -72,7 +67,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', 'No AWS CloudTrail Trail is configured to log data events for Amazon S3.'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    #Gherkin scenario 5: Trail with no custom event selector for S3
+    #Gherkin scenario 4: Trail with no custom event selector for S3
     def test_trails_with_no_event_selectors_for_s3(self):
         event_selector_output = []
         event_selector_output.append(build_event_selector_output('test', 'AWS::NotS3'))
@@ -84,7 +79,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', 'No AWS CloudTrail Trail is configured to log data events for Amazon S3.'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    #Gherkin scenario 6: Trail with S3 event selector for select buckets not matching rule parameter
+    #Gherkin scenario 5: Trail with S3 event selector for select buckets not matching rule parameter
     def test_trails_s3_custom_check_nc(self):
         event_selector_output = []
         event_selector_output.append(build_event_selector_output(['arn:aws:s3:::test/']))
@@ -96,7 +91,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', "AWS CloudTrail trails do not log S3 data events for buckets: ['test3']."))
         assert_successful_evaluation(self, response, resp_expected)
 
-    #Gherkin scenario 7: Trail with S3 event selector for select buckets matching rule parameter
+    #Gherkin scenario 6: Trail with S3 event selector for select buckets matching rule parameter
     def test_trails_s3_custom_check_c(self):
         event_selector_output = []
         event_selector_output.append(build_event_selector_output(['arn:aws:s3:::test/', 'arn:aws:s3:::test2/']))
@@ -108,7 +103,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', '123456789012', 'AWS::::Account'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    #Gherkin scenario 8: Trail with S3 event selector for all buckets
+    #Gherkin scenario 7: Trail with S3 event selector for all buckets
     def test_trails_default_check(self):
         event_selector_output = []
         event_selector_output.append(build_event_selector_output(['arn:aws:s3:::test/']))
