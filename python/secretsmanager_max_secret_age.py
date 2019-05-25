@@ -24,14 +24,18 @@ import boto3
 from datetime import datetime, timedelta, timezone
 
 def evaluate_compliance(rule_parameters, secret):
-	if 'max_secret_age_days' in rule_parameters:
-	    max_secret_age = datetime.now(timezone.utc) - timedelta(days=int(rule_parameters['max_secret_age_days']))
-	else:
-	    max_secret_age = datetime.now(timezone.utc) - timedelta(days=30)
-	if datetime.replace(secret['LastChangedDate'],tzinfo=timezone.utc) > max_secret_age:
-		return "COMPLIANT"
-	else:
-		return "NON_COMPLIANT"
+    if 'max_secret_age_days' in rule_parameters:
+        max_secret_age = datetime.now(timezone.utc) - timedelta(days=int(rule_parameters['max_secret_age_days']))
+    else:
+        max_secret_age = datetime.now(timezone.utc) - timedelta(days=30)
+
+    if 'LastRotatedDate' in secret:
+        if datetime.replace(secret['LastRotatedDate'],tzinfo=timezone.utc) > max_secret_age:
+            return "COMPLIANT"
+    elif datetime.replace(secret['LastChangedDate'],tzinfo=timezone.utc) > max_secret_age:
+        return "COMPLIANT"
+    else:
+        return "NON_COMPLIANT"
 
 def lambda_handler(event, context):
     if boto3.__version__ < '1.9.152':
