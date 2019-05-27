@@ -64,24 +64,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
-
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
 
     account_id = valid_rule_parameters["account_id"]
     role = valid_rule_parameters["role"]
@@ -90,12 +72,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     active_region_list = valid_rule_parameters["active_regions"]
     compliant = "COMPLIANT"
 
-    for region in region_list:
-        active = check_region_active(region, account_id, role)
-        if (active and not region in active_region_list) or (not active and (region in active_region_list)):
-            compliant = "NON_COMPLIANT"
+    region = get_region_from_config_arn(event)
+    active = check_region_active(region, account_id, role)
+    if (active and not region in active_region_list) or (not active and (region in active_region_list)):
+        compliant = "NON_COMPLIANT"
 
     return compliant
+
+def get_region_from_config_arn(event):
+    return event['configRuleArn'].split(':')[3]
 
 def check_region_active(region_name, account_id, role):
     sts = "sts."

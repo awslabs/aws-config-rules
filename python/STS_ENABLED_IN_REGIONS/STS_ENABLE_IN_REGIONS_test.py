@@ -75,7 +75,7 @@ class ComplianceTest(unittest.TestCase):
         STS_ACTIVE_REGIONS = ['us-east-1', 'us-east-2', 'us-west-1', 'us-west-2']
         sts_mock()
         region_list_mock()
-        rule_param = '{"account_id":"264683526309", "role":"sts-mock", "active_regions":"us-east-1,us-east-2,us-west-1"}'
+        rule_param = '{"account_id":"264683526309", "role":"sts-mock", "active_regions":"us-east-2,us-west-1"}'
         lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
@@ -91,7 +91,7 @@ class ComplianceTest(unittest.TestCase):
         STS_ACTIVE_REGIONS = ['ap-northeast-2', 'ap-south-1']
         sts_mock()
         region_list_mock()
-        rule_param = '{"account_id":"264683526309", "role":"sts-mock", "active_regions":"ap-northeast-2,ap-south-1,ap-southeast-1,ap-southeast-2"}'
+        rule_param = '{"account_id":"264683526309", "role":"sts-mock", "active_regions":"us-east-1,ap-northeast-2,ap-south-1,ap-southeast-1,ap-southeast-2"}'
         lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
