@@ -8,12 +8,14 @@
 # or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
+
 """
 #####################################
 ##           Gherkin               ##
 #####################################
+
 Rule Name:
-    SAGEMAKER_ENDPOINT_CONFIG_KMS_KEY_CONFIGURED
+  SAGEMAKER_ENDPOINT_CONFIG_KMS_KEY_CONFIGURED
 
 Description:
   Check whether an AWS KMS key is configured for an Amazon SageMaker Endpoint Config.
@@ -85,6 +87,7 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 # Main Code #
 #############
+
 def get_all_endpoint_config_names(client):
     #This function returns all the SageMaker Endpoint Configs
 
@@ -109,16 +112,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         sagemaker_endpoint_details = sagemaker_client.describe_endpoint_config(EndpointConfigName=endpoint_config)
 
         if 'KmsKeyId' in sagemaker_endpoint_details:
-
-            #SCENARIO 6: The rule parameter 'keyArns' is not provided and at least one Amazon SageMaker endpoint config exists and 'KmsKeyId' is specified in the Amazon SageMaker Endpoint Config
+            #SCENARIO 6: The rule parameter 'keyArns' is not provided and 'KmsKeyId' is specified in the Amazon SageMaker Endpoint Config.
             if not valid_rule_parameters:
                 evaluations.append(build_evaluation(endpoint_config, 'COMPLIANT', event))
 
-            #SCENARIO 5: The rule parameter 'keyArns' is provided and is valid and at least one Amazon SageMaker endpoint config exists and KmsKeyId' is specified in the Amazon SageMaker Endpoint Config and one of the AWS KMS key IDs specified in the rule parameter 'keyArns' matches 'KmsKeyId'
+            #SCENARIO 5: 'KmsKeyId' specified in the Amazon SageMaker Endpoint Config matches one of the AWS KMS key IDs specified in the rule parameter 'keyArns'.
             elif sagemaker_endpoint_details['KmsKeyId'] in valid_rule_parameters:
                 evaluations.append(build_evaluation(endpoint_config, 'COMPLIANT', event))
 
-            #SCENARIO 4: The rule parameter 'keyArns' is provided and is valid and at least one Amazon SageMaker endpoint config exists and 'KmsKeyId' is specified for the Amazon SageMaker Endpoint Config and None of the AWS KMS key IDs specified in the rule parameter 'keyArns' match 'KmsKeyId'.
+            #SCENARIO 4: 'KmsKeyId' specified for the Amazon SageMaker Endpoint Config is not one of the AWS KMS key IDs specified in the rule parameter 'keyArns'.
             else:
                 evaluations.append(build_evaluation(endpoint_config, 'NON_COMPLIANT', event, annotation="AWS KMS Key configured for this Amazon SageMaker Endpoint Config is not an KMS Key allowed in the rule parameter (keyArns)"))
 
@@ -139,8 +141,6 @@ def evaluate_parameters(rule_parameters):
             else:
                 raise ValueError('The KMS Key arn should be in the right format.')
     return valid_keyarns
-
-
 
 ####################
 # Helper Functions #
