@@ -1,4 +1,4 @@
-# Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You may
 # not use this file except in compliance with the License. A copy of the License is located at
@@ -8,6 +8,56 @@
 # or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
+
+"""
+#####################################
+##           Gherkin               ##
+#####################################
+Rule Name:
+  SAGEMAKER_NOTEBOOK_KMS_CONFIGURED
+
+Description:
+  Check whether an AWS KMS key is configured for an Amazon SageMaker Notebook Instance.
+
+Trigger:
+  Periodic
+
+Reports on:
+  AWS::SageMaker::NotebookInstance
+
+Rule Parameters:
+  keyArns
+  (Optional) Comma-separated list of allowed AWS KMS key IDs.
+
+Scenarios:
+  Scenario: 1
+     Given: The rule parameter 'keyArns' is provided and is invalid
+      Then: Return ERROR
+  Scenario: 2
+     Given: No Amazon SageMaker notebook instances exist
+      Then: Return NOT_APPLICABLE
+  Scenario: 3
+     Given: At least one Amazon SageMaker notebook instance exists
+       And: 'KmsKeyId' is not specified for the Amazon SageMaker Notebook Instance
+      Then: Return NON_COMPLIANT with annotation "No AWS KMS Key is configured for this Amazon SageMaker Notebook Instance."
+  Scenario: 4
+     Given: The rule parameter 'keyArns' is provided and is valid
+       And: At least one Amazon SageMaker notebook instance exists
+       And: 'KmsKeyId' is specified for the Amazon SageMaker Notebook Instance
+       And: None of the AWS KMS key IDs specified in the rule parameter 'keyArns' match 'KmsKeyId'
+      Then: Return NON_COMPLIANT with annotation "The AWS KMS Key configured for this Amazon SageMaker Notebook Instance is not an KMS Key allowed in the rule parameter (keyArns)."
+  Scenario: 5
+     Given: The rule parameter 'keyArns' is provided and is valid
+       And: At least one Amazon SageMaker notebook instance exists
+       And: 'KmsKeyId' is specified in the Amazon SageMaker Notebook Instance
+       And: One of the AWS KMS key IDs specified in the rule parameter 'keyArns' matches 'KmsKeyId'
+      Then: Return COMPLIANT
+  Scenario: 6
+     Given: The rule parameter 'keyArns' is not provided
+       And: At least one Amazon SageMaker notebook instance exists
+       And: 'KmsKeyId' is specified for the Amazon SageMaker Notebook Instance
+      Then: Return COMPLIANT
+"""
 
 import json
 import sys
@@ -40,50 +90,50 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     evaluations = []
-    sagemaker_client = get_client('sagemaker', event)
-    instance_list = get_all_instance(sagemaker_client)
 
-    if not instance_list:
+    sagemaker_client = get_client('sagemaker', event)
+    notebook_instances_list = get_all_notebook_instances(sagemaker_client)
+
+    #SCENARIO 2: No Amazon SageMaker Notebook Instances.
+    if not notebook_instances_list:
         return None
 
-    if not valid_rule_parameters:
-        for instance in instance_list:
-            instance_description = sagemaker_client.describe_notebook_instance(NotebookInstanceName=instance['NotebookInstanceName'])
-            if 'KmsKeyId' not in instance_description:
-                evaluations.append(build_evaluation(instance['NotebookInstanceName'], 'NON_COMPLIANT', event, annotation='No AWS KMS Key is configured for this Amazon SageMaker Notebook Instance.' + '.'))
-            else:
-                evaluations.append(build_evaluation(instance['NotebookInstanceName'], 'COMPLIANT', event))
-        return evaluations
-
-    for instance in instance_list:
-        instance_description = sagemaker_client.describe_notebook_instance(NotebookInstanceName=instance['NotebookInstanceName'])
-        if 'KmsKeyId' not in instance_description:
-            evaluations.append(build_evaluation(instance['NotebookInstanceName'], 'NON_COMPLIANT', event, annotation='No AWS KMS Key is configured for this Amazon SageMaker Notebook Instance.' + '.'))
-        elif instance_description['KmsKeyId'] in valid_rule_parameters:
-            evaluations.append(build_evaluation(instance['NotebookInstanceName'], 'COMPLIANT', event))
+    for notebook_instance in notebook_instances_list:
+        notebook_instance_description = sagemaker_client.describe_notebook_instance(NotebookInstanceName=notebook_instance['NotebookInstanceName'])
+        #SCENARIO 3: KMS key not specified for the Amazon SageMaker Notebook Instance.
+        if 'KmsKeyId' not in notebook_instance_description:
+            evaluations.append(build_evaluation(notebook_instance['NotebookInstanceName'], 'NON_COMPLIANT', event, annotation='No AWS KMS Key is configured for this Amazon SageMaker Notebook Instance.'))
+        #SCENARIO 6: KMS key specified for Amazon SageMaker Notebook Instance but no rule parameter provided.
+        elif not valid_rule_parameters:
+            evaluations.append(build_evaluation(notebook_instance['NotebookInstanceName'], 'COMPLIANT', event))
+        #SCENARIO 5: KMS key specified for Amazon SageMaker Notebook Instance matches keyArn in rule parameter.
+        elif notebook_instance_description['KmsKeyId'] in valid_rule_parameters:
+            evaluations.append(build_evaluation(notebook_instance['NotebookInstanceName'], 'COMPLIANT', event))
+        #SCENARIO 4: KMS key specified for Amazon SageMaker Notebook Instance does not match keyArn in rule parameter.
         else:
-            evaluations.append(build_evaluation(instance['NotebookInstanceName'], 'NON_COMPLIANT', event, annotation='The AWS KMS Key configured for this Amazon SageMaker Notebook Instance is not an KMS Key allowed in the rule parameter (keyIds)' + '.'))
+            evaluations.append(build_evaluation(notebook_instance['NotebookInstanceName'], 'NON_COMPLIANT', event, annotation='The AWS KMS Key configured for this Amazon SageMaker Notebook Instance is not an KMS Key allowed in the rule parameter (keyArns).'))
     return evaluations
 
-def get_all_instance(sagemaker_client):
-    instance_list = []
+def get_all_notebook_instances(sagemaker_client):
+    notebook_instances_list = []
     paginator = sagemaker_client.get_paginator('list_notebook_instances')
     page_iterator = paginator.paginate()
     for page in page_iterator:
-        for instance in page['NotebookInstances']:
-            instance_list.append(instance)
-    return instance_list
+        for notebook_instance in page['NotebookInstances']:
+            notebook_instances_list.append(notebook_instance)
+    return notebook_instances_list
 
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = []
-    if "keyIds" in rule_parameters:
-        keys = [rule_parameter.strip() for rule_parameter in rule_parameters['keyIds'].split(',')]
+    if "keyArns" in rule_parameters:
+        keys = [rule_parameter.strip() for rule_parameter in rule_parameters['keyArns'].split(',')]
         regex_pattern = re.compile("arn:aws:kms:[a-z0-9-]+:[0-9]{12}:key/[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}")
         for key in keys:
             if regex_pattern.match(key):
                 valid_rule_parameters.append(key)
             else:
-                raise ValueError('The KMS Key id should be in the right format.')
+                #SCENARIO 1: Invalid parameter
+                raise ValueError('The KMS Key ARN should be in the right format.')
     return valid_rule_parameters
 
 ####################

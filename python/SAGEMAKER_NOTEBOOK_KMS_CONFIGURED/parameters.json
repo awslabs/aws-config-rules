@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.6",
     "CodeKey": "SAGEMAKER_NOTEBOOK_KMS_CONFIGURED.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{}",
+    "OptionalParameters": "{\"keyArns\": \"\"}",
     "SourcePeriodic": "TwentyFour_Hours"
   },
   "Tags": "[]"

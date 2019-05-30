@@ -48,121 +48,96 @@ sys.modules['boto3'] = Boto3Mock()
 RULE = __import__('SAGEMAKER_NOTEBOOK_KMS_CONFIGURED')
 
 class ComplianceTest(unittest.TestCase):
-    notebook_instances_list = {'NotebookInstances': [{'NotebookInstanceName': 'trial12', 'NotebookInstanceArn': 'arn:aws:sagemaker:us-east-1:075975677358:notebook-instance/trial12'}, {'NotebookInstanceName': 'trial123', 'NotebookInstanceArn': 'arn:aws:sagemaker:us-east-1:075975677358:notebook-instance/trial123'}]}
-    described_notebook_instances = [{'NotebookInstanceName': 'trial12', 'KmsKeyId': 'arn:aws:kms:us-east-1:075975677358:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial123', 'KmsKeyId': 'arn:aws:kms:us-east-1:075975677358:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d'}]
-    main_rule_params = '{"keyIds":"arn:aws:kms:us-east-1:075975677358:key/7af97db6-f6a3-4d0a-87b9-a2737b54856d"}'
-    matched_key = '{"keyIds":"arn:aws:kms:us-east-1:075975677358:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d"}'
 
-    notebook_instances_list_mixed = [{'NotebookInstances': [{'NotebookInstanceName': 'trial12', 'NotebookInstanceArn': 'arn:aws:sagemaker:us-east-1:075975677358:notebook-instance/trial12'}, {'NotebookInstanceName': 'trial123', 'NotebookInstanceArn': 'arn:aws:sagemaker:us-east-1:075975677358:notebook-instance/trial123'}, {'NotebookInstanceName': 'trial1234', 'NotebookInstanceArn': 'arn:aws:sagemaker:us-east-1:075975677358:notebook-instance/trial1234'}]}]
-    described_notebooks_mixed = [{'NotebookInstanceName': 'trial12', 'KmsKeyId': 'arn:aws:kms:us-east-1:075975677358:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial123', 'KmsKeyId': 'arn:aws:kms:us-east-1:075975677358:key/7af97db6-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial1234'}]
+    notebook_instances_list = {'NotebookInstances': [{'NotebookInstanceName': 'trial12'}, {'NotebookInstanceName': 'trial123'}]}
+    no_notebook_instances_list = {"NotebookInstances": []}
+    notebook_instances_list_mixed = [{'NotebookInstances': [{'NotebookInstanceName': 'trial12'}, {'NotebookInstanceName': 'trial123'}, {'NotebookInstanceName': 'trial1234'}]}]
 
-    def test_scenario_1_invalid_param(self):
-        rule_param = '{"keyIds":"83de41d66530-49c1-9cb7-1de1560ce5tg"}'
+    described_notebook_instances = [{'NotebookInstanceName': 'trial12', 'KmsKeyId': 'arn:aws:kms:us-east-1:123456789012:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial123', 'KmsKeyId': 'arn:aws:kms:us-east-1:123456789012:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d'}]
+    described_notebooks_no_key = [{'NotebookInstanceName': 'trial12'}, {'NotebookInstanceName': 'trial123'}]
+    described_notebooks_mixed = [{'NotebookInstanceName': 'trial12', 'KmsKeyId': 'arn:aws:kms:us-east-1:123456789012:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial123', 'KmsKeyId': 'arn:aws:kms:us-east-1:123456789012:key/7af97db6-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial1234'}]
 
-        #SAGEMAKER_CLIENT_MOCK.list_notebook_instances = MagicMock(return_value=self.instance_list)
+    rule_params_mismatched_key = '{"keyArns":"arn:aws:kms:us-east-1:123456789012:key/7af97db6-f6a3-4d0a-87b9-a2737b54856d, arn:aws:kms:us-east-1:123456789012:key/7af97db6-f6a3-4d0a-87b9-a2737b54856e"}'
+    rule_params_matched_key = '{"keyArns":"arn:aws:kms:us-east-1:123456789012:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d, arn:aws:kms:us-east-1:123456789012:key/7af97db7-f6a3-4d0a-87b9-a2737b54856e"}'
+
+    #SCENARIO 2: No Amazon SageMaker Notebook Instances.
+    def test_scenario_2_no_instance(self):
+        SAGEMAKER_CLIENT_MOCK.configure_mock(**{
+            "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
+            "paginate.return_value": [self.no_notebook_instances_list]})
+        lambda_event = build_lambda_scheduled_event()
+        response = RULE.lambda_handler(lambda_event, {})
+        expected_response = [build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::::Account')]
+        assert_successful_evaluation(self, response, expected_response)
+
+    #SCENARIO 3: KMS key not specified for the Amazon SageMaker Notebook Instance.
+    def test_scenario_3_no_keys(self):
         SAGEMAKER_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
             "paginate.return_value": [self.notebook_instances_list]})
-        SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=self.described_notebook_instances)
-        print(rule_param)
-        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
-        print(lambda_event)
+        SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=self.described_notebooks_no_key)
+        lambda_event = build_lambda_scheduled_event()
         response = RULE.lambda_handler(lambda_event, {})
-        print(response)
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', 'The KMS Key id should be in the right format.')
+        expected_response = [build_expected_response('NON_COMPLIANT', 'trial12', annotation='No AWS KMS Key is configured for this Amazon SageMaker Notebook Instance.'),
+                             build_expected_response('NON_COMPLIANT', 'trial123', annotation='No AWS KMS Key is configured for this Amazon SageMaker Notebook Instance.')]
+        assert_successful_evaluation(self, response, expected_response, evaluations_count=2)
 
-
-    def test_scenario_2_no_instance(self):
-        rule_param = '{"KeyIds":"arn:aws:kms:us-east-1:075975677358:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d"}'
-        notebook_instances_list2 = {"NotebookInstances": []}
-        described_notebook_instances2 = {}
-
-        #SAGEMAKER_CLIENT_MOCK.list_notebook_instances = MagicMock(return_value=self.instance_list)
-        SAGEMAKER_CLIENT_MOCK.configure_mock(**{
-            "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
-            "paginate.return_value": [notebook_instances_list2]})
-        SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=described_notebook_instances2)
-        print(rule_param)
-        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
-        print(lambda_event)
-        response = RULE.lambda_handler(lambda_event, {})
-        print(response)
-        expected_response = []
-        expected_response.append(build_expected_response('NOT_APPLICABLE', compliance_resource_id='123456789012', compliance_resource_type='AWS::::Account'))
-        print(expected_response)
-        assert_successful_evaluation(self, response=response, resp_expected=expected_response)
-
-
-
-    def test_scenario_3_no_keys(self):
-        rule_param3 = {}
-
-        notebook_instances_list3 = {'NotebookInstances': [{'NotebookInstanceName': 'trial12', 'NotebookInstanceArn': 'arn:aws:sagemaker:us-east-1:075975677358:notebook-instance/trial12'}, {'NotebookInstanceName': 'trial123', 'NotebookInstanceArn': 'arn:aws:sagemaker:us-east-1:075975677358:notebook-instance/trial123'}]}
-        described_notebook_instances3 = [{'NotebookInstanceName': 'trial12'}, {'NotebookInstanceName': 'trial123'}]
-        SAGEMAKER_CLIENT_MOCK.configure_mock(**{
-            "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
-            "paginate.return_value": [notebook_instances_list3]})
-        SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=described_notebook_instances3)
-        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param3)
-        response = RULE.lambda_handler(lambda_event, '{}')
-        print(response)
-        expected_response = [build_expected_response('NON_COMPLIANT', compliance_resource_id='trial12', annotation='No AWS KMS Key is configured for this Amazon SageMaker Notebook Instance..'),
-                             build_expected_response('NON_COMPLIANT', compliance_resource_id='trial123', annotation='No AWS KMS Key is configured for this Amazon SageMaker Notebook Instance..')]
-        print(expected_response)
-        assert_successful_evaluation(self, response=response, resp_expected=expected_response, evaluations_count=2)
-
+    #SCENARIO 4: KMS key specified for Amazon SageMaker Notebook Instance does not match keyArn in rule parameter.
     def test_scenario_4_no_match_keys(self):
         SAGEMAKER_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
             "paginate.return_value": [self.notebook_instances_list]})
         SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=self.described_notebook_instances)
-        lambda_event = build_lambda_scheduled_event(rule_parameters=self.main_rule_params)
-        response = RULE.lambda_handler(lambda_event, '{}')
-        print(response)
-        expected_response = [build_expected_response('NON_COMPLIANT', compliance_resource_id='trial12', annotation='The AWS KMS Key configured for this Amazon SageMaker Notebook Instance is not an KMS Key allowed in the rule parameter (keyIds).'),
-                             build_expected_response('NON_COMPLIANT', compliance_resource_id='trial123', annotation='The AWS KMS Key configured for this Amazon SageMaker Notebook Instance is not an KMS Key allowed in the rule parameter (keyIds).')]
-        print(expected_response)
-        assert_successful_evaluation(self, response=response, resp_expected=expected_response, evaluations_count=2)
+        lambda_event = build_lambda_scheduled_event(rule_parameters=self.rule_params_mismatched_key)
+        response = RULE.lambda_handler(lambda_event, {})
+        expected_response = [build_expected_response('NON_COMPLIANT', 'trial12', annotation='The AWS KMS Key configured for this Amazon SageMaker Notebook Instance is not an KMS Key allowed in the rule parameter (keyArns).'),
+                             build_expected_response('NON_COMPLIANT', 'trial123', annotation='The AWS KMS Key configured for this Amazon SageMaker Notebook Instance is not an KMS Key allowed in the rule parameter (keyArns).')]
+        assert_successful_evaluation(self, response, expected_response, evaluations_count=2)
 
-
-    def test_scenario_5_complaint(self):
+    #SCENARIO 5: KMS key specified for Amazon SageMaker Notebook Instance matches keyArn in rule parameter.
+    def test_scenario_5_compliant(self):
         SAGEMAKER_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
             "paginate.return_value": [self.notebook_instances_list]})
         SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=self.described_notebook_instances)
-        lambda_event = build_lambda_scheduled_event(rule_parameters=self.matched_key)
-        response = RULE.lambda_handler(lambda_event, '{}')
-        print(response)
-        expected_response = [build_expected_response('COMPLIANT', compliance_resource_id='trial12'),
-                             build_expected_response('COMPLIANT', compliance_resource_id='trial123')]
-        print(expected_response)
-        assert_successful_evaluation(self, response=response, resp_expected=expected_response, evaluations_count=2)
+        lambda_event = build_lambda_scheduled_event(rule_parameters=self.rule_params_matched_key)
+        response = RULE.lambda_handler(lambda_event, {})
+        expected_response = [build_expected_response('COMPLIANT', 'trial12'),
+                             build_expected_response('COMPLIANT', 'trial123')]
+        assert_successful_evaluation(self, response, expected_response, evaluations_count=2)
 
-
-
-    def test_scenerio_6_no_key_compliant(self):
-        rule_params5 = []
+    #SCENARIO 6: KMS key specified for Amazon SageMaker Notebook Instance but no rule parameter provided.
+    def test_scenerio_6_no_param_compliant(self):
         SAGEMAKER_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
             "paginate.return_value": [self.notebook_instances_list]})
         SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=self.described_notebook_instances)
-        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_params5)
-        response = RULE.lambda_handler(lambda_event, '{}')
-        expected_response = [build_expected_response('COMPLIANT', compliance_resource_id='trial12'),
-                             build_expected_response('COMPLIANT', compliance_resource_id='trial123')]
-        assert_successful_evaluation(self, response=response, resp_expected=expected_response, evaluations_count=2)
+        lambda_event = build_lambda_scheduled_event()
+        response = RULE.lambda_handler(lambda_event, {})
+        expected_response = [build_expected_response('COMPLIANT', 'trial12'),
+                             build_expected_response('COMPLIANT', 'trial123')]
+        assert_successful_evaluation(self, response, expected_response, evaluations_count=2)
 
-    def test_scenario_7_mix(self):
+    def test_scenario_7_mixed(self):
         SAGEMAKER_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
             "paginate.return_value": self.notebook_instances_list_mixed})
         SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=self.described_notebooks_mixed)
-        lambda_event = build_lambda_scheduled_event(rule_parameters=self.matched_key)
-        response = RULE.lambda_handler(lambda_event, '{}')
-        expected_response = [build_expected_response('COMPLIANT', compliance_resource_id='trial12'),
-                             build_expected_response('NON_COMPLIANT', compliance_resource_id='trial123', annotation='The AWS KMS Key configured for this Amazon SageMaker Notebook Instance is not an KMS Key allowed in the rule parameter (keyIds).'),
-                             build_expected_response('NON_COMPLIANT', compliance_resource_id='trial1234', annotation='No AWS KMS Key is configured for this Amazon SageMaker Notebook Instance..')]
-        assert_successful_evaluation(self, response=response, resp_expected=expected_response, evaluations_count=3)
+        lambda_event = build_lambda_scheduled_event(rule_parameters=self.rule_params_matched_key)
+        response = RULE.lambda_handler(lambda_event, {})
+        expected_response = [build_expected_response('COMPLIANT', 'trial12'),
+                             build_expected_response('NON_COMPLIANT', 'trial123', annotation='The AWS KMS Key configured for this Amazon SageMaker Notebook Instance is not an KMS Key allowed in the rule parameter (keyArns).'),
+                             build_expected_response('NON_COMPLIANT', 'trial1234', annotation='No AWS KMS Key is configured for this Amazon SageMaker Notebook Instance.')]
+        assert_successful_evaluation(self, response, expected_response, evaluations_count=3)
+
+class ParameterTest(unittest.TestCase):
+
+    #SCENARIO 1: Invalid parameter
+    def test_scenario_1_invalid_param(self):
+        rule_param = '{"keyArns": "83de41d66530-49c1-9cb7-1de1560ce5tg"}'
+        lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
+        response = RULE.lambda_handler(lambda_event, {})
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', 'The KMS Key ARN should be in the right format.')
 
 ####################
 # Helper Functions #
