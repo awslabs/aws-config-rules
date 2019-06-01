@@ -20,8 +20,8 @@
 # https://aws.amazon.com/premiumsupport/knowledge-center/build-python-lambda-deployment-package/
 
 import json
-import boto3
 from datetime import datetime, timedelta, timezone
+import boto3
 
 def evaluate_compliance(rule_parameters, secret):
     if 'max_secret_age_days' in rule_parameters:
@@ -29,13 +29,11 @@ def evaluate_compliance(rule_parameters, secret):
     else:
         max_secret_age = datetime.now(timezone.utc) - timedelta(days=30)
 
-    if 'LastRotatedDate' in secret:
-        if datetime.replace(secret['LastRotatedDate'],tzinfo=timezone.utc) > max_secret_age:
-            return "COMPLIANT"
-    elif datetime.replace(secret['LastChangedDate'],tzinfo=timezone.utc) > max_secret_age:
+    if 'LastRotatedDate' in secret and datetime.replace(secret['LastRotatedDate'], tzinfo=timezone.utc) > max_secret_age:
         return "COMPLIANT"
-    else:
-        return "NON_COMPLIANT"
+    if datetime.replace(secret['LastChangedDate'], tzinfo=timezone.utc) > max_secret_age:
+        return "COMPLIANT"
+    return "NON_COMPLIANT"
 
 def lambda_handler(event, context):
     if boto3.__version__ < '1.9.152':
@@ -49,13 +47,14 @@ def lambda_handler(event, context):
     else:
         print('No rule paramters found')
         exit(1)
+
     result_token = 'No token found.'
     if 'resultToken' in event:
         result_token = event['resultToken']
 
     sm_client = boto3.client('secretsmanager')
     config = boto3.client('config')
-    
+
     try:
         paginator = sm_client.get_paginator('list_secrets')
     except:
@@ -74,5 +73,5 @@ def lambda_handler(event, context):
                         'OrderingTimestamp': datetime(now.year, now.month, now.day, now.hour)
                     },
                 ],
-                ResultToken=event['resultToken']
+                ResultToken=result_token
             )
