@@ -124,9 +124,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
                 #get bucket names from data resource values to store them in a list
                 for value in data_resource_values:
-                    # value is of the form arn:aws:s3:::test/, [13:-1] strips 'arn:aws:s3:::' and the trailing slash
-                    bucket_name = value[13:-1]
-                    compliant_buckets.append(bucket_name)
+                    #using split to get the bucket name, example format 'arn:aws:s3:::test/'
+                    compliant_buckets.append(value.split(':')[-1].strip('/'))
 
         #match rule parameter values v/s buckets with data events logging enabled
         non_compliant_buckets = (list(set(valid_rule_parameters) - set(compliant_buckets)))
