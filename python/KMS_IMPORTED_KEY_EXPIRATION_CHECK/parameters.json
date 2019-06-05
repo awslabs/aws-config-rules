@@ -4,8 +4,8 @@
     "RuleName": "KMS_IMPORTED_KEY_EXPIRATION_CHECK",
     "SourceRuntime": "python3.6",
     "CodeKey": "KMS_IMPORTED_KEY_EXPIRATION_CHECK.zip",
-    "InputParameters": "{\"daysToExpiration\" : \"10\"}",
-    "OptionalParameters": "{}",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"daysToExpiration\" : \"\"}",
     "SourcePeriodic": "One_Hour"
   },
   "Tags": "[]"

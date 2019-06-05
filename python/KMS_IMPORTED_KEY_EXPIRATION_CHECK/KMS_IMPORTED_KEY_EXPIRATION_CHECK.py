@@ -18,7 +18,7 @@ Rule Name:
   KMS_IMPORTED_KEY_EXPIRATION_CHECK
 
 Description:
-  Check that KMS imported keys are with or without expiration. This rule is NON_COMPLAINT if the imported key has expiration set and it is less than or equal to the daysToExpiration parameter.
+  Checks whether KMS imported keys are marked for expiration within the specified number of days. This rule is NON_COMPLAINT if the imported key has expiration set and it is less than or equal to the daysToExpiration parameter (default: 14 days).
 
 Trigger:
   Periodic
@@ -32,12 +32,12 @@ Rule Parameters:
 
 Scenarios:
   Scenario 1:
-  Given: No imported keys present
-   Then: Return NOT_APPLICABLE
-
-  Scenario 2:
   Given: Rule parameter daysToExpiration is configured and not valid
    Then: Return ERROR
+
+  Scenario 2:
+  Given: No imported keys present
+   Then: Return NOT_APPLICABLE
 
   Scenario 3:
   Given: At least 1 imported key is present
@@ -84,6 +84,10 @@ ASSUME_ROLE_MODE = False
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
+# Default value for daysToExpiration
+DEFAULT_KEY_EXPIRATION_DAY = 14
+
+
 #############
 # Main Code #
 #############
@@ -126,12 +130,19 @@ def is_imported_and_expirable(key_metadata):
 
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = {}
-    if 'daysToExpiration' not in rule_parameters or not rule_parameters['daysToExpiration']:
-        raise ValueError('daysToExpiration must be provided as a parameter.')
-    days_to_expiration = rule_parameters['daysToExpiration'].lstrip('0')
-    if days_to_expiration.isdigit() and len(days_to_expiration) in range(1, 4) and int(days_to_expiration) in range(366):
-        valid_rule_parameters['daysToExpiration'] = int(days_to_expiration)
-    else: raise ValueError('daysToExpiration must be an integer between 1-365.')
+    if 'daysToExpiration' in rule_parameters and rule_parameters['daysToExpiration']:
+        try:
+            rule_parameters['daysToExpiration'] = int(rule_parameters['daysToExpiration'])
+        except:
+            raise ValueError('The parameter daysToExpiration must be an integer.')
+    else:
+        rule_parameters['daysToExpiration'] = DEFAULT_KEY_EXPIRATION_DAY
+    days_to_expiration = rule_parameters.get('daysToExpiration', DEFAULT_KEY_EXPIRATION_DAY)
+    if days_to_expiration < 1:
+        raise ValueError('The parameter daysToExpiration must be greater than 1.')
+    if days_to_expiration >= 1E9-1:
+        raise ValueError('The parameter daysToExpiration exceeds the maximum value.')
+    valid_rule_parameters['daysToExpiration'] = days_to_expiration
     return valid_rule_parameters
 
 

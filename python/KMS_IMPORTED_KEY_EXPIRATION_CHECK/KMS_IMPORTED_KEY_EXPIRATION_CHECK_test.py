@@ -49,7 +49,15 @@ sys.modules['boto3'] = Boto3Mock()
 RULE = __import__('KMS_IMPORTED_KEY_EXPIRATION_CHECK')
 
 class ComplianceTest(unittest.TestCase):
-    def test_scenario_1_no_imported_keys_present(self):
+    def test_scenario_1_invalid_days_to_expiration(self):
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"daysToExpiration" : "a"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('NOT_APPLICABLE',
+                                                     compliance_resource_type='AWS::::Account',
+                                                     compliance_resource_id='123456789012'))
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', 'The parameter daysToExpiration must be an integer.')
+
+    def test_scenario_2_no_imported_keys_present(self):
         list_keys_no_imported = {'Keys' : [
             {'KeyId' : 'aaaaaaa-25bf-4d7b-abd7-ade10483c4ab'}
         ]}
@@ -71,14 +79,6 @@ class ComplianceTest(unittest.TestCase):
                                                      compliance_resource_type='AWS::::Account',
                                                      compliance_resource_id='123456789012'))
         assert_successful_evaluation(self, response, resp_expected)
-
-    def test_scenario_2_invalid_days_to_expiration(self):
-        response = RULE.lambda_handler(build_lambda_scheduled_event('{"daysToExpiration" : ""}'), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE',
-                                                     compliance_resource_type='AWS::::Account',
-                                                     compliance_resource_id='123456789012'))
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', 'daysToExpiration must be provided as a parameter.')
 
     def test_scenario_3_imported_key_does_not_expire(self):
         list_keys_no_imported = {'Keys': [
