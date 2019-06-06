@@ -53,10 +53,6 @@ class SampleTest(unittest.TestCase):
     describe_dms_instance_sce_3 = {"ReplicationInstances": [{'ReplicationInstanceIdentifier':'instance1', 'PubliclyAccessible': False}, {'ReplicationInstanceIdentifier':'instance2', 'PubliclyAccessible': False}]}
     describe_dms_instance_sce_4 = {"ReplicationInstances": [{'ReplicationInstanceIdentifier':'instance1', 'PubliclyAccessible': True}, {'ReplicationInstanceIdentifier':'instance2', 'PubliclyAccessible': False}]}
 
-
-    invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-
-
     def test_scenario1_no_instances(self):
         DMS_CLIENT_MOCK.describe_replication_instances = MagicMock(return_value={'ReplicationInstances': []})
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)

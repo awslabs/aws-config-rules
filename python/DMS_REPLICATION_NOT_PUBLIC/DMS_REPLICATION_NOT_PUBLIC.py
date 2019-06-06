@@ -85,14 +85,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     return evaluations
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
-
-    Return:
-    anything suitable for the evaluate_compliance()
-
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
