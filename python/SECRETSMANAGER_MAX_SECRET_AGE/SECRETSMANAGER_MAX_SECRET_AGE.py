@@ -125,19 +125,21 @@ def build_parameters_value_error_response(ex):
 
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
-def get_client(service, event):
+def get_client(service, event, region=None):
     """Return the service boto client. It should be used instead of directly calling the client.
 
     Keyword arguments:
     service -- the service name used for calling the boto.client()
     event -- the event variable given in the lambda handler
+    region -- the region where the client is called (default: None)
     """
     if not ASSUME_ROLE_MODE:
-        return boto3.client(service)
-    credentials = get_assume_role_credentials(event["executionRoleArn"])
+        return boto3.client(service, region)
+    credentials = get_assume_role_credentials(event["executionRoleArn"], region)
     return boto3.client(service, aws_access_key_id=credentials['AccessKeyId'],
                         aws_secret_access_key=credentials['SecretAccessKey'],
-                        aws_session_token=credentials['SessionToken']
+                        aws_session_token=credentials['SessionToken'],
+                        region_name=region
                        )
 
 # This generate an evaluation for config
@@ -149,11 +151,11 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
     event -- the event variable given in the lambda handler
     resource_type -- the CloudFormation resource type (or AWS::::Account) to report on the rule (default DEFAULT_RESOURCE_TYPE)
-    annotation -- an annotation to be added to the evaluation (default None)
+    annotation -- an annotation to be added to the evaluation (default None). It will be truncated to 255 if longer.
     """
     eval_cc = {}
     if annotation:
-        eval_cc['Annotation'] = annotation
+        eval_cc['Annotation'] = build_annotation(annotation)
     eval_cc['ComplianceResourceType'] = resource_type
     eval_cc['ComplianceResourceId'] = resource_id
     eval_cc['ComplianceType'] = compliance_type
@@ -166,16 +168,22 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
     Keyword arguments:
     configuration_item -- the configurationItem dictionary in the invokingEvent
     compliance_type -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    annotation -- an annotation to be added to the evaluation (default None)
+    annotation -- an annotation to be added to the evaluation (default None). It will be truncated to 255 if longer.
     """
     eval_ci = {}
     if annotation:
-        eval_ci['Annotation'] = annotation
+        eval_ci['Annotation'] = build_annotation(annotation)
     eval_ci['ComplianceResourceType'] = configuration_item['resourceType']
     eval_ci['ComplianceResourceId'] = configuration_item['resourceId']
     eval_ci['ComplianceType'] = compliance_type
     eval_ci['OrderingTimestamp'] = configuration_item['configurationItemCaptureTime']
     return eval_ci
+
+# Build annotation within Service constraints
+def build_annotation(annotation_string):
+    if len(annotation_string) > 256:
+        return annotation_string[:244] + " [truncated]"
+    return annotation_string
 
 ####################
 # Boilerplate Code #
@@ -231,7 +239,7 @@ def get_configuration_item(invoking_event):
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invoking_event['messageType']):
+    if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
@@ -246,10 +254,10 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
+    return status in ('OK', 'ResourceDiscovered') and not event_left_scope
 
-def get_assume_role_credentials(role_arn):
-    sts_client = boto3.client('sts')
+def get_assume_role_credentials(role_arn, region=None):
+    sts_client = boto3.client('sts', region)
     try:
         assume_role_response = sts_client.assume_role(RoleArn=role_arn,
                                                       RoleSessionName="configLambdaExecution",
