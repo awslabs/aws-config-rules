@@ -53,8 +53,8 @@ class ComplianceTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_sample(self):
-        self.assertTrue(True)
+#    def test_sample(self):
+#        self.assertTrue(True)
 
     #def test_sample_2(self):
     #    RULE.ASSUME_ROLE_MODE = False
@@ -172,4 +172,3 @@ class TestStsErrors(unittest.TestCase):
         response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
         assert_customer_error_response(
             self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')
-
