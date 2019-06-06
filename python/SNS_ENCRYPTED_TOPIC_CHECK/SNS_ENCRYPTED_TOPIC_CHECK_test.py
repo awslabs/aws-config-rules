@@ -105,7 +105,7 @@ class NonCompliantResourcesTest(unittest.TestCase):
         expected_response = [build_expected_response(
             'NON_COMPLIANT',
             'arn:aws:sns:ap-southeast-1:123456789012:testSNS',
-            annotation="The Amazon Simple Notification Service topic is not encrypted with following KMS Key(s): ['arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc']"
+            annotation="This SNS topic is not encrypted with KMS Key {KmsKeyId}: ['arn:aws:kms:ap-southeast-1:123456789012:key/99a9f661-c02f-4046-9360-9334dex68gdc']"
         )]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 

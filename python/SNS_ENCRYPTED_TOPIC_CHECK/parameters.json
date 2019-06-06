@@ -4,8 +4,8 @@
     "RuleName": "SNS_ENCRYPTED_TOPIC_CHECK",
     "SourceRuntime": "python3.6",
     "CodeKey": "SNS_ENCRYPTED_TOPIC_CHECK.zip",
-    "InputParameters": "{\"KmsKeyId\": \"arn:aws:kms:ap-southeast-1:123456789012:key/86a9f691-c02f-4046-9360-903afec68edc\"}",
-    "OptionalParameters": "{}",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"KmsKeyId\": \"\"}",
     "SourcePeriodic": "TwentyFour_Hours"
   },
   "Tags": "[]"

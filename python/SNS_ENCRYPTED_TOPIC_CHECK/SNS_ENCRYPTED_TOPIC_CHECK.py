@@ -13,7 +13,7 @@ Rule Name:
   SNS_ENCRYPTED_TOPIC_CHECK
 
 Description:
-  Checks whether the Amazon Simple Notification Service (SNS) topics are encrypted. The rule is NON_COMPLIANT if SNS topic is not encrypted or encrypted with a different key then "KmsKeyId".
+  Checks whether the Amazon Simple Notification Service (SNS) topics are encrypted. The rule is NON_COMPLIANT if SNS topic is not encrypted or encrypted with a different key is specfied in the "KmsKeyId" parameter.
 
 Trigger:
   Periodic
@@ -47,7 +47,7 @@ Scenarios:
        And: SNS topic is encrypted
        And: KmsKeyId parameter is configured
        And: SNS topic encryption Key not matching any KMS key(s) in KmsKeyId
-      Then: Return NON_COMPLIANT with Annotation "The Amazon Simple Notification Service topic is not encrypted with KMS Key {KmsKeyId}"
+      Then: Return NON_COMPLIANT with Annotation "This SNS topic is not encrypted with KMS Key {KmsKeyId}."
   Scenario: 6
      Given: There is at least 1 SNS topic
        And: SNS topic is encrypted
@@ -98,27 +98,30 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     for topic_dict in topic_list_of_dict:
         response_topic_attributes_dict = sns_client.get_topic_attributes(TopicArn=topic_dict['TopicArn'])
+
+        if "KmsMasterKeyId" not in response_topic_attributes_dict['Attributes']:
+            result.append(build_evaluation(
+                topic_dict['TopicArn'],
+                'NON_COMPLIANT',
+                event,
+                annotation="The Amazon Simple Notification Service topic is not encrypted."
+            ))
+            continue
+
         if not valid_rule_parameters:
-            if "KmsMasterKeyId" in response_topic_attributes_dict['Attributes']:
-                result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
-            else:
-                result.append(build_evaluation(
-                    topic_dict['TopicArn'],
-                    'NON_COMPLIANT',
-                    event,
-                    annotation="The Amazon Simple Notification Service topic is not encrypted."
-                ))
+            result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
+            continue
+
+        if "KmsMasterKeyId" in response_topic_attributes_dict['Attributes'] and \
+                response_topic_attributes_dict['Attributes']['KmsMasterKeyId'] in valid_rule_parameters:
+            result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
         else:
-            if "KmsMasterKeyId" in response_topic_attributes_dict['Attributes'] and \
-                    response_topic_attributes_dict['Attributes']['KmsMasterKeyId'] in valid_rule_parameters:
-                result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
-            else:
-                result.append(build_evaluation(
-                    topic_dict['TopicArn'],
-                    'NON_COMPLIANT',
-                    event,
-                    annotation="The Amazon Simple Notification Service topic is not encrypted with following KMS Key(s): "+str(valid_rule_parameters)
-                ))
+            result.append(build_evaluation(
+                topic_dict['TopicArn'],
+                'NON_COMPLIANT',
+                event,
+                annotation="This SNS topic is not encrypted with KMS Key {KmsKeyId}: "+str(valid_rule_parameters)
+            ))
     return result
 
 
@@ -128,10 +131,7 @@ def get_all_topic(sns_client):
     result_list = []
 
     while True:
-        if not next_token:
-            response_list_topics_dict = sns_client.list_topics()
-        else:
-            response_list_topics_dict = sns_client.list_topics(NextToken=next_token)
+        response_list_topics_dict = sns_client.list_topics(NextToken=next_token)
         result_list.extend(response_list_topics_dict['Topics'])
         if 'NextToken' in response_list_topics_dict:
             next_token = response_list_topics_dict['NextToken']
