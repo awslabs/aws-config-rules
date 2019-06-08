@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "SAGEMAKER_NOTEBOOK_KMS_CONFIGURED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "SAGEMAKER_NOTEBOOK_KMS_CONFIGURED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"keyArns\": \"\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
