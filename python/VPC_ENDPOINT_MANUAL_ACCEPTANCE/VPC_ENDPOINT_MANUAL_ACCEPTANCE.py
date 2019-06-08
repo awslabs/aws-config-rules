@@ -85,20 +85,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
 def get_endpoint_services(ec2_client):
     endpoint_services = []
-    next_token = 'na'
     response = ec2_client.describe_vpc_endpoint_services()
-    while next_token != '':
-        next_token = ''
+    while True:
         endpoint_services.extend(response['ServiceDetails'])
         if 'NextToken' in response:
-            next_token = response['NextToken']
-            response = ec2_client.describe_vpc_endpoint_services(NextToken=next_token)
-    return endpoint_services
+            response = ec2_client.describe_vpc_endpoint_services(NextToken=response['NextToken'])
+            continue
+        return endpoint_services
 
 def evaluate_parameters(rule_parameters):
-    """
-    No Parameters required for rule.
-    """
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
