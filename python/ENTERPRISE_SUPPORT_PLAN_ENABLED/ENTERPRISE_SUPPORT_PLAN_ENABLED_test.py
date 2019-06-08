@@ -48,7 +48,7 @@ sys.modules['boto3'] = Boto3Mock()
 RULE = __import__('ENTERPRISE_SUPPORT_PLAN_ENABLED')
 
 class NonCompliantResourceTest(unittest.TestCase):
-    def test_scenario_1_baisc_support_non_compliant(self):
+    def test_scenario_1_basic_support_non_compliant(self):
         SUPPORT_CLIENT_MOCK.describe_severity_levels = MagicMock(
             side_effect=botocore.exceptions.ClientError(
                 {'Error': {'Code': 'SubscriptionRequiredException', 'Message': 'unknown-message'}},
@@ -62,7 +62,7 @@ class NonCompliantResourceTest(unittest.TestCase):
             [build_expected_response(
                 'NON_COMPLIANT',
                 '123456789012',
-                'The AWS Enterprise Support Plan is not enabled for this AWS Account.'
+                annotation='The AWS Enterprise Support Plan is not enabled for this AWS Account.'
                 )]
             )
     def test_scenario_2_bussiness_support_non_compliant(self):
@@ -76,7 +76,7 @@ class NonCompliantResourceTest(unittest.TestCase):
             [build_expected_response(
                 'NON_COMPLIANT',
                 '123456789012',
-                'The AWS Enterprise Support Plan is not enabled for this AWS Account.'
+                annotation='The AWS Enterprise Support Plan is not enabled for this AWS Account.'
                 )]
             )
 class CompliantResourceTest(unittest.TestCase):

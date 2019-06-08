@@ -6,7 +6,7 @@
     "SourcePeriodic": "One_Hour",
     "CodeKey": "KMS_KEYS_TO_NOT_DELETE.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{\"kmsKeyIds\":\"\"}",
+    "OptionalParameters": "{\"kmsKeyIds\":\"\"}"
   },
   "Tags": "[]"
 }

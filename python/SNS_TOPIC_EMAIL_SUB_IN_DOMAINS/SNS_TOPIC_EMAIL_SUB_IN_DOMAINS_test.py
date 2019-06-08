@@ -48,7 +48,7 @@ class SampleTest(unittest.TestCase):
         rule_param = "{\"domainNames\":\"gmailcom,notyourwish.net,merachelega.org\"}"
         lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', customer_error_message='gmailcom not a valid domain name')
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', customer_error_message='gmailcom not a valid domain name.')
 
     def test_scenario2(self):
         SNS_CLIENT_MOCK.list_subscriptions = MagicMock(return_value={"Subscriptions":[]})
@@ -64,7 +64,7 @@ class SampleTest(unittest.TestCase):
         rule_param = "{\"domainNames\":\"\"}"
         lambda_event = build_lambda_scheduled_event(rule_parameters=rule_param)
         response = RULE.lambda_handler(lambda_event, {})
-        assert_customer_error_response(self, response, 'InvalidParameterValueException', customer_error_message='Atleast one domain name is required as input')
+        assert_customer_error_response(self, response, 'InvalidParameterValueException', customer_error_message='At least one domain name is required as input parameter.')
 
     def test_scenario4(self):
         SNS_CLIENT_MOCK.list_subscriptions = MagicMock(return_value={"Subscriptions":[{
