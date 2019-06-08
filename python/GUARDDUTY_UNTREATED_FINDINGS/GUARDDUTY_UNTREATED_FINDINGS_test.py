@@ -1,7 +1,10 @@
 import sys
 import unittest
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 from datetime import datetime
-from mock import MagicMock
 import botocore
 
 ##############
