@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "SAGEMAKER_ENDPOINT_CONFIG_KMS_KEY_CONFIGURED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "SAGEMAKER_ENDPOINT_CONFIG_KMS_KEY_CONFIGURED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"keyArns\": \"\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
