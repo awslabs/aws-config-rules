@@ -34,7 +34,7 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('S3_PUBLIC_ACCESS_SETTTINGS_FOR_ACCOUNT')
+RULE = __import__('S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT')
 
 class ComplianceTestScenarios(unittest.TestCase):
 

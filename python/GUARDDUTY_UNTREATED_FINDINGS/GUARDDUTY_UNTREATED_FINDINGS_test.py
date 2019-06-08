@@ -1,9 +1,7 @@
 import sys
 import unittest
-try:
-    from unittest.mock import MagicMock
-except ImportError:
-    from mock import MagicMock
+from datetime import datetime
+from mock import MagicMock
 import botocore
 
 ##############
@@ -82,7 +80,7 @@ class ComplianceTestCases(unittest.TestCase):
             {
                 "Severity": 2,
                 "Id": "42b5159faf35b2b33df670ac2aa4b943",
-                "CreatedAt": "2019-05-01T10:33:57.404Z",
+                "CreatedAt": str(datetime.utcnow()).replace(" ", "T")[:-3] + "Z",
             }
         ]
     }
@@ -92,7 +90,7 @@ class ComplianceTestCases(unittest.TestCase):
             {
                 "Severity": 5,
                 "Id": "42b5159faf35b2b33df670ac2aa4b943",
-                "CreatedAt": "2019-05-01T10:33:57.404Z",
+                "CreatedAt": str(datetime.utcnow()).replace(" ", "T")[:-3] + "Z",
             }
         ]
     }
@@ -102,7 +100,7 @@ class ComplianceTestCases(unittest.TestCase):
             {
                 "Severity": 8,
                 "Id": "42b5159faf35b2b33df670ac2aa4b943",
-                "CreatedAt": "2019-05-01T10:33:57.404Z",
+                "CreatedAt": str(datetime.utcnow()).replace(" ", "T")[:-3] + "Z",
             }
         ]
     }
