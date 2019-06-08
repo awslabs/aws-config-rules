@@ -47,7 +47,7 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('DMS_REPLICATION_NOT_PUBLIC')
 
-class SampleTest(unittest.TestCase):
+class ComplianceTest(unittest.TestCase):
 
     describe_dms_instance_sce_2 = {"ReplicationInstances": [{'ReplicationInstanceIdentifier':'instance1', 'PubliclyAccessible': True}, {'ReplicationInstanceIdentifier':'instance2', 'PubliclyAccessible': True}]}
     describe_dms_instance_sce_3 = {"ReplicationInstances": [{'ReplicationInstanceIdentifier':'instance1', 'PubliclyAccessible': False}, {'ReplicationInstanceIdentifier':'instance2', 'PubliclyAccessible': False}]}
