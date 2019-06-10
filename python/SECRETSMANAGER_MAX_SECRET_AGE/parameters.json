@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.7",
     "CodeKey": "SECRETSMANAGER_MAX_SECRET_AGE.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{\"max_secret_age_days\": \"\"}",
+    "OptionalParameters": "{\"max_secret_age_days\": \"30\"}",
     "SourcePeriodic": "TwentyFour_Hours"
   },
   "Tags": "[]"

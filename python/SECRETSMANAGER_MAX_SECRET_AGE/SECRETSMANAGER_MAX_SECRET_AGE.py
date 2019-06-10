@@ -34,25 +34,36 @@ ASSUME_ROLE_MODE = False
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
+# Default age of SecretValue if max_secret_age_days is not provided in Rule Parameters
+# Parameter must be a positive integer less than 999999999+1
+DEFAULT_MAX_SECRET_AGE_DAYS = 30
+
 #############
 # Main Code #
 #############
 
 
 def evaluate_secret_compliance(valid_rule_parameters, secret):
-    #now = datetime.now(timezone.utc)
-    delta = timedelta(days=int(valid_rule_parameters.get('max_secret_age_days') if valid_rule_parameters.get('max_secret_age_days') else '30'))
-    max_secret_age = NOW - delta
+    now = datetime.now(timezone.utc)
+    delta = timedelta(days=valid_rule_parameters.get('max_secret_age_days'))
+    max_secret_age = now - delta
 
     if secret.get('LastRotatedDate'):
         if datetime.replace(secret.get('LastRotatedDate'), tzinfo=timezone.utc) > max_secret_age:
             return 'COMPLIANT'
         return 'NON_COMPLIANT'
 
+    # Pagination of this API call is not needed as this API is only called if Secret has never been rotated
+    # This should always return only a single VersionId with VersionLabel AWSCURRENT
     secret_versions = AWS_SECRETSMANAGER_CLIENT.list_secret_version_ids(
         SecretId=secret.get('Name'),
         IncludeDeprecated=False
     ).get('Versions')
+
+    # Secret conains no SecretValues
+    if len(secret_versions) == 0:
+        return 'COMPLIANT'
+
     for version in secret_versions:
         if 'AWSCURRENT' in version.get('VersionStages'):
             if datetime.replace(version.get('CreatedDate'), tzinfo=timezone.utc) > max_secret_age:
@@ -102,10 +113,17 @@ def evaluate_parameters(rule_parameters):
     Keyword arguments:
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
-    if 'max_secret_age_days' in rule_parameters and int(rule_parameters.get('max_secret_age_days')) > int('999999999'):
-        raise ValueError('max_secret_age_days must be less than 999999999')
-    valid_rule_parameters = rule_parameters
-    return valid_rule_parameters
+
+    try:
+        max_secret_age_days = int(rule_parameters.get('max_secret_age_days', DEFAULT_MAX_SECRET_AGE_DAYS))
+    except TypeError:
+        raise ValueError('max_secret_age_days must be an integer')
+
+    if max_secret_age_days > timedelta.max.days:
+        raise ValueError('max_secret_age_days must be less than ' + str(timedelta.max.days))
+
+    return {"max_secret_age_days" : max_secret_age_days }
+
 
 ####################
 # Helper Functions #
@@ -322,9 +340,6 @@ def lambda_handler(event, context):
 
     global AWS_CONFIG_CLIENT
     global AWS_SECRETSMANAGER_CLIENT
-    global NOW
-
-    NOW = datetime.now(timezone.utc)
 
     #print(event)
     check_defined(event, 'event')
