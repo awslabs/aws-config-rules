@@ -61,7 +61,7 @@ def evaluate_secret_compliance(valid_rule_parameters, secret):
     ).get('Versions')
 
     # Secret conains no SecretValues
-    if len(secret_versions) == 0:
+    if not secret_versions:
         return 'COMPLIANT'
 
     for version in secret_versions:
@@ -122,7 +122,7 @@ def evaluate_parameters(rule_parameters):
     if max_secret_age_days > timedelta.max.days:
         raise ValueError('max_secret_age_days must be less than ' + str(timedelta.max.days))
 
-    return {"max_secret_age_days" : max_secret_age_days }
+    return {"max_secret_age_days": max_secret_age_days}
 
 
 ####################
