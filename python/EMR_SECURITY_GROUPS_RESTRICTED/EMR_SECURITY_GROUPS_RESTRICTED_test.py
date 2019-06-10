@@ -37,7 +37,7 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('EMR_SECURITY_GROUPS_CLOSED')
+RULE = __import__('EMR_SECURITY_GROUPS_RESTRICTED')
 
 class ComplianceTest(unittest.TestCase):
 

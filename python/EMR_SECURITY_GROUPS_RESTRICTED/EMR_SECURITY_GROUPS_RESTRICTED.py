@@ -4,7 +4,7 @@
 #####################################
 
 Rule Name:
-  EMR_SECURITY_GROUPS_CLOSED
+  EMR_SECURITY_GROUPS_RESTRICTED
 
 Description:
   Checks that Amazon EMR clusters' security groups are not open to the world. This rule only checks clusters in RUNNING or WAITING state.
