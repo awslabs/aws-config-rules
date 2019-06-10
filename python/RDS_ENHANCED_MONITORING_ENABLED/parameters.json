@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "CodeKey": "RDS_ENHANCED_MONITORING_ENABLED.zip",
+    "SourceRuntime": "python3.6",
+    "RuleName": "RDS_ENHANCED_MONITORING_ENABLED",
+    "SourceEvents": "AWS::RDS::DBInstance",
+    "OptionalParameters": "{}",
+    "InputParameters": "{}"
+  },
+  "Tags": "[]"
+}
