@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EMR_SECURITY_GROUPS_RESTRICTED",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "EMR_SECURITY_GROUPS_RESTRICTED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}
