@@ -35,25 +35,19 @@ sys.modules['boto3'] = Boto3Mock()
 RULE = __import__('RDS_ENHANCED_MONITORING_ENABLED')
 
 class ComplianceTest(unittest.TestCase):
+    #scenario1
     rule_invalid_parameter = '{"monitoringInterval":"12"}'
+    #scenario2,scenario5
     rule_valid_parameter = '{"monitoringInterval":"5"}'
+    #scenario3
     rule_parameter_mismatch = '{"monitoringInterval":"10"}'
 
     valid_em_interval_configured = {
-        "functionName": "test_function",
-        "functionArn": "arn:aws:lambda:us-west-2:123456789012:function:test_function",
         "monitoringInterval": "5"
     }
 
     invalid_em_interval_zero = {
-        "functionName": "test_function",
-        "functionArn": "arn:aws:lambda:us-west-2:123456789012:function:test_function",
         "monitoringInterval": "0"
-    }
-
-    no_em_interval_configured = {
-        "functionName": "test_function",
-        "functionArn": "arn:aws:lambda:us-west-2:123456789012:function:test_function"
     }
 
     def test_scenario_1_invalid_parameter_value(self):
@@ -61,12 +55,6 @@ class ComplianceTest(unittest.TestCase):
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_invalid_parameter), {})
         assert_customer_error_response(self, response, 'Invalid value for the parameter "monitoringInterval", Expected a valid integer from the list [1, 5, 10, 15, 30, 60].')
-
-    def test_scenario_4_empty_ruleparameter(self):
-        invoking_event = generate_invoking_event(self.valid_em_interval_configured)
-        response = RULE.lambda_handler(
-            build_lambda_configurationchange_event(invoking_event, {}), {})
-        assert_successful_evaluation(self, response, [build_expected_response('COMPLIANT', '123456789012')])
 
     def test_scenario_2_interval_zero(self):
         invoking_event = generate_invoking_event(self.invalid_em_interval_zero)
@@ -79,6 +67,12 @@ class ComplianceTest(unittest.TestCase):
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_parameter_mismatch), {})
         assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', '123456789012', annotation="Enhanced Monitoring interval for this Amazon RDS instance is not set with period:10")])
+
+    def test_scenario_4_empty_ruleparameter(self):
+        invoking_event = generate_invoking_event(self.valid_em_interval_configured)
+        response = RULE.lambda_handler(
+            build_lambda_configurationchange_event(invoking_event, {}), {})
+        assert_successful_evaluation(self, response, [build_expected_response('COMPLIANT', '123456789012')])
 
     def test_scenario_5_em_interval_match(self):
         invoking_event = generate_invoking_event(self.valid_em_interval_configured)

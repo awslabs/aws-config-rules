@@ -9,6 +9,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
 
+'''
+
+#####################################
+##           Gherkin               ##
+#####################################
+
+Description:
+  Checks whether enhanced monitoring is enabled for Amazon RDS instances.
+Trigger:
+  Configuration Changes
+Reports on:
+  AWS::RDS::DBInstance
+Rule Parameters:
+ monitoringInterval
+ (Optional) An integer value in seconds between points when Enhanced Monitoring metrics are collected for the DB instance. Valid Values are 1, 5, 10, 15, 30, 60.
+
+Scenarios:
+  Scenario: 1
+     Given: Value for the rule parameter 'monitoringInterval' is invalid.
+      Then: Return ERROR
+  Scenario: 2
+     Given: 'monitoringInterval' is '0' in configuration item of the Amazon RDS instance.
+      Then: Return NON_COMPLIANT
+  Scenario: 3
+     Given: Value for the rule parameter 'monitoringInterval' is provided and is valid
+       And: 'monitoringInterval' in configuration item of the Amazon RDS instance does not match the rule parameter value
+      Then: Return NON_COMPLIANT
+  Scenario: 4
+     Given: Value for the rule parameter 'monitoringInterval' is not provided
+       And: 'monitoringInterval' is a non-zero value in configuration item of the Amazon RDS instance.
+      Then: Return COMPLIANT
+  Scenario: 5
+     Given: Value for the rule parameter 'monitoringInterval' is provided and is valid
+       And: 'monitoringInterval' in configuration item of the Amazon RDS instance matches the rule parameter value
+      Then: Return COMPLIANT
+
+'''
+
 import json
 import sys
 import datetime
@@ -56,8 +94,7 @@ def evaluate_parameters(rule_parameters):
     if int(rule_parameters['monitoringInterval']) not in [1, 5, 10, 15, 30, 60]:
         raise ValueError('Invalid value for the parameter "monitoringInterval", Expected a valid integer from the list [1, 5, 10, 15, 30, 60].')
 
-    valid_rule_parameters = rule_parameters
-    return valid_rule_parameters
+    return rule_parameters
 
 ####################
 # Helper Functions #
