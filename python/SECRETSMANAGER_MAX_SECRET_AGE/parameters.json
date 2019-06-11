@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "SECRETSMANAGER_MAX_SECRET_AGE",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "SECRETSMANAGER_MAX_SECRET_AGE.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"max_secret_age_days\": \"30\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
