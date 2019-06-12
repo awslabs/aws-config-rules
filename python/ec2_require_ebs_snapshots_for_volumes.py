@@ -147,4 +147,4 @@ def lambda_handler(event, context):
         Evaluations = evaluations,
         ResultToken = event['resultToken'])
     if 'FailedEvaluations' in response and response['FailedEvaluations']:
-        raise Exception('Failed to report all evaluations successfully to the AWSConfig service. Failed: ' + str(response['FailedEvaluations'])
+        raise Exception('Failed to report all evaluations successfully to the AWSConfig service. Failed: ' + str(response['FailedEvaluations']))
