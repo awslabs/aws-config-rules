@@ -27,12 +27,12 @@ Rule Parameters:
 
 Scenarios:
   Scenario: 1
-     Given: No SNS topic is present
-      Then: Return NOT_APPLICABLE
-  Scenario: 2
      Given: KmsKeyId parameter is configured
        And: KmsKeyId does not contain valid KMS Key ARN(s)
       Then: Return ERROR
+  Scenario: 2
+     Given: No SNS topic is present
+      Then: Return NOT_APPLICABLE
   Scenario: 3
      Given: There is at least 1 SNS topic
        And: SNS topic is not encrypted
@@ -112,8 +112,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
             continue
 
-        if "KmsMasterKeyId" in response_topic_attributes_dict['Attributes'] and \
-                response_topic_attributes_dict['Attributes']['KmsMasterKeyId'] in valid_rule_parameters:
+        if response_topic_attributes_dict['Attributes']['KmsMasterKeyId'] in valid_rule_parameters:
             result.append(build_evaluation(topic_dict['TopicArn'], 'COMPLIANT', event))
         else:
             result.append(build_evaluation(
