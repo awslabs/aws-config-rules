@@ -20,7 +20,6 @@ DEFAULT_RESOURCE_TYPE = 'AWS::EMR::Cluster'
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
 EMR_CLIENT_MOCK = MagicMock()
-EC2_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
@@ -31,8 +30,6 @@ class Boto3Mock():
             return STS_CLIENT_MOCK
         if client_name == 'emr':
             return EMR_CLIENT_MOCK
-        if client_name == 'ec2':
-            return EC2_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
@@ -114,110 +111,53 @@ class ComplianceTest(unittest.TestCase):
     #Scenario 2: Security group(s) for the Amazon EMR cluster has a rule with IP range 0.0.0.0/0 or ::/0
     def test_2_security_groups_open(self):
 
-        described_security_groups = {
-            "SecurityGroups": [{
-                "IpPermissions": [{
-                    "IpRanges": [{
-                        "CidrIp": "0.0.0.0/0"
-                    }],
-                    "Ipv6Ranges": []
-                }],
-                "GroupId": "sg-1111aaaa"
+        security_groups_config_items = {
+            "baseConfigurationItems": [{
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [{\"cidrIp\": \"0.0.0.0/0\"}],\"ipv6Ranges\": []}],\"groupId\": \"sg-1111aaaa\"}"
             }, {
-                "IpPermissions": [{
-                    "IpRanges": [{
-                        "CidrIp": "1.1.1.1/32"
-                    }],
-                    "Ipv6Ranges": [{
-                        "CidrIpv6": "::/0"
-                    }]
-                }],
-                "GroupId": "sg-2222bbbb"
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [{\"cidrIp\": \"1.1.1.1/32\"}],\"ipv6Ranges\": [{\"cidrIpv6\": \"::/0\"}]}],\"groupId\": \"sg-2222bbbb\"}"
             }, {
-                "IpPermissions": [{
-                    "IpRanges": [],
-                    "Ipv6Ranges": [{
-                        "CidrIpv6": "::/0"
-                    }]
-                }],
-                "GroupId": "sg-3333cccc"
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [],\"ipv6Ranges\": [{\"cidrIpv6\": \"::/0\"}]}],\"groupId\": \"sg-3333cccc\"}"
             }, {
-                "IpPermissions": [{
-                    "IpRanges": [{
-                        "CidrIp": "0.0.0.0/0"
-                    }],
-                    "Ipv6Ranges": [{
-                        "CidrIpv6": "::/0"
-                    }]
-                }],
-                "GroupId": "sg-4444dddd"
-            }]
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [{\"cidrIp\": \"0.0.0.0/0\"}],\"ipv6Ranges\": [{\"cidrIpv6\": \"::/0\"}]}],\"groupId\": \"sg-4444dddd\"}"
+            }],
+            "unprocessedResourceKeys": []
         }
 
         EMR_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": EMR_CLIENT_MOCK,
             "paginate.return_value": [self.cluster_list]})
         EMR_CLIENT_MOCK.describe_cluster = MagicMock(side_effect=self.described_clusters)
-        EC2_CLIENT_MOCK.configure_mock(**{
-            "get_paginator.return_value": EC2_CLIENT_MOCK,
-            "paginate.return_value": [described_security_groups]})
+        CONFIG_CLIENT_MOCK.batch_get_resource_config = MagicMock(side_effect=[security_groups_config_items])
 
         resp_expected = [build_expected_response('NON_COMPLIANT', compliance_resource_id='j-AAAAA0AAAAA', annotation="This Amazon EMR cluster has one or more Security Groups open to the world."),
                          build_expected_response('NON_COMPLIANT', compliance_resource_id='j-AAAAA000000', annotation="This Amazon EMR cluster has one or more Security Groups open to the world."),
                          build_expected_response('NON_COMPLIANT', compliance_resource_id='j-AAAAA0BBBBB', annotation="This Amazon EMR cluster has one or more Security Groups open to the world.")]
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+
         assert_successful_evaluation(self, response, resp_expected, 3)
 
     #Scenario 3: Security group(s) for the Amazon EMR cluster do not have a rule with IP range 0.0.0.0/0 or ::/0
     def test_3_security_groups_closed(self):
 
-        described_security_groups = {
-            "SecurityGroups": [{
-                "IpPermissions": [{
-                    "IpRanges": [{
-                        "CidrIp": "2.2.2.2/32"
-                    }],
-                    "Ipv6Ranges": []
-                }],
-                "GroupId": "sg-1111aaaa"
+        security_groups_config_items = {
+            "baseConfigurationItems": [{
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [{\"cidrIp\": \"2.2.2.2/32\"}],\"ipv6Ranges\": []}],\"groupId\": \"sg-1111aaaa\"}"
             }, {
-                "IpPermissions": [{
-                    "IpRanges": [{
-                        "CidrIp": "1.1.1.1/32"
-                    }],
-                    "Ipv6Ranges": [{
-                        "CidrIpv6": "1111:1111::/128"
-                    }]
-                }],
-                "GroupId": "sg-2222bbbb"
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [{\"cidrIp\": \"1.1.1.1/32\"}],\"ipv6Ranges\": [{\"cidrIpv6\": \"1111:1111::/128\"}]}],\"groupId\": \"sg-2222bbbb\"}"
             }, {
-                "IpPermissions": [{
-                    "IpRanges": [],
-                    "Ipv6Ranges": [{
-                        "CidrIpv6": "2222:2222::/128"
-                    }]
-                }],
-                "GroupId": "sg-3333cccc"
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [],\"ipv6Ranges\": [{\"cidrIpv6\": \"2222:2222::/128\"}]}],\"groupId\": \"sg-3333cccc\"}"
             }, {
-                "IpPermissions": [{
-                    "IpRanges": [{
-                        "CidrIp": "2.2.2.2/32"
-                    }],
-                    "Ipv6Ranges": [{
-                        "CidrIpv6": "2222:2222::/128"
-                    }]
-                }],
-                "GroupId": "sg-4444dddd"
-            }]
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [{\"cidrIp\": \"2.2.2.2/32\"}],\"ipv6Ranges\": [{\"cidrIpv6\": \"222:2222::/128\"}]}],\"groupId\": \"sg-4444dddd\"}"
+            }],
+            "unprocessedResourceKeys": []
         }
 
         EMR_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": EMR_CLIENT_MOCK,
             "paginate.return_value": [self.cluster_list]})
         EMR_CLIENT_MOCK.describe_cluster = MagicMock(side_effect=self.described_clusters)
-        EC2_CLIENT_MOCK.configure_mock(**{
-            "get_paginator.return_value": EC2_CLIENT_MOCK,
-            "paginate.return_value": [described_security_groups]})
+        CONFIG_CLIENT_MOCK.batch_get_resource_config = MagicMock(side_effect=[security_groups_config_items])
 
         resp_expected = [build_expected_response('COMPLIANT', compliance_resource_id='j-AAAAA0AAAAA'),
                          build_expected_response('COMPLIANT', compliance_resource_id='j-AAAAA000000'),
@@ -228,53 +168,24 @@ class ComplianceTest(unittest.TestCase):
     #Scenario 2 & 3 mixed
     def test_2_3_security_groups_mixed(self):
 
-        described_security_groups = {
-            "SecurityGroups": [{
-                "IpPermissions": [{
-                    "IpRanges": [{
-                        "CidrIp": "2.2.2.2/32"
-                    }],
-                    "Ipv6Ranges": []
-                }],
-                "GroupId": "sg-1111aaaa"
+        security_groups_config_items = {
+            "baseConfigurationItems": [{
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [{\"cidrIp\": \"2.2.2.2/32\"}],\"ipv6Ranges\": []}],\"groupId\": \"sg-1111aaaa\"}"
             }, {
-                "IpPermissions": [{
-                    "IpRanges": [{
-                        "CidrIp": "1.1.1.1/32"
-                    }],
-                    "Ipv6Ranges": [{
-                        "CidrIpv6": "1111:1111::/128"
-                    }]
-                }],
-                "GroupId": "sg-2222bbbb"
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [{\"cidrIp\": \"1.1.1.1/32\"}],\"ipv6Ranges\": [{\"cidrIpv6\": \"1111:1111::/128\"}]}],\"groupId\": \"sg-2222bbbb\"}"
             }, {
-                "IpPermissions": [{
-                    "IpRanges": [],
-                    "Ipv6Ranges": [{
-                        "CidrIpv6": "::/0"
-                    }]
-                }],
-                "GroupId": "sg-3333cccc"
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [],\"ipv6Ranges\": [{\"cidrIpv6\": \"::/0\"}]}],\"groupId\": \"sg-3333cccc\"}"
             }, {
-                "IpPermissions": [{
-                    "IpRanges": [{
-                        "CidrIp": "0.0.0.0/0"
-                    }],
-                    "Ipv6Ranges": [{
-                        "CidrIpv6": "::/0"
-                    }]
-                }],
-                "GroupId": "sg-4444dddd"
-            }]
+                "configuration": "{\"ipPermissions\": [{\"ipv4Ranges\": [{\"cidrIp\": \"0.0.0.0/0\"}],\"ipv6Ranges\": [{\"cidrIpv6\": \"::/0\"}]}],\"groupId\": \"sg-4444dddd\"}"
+            }],
+            "unprocessedResourceKeys": []
         }
 
         EMR_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": EMR_CLIENT_MOCK,
             "paginate.return_value": [self.cluster_list]})
         EMR_CLIENT_MOCK.describe_cluster = MagicMock(side_effect=self.described_clusters)
-        EC2_CLIENT_MOCK.configure_mock(**{
-            "get_paginator.return_value": EC2_CLIENT_MOCK,
-            "paginate.return_value": [described_security_groups]})
+        CONFIG_CLIENT_MOCK.batch_get_resource_config = MagicMock(side_effect=[security_groups_config_items])
 
         resp_expected = [build_expected_response('COMPLIANT', compliance_resource_id='j-AAAAA0AAAAA'),
                          build_expected_response('NON_COMPLIANT', compliance_resource_id='j-AAAAA000000', annotation="This Amazon EMR cluster has one or more Security Groups open to the world."),

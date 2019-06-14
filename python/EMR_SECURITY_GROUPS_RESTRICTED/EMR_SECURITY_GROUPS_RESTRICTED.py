@@ -71,8 +71,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     sg_cluster_map, sg_list = get_sg_cluster_mapping(cluster_list, emr_client)
 
-    ec2_client = get_client('ec2', event)
-    open_sg_list = get_open_security_groups(sg_list, ec2_client)
+    config_client = get_client('config', event)
+    open_sg_list = get_open_security_groups(sg_list, config_client)
 
     cluster_open_sg_list = set([])
     for security_group in open_sg_list:
@@ -116,29 +116,39 @@ def get_sg_cluster_mapping(cluster_list, emr_client):
                 sg_list_combined.add(security_group)
     return sg_cluster_map, sg_list_combined
 
-def get_open_security_groups(sg_list, ec2_client):
+def get_open_security_groups(sg_list, config_client):
     open_sg_list = set([])
-    paginator = ec2_client.get_paginator('describe_security_groups')
-    page_iterator = paginator.paginate(GroupIds=list(sg_list))
-    for page in page_iterator:
-        for security_group in page['SecurityGroups']:
-            if is_sg_open_ipv4(security_group):
-                open_sg_list.add(security_group['GroupId'])
-            elif is_sg_open_ipv6(security_group):
-                open_sg_list.add(security_group['GroupId'])
+    resource_keys = []
+    for security_group in sg_list:
+        resource_key = {
+            "resourceType": "AWS::EC2::SecurityGroup",
+            "resourceId": security_group
+        }
+        resource_keys.append(resource_key)
+    res = config_client.batch_get_resource_config(resourceKeys=resource_keys)
+    configuration_items = res["baseConfigurationItems"]
+    while res["unprocessedResourceKeys"]:
+        res = config_client.batch_get_resource_config(resourceKeys=res["unprocessedResourceKeys"])
+        for item in res["baseConfigurationItems"]:
+            configuration_items.append(res["baseConfigurationItems"])
+    for item in configuration_items:
+        if is_sg_open_ipv4(json.loads(item["configuration"])):
+            open_sg_list.add(json.loads(item["configuration"])['groupId'])
+        elif is_sg_open_ipv6(json.loads(item["configuration"])):
+            open_sg_list.add(json.loads(item["configuration"])['groupId'])
     return open_sg_list
 
 def is_sg_open_ipv4(sg_description):
-    for rule in sg_description['IpPermissions']:
-        for ip_range in rule['IpRanges']:
-            if ip_range['CidrIp'] == '0.0.0.0/0':
+    for rule in sg_description['ipPermissions']:
+        for ip_range in rule['ipv4Ranges']:
+            if ip_range['cidrIp'] == '0.0.0.0/0':
                 return True
     return False
 
 def is_sg_open_ipv6(sg_description):
-    for rule in sg_description['IpPermissions']:
-        for ip_range in rule['Ipv6Ranges']:
-            if ip_range['CidrIpv6'] == '::/0':
+    for rule in sg_description['ipPermissions']:
+        for ip_range in rule['ipv6Ranges']:
+            if ip_range['cidrIpv6'] == '::/0':
                 return True
     return False
 
