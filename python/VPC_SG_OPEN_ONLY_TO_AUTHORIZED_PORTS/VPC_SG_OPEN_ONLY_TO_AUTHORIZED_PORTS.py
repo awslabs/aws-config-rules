@@ -9,79 +9,69 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
 '''
- #####################################
- ##           Gherkin               ##
- #####################################
+#####################################
+##           Gherkin               ##
+#####################################
 
- Rule Name:
- 	VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
+Rule Name:
+  VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
 
- Description:
- 	Checks that the open security group of any VPCs allows only certain TCP or UDP traffic (Inbound).
+Description:
+  Checks that the security group with 0.0.0.0/0 of any VPCs allows only certain TCP or UDP traffic (Inbound only). If no ports are provided in the parameters, any security group with inbound 0.0.0.0/0 will be NON_COMPLIANT.
 
- Trigger:
-    Configuration Changes on AWS::EC2::SecurityGroup
+Trigger:
+  Configuration Changes on AWS::EC2::SecurityGroup
 
- Reports on:
-    AWS::EC2::SecurityGroup
+Reports on:
+  AWS::EC2::SecurityGroup
 
- Rule Parameters:
-   | ---------------------- | --------- | -------------------------------------------------------- |
-   | Parameter Name         | Type      | Description                                              |
-   | ---------------------- | --------- | -------------------------------------------------------- |
-   | authorizedTCPPorts     | Optional  | List of TCP ports authorized to be open to 0.0.0.0/0,    |
-   |                        |           | separated by comma. Ranges can be defined by dash.       |
-   |                        |           | Ex: "443,1020-1025"                                      |
-   | ---------------------- | --------- | -------------------------------------------------------- |
-   | authorizedUDPPorts     | Optional  | List of UDP ports authorized to be open to 0.0.0.0/0,    |
-   |                        |           | separated by comma. Ranges can be defined by dash.       |
-   | ---------------------- | --------- | -------------------------------------------------------- |
-   | exceptionList          | Optional  | List of security group ids which are exempt from the     |
-   |                        |           | verification, separated by comma.                        |
-   | ---------------------- | --------- | -------------------------------------------------------- |
+Rule Parameters:
+  authorizedTcpPorts (Optional)
+       List of TCP ports authorized to be open to 0.0.0.0/0, separated by comma. Ranges can be defined by dash. Ex: "443,1020-1025"
+  authorizedUdpPorts (Optional)
+       List of UDP ports authorized to be open to 0.0.0.0/0, separated by comma. Ranges can be defined by dash. Ex: "500,1020-1025"
 
- Feature:
- 	In order to: limit exposure of unprotected ports
- 	         As: a Security Officer
- 	     I want: to ensure that security groups with '0.0.0.0/0' only open on authorized ports
+Scenarios:
+  Scenario: 1_evalparam_tcpnotvalid_error
+    Given: authorizedTcpPorts is configured and not valid
+	 Then: Return Error
 
- Scenarios:
-   Scenario 1:
- 	Given: The Security Group id in the exceptionList
- 	 Then: Return COMPLIANT
+  Scenario: 2_evalparam_udppnotvalid_error
+    Given: authorizedUdpPorts is configured and not valid
+	 Then: Return Error
 
-   Scenario 2:
- 	Given: The Security Group has no port open to '0.0.0.0/0'
- 	 Then: Return COMPLIANT
+  Scenario: 3_evalcompliance_notopen_notapplicable
+	Given: The Security Group has no inbound port open to '0.0.0.0/0'
+	 Then: Return NOT_APPLICABLE
 
-   Scenario 3:
- 	Given: The Security Group has at least 1 UDP port open to '0.0.0.0/0'
- 	  And: Open UDP ports not in authorizedUDPPorts
- 	 Then: Return NON_COMPLIANT
+  Scenario: 4_evalcompliance_updopennotauthorized_noncompliant
+	Given: The Security Group has at least 1 UDP inbound port open to '0.0.0.0/0'
+	  And: Open UDP ports not in authorizedUdpPorts
+	 Then: Return NON_COMPLIANT
 
-   Scenario 4:
- 	Given: The Security Group has at least 1 TCP port open to '0.0.0.0/0'
- 	  And: Open TCP ports not in authorizedTCPPorts
- 	 Then: Return NON_COMPLIANT
+  Scenario: 5_evalcompliance_tcpopennotauthorized_noncompliant
+	Given: The Security Group has at least 1 TCP inbound port open to '0.0.0.0/0'
+	  And: Open TCP ports not in authorizedTcpPorts
+	 Then: Return NON_COMPLIANT
 
-   Scenario 5:
- 	Given: The Security Group has at least 1 UDP port open to '0.0.0.0/0'
- 	  And: No TCP ports are open to '0.0.0.0/0'
- 	  And: Open UDP ports in authorizedUDPPorts
- 	 Then: Return COMPLIANT
+  Scenario: 6_evalcompliance_tcpnotopen_udpauthorized_compliant
+	Given: The Security Group has at least 1 UDP inbound port open to '0.0.0.0/0'
+	  And: No TCP ports are open to '0.0.0.0/0'
+	  And: Open UDP ports in authorizedUdpPorts
+	 Then: Return COMPLIANT
 
-   Scenario 6:
- 	Given: The Security Group has at least 1 TCP port open to '0.0.0.0/0'
- 	  And: No UDP ports are open to '0.0.0.0/0'
- 	  And: Open TCP ports in authorizedTCPPorts
- 	 Then: Return COMPLIANT
+  Scenario: 7_evalcompliance_udpnotopen_tcpauthorized_compliant
+	Given: The Security Group has at least 1 TCP inbound port open to '0.0.0.0/0'
+	  And: No UDP ports are open to '0.0.0.0/0'
+	  And: Open TCP ports in authorizedTcpPorts
+	 Then: Return COMPLIANT
 
-   Scenario 7:
- 	Given: The Security Group has at least 1 TCP port open to '0.0.0.0/0'
- 	  And: The Security Group has at least 1 UDP port open to '0.0.0.0/0'
- 	  And: Open TCP ports in authorizedTCPPorts
- 	  And: Open UDP ports in authorizedUDPPorts
- 	 Then: Return COMPLIANT
+  Scenario: 8_evalcompliance_udpauthorized_tcpauthorized_compliant
+	Given: The Security Group has at least 1 TCP inbound port open to '0.0.0.0/0'
+	  And: The Security Group has at least 1 UDP inbound port open to '0.0.0.0/0'
+	  And: Open TCP ports in authorizedTcpPorts
+	  And: Open UDP ports in authorizedUdpPorts
+	 Then: Return COMPLIANT
  '''
 
 import json
@@ -104,129 +94,105 @@ ASSUME_ROLE_MODE = False
 # Main Code #
 #############
 
-class portrange:
-    begin = 0
-    end = 0
+def evaluate_compliance(event, configuration_item, valid_rule_parameters):
+    is_any_open_allowed = False
+    
+    for rule in configuration_item['configuration']['ipPermissions']:
+        rule_range = PortRange(rule.get('fromPort', 0), rule.get('toPort', 65535))
+        for ip_range in rule['ipv4Ranges']:
+            if not ip_range['cidrIp'] == '0.0.0.0/0':
+                continue
+
+            is_any_open_allowed = True
+            protocol = rule['ipProtocol']
+
+            if protocol in ['udp', '-1']:
+                non_compliant_annotation = get_non_compliant_annotation('UDP', 'authorizedUdpPorts', valid_rule_parameters, rule_range)
+                if non_compliant_annotation:
+                    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation=non_compliant_annotation)
+
+            if protocol in ['tcp', '-1']:
+                non_compliant_annotation = get_non_compliant_annotation('TCP', 'authorizedTcpPorts', valid_rule_parameters, rule_range)
+                if non_compliant_annotation:
+                    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation=non_compliant_annotation)
+
+    if is_any_open_allowed:
+        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
+    return build_evaluation_from_config_item(configuration_item, 'NOT_APPLICABLE')
+
+def evaluate_parameters(rule_parameters):
+    valid_rule_parameters = {}
+    if 'authorizedTcpPorts' in rule_parameters:
+        valid_rule_parameters['authorizedTcpPorts'] = evaluate_port(rule_parameters['authorizedTcpPorts'])
+    if 'authorizedUdpPorts' in rule_parameters:
+        valid_rule_parameters['authorizedUdpPorts'] = evaluate_port(rule_parameters['authorizedUdpPorts'])
+    return valid_rule_parameters
+
+def get_non_compliant_annotation(protocol, parameter_name, valid_rule_parameters, rule_range):
+    if not parameter_name in valid_rule_parameters:
+        return 'No {} port is authorized to be open, according to the {} parameter.'.format(protocol, parameter_name)
+    authorized_ports = valid_rule_parameters[parameter_name]
+    if not rule_range.included_in_one_of_the_ranges(authorized_ports):
+        return 'One or more {} ports ({}) are not in range of the {} parameter ({}).'.format(protocol, rule_range.get_str(), parameter_name, get_str_range_list(authorized_ports))
+    return None
+
+class PortRange:
+    begin = None
+    end = None
+    def __init__(self, from_port=None, to_port=None):
+        if not to_port:
+            to_port = from_port
+        self.begin = from_port
+        self.end = to_port
+
+    def get_str(self):
+        if self.begin == self.end:
+            return str(self.begin)
+        return '{}-{}'.format(self.begin, self.end)
+
+    def included_in_one_of_the_ranges(self, range_list):
+        for port_range in range_list:
+            if port_range.begin <= self.begin <= port_range.end and port_range.begin <= self.end <= port_range.end:
+                return True
+        return False
+
+def get_str_range_list(range_list):
+    range_str = ''
+    for range_obj in range_list:
+        if not range_str:
+            range_str = range_obj.get_str()
+        else:
+            range_str += ','
+            range_str += range_obj.get_str()
+    return range_str
 
 def evaluate_port(ports_string):
-    port_list = []
-    if ',' in ports_string:
-        for port_string in ports_string.split(','):
-            port_list.append(port_string.strip())
-    else:
-        port_list.append(ports_string)
+    port_list = [each_port.strip() for each_port in ports_string.split(',')]
 
     return_list = []
     for port in port_list:
-        entry = portrange()
+        entry = PortRange()
         if '-' in port:
             indiv_ports = port.split('-')
             if len(indiv_ports) > 2:
-                raise ValueError('Port ranges must have only 1 dash. Please review {}.'.format(port))            
-            entry.begin = int(indiv_ports[0])
-            entry.end = int(indiv_ports[1])
+                raise ValueError('Port ranges must have only 1 dash. Please review "{}".'.format(port))
+            try:
+                entry.begin = int(indiv_ports[0].strip())
+                entry.end = int(indiv_ports[1].strip())
+            except:
+                raise ValueError('Ports must be between 0 and 65535.')
         else:
-            entry.begin = int(port)
-            entry.end = int(port)
+            try:
+                entry.begin = int(port)
+                entry.end = int(port)
+            except:
+                raise ValueError('Ports must be between 0 and 65535.')
         if entry.begin > entry.end:
             raise ValueError('Ports must be in order for ranges.')
         if entry.begin < 0 or entry.begin > 65535 or entry.end < 0 or entry.end > 65535:
             raise ValueError('Ports must be between 0 and 65535.')
         return_list.append(entry)
     return return_list
-
-def match_port(port_list, port_to_check):
-    #Returns false if port is in range
-    for port in port_list:
-        if port_to_check >= port.begin and port_to_check <= port.end:
-            return False
-    return True
-
-def print_range(port1, port2):
-    if port1 == port2:
-        return port1
-    return '{}-{}'.format(port1, port2)
-
-def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    """Form the evaluation(s) to be return to Config Rules
-
-    Return either:
-    None -- when no result needs to be displayed
-    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
-    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
-    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
- 
-    Keyword arguments:
-    event -- the event variable given in the lambda handler
-    configuration_item -- the configurationItem dictionary in the invokingEvent
-    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
- 
-    Advanced Notes:
-    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
-    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
-    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
-    """
-  
-    # Scenario 1: Security group in exception list
-    if 'exceptionList' in valid_rule_parameters:
-        if configuration_item['configuration']['groupId'] in valid_rule_parameters['exceptionList']:
-            return 'COMPLIANT'
-    
-    for rule in configuration_item['configuration']['ipPermissions']:
-        for range in rule['ipv4Ranges']:
-            if range['cidrIp'] == '0.0.0.0/0':
-                if rule['ipProtocol'] == 'udp':
-                    # Scenario 3: Open UDP port range not in authorizedUDPPorts
-                    if 'authorizedUDPPorts' in valid_rule_parameters:
-                        final_udp_port = valid_rule_parameters['authorizedUDPPorts']
-                        if match_port(final_udp_port, rule['fromPort']) or match_port(final_udp_port, rule['toPort']):
-                            return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='No all open UDP port ({}) is not in range of the authorizedUDPPorts parameter.'.format(print_range(rule['fromPort'],rule['toPort'])))
-                        continue
-                    # No UDP ports in authorizedUDPPorts but security group contains a rule allowing open traffic
-                    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='No open UDP port is authorized via the authorizedUDPPorts parameter.')
-                if rule['ipProtocol'] == 'tcp':
-                    # Scenario 4: Open TCP port range not in authorizedTCPPorts
-                    if 'authorizedTCPPorts' in valid_rule_parameters:
-                        final_tcp_port = valid_rule_parameters['authorizedTCPPorts']
-                        if match_port(final_tcp_port, rule['fromPort']) or match_port(final_tcp_port, rule['toPort']):
-                            return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='No all open TCP port ({}) is not in range of the authorizedTCPPorts parameter.'.format(print_range(rule['fromPort'],rule['toPort'])))
-                        continue
-                    # No TCP ports in authorizedTCPPorts but security group contains a rule allowing open traffic
-                    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='No open TCP port is authorized via the authorizedTCPPorts parameter.')
-
-    # Scenario 2: Security group has no port open to 0.0.0.0/0
-    # Scenario 5: Open UDP port range in authorizedUDPPorts
-    # Scenario 6: Open TCP port range in authorizedTCPPorts
-    # Scenario 7: Both open TCP and UDP ports in authorised ports
-    return 'COMPLIANT'
-
-def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
-    Return:
-    anything suitable for the evaluate_compliance()
- 
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
-
-    valid_rule_parameters = {}
-
-    if 'exceptionList' in rule_parameters:
-        exception_list = []
-        for sgid in rule_parameters['exceptionList'].split(','):
-            if re.match(r"^sg-\w+", sgid.strip()):
-                exception_list.append(sgid.strip())
-                continue
-            raise ValueError('The security group id ({}) is in invalid format. The valid format begins with "sg-".'.format(str(sgid)))
-        valid_rule_parameters['exceptionList'] = exception_list
-
-    if 'authorizedTCPPorts' in rule_parameters:
-        valid_rule_parameters['authorizedTCPPorts'] = evaluate_port(rule_parameters['authorizedTCPPorts'])
-
-    if 'authorizedUDPPorts' in rule_parameters:
-        valid_rule_parameters['authorizedUDPPorts'] = evaluate_port(rule_parameters['authorizedUDPPorts'])
-
-    return valid_rule_parameters
 
 ####################
 # Helper Functions #
