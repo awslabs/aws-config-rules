@@ -46,7 +46,7 @@ class ComplianceTest(unittest.TestCase):
         "monitoringInterval": "5"
     }
 
-    invalid_em_interval_zero = {
+    invalid_em_not_configured = {
         "monitoringInterval": "0"
     }
 
@@ -57,28 +57,28 @@ class ComplianceTest(unittest.TestCase):
         assert_customer_error_response(self, response, 'Invalid value for the parameter "monitoringInterval", Expected a valid integer from the list [1, 5, 10, 15, 30, 60].')
 
     def test_scenario_2_interval_zero(self):
-        invoking_event = generate_invoking_event(self.invalid_em_interval_zero)
+        invoking_event = generate_invoking_event(self.invalid_em_not_configured)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
-        assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', '123456789012', annotation="Enhanced Monitoring interval for this Amazon RDS instance is not configured.")])
+        assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', 'test-instance', annotation="Enhanced Monitoring interval for this Amazon RDS instance is not configured.")])
 
     def test_scenario_3_interval_mismatch(self):
         invoking_event = generate_invoking_event(self.valid_em_interval_configured)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_parameter_mismatch), {})
-        assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', '123456789012', annotation="Enhanced Monitoring interval for this Amazon RDS instance is not set with period:10")])
+        assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', 'test-instance', annotation="Enhanced Monitoring interval for this Amazon RDS instance is not set with period:10")])
 
     def test_scenario_4_empty_ruleparameter(self):
         invoking_event = generate_invoking_event(self.valid_em_interval_configured)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, {}), {})
-        assert_successful_evaluation(self, response, [build_expected_response('COMPLIANT', '123456789012')])
+        assert_successful_evaluation(self, response, [build_expected_response('COMPLIANT', 'test-instance')])
 
     def test_scenario_5_em_interval_match(self):
         invoking_event = generate_invoking_event(self.valid_em_interval_configured)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
-        assert_successful_evaluation(self, response, [build_expected_response('COMPLIANT', '123456789012')])
+        assert_successful_evaluation(self, response, [build_expected_response('COMPLIANT', 'test-instance')])
 
 ####################
 # Helper Functions #
@@ -87,7 +87,7 @@ class ComplianceTest(unittest.TestCase):
 def generate_invoking_event(test_configuration):
     invoking_event = '{"configurationItem":{"configuration":' \
                      + json.dumps(test_configuration) \
-                     + ',"configurationItemCaptureTime":"2019-04-18T08:17:52.315Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::RDS::DBInstance","resourceId":"123456789012"},"messageType":"ConfigurationItemChangeNotification"}'
+                     + ',"configurationItemCaptureTime":"2019-04-18T08:17:52.315Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::RDS::DBInstance","resourceId":"test-instance"},"messageType":"ConfigurationItemChangeNotification"}'
     return invoking_event
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
@@ -96,8 +96,8 @@ def build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         'executionRoleArn':'roleArn',
         'eventLeftScope': False,
         'invokingEvent': invoking_event,
-        'accountId': '123456789012',
-        'configRuleArn': 'arn:aws:config:us-east-1:123456789012:config-rule/config-rule-8fngan',
+        'accountId': 'test-instance',
+        'configRuleArn': 'arn:aws:config:us-east-1:test-instance:config-rule/config-rule-8fngan',
         'resultToken':'token'
     }
     if rule_parameters:
@@ -111,8 +111,8 @@ def build_lambda_scheduled_event(rule_parameters=None):
         'executionRoleArn':'roleArn',
         'eventLeftScope': False,
         'invokingEvent': invoking_event,
-        'accountId': '123456789012',
-        'configRuleArn': 'arn:aws:config:us-east-1:123456789012:config-rule/config-rule-8fngan',
+        'accountId': 'test-instance',
+        'configRuleArn': 'arn:aws:config:us-east-1:test-instance:config-rule/config-rule-8fngan',
         'resultToken':'token'
     }
     if rule_parameters:

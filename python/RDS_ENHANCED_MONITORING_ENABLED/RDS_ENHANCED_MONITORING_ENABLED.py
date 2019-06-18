@@ -71,27 +71,33 @@ ASSUME_ROLE_MODE = False
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
+ALLOWED_EM_VALUES = [1, 5, 10, 15, 30, 60]
+
 #############
 # Main Code #
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
+    print(configuration_item['configuration']['monitoringInterval'])
+    print(valid_rule_parameters)
+    #If 'monitoringInterval' is not set for the RDS Instance
     if int(configuration_item['configuration']['monitoringInterval']) == 0:
         return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation="Enhanced Monitoring interval for this Amazon RDS instance is not configured.")
-
+    #If rule parameter is not provided but the 'monitoringInterval' is set for the RDS Instance
     if not valid_rule_parameters and (int(configuration_item['configuration']['monitoringInterval']) > 0):
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
+    #If rule parameter is set and the 'monitoringInterval' of the RDS instance matches with the rule parameter value
+    if valid_rule_parameters and int(configuration_item['configuration']['monitoringInterval']) == int(valid_rule_parameters['monitoringInterval']):
+        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
+    #If above conditions are not met that means rule parameter is valid but the 'monitoringInterval' value does not match with the rule parameter value
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation="Enhanced Monitoring interval for this Amazon RDS instance is not set with period:" + valid_rule_parameters['monitoringInterval'])
 
-    if valid_rule_parameters and int(configuration_item['configuration']['monitoringInterval']) != int(valid_rule_parameters['monitoringInterval']):
-        return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation="Enhanced Monitoring interval for this Amazon RDS instance is not set with period:" + valid_rule_parameters['monitoringInterval'])
-
-    return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
 
 def evaluate_parameters(rule_parameters):
     if "monitoringInterval" not in rule_parameters:
         return {}
 
-    if int(rule_parameters['monitoringInterval']) not in [1, 5, 10, 15, 30, 60]:
+    if int(rule_parameters['monitoringInterval']) not in ALLOWED_EM_VALUES:
         raise ValueError('Invalid value for the parameter "monitoringInterval", Expected a valid integer from the list [1, 5, 10, 15, 30, 60].')
 
     return rule_parameters
