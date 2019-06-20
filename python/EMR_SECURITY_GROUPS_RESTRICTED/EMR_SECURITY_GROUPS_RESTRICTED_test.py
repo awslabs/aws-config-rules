@@ -134,7 +134,6 @@ class ComplianceTest(unittest.TestCase):
                          build_expected_response('NON_COMPLIANT', compliance_resource_id='j-AAAAA000000', annotation="This Amazon EMR cluster has one or more Security Groups open to the world."),
                          build_expected_response('NON_COMPLIANT', compliance_resource_id='j-AAAAA0BBBBB', annotation="This Amazon EMR cluster has one or more Security Groups open to the world.")]
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
-
         assert_successful_evaluation(self, response, resp_expected, 3)
 
     #Scenario 3: Security group(s) for the Amazon EMR cluster do not have a rule with IP range 0.0.0.0/0 or ::/0
