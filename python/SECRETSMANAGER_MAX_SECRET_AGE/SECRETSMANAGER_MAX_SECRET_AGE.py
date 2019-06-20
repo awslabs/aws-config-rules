@@ -1,4 +1,4 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You may
 # not use this file except in compliance with the License. A copy of the License is located at
@@ -8,83 +8,25 @@
 # or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
-'''
-#####################################
-##           Gherkin               ##
-#####################################
-
-Rule Name:
-  VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
-
-Description:
-  Checks that the security group with 0.0.0.0/0 of any VPCs allows only certain TCP or UDP traffic (Inbound only). If no ports are provided in the parameters, any security group with inbound 0.0.0.0/0 will be NON_COMPLIANT.
-
-Trigger:
-  Configuration Changes on AWS::EC2::SecurityGroup
-
-Reports on:
-  AWS::EC2::SecurityGroup
-
-Rule Parameters:
-  authorizedTcpPorts (Optional)
-       List of TCP ports authorized to be open to 0.0.0.0/0, separated by comma. Ranges can be defined by dash. Ex: "443,1020-1025"
-  authorizedUdpPorts (Optional)
-       List of UDP ports authorized to be open to 0.0.0.0/0, separated by comma. Ranges can be defined by dash. Ex: "500,1020-1025"
-
-Scenarios:
-  Scenario: 1_evalparam_tcpnotvalid_error
-    Given: authorizedTcpPorts is configured and not valid
-	 Then: Return Error
-
-  Scenario: 2_evalparam_udppnotvalid_error
-    Given: authorizedUdpPorts is configured and not valid
-	 Then: Return Error
-
-  Scenario: 3_evalcompliance_notopen_notapplicable
-	Given: The Security Group has no inbound port open to '0.0.0.0/0'
-	 Then: Return NOT_APPLICABLE
-
-  Scenario: 4_evalcompliance_updopennotauthorized_noncompliant
-	Given: The Security Group has at least 1 UDP inbound port open to '0.0.0.0/0'
-	  And: Open UDP ports not in authorizedUdpPorts
-	 Then: Return NON_COMPLIANT
-
-  Scenario: 5_evalcompliance_tcpopennotauthorized_noncompliant
-	Given: The Security Group has at least 1 TCP inbound port open to '0.0.0.0/0'
-	  And: Open TCP ports not in authorizedTcpPorts
-	 Then: Return NON_COMPLIANT
-
-  Scenario: 6_evalcompliance_tcpnotopen_udpauthorized_compliant
-	Given: The Security Group has at least 1 UDP inbound port open to '0.0.0.0/0'
-	  And: No TCP ports are open to '0.0.0.0/0'
-	  And: Open UDP ports in authorizedUdpPorts
-	 Then: Return COMPLIANT
-
-  Scenario: 7_evalcompliance_udpnotopen_tcpauthorized_compliant
-	Given: The Security Group has at least 1 TCP inbound port open to '0.0.0.0/0'
-	  And: No UDP ports are open to '0.0.0.0/0'
-	  And: Open TCP ports in authorizedTcpPorts
-	 Then: Return COMPLIANT
-
-  Scenario: 8_evalcompliance_udpauthorized_tcpauthorized_compliant
-	Given: The Security Group has at least 1 TCP inbound port open to '0.0.0.0/0'
-	  And: The Security Group has at least 1 UDP inbound port open to '0.0.0.0/0'
-	  And: Open TCP ports in authorizedTcpPorts
-	  And: Open UDP ports in authorizedUdpPorts
-	 Then: Return COMPLIANT
- '''
 
 import json
+import sys
 import datetime
+from datetime import datetime, timedelta, timezone
 import boto3
 import botocore
+
+try:
+    import liblogging
+except ImportError:
+    pass
 
 ##############
 # Parameters #
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::EC2::SecurityGroup'
+DEFAULT_RESOURCE_TYPE = 'AWS::SecretsManager::Secret'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
@@ -92,109 +34,96 @@ ASSUME_ROLE_MODE = False
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
+# Default age of SecretValue if max_secret_age_days is not provided in Rule Parameters
+# Parameter must be a positive integer less than 999999999+1
+DEFAULT_MAX_SECRET_AGE_DAYS = 30
+
 #############
 # Main Code #
 #############
 
+
+def evaluate_secret_compliance(valid_rule_parameters, secret):
+    now = datetime.now(timezone.utc)
+    delta = timedelta(days=valid_rule_parameters.get('max_secret_age_days'))
+    max_secret_age = now - delta
+
+    if secret.get('LastRotatedDate'):
+        if datetime.replace(secret.get('LastRotatedDate'), tzinfo=timezone.utc) > max_secret_age:
+            return 'COMPLIANT'
+        return 'NON_COMPLIANT'
+
+    # Pagination of this API call is not needed as this API is only called if Secret has never been rotated
+    # This should always return only a single VersionId with VersionLabel AWSCURRENT
+    secret_versions = AWS_SECRETSMANAGER_CLIENT.list_secret_version_ids(
+        SecretId=secret.get('Name'),
+        IncludeDeprecated=False
+    ).get('Versions')
+
+    # Secret conains no SecretValues
+    if not secret_versions:
+        return 'COMPLIANT'
+
+    for version in secret_versions:
+        if 'AWSCURRENT' in version.get('VersionStages'):
+            if datetime.replace(version.get('CreatedDate'), tzinfo=timezone.utc) > max_secret_age:
+                return 'COMPLIANT'
+    return 'NON_COMPLIANT'
+
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
-    is_any_open_allowed = False
+    """Form the evaluation(s) to be return to Config Rules
 
-    for rule in configuration_item['configuration']['ipPermissions']:
-        rule_range = PortRange(rule.get('fromPort', 0), rule.get('toPort', 65535))
-        for ip_range in rule['ipv4Ranges']:
-            if not ip_range['cidrIp'] == '0.0.0.0/0':
-                continue
+    Return either:
+    None -- when no result needs to be displayed
+    a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
+    a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
+    a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
 
-            is_any_open_allowed = True
-            protocol = rule['ipProtocol']
+    Keyword arguments:
+    event -- the event variable given in the lambda handler
+    configuration_item -- the configurationItem dictionary in the invokingEvent
+    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
 
-            if protocol in ['udp', '-1']:
-                non_compliant_annotation = get_non_compliant_annotation('UDP', 'authorizedUdpPorts', valid_rule_parameters, rule_range)
-                if non_compliant_annotation:
-                    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation=non_compliant_annotation)
+    Advanced Notes:
+    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
+    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
+    3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
+    """
 
-            if protocol in ['tcp', '-1']:
-                non_compliant_annotation = get_non_compliant_annotation('TCP', 'authorizedTcpPorts', valid_rule_parameters, rule_range)
-                if non_compliant_annotation:
-                    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation=non_compliant_annotation)
+    ###############################
+    # Add your custom logic here. #
+    ###############################
 
-    if is_any_open_allowed:
-        return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-    return build_evaluation_from_config_item(configuration_item, 'NOT_APPLICABLE')
+    evaluations = []
+    paginator = AWS_SECRETSMANAGER_CLIENT.get_paginator('list_secrets')
+
+    for secret_list in paginator.paginate():
+        for secret in secret_list['SecretList']:
+            secret_arn = secret.get('ARN')
+            evaluations.append(build_evaluation(secret_arn, evaluate_secret_compliance(valid_rule_parameters, secret), event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None))
+
+    return evaluations
 
 def evaluate_parameters(rule_parameters):
-    valid_rule_parameters = {}
-    if 'authorizedTcpPorts' in rule_parameters:
-        valid_rule_parameters['authorizedTcpPorts'] = evaluate_port(rule_parameters['authorizedTcpPorts'])
-    if 'authorizedUdpPorts' in rule_parameters:
-        valid_rule_parameters['authorizedUdpPorts'] = evaluate_port(rule_parameters['authorizedUdpPorts'])
-    return valid_rule_parameters
+    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
 
-def get_non_compliant_annotation(protocol, parameter_name, valid_rule_parameters, rule_range):
-    if not parameter_name in valid_rule_parameters:
-        return 'No {} port is authorized to be open, according to the {} parameter.'.format(protocol, parameter_name)
-    authorized_ports = valid_rule_parameters[parameter_name]
-    if not rule_range.included_in_one_of_the_ranges(authorized_ports):
-        return 'One or more {} ports ({}) are not in range of the {} parameter ({}).'.format(protocol, rule_range.get_str(), parameter_name, get_str_range_list(authorized_ports))
-    return None
+    Return:
+    anything suitable for the evaluate_compliance()
 
-class PortRange:
-    begin = None
-    end = None
-    def __init__(self, from_port=None, to_port=None):
-        if not to_port:
-            to_port = from_port
-        self.begin = from_port
-        self.end = to_port
+    Keyword arguments:
+    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
+    """
 
-    def get_str(self):
-        if self.begin == self.end:
-            return str(self.begin)
-        return '{}-{}'.format(self.begin, self.end)
+    try:
+        max_secret_age_days = int(rule_parameters.get('max_secret_age_days', DEFAULT_MAX_SECRET_AGE_DAYS))
+    except TypeError:
+        raise ValueError('max_secret_age_days must be an integer')
 
-    def included_in_one_of_the_ranges(self, range_list):
-        for port_range in range_list:
-            if port_range.begin <= self.begin <= port_range.end and port_range.begin <= self.end <= port_range.end:
-                return True
-        return False
+    if max_secret_age_days > timedelta.max.days:
+        raise ValueError('max_secret_age_days must be less than ' + str(timedelta.max.days))
 
-def get_str_range_list(range_list):
-    range_str = ''
-    for range_obj in range_list:
-        if not range_str:
-            range_str = range_obj.get_str()
-        else:
-            range_str += ','
-            range_str += range_obj.get_str()
-    return range_str
+    return {"max_secret_age_days": max_secret_age_days}
 
-def evaluate_port(ports_string):
-    port_list = [each_port.strip() for each_port in ports_string.split(',')]
-
-    return_list = []
-    for port in port_list:
-        entry = PortRange()
-        if '-' in port:
-            indiv_ports = port.split('-')
-            if len(indiv_ports) > 2:
-                raise ValueError('Port ranges must have only 1 dash. Please review "{}".'.format(port))
-            try:
-                entry.begin = int(indiv_ports[0].strip())
-                entry.end = int(indiv_ports[1].strip())
-            except:
-                raise ValueError('Ports must be between 0 and 65535.')
-        else:
-            try:
-                entry.begin = int(port)
-                entry.end = int(port)
-            except:
-                raise ValueError('Ports must be between 0 and 65535.')
-        if entry.begin > entry.end:
-            raise ValueError('Ports must be in order for ranges.')
-        if entry.begin < 0 or entry.begin > 65535 or entry.end < 0 or entry.end > 65535:
-            raise ValueError('Ports must be between 0 and 65535.')
-        return_list.append(entry)
-    return return_list
 
 ####################
 # Helper Functions #
@@ -268,15 +197,15 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
     eval_ci['OrderingTimestamp'] = configuration_item['configurationItemCaptureTime']
     return eval_ci
 
-####################
-# Boilerplate Code #
-####################
-
 # Build annotation within Service constraints
 def build_annotation(annotation_string):
     if len(annotation_string) > 256:
         return annotation_string[:244] + " [truncated]"
     return annotation_string
+
+####################
+# Boilerplate Code #
+####################
 
 # Helper function used to validate input
 def check_defined(reference, reference_name):
@@ -343,9 +272,7 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-
     return status in ('OK', 'ResourceDiscovered') and not event_left_scope
-
 
 def get_assume_role_credentials(role_arn, region=None):
     sts_client = boto3.client('sts', region)
@@ -353,6 +280,8 @@ def get_assume_role_credentials(role_arn, region=None):
         assume_role_response = sts_client.assume_role(RoleArn=role_arn,
                                                       RoleSessionName="configLambdaExecution",
                                                       DurationSeconds=CONFIG_ROLE_TIMEOUT_SECONDS)
+        if 'liblogging' in sys.modules:
+            liblogging.logSession(role_arn, assume_role_response)
         return assume_role_response['Credentials']
     except botocore.exceptions.ClientError as ex:
         # Scrub error message for any internal account info leaks
@@ -401,8 +330,16 @@ def clean_up_old_evaluations(latest_evaluations, event):
     return cleaned_evaluations + latest_evaluations
 
 def lambda_handler(event, context):
+    if 'liblogging' in sys.modules:
+        liblogging.logEvent(event)
+
+    if boto3.__version__ < '1.9.152':
+        print('boto3 version too old for secret pagination')
+        print('boto3 version: ' + boto3.__version__)
+        exit(1)
 
     global AWS_CONFIG_CLIENT
+    global AWS_SECRETSMANAGER_CLIENT
 
     #print(event)
     check_defined(event, 'event')
@@ -418,6 +355,7 @@ def lambda_handler(event, context):
 
     try:
         AWS_CONFIG_CLIENT = get_client('config', event)
+        AWS_SECRETSMANAGER_CLIENT = get_client('secretsmanager', event)
         if invoking_event['messageType'] in ['ConfigurationItemChangeNotification', 'ScheduledNotification', 'OversizedConfigurationItemChangeNotification']:
             configuration_item = get_configuration_item(invoking_event)
             if is_applicable(configuration_item, event):

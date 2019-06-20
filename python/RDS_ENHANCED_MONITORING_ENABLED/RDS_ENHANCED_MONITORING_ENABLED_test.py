@@ -4,6 +4,7 @@ try:
     from unittest.mock import MagicMock
 except ImportError:
     from mock import MagicMock
+import json
 import botocore
 
 ##############
@@ -11,7 +12,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::RDS::DBInstance'
 
 #############
 # Main Code #
@@ -19,7 +20,6 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-S3_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
@@ -28,69 +28,67 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 's3control':
-            return S3_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT')
+RULE = __import__('RDS_ENHANCED_MONITORING_ENABLED')
 
-class ComplianceTestScenarios(unittest.TestCase):
+class ComplianceTest(unittest.TestCase):
+    #scenario1
+    rule_invalid_parameter = '{"monitoringInterval":"12"}'
+    #scenario2,scenario5
+    rule_valid_parameter = '{"monitoringInterval":"5"}'
+    #scenario3
+    rule_parameter_mismatch = '{"monitoringInterval":"10"}'
 
-    s3_account_settings = {
-        'BlockPublicAcls': True,
-        'IgnorePublicAcls': True,
-        'BlockPublicPolicy': True,
-        'RestrictPublicBuckets': True
-        }
+    valid_em_interval_configured = {
+        "monitoringInterval": "5"
+    }
 
-    scenario1_invalid_inputs = '{"BlockPublicAcls": "Truee", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
-    scenario2_mismatched_inputs = '{"BlockPublicAcls": "False", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
-    scenario3_empty_inputs_nonmatch = {}
-    scenario4_empty_inputs_match = {}
-    scenario5_valid_inputs = '{"BlockPublicAcls": "True", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
+    invalid_em_not_configured = {
+        "monitoringInterval": "0"
+    }
 
-    def test_scenario1_invalid_parameters(self):
-        RULE.ASSUME_ROLE_MODE = False
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario1_invalid_inputs), {})
-        assert_customer_error_response(self, response, "InvalidParameterValueException")
+    def test_scenario_1_invalid_parameter_value(self):
+        invoking_event = generate_invoking_event(self.valid_em_interval_configured)
+        response = RULE.lambda_handler(
+            build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_invalid_parameter), {})
+        assert_customer_error_response(self, response, 'Invalid value for the parameter "monitoringInterval", Expected a valid integer from the list [1, 5, 10, 15, 30, 60].')
 
-    def test_scenario2_not_matching_parameters(self):
-        RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario2_mismatched_inputs), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', 'BlockPublicAcls:True IgnorePublicAcls:True BlockPublicPolicy:True RestrictPublicBuckets:True'))
-        assert_successful_evaluation(self, response, resp_expected)
+    def test_scenario_2_interval_zero(self):
+        invoking_event = generate_invoking_event(self.invalid_em_not_configured)
+        response = RULE.lambda_handler(
+            build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
+        assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', 'test-instance', annotation="Enhanced Monitoring interval for this Amazon RDS instance is not configured.")])
 
-    def test_scenario3_not_matching_empty_parameters(self):
-        RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario3_empty_inputs_nonmatch), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', 'BlockPublicAcls:True IgnorePublicAcls:True BlockPublicPolicy:True RestrictPublicBuckets:True'))
-        assert_successful_evaluation(self, response, resp_expected)
+    def test_scenario_3_interval_mismatch(self):
+        invoking_event = generate_invoking_event(self.valid_em_interval_configured)
+        response = RULE.lambda_handler(
+            build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_parameter_mismatch), {})
+        assert_successful_evaluation(self, response, [build_expected_response('NON_COMPLIANT', 'test-instance', annotation="Enhanced Monitoring interval for this Amazon RDS instance is not set with period:10")])
 
-    def test_scenario4_empty_inputs_that_match(self):
-        RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario4_empty_inputs_match), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', '123456789012', 'AWS::::Account'))
-        assert_successful_evaluation(self, response, resp_expected)
+    def test_scenario_4_empty_ruleparameter(self):
+        invoking_event = generate_invoking_event(self.valid_em_interval_configured)
+        response = RULE.lambda_handler(
+            build_lambda_configurationchange_event(invoking_event, {}), {})
+        assert_successful_evaluation(self, response, [build_expected_response('COMPLIANT', 'test-instance')])
 
-    def test_scenario5_valid_parameters(self):
-        RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario5_valid_inputs), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', '123456789012', 'AWS::::Account'))
-        assert_successful_evaluation(self, response, resp_expected)
+    def test_scenario_5_em_interval_match(self):
+        invoking_event = generate_invoking_event(self.valid_em_interval_configured)
+        response = RULE.lambda_handler(
+            build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_valid_parameter), {})
+        assert_successful_evaluation(self, response, [build_expected_response('COMPLIANT', 'test-instance')])
 
 ####################
 # Helper Functions #
 ####################
+
+def generate_invoking_event(test_configuration):
+    invoking_event = '{"configurationItem":{"configuration":' \
+                     + json.dumps(test_configuration) \
+                     + ',"configurationItemCaptureTime":"2019-04-18T08:17:52.315Z","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::RDS::DBInstance","resourceId":"test-instance"},"messageType":"ConfigurationItemChangeNotification"}'
+    return invoking_event
 
 def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
     event_to_return = {
@@ -98,8 +96,8 @@ def build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
         'executionRoleArn':'roleArn',
         'eventLeftScope': False,
         'invokingEvent': invoking_event,
-        'accountId': '123456789012',
-        'configRuleArn': 'arn:aws:config:us-east-1:123456789012:config-rule/config-rule-8fngan',
+        'accountId': 'test-instance',
+        'configRuleArn': 'arn:aws:config:us-east-1:test-instance:config-rule/config-rule-8fngan',
         'resultToken':'token'
     }
     if rule_parameters:
@@ -113,8 +111,8 @@ def build_lambda_scheduled_event(rule_parameters=None):
         'executionRoleArn':'roleArn',
         'eventLeftScope': False,
         'invokingEvent': invoking_event,
-        'accountId': '123456789012',
-        'configRuleArn': 'arn:aws:config:us-east-1:123456789012:config-rule/config-rule-8fngan',
+        'accountId': 'test-instance',
+        'configRuleArn': 'arn:aws:config:us-east-1:test-instance:config-rule/config-rule-8fngan',
         'resultToken':'token'
     }
     if rule_parameters:

@@ -22,7 +22,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::DMS::ReplicationInstance'
 
 #############
 # Main Code #
@@ -47,7 +47,7 @@ sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('DMS_REPLICATION_NOT_PUBLIC')
 
-class SampleTest(unittest.TestCase):
+class ComplianceTest(unittest.TestCase):
 
     describe_dms_instance_sce_2 = {"ReplicationInstances": [{'ReplicationInstanceIdentifier':'instance1', 'PubliclyAccessible': True}, {'ReplicationInstanceIdentifier':'instance2', 'PubliclyAccessible': True}]}
     describe_dms_instance_sce_3 = {"ReplicationInstances": [{'ReplicationInstanceIdentifier':'instance1', 'PubliclyAccessible': False}, {'ReplicationInstanceIdentifier':'instance2', 'PubliclyAccessible': False}]}
@@ -58,7 +58,7 @@ class SampleTest(unittest.TestCase):
         lambda_event = build_lambda_scheduled_event(rule_parameters=None)
         response = RULE.lambda_handler(lambda_event, {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012'))
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::::Account'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_scenario2(self):

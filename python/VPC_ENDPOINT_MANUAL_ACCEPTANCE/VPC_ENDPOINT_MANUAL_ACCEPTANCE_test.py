@@ -1,3 +1,14 @@
+# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You may
+# not use this file except in compliance with the License. A copy of the License is located at
+#
+#        http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
+# the specific language governing permissions and limitations under the License.
+
 import sys
 import unittest
 try:
@@ -10,8 +21,8 @@ import botocore
 # Parameters #
 ##############
 
-# Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+# Define the default resouce to report to Config Rules
+DEFAULT_RESOURCE_TYPE = 'AWS::EC2::VPCEndpointService'
 
 #############
 # Main Code #
@@ -19,7 +30,7 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-S3_CLIENT_MOCK = MagicMock()
+EC2_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
@@ -28,64 +39,45 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 's3control':
-            return S3_CLIENT_MOCK
+        if client_name == 'ec2':
+            return EC2_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT')
+RULE = __import__('VPC_ENDPOINT_MANUAL_ACCEPTANCE')
 
-class ComplianceTestScenarios(unittest.TestCase):
+class ComplianceTest(unittest.TestCase):
 
-    s3_account_settings = {
-        'BlockPublicAcls': True,
-        'IgnorePublicAcls': True,
-        'BlockPublicPolicy': True,
-        'RestrictPublicBuckets': True
-        }
+    no_customer_endpointservices = {"ServiceDetails": [{"ServiceName": "com.amazonaws.us-east-1.transfer.server", "Owner": "amazon", "AcceptanceRequired": False}]}
+    customer_es_true = {"ServiceDetails": [{"AcceptanceRequired": True, "ServiceName": "com.amazonaws.vpce.us-west-2.vpce-svc-0000000000", "Owner": "123456789012"}, {"ServiceName": "com.amazonaws.us-east-1.transfer.server", "Owner": "amazon", "AcceptanceRequired": False}]}
+    customer_es_false = {"ServiceDetails": [{"AcceptanceRequired": False, "ServiceName": "com.amazonaws.vpce.us-west-2.vpce-svc-0000000000", "Owner": "123456789012"}, {"ServiceName": "com.amazonaws.us-east-1.transfer.server", "Owner": "amazon", "AcceptanceRequired": False}]}
 
-    scenario1_invalid_inputs = '{"BlockPublicAcls": "Truee", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
-    scenario2_mismatched_inputs = '{"BlockPublicAcls": "False", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
-    scenario3_empty_inputs_nonmatch = {}
-    scenario4_empty_inputs_match = {}
-    scenario5_valid_inputs = '{"BlockPublicAcls": "True", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
+    def setUp(self):
+        pass
 
-    def test_scenario1_invalid_parameters(self):
+    def test_sample_no_cx_es(self):
+        EC2_CLIENT_MOCK.describe_vpc_endpoint_services = MagicMock(return_value=self.no_customer_endpointservices)
         RULE.ASSUME_ROLE_MODE = False
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario1_invalid_inputs), {})
-        assert_customer_error_response(self, response, "InvalidParameterValueException")
-
-    def test_scenario2_not_matching_parameters(self):
-        RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario2_mismatched_inputs), {})
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', 'BlockPublicAcls:True IgnorePublicAcls:True BlockPublicPolicy:True RestrictPublicBuckets:True'))
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', '123456789012', 'AWS::::Account'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario3_not_matching_empty_parameters(self):
+    def test_sample_cx_es_true(self):
+        EC2_CLIENT_MOCK.describe_vpc_endpoint_services = MagicMock(return_value=self.customer_es_true)
         RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario3_empty_inputs_nonmatch), {})
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', 'BlockPublicAcls:True IgnorePublicAcls:True BlockPublicPolicy:True RestrictPublicBuckets:True'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'com.amazonaws.vpce.us-west-2.vpce-svc-0000000000', 'AWS::EC2::VPCEndpointService'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_scenario4_empty_inputs_that_match(self):
+    def test_sample_cx_es_false(self):
+        EC2_CLIENT_MOCK.describe_vpc_endpoint_services = MagicMock(return_value=self.customer_es_false)
         RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario4_empty_inputs_match), {})
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', '123456789012', 'AWS::::Account'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    def test_scenario5_valid_parameters(self):
-        RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario5_valid_inputs), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', '123456789012', 'AWS::::Account'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'com.amazonaws.vpce.us-west-2.vpce-svc-0000000000', 'AWS::EC2::VPCEndpointService', 'The Endpoint Service has "AcceptanceRequired" set to False.'))
         assert_successful_evaluation(self, response, resp_expected)
 
 ####################

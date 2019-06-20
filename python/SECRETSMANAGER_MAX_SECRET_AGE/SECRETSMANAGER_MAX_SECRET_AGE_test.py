@@ -1,3 +1,14 @@
+# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You may
+# not use this file except in compliance with the License. A copy of the License is located at
+#
+#        http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
+# the specific language governing permissions and limitations under the License.
+
 import sys
 import unittest
 try:
@@ -19,7 +30,6 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
-S3_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
@@ -28,65 +38,30 @@ class Boto3Mock():
             return CONFIG_CLIENT_MOCK
         if client_name == 'sts':
             return STS_CLIENT_MOCK
-        if client_name == 's3control':
-            return S3_CLIENT_MOCK
         raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('S3_PUBLIC_ACCESS_SETTINGS_FOR_ACCOUNT')
+RULE = __import__('<%RuleName%>')
 
-class ComplianceTestScenarios(unittest.TestCase):
+class ComplianceTest(unittest.TestCase):
 
-    s3_account_settings = {
-        'BlockPublicAcls': True,
-        'IgnorePublicAcls': True,
-        'BlockPublicPolicy': True,
-        'RestrictPublicBuckets': True
-        }
+    rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
 
-    scenario1_invalid_inputs = '{"BlockPublicAcls": "Truee", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
-    scenario2_mismatched_inputs = '{"BlockPublicAcls": "False", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
-    scenario3_empty_inputs_nonmatch = {}
-    scenario4_empty_inputs_match = {}
-    scenario5_valid_inputs = '{"BlockPublicAcls": "True", "IgnorePublicAcls": "True", "BlockPublicPolicy": "True", "RestrictPublicBuckets": "True"}'
+    invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
 
-    def test_scenario1_invalid_parameters(self):
-        RULE.ASSUME_ROLE_MODE = False
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario1_invalid_inputs), {})
-        assert_customer_error_response(self, response, "InvalidParameterValueException")
+    def setUp(self):
+        pass
 
-    def test_scenario2_not_matching_parameters(self):
-        RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario2_mismatched_inputs), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', 'BlockPublicAcls:True IgnorePublicAcls:True BlockPublicPolicy:True RestrictPublicBuckets:True'))
-        assert_successful_evaluation(self, response, resp_expected)
+#    def test_sample(self):
+#        self.assertTrue(True)
 
-    def test_scenario3_not_matching_empty_parameters(self):
-        RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario3_empty_inputs_nonmatch), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '123456789012', 'AWS::::Account', 'BlockPublicAcls:True IgnorePublicAcls:True BlockPublicPolicy:True RestrictPublicBuckets:True'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    def test_scenario4_empty_inputs_that_match(self):
-        RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario4_empty_inputs_match), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', '123456789012', 'AWS::::Account'))
-        assert_successful_evaluation(self, response, resp_expected)
-
-    def test_scenario5_valid_parameters(self):
-        RULE.ASSUME_ROLE_MODE = False
-        S3_CLIENT_MOCK.PublicAccessBlockConfiguration = MagicMock(return_value=self.s3_account_settings)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(self.scenario5_valid_inputs), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', '123456789012', 'AWS::::Account'))
-        assert_successful_evaluation(self, response, resp_expected)
+    #def test_sample_2(self):
+    #    RULE.ASSUME_ROLE_MODE = False
+    #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
+    #    resp_expected = []
+    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
+    #    assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #
@@ -182,6 +157,7 @@ class TestStsErrors(unittest.TestCase):
 
     def test_sts_unknown_error(self):
         RULE.ASSUME_ROLE_MODE = True
+        RULE.evaluate_parameters = MagicMock(return_value=True)
         STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
         response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
@@ -190,6 +166,7 @@ class TestStsErrors(unittest.TestCase):
 
     def test_sts_access_denied(self):
         RULE.ASSUME_ROLE_MODE = True
+        RULE.evaluate_parameters = MagicMock(return_value=True)
         STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
         response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
