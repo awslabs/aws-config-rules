@@ -73,6 +73,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
     config_client = get_client('config', event)
     open_sg_list = get_open_security_groups(sg_list, config_client)
+
     cluster_open_sg_list = set([])
     for security_group in open_sg_list:
         cluster_open_sg_list.update(sg_cluster_map[security_group])
@@ -117,22 +118,15 @@ def get_sg_cluster_mapping(cluster_list, emr_client):
 
 def get_open_security_groups(sg_list, config_client):
     open_sg_list = set([])
-    resource_keys = []
-    for security_group in sg_list:
-        resource_key = {
-            "resourceType": "AWS::EC2::SecurityGroup",
-            "resourceId": security_group
-        }
-        resource_keys.append(resource_key)
-    while resource_keys:
-        configuration_items = get_config_items(config_client, resource_keys[:100])
-        del resource_keys[:100]
+    configuration_items = get_config_items(config_client, sg_list, "AWS::EC2::SecurityGroup")
     for item in configuration_items:
-        if is_sg_open_ipv4(json.loads(item["configuration"])):
-            open_sg_list.add(json.loads(item["configuration"])['groupId'])
-        elif is_sg_open_ipv6(json.loads(item["configuration"])):
-            open_sg_list.add(json.loads(item["configuration"])['groupId'])
+        config_item = json.loads(item["configuration"])
+        if is_sg_open(config_item):
+            open_sg_list.add(config_item['groupId'])
     return open_sg_list
+
+def is_sg_open(sg_description):
+    return is_sg_open_ipv4(sg_description) or is_sg_open_ipv6(sg_description)
 
 def is_sg_open_ipv4(sg_description):
     for rule in sg_description['ipPermissions']:
@@ -148,18 +142,33 @@ def is_sg_open_ipv6(sg_description):
                 return True
     return False
 
+def get_config_items(config_client, resource_list, resource_type):
+    resource_keys = []
+    configuration_items = []
+
+    for resource in resource_list:
+        resource_key = {
+            "resourceType": resource_type,
+            "resourceId": resource
+        }
+        resource_keys.append(resource_key)
+
+    while resource_keys:
+        res = config_client.batch_get_resource_config(resourceKeys=resource_keys[:100])
+        configuration_items_temp = res["baseConfigurationItems"]
+        while res["unprocessedResourceKeys"]:
+            res = config_client.batch_get_resource_config(resourceKeys=res["unprocessedResourceKeys"])
+            for item in res["baseConfigurationItems"]:
+                configuration_items_temp.append(item)
+        for item in configuration_items_temp:
+            configuration_items.append(item)
+        del resource_keys[:100]
+
+    return configuration_items
+
 def evaluate_parameters(rule_parameters):
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
-
-def get_config_items(config_client, resource_keys):
-    res = config_client.batch_get_resource_config(resourceKeys=resource_keys)
-    configuration_items = res["baseConfigurationItems"]
-    while res["unprocessedResourceKeys"]:
-        res = config_client.batch_get_resource_config(resourceKeys=res["unprocessedResourceKeys"])
-        for item in res["baseConfigurationItems"]:
-            configuration_items.append(item)
-    return configuration_items
 
 ####################
 # Helper Functions #
