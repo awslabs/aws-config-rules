@@ -143,8 +143,10 @@ def lambda_handler(event, context):
         raise Exception('Unexpected message type ' + str(invoking_event))
     
     # Report Evaluations to the AWSConfig service
-    response = config.put_evaluations(
-        Evaluations = evaluations,
-        ResultToken = event['resultToken'])
-    if 'FailedEvaluations' in response and response['FailedEvaluations']:
-        raise Exception('Failed to report all evaluations successfully to the AWSConfig service. Failed: ' + str(response['FailedEvaluations']))
+    while (evaluations):
+        response = config.put_evaluations(
+            Evaluations = evaluations[:100],
+            ResultToken = event['resultToken'])
+        if 'FailedEvaluations' in response and response['FailedEvaluations']:
+            raise Exception('Failed to report all evaluations successfully to the AWSConfig service. Failed: ' + str(response['FailedEvaluations']))
+        del evaluations[:100]
