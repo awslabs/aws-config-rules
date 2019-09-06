@@ -91,8 +91,8 @@ def build_iam_managed_policy_list(event):
 
 def check_resource_managed_by_cloudformation(resource_type, resource_list, resource_name, resource_id):
     compliance_result_for_type = []
-    cfn_resources = ALL_RESOURCES.get(resource_type, 'not found')
-    if cfn_resources != 'not found':
+    cfn_resources = ALL_RESOURCES.get(resource_type, '')
+    if cfn_resources:
         for resource in resource_list:
             if resource[resource_name] in cfn_resources:
                 compliance_result_for_type.append({
