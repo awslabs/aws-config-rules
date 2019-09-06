@@ -44,7 +44,7 @@ def check_key(the_dict, the_key):
 
 
 def build_cloudformation_resource_list(event):
-    ALL_RESOURCES = dict()
+    all_resources = dict()
     cfn_client = get_client('cloudformation', event)
     stack_list = cfn_client.list_stacks(
         StackStatusFilter=[
@@ -59,13 +59,13 @@ def build_cloudformation_resource_list(event):
             StackName=stack['StackId']
         )
         for resource in stack_resources['StackResourceSummaries']:
-            if not check_key(ALL_RESOURCES, resource['ResourceType']):
-                ALL_RESOURCES[resource['ResourceType']] = set()
+            if not check_key(all_resources, resource['ResourceType']):
+                all_resources[resource['ResourceType']] = set()
             try:
-                ALL_RESOURCES[resource['ResourceType']].add(resource['PhysicalResourceId'])
+                all_resources[resource['ResourceType']].add(resource['PhysicalResourceId'])
             except KeyError:
                 continue  # PhysicalResourceId is not available
-    return ALL_RESOURCES
+    return all_resources
 
 
 def build_iam_role_list(event):
@@ -89,9 +89,9 @@ def build_iam_managed_policy_list(event):
     return policy_list
 
 
-def check_resource_managed_by_cloudformation(event, ALL_RESOURCES, resource_type, resource_list, resource_name, resource_id):
+def check_resource_managed_by_cloudformation(event, all_resources, resource_type, resource_list, resource_name, resource_id):
     compliance_result_for_type = []
-    cfn_resources = ALL_RESOURCES.get(resource_type, '')
+    cfn_resources = all_resources.get(resource_type, '')
     if cfn_resources:
         for resource in resource_list:
             if resource[resource_name] in cfn_resources:
@@ -103,13 +103,13 @@ def check_resource_managed_by_cloudformation(event, ALL_RESOURCES, resource_type
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     compliance_result = []
-    ALL_RESOURCES = build_cloudformation_resource_list(event)
+    all_resources = build_cloudformation_resource_list(event)
 
     role_list = build_iam_role_list(event)
-    compliance_result.extend(check_resource_managed_by_cloudformation(event, ALL_RESOURCES, 'AWS::IAM::Role', role_list, 'RoleName', 'RoleId'))
+    compliance_result.extend(check_resource_managed_by_cloudformation(event, all_resources, 'AWS::IAM::Role', role_list, 'RoleName', 'RoleId'))
 
     policy_list = build_iam_managed_policy_list(event)
-    compliance_result.extend(check_resource_managed_by_cloudformation(event, ALL_RESOURCES, 'AWS::IAM::ManagedPolicy', policy_list, 'Arn', 'Arn'))
+    compliance_result.extend(check_resource_managed_by_cloudformation(event, all_resources, 'AWS::IAM::ManagedPolicy', policy_list, 'Arn', 'Arn'))
 
     return compliance_result
 
