@@ -37,8 +37,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 
-ALL_RESOURCES = dict()
-
 
 # Check if key exists in dict
 def check_key(the_dict, the_key):
@@ -46,6 +44,7 @@ def check_key(the_dict, the_key):
 
 
 def build_cloudformation_resource_list(event):
+    ALL_RESOURCES = dict()
     cfn_client = get_client('cloudformation', event)
     stack_list = cfn_client.list_stacks(
         StackStatusFilter=[
@@ -66,6 +65,7 @@ def build_cloudformation_resource_list(event):
                 ALL_RESOURCES[resource['ResourceType']].add(resource['PhysicalResourceId'])
             except KeyError:
                 continue  # PhysicalResourceId is not available
+    return ALL_RESOURCES
 
 
 def build_iam_role_list(event):
@@ -89,7 +89,7 @@ def build_iam_managed_policy_list(event):
     return policy_list
 
 
-def check_resource_managed_by_cloudformation(event, resource_type, resource_list, resource_name, resource_id):
+def check_resource_managed_by_cloudformation(event, ALL_RESOURCES, resource_type, resource_list, resource_name, resource_id):
     compliance_result_for_type = []
     cfn_resources = ALL_RESOURCES.get(resource_type, '')
     if cfn_resources:
@@ -103,13 +103,13 @@ def check_resource_managed_by_cloudformation(event, resource_type, resource_list
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     compliance_result = []
-    build_cloudformation_resource_list(event)
+    ALL_RESOURCES = build_cloudformation_resource_list(event)
 
     role_list = build_iam_role_list(event)
-    compliance_result.extend(check_resource_managed_by_cloudformation(event, 'AWS::IAM::Role', role_list, 'RoleName', 'RoleId'))
+    compliance_result.extend(check_resource_managed_by_cloudformation(event, ALL_RESOURCES, 'AWS::IAM::Role', role_list, 'RoleName', 'RoleId'))
 
     policy_list = build_iam_managed_policy_list(event)
-    compliance_result.extend(check_resource_managed_by_cloudformation(event, 'AWS::IAM::ManagedPolicy', policy_list, 'Arn', 'Arn'))
+    compliance_result.extend(check_resource_managed_by_cloudformation(event, ALL_RESOURCES, 'AWS::IAM::ManagedPolicy', policy_list, 'Arn', 'Arn'))
 
     return compliance_result
 
