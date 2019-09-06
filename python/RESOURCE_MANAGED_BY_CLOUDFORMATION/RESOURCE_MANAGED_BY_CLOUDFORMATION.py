@@ -42,10 +42,7 @@ allResources = dict()
 
 # Check if key exists in dict
 def checkKey(dict, key):
-    if key in dict.keys():
-        return True
-    else:
-        return False
+    return key in dict.keys()
 
 
 def build_cloudformation_resource_list():
@@ -63,9 +60,6 @@ def build_cloudformation_resource_list():
     except KeyError:
         # print('no stack truncation')
         pass
-        # print(stackList['StackSummaries'])
-    # NextToken handling
-    # while stackList.NextToken
     for stack in stackList['StackSummaries']:
         stackResources = cfn.list_stack_resources(
             StackName=stack['StackId']
