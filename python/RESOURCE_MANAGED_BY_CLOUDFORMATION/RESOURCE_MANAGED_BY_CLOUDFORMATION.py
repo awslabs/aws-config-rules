@@ -287,7 +287,7 @@ def convert_api_configuration(configuration_item):
 
 # Based on the type of message get the configuration item
 # either from configurationItem in the invoking event
-# or using the getResourceConfigHistiry API in getConfiguration function.
+# or using the getResourceConfigHistory API in getConfiguration function.
 def get_configuration_item(invoking_event):
     check_defined(invoking_event, 'invokingEvent')
     if is_oversized_changed_notification(invoking_event['messageType']):
