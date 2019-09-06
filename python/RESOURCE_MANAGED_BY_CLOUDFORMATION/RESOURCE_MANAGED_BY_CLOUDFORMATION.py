@@ -45,9 +45,9 @@ def check_key(dict, key):
     return key in dict.keys()
 
 
-def build_cloudformation_resource_list():
-    cfn = boto3.client('cloudformation')
-    stackList = cfn.list_stacks(
+def build_cloudformation_resource_list(evemt):
+    cfn_client = get_client('cloudformation', event)
+    stackList = cfn_client.list_stacks(
         StackStatusFilter=[
             'CREATE_COMPLETE',
             'ROLLBACK_COMPLETE',
@@ -56,7 +56,7 @@ def build_cloudformation_resource_list():
         ]
     )
     for stack in stackList['StackSummaries']:
-        stack_resources = cfn.list_stack_resources(
+        stack_resources = cfn_client.list_stack_resources(
             StackName=stack['StackId']
         )
         for resource in stack_resources['StackResourceSummaries']:
@@ -68,20 +68,20 @@ def build_cloudformation_resource_list():
                 continue  # PhysicalResourceId is not available
 
 
-def build_iam_role_list():
+def build_iam_role_list(event):
     role_list = []
-    iam = boto3.client('iam')
-    for role in iam.list_roles()['Roles']:
+    iam_client = get_client('iam', event)
+    for role in iam_client.list_roles()['Roles']:
         # exceptions
         if not role['Path'].startswith('/aws-service-role/'):
             role_list.append(role)
     return role_list
 
 
-def build_iam_managed_policy_list():
+def build_iam_managed_policy_list(event):
     policy_list = []
-    iam = boto3.client('iam')
-    policy_list_result = iam.list_policies(
+    iam_client = get_client('iam', event)
+    policy_list_result = iam_client.list_policies(
         Scope='Local',
     )
     for policy in policy_list_result['Policies']:
@@ -136,12 +136,12 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     ###############################
 
     compliance_result = []
-    build_cloudformation_resource_list()
+    build_cloudformation_resource_list(event)
 
-    role_list = build_iam_role_list()
+    role_list = build_iam_role_list(event)
     compliance_result.extend(check_resource_managaed_by_cloudformation('AWS::IAM::Role', role_list, 'RoleName', 'RoleId'))
 
-    policyList = build_iam_managed_policy_list()
+    policyList = build_iam_managed_policy_list(event)
     compliance_result.extend(check_resource_managaed_by_cloudformation('AWS::IAM::ManagedPolicy', policyList, 'Arn', 'Arn'))
 
     return compliance_result
