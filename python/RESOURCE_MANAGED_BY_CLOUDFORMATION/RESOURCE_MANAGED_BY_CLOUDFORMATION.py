@@ -89,7 +89,7 @@ def build_iam_managed_policy_list(event):
     return policy_list
 
 
-def check_resource_managaed_by_cloudformation(resource_type, resource_list, resource_name, resource_id):
+def check_resource_managed_by_cloudformation(resource_type, resource_list, resource_name, resource_id):
     compliance_result_for_type = []
     cfn_resources = ALL_RESOURCES.get(resource_type, 'not found')
     if cfn_resources != 'not found':
@@ -139,10 +139,10 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     build_cloudformation_resource_list(event)
 
     role_list = build_iam_role_list(event)
-    compliance_result.extend(check_resource_managaed_by_cloudformation('AWS::IAM::Role', role_list, 'RoleName', 'RoleId'))
+    compliance_result.extend(check_resource_managed_by_cloudformation('AWS::IAM::Role', role_list, 'RoleName', 'RoleId'))
 
     policy_list = build_iam_managed_policy_list(event)
-    compliance_result.extend(check_resource_managaed_by_cloudformation('AWS::IAM::ManagedPolicy', policy_list, 'Arn', 'Arn'))
+    compliance_result.extend(check_resource_managed_by_cloudformation('AWS::IAM::ManagedPolicy', policy_list, 'Arn', 'Arn'))
 
     return compliance_result
 
