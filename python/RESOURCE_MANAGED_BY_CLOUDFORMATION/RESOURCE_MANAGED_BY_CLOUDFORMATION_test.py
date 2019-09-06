@@ -29,14 +29,13 @@ class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
         if client_name == 'cloudformation':
             return CLOUDFORMATION_CLIENT_MOCK
-        elif client_name == 'config':
+        if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        elif client_name == 'iam':
+        if client_name == 'iam':
             return IAM_CLIENT_MOCK
-        elif client_name == 'sts':
+        if client_name == 'sts':
             return STS_CLIENT_MOCK
-        else:
-            raise Exception("Attempting to create an unknown client")
+        raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 

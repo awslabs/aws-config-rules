@@ -37,7 +37,7 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 
-all_resources = dict()
+ALL_RESOURCES = dict()
 
 
 # Check if key exists in dict
@@ -45,9 +45,9 @@ def check_key(dict, key):
     return key in dict.keys()
 
 
-def build_cloudformation_resource_list(evemt):
+def build_cloudformation_resource_list(event):
     cfn_client = get_client('cloudformation', event)
-    stackList = cfn_client.list_stacks(
+    stack_list = cfn_client.list_stacks(
         StackStatusFilter=[
             'CREATE_COMPLETE',
             'ROLLBACK_COMPLETE',
@@ -55,15 +55,15 @@ def build_cloudformation_resource_list(evemt):
             'UPDATE_ROLLBACK_COMPLETE',
         ]
     )
-    for stack in stackList['StackSummaries']:
+    for stack in stack_list['StackSummaries']:
         stack_resources = cfn_client.list_stack_resources(
             StackName=stack['StackId']
         )
         for resource in stack_resources['StackResourceSummaries']:
-            if not check_key(all_resources, resource['ResourceType']):
-                all_resources[resource['ResourceType']] = set()
+            if not check_key(ALL_RESOURCES, resource['ResourceType']):
+                ALL_RESOURCES[resource['ResourceType']] = set()
             try:
-                all_resources[resource['ResourceType']].add(resource['PhysicalResourceId'])
+                ALL_RESOURCES[resource['ResourceType']].add(resource['PhysicalResourceId'])
             except KeyError:
                 continue  # PhysicalResourceId is not available
 
@@ -91,10 +91,10 @@ def build_iam_managed_policy_list(event):
 
 def check_resource_managaed_by_cloudformation(resource_type, resource_list, resource_name, resource_id):
     compliance_result_for_type = []
-    cfnResources = all_resources.get(resource_type, 'not found')
-    if cfnResources != 'not found':
+    CFN_RESOURCES = ALL_RESOURCES.get(resource_type, 'not found')
+    if CFN_RESOURCES != 'not found':
         for resource in resource_list:
-            if (resource[resource_name] in cfnResources):
+            if resource[resource_name] in CFN_RESOURCES:
                 compliance_result_for_type.append({
                     'ComplianceResourceType': resource_type,
                     'ComplianceResourceId': resource[resource_id],
@@ -293,7 +293,7 @@ def get_configuration_item(invoking_event):
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resource_type'], configuration_item_summary['resource_id'], configuration_item_summary['configurationItemCaptureTime'])
-    elif is_scheduled_notification(invoking_event['messageType']):
+    if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
@@ -309,7 +309,7 @@ def is_applicable(configuration_item, event):
     event_left_scope = event['eventLeftScope']
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and not event_left_scope
+    return status in ('OK', 'ResourceDiscovered') and not event_left_scope
 
 
 def get_assume_role_credentials(role_arn):
