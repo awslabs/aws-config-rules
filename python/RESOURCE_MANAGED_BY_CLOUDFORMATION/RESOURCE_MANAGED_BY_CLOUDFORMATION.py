@@ -55,20 +55,10 @@ def build_cloudformation_resource_list():
             'UPDATE_ROLLBACK_COMPLETE',
         ]
     )
-    try:
-        print(stackList['NextToken'])
-    except KeyError:
-        # print('no stack truncation')
-        pass
     for stack in stackList['StackSummaries']:
         stackResources = cfn.list_stack_resources(
             StackName=stack['StackId']
         )
-        try:
-            print(stackResources['NextToken'])
-        except KeyError:
-            # print('no truncation')
-            pass
         for resource in stackResources['StackResourceSummaries']:
             if not checkKey(allResources, resource['ResourceType']):
                 # allResources[resource['ResourceType']] = []
