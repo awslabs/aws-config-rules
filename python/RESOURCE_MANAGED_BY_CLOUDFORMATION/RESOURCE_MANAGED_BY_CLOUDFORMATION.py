@@ -41,8 +41,8 @@ ALL_RESOURCES = dict()
 
 
 # Check if key exists in dict
-def check_key(dict, key):
-    return key in dict.keys()
+def check_key(the_dict, the_key):
+    return the_key in the_dict.keys()
 
 
 def build_cloudformation_resource_list(event):
@@ -91,10 +91,10 @@ def build_iam_managed_policy_list(event):
 
 def check_resource_managaed_by_cloudformation(resource_type, resource_list, resource_name, resource_id):
     compliance_result_for_type = []
-    CFN_RESOURCES = ALL_RESOURCES.get(resource_type, 'not found')
-    if CFN_RESOURCES != 'not found':
+    cfn_resources = ALL_RESOURCES.get(resource_type, 'not found')
+    if cfn_resources != 'not found':
         for resource in resource_list:
-            if resource[resource_name] in CFN_RESOURCES:
+            if resource[resource_name] in cfn_resources:
                 compliance_result_for_type.append({
                     'ComplianceResourceType': resource_type,
                     'ComplianceResourceId': resource[resource_id],
@@ -141,8 +141,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     role_list = build_iam_role_list(event)
     compliance_result.extend(check_resource_managaed_by_cloudformation('AWS::IAM::Role', role_list, 'RoleName', 'RoleId'))
 
-    policyList = build_iam_managed_policy_list(event)
-    compliance_result.extend(check_resource_managaed_by_cloudformation('AWS::IAM::ManagedPolicy', policyList, 'Arn', 'Arn'))
+    policy_list = build_iam_managed_policy_list(event)
+    compliance_result.extend(check_resource_managaed_by_cloudformation('AWS::IAM::ManagedPolicy', policy_list, 'Arn', 'Arn'))
 
     return compliance_result
 
