@@ -37,11 +37,11 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 
-allResources = dict()
+all_resources = dict()
 
 
 # Check if key exists in dict
-def checkKey(dict, key):
+def check_key(dict, key):
     return key in dict.keys()
 
 
@@ -56,59 +56,55 @@ def build_cloudformation_resource_list():
         ]
     )
     for stack in stackList['StackSummaries']:
-        stackResources = cfn.list_stack_resources(
+        stack_resources = cfn.list_stack_resources(
             StackName=stack['StackId']
         )
-        for resource in stackResources['StackResourceSummaries']:
-            if not checkKey(allResources, resource['ResourceType']):
-                # allResources[resource['ResourceType']] = []
-                allResources[resource['ResourceType']] = set()
+        for resource in stack_resources['StackResourceSummaries']:
+            if not check_key(all_resources, resource['ResourceType']):
+                all_resources[resource['ResourceType']] = set()
             try:
-                # allResources[resource['ResourceType']].append(resource['PhysicalResourceId'])
-                allResources[resource['ResourceType']].add(resource['PhysicalResourceId'])
+                all_resources[resource['ResourceType']].add(resource['PhysicalResourceId'])
             except KeyError:
                 continue  # PhysicalResourceId is not available
 
 
 def build_iam_role_list():
-    roleList = []
+    role_list = []
     iam = boto3.client('iam')
-    # print(iam.list_roles()['IsTruncated'])
     for role in iam.list_roles()['Roles']:
         # exceptions
         if not role['Path'].startswith('/aws-service-role/'):
-            roleList.append(role)
-    return roleList
+            role_list.append(role)
+    return role_list
 
 
 def build_iam_managed_policy_list():
-    policyList = []
+    policy_list = []
     iam = boto3.client('iam')
-    # print(iam.list_policies()['IsTruncated'])\
-    policyListResult = iam.list_policies(
+    policy_list_result = iam.list_policies(
         Scope='Local',
     )
-    for policy in policyListResult['Policies']:
-        policyList.append(policy)
-    return policyList
+    for policy in policy_list_result['Policies']:
+        policy_list.append(policy)
+    return policy_list
 
 
-def check_resource_managaed_by_cloudformation(resourceType, resourceList, resourceName, resourceId):
+def check_resource_managaed_by_cloudformation(resource_type, resource_list, resource_name, resource_id):
     compliance_result_for_type = []
-    cfnResources = allResources.get(resourceType, 'not found')
+    cfnResources = all_resources.get(resource_type, 'not found')
     if cfnResources != 'not found':
-        for resource in resourceList:
-            if (resource[resourceName] in cfnResources):
+        for resource in resource_list:
+            if (resource[resource_name] in cfnResources):
                 compliance_result_for_type.append({
-                    'ComplianceResourceType': resourceType,
-                    'ComplianceResourceId': resource[resourceId],
+                    'ComplianceResourceType': resource_type,
+                    'ComplianceResourceId': resource[resource_id],
                     'ComplianceType': 'COMPLIANT',
                     'OrderingTimestamp': str(datetime.datetime.now()),
                 })
             else:
                 compliance_result_for_type.append({
-                    'ComplianceResourceType': resourceType,
-                    'ComplianceResourceId': resource[resourceId],
+                    'ComplianceResourceType': resource_type,
+                    'ComplianceResourceId': resource[resource_id],
                     'ComplianceType': 'NON_COMPLIANT',
                     'OrderingTimestamp': str(datetime.datetime.now()),
                 })
@@ -142,8 +138,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     compliance_result = []
     build_cloudformation_resource_list()
 
-    roleList = build_iam_role_list()
-    compliance_result.extend(check_resource_managaed_by_cloudformation('AWS::IAM::Role', roleList, 'RoleName', 'RoleId'))
+    role_list = build_iam_role_list()
+    compliance_result.extend(check_resource_managaed_by_cloudformation('AWS::IAM::Role', role_list, 'RoleName', 'RoleId'))
 
     policyList = build_iam_managed_policy_list()
     compliance_result.extend(check_resource_managaed_by_cloudformation('AWS::IAM::ManagedPolicy', policyList, 'Arn', 'Arn'))
@@ -231,8 +227,8 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
     eval_ci = {}
     if annotation:
         eval_ci['Annotation'] = annotation
-    eval_ci['ComplianceResourceType'] = configuration_item['resourceType']
-    eval_ci['ComplianceResourceId'] = configuration_item['resourceId']
+    eval_ci['ComplianceResourceType'] = configuration_item['resource_type']
+    eval_ci['ComplianceResourceId'] = configuration_item['resource_id']
     eval_ci['ComplianceType'] = compliance_type
     eval_ci['OrderingTimestamp'] = configuration_item['configurationItemCaptureTime']
     return eval_ci
@@ -265,8 +261,8 @@ def is_scheduled_notification(message_type):
 # in case of OversizedConfigurationItemChangeNotification
 def get_configuration(resource_type, resource_id, configuration_capture_time):
     result = AWS_CONFIG_CLIENT.get_resource_config_history(
-        resourceType=resource_type,
-        resourceId=resource_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
         laterTime=configuration_capture_time,
         limit=1)
     configuration_item = result['configurationItems'][0]
@@ -296,7 +292,7 @@ def get_configuration_item(invoking_event):
     check_defined(invoking_event, 'invokingEvent')
     if is_oversized_changed_notification(invoking_event['messageType']):
         configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
-        return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
+        return get_configuration(configuration_item_summary['resource_type'], configuration_item_summary['resource_id'], configuration_item_summary['configurationItemCaptureTime'])
     elif is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
@@ -379,7 +375,6 @@ def lambda_handler(event, context):
 
     global AWS_CONFIG_CLIENT
 
-    # print(event)
     check_defined(event, 'event')
     invoking_event = json.loads(event['invokingEvent'])
     rule_parameters = {}
