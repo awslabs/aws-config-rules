@@ -47,15 +47,15 @@ RULE = __import__('S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS')
 
 class ComplianceTest(unittest.TestCase):
 
-    rule_valid_parameters = '{"BlockPublicAcls":"Off","IgnorePublicAcls":"On"}'
-    rule_invalid_parameters = '{"BlockPublicAcls":"True"}'
+    rule_valid_parameters = '{"BlockPublicAcls":"False","IgnorePublicAcls":"True","BlockPublicPolicy":"False"}'
+    rule_invalid_parameters = '{"BlockPublicAcls":"0"}'
 
     # Scenario 1: invalid rule parameter value
     def test_invalid_value_parameter(self):
         RULE.ASSUME_ROLE_MODE = False
         with self.assertRaises(ValueError) as err:
             RULE.evaluate_parameters(json.loads(self.rule_invalid_parameters))
-        self.assertTrue("Invalid value for parameter BlockPublicAcls , Expect 'On' or 'Off'" in str(err.exception))
+        self.assertTrue("Invalid value for parameter BlockPublicAcls , Expect 'True' or 'False'" in str(err.exception))
 
     # Scenario 2: all account level block settings match with parameters specified
     def test_scenario_2_compliant(self):
@@ -64,7 +64,7 @@ class ComplianceTest(unittest.TestCase):
             "configuration": { \
 	        "blockPublicAcls": false, \
 	        "ignorePublicAcls": true, \
-	        "blockPublicPolicy": true, \
+	        "blockPublicPolicy": false, \
 	        "restrictPublicBuckets": true \
 	        }, \
 	    "resourceType": "AWS::S3::AccountPublicAccessBlock", \
@@ -86,7 +86,7 @@ class ComplianceTest(unittest.TestCase):
             "configuration": { \
 	        "blockPublicAcls": false, \
 	        "ignorePublicAcls": true, \
-	        "blockPublicPolicy": false, \
+	        "blockPublicPolicy": true, \
 	        "restrictPublicBuckets": true \
 	        }, \
 	    "resourceType": "AWS::S3::AccountPublicAccessBlock", \
@@ -98,7 +98,7 @@ class ComplianceTest(unittest.TestCase):
         }'
         response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, self.rule_valid_parameters), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'account_id', 'AWS::S3::AccountPublicAccessBlock', 'Account level public access blocks do not meet requirements.'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'account_id', 'AWS::S3::AccountPublicAccessBlock', 'Account level Amazon S3 block public access do not meet requirements.'))
         assert_successful_evaluation(self, response, resp_expected)
 
 ####################

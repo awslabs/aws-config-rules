@@ -4,8 +4,8 @@
     "RuleName": "S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS",
     "SourceRuntime": "python2.7",
     "CodeKey": "S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS.zip",
-    "InputParameters": "{\"BlockPublicAcls\": \"Off\"}",
-    "OptionalParameters": "{}",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"BlockPublicAcls\": \"\",\"IgnorePublicAcls\": \"\",\"BlockPublicPolicy\": \"\",\"RestrictPublicBuckets\": \"\"}",
     "SourceEvents": "AWS::S3::AccountPublicAccessBlock"
   },
   "Tags": "[]"

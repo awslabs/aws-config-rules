@@ -22,22 +22,22 @@ Reports on:
   AWS::S3::AccountPublicAccessBlock
 Rule Parameters:
   IgnorePublicAcls
-    (Optional) IgnorePublicAcls is enforced or not, default On
+    (Optional) IgnorePublicAcls is enforced or not, default True
   BlockPublicPolicy
-    (Optional ) BlockPublicPolicy is enforced or not, default On
+    (Optional ) BlockPublicPolicy is enforced or not, default True
   BlockPublicAcls
-    (Optional) BlockPublicAcls is enforced or not, default On
+    (Optional) BlockPublicAcls is enforced or not, default True
   RestrictPublicBuckets
-    (Optional) RestrictPublicBuckets is enforced or not, default On
+    (Optional) RestrictPublicBuckets is enforced or not, default True
 Scenarios:
   Scenario: 1
      Given: The rule parameters are provided but are invalid
       Then: Return ERROR
   Scenario: 2
-     Given: All enforced settings from parameters (or default) are set to On from account level
+     Given: All enforced settings from parameters (or default) are set to True from account level
       Then: Return COMPLIANT
   Scenario: 3
-     Given: One or more enforced settings from parameters (or default) are not set to On from account level
+     Given: One or more enforced settings from parameters (or default) are not set to True from account level
       Then: Return NON_COMPLIANT
 """
 
@@ -70,36 +70,41 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
+    # Convert inputs to boolean
+    required_setting = {}
+    for key in valid_rule_parameters:
+        if valid_rule_parameters[key] == "True":
+            required_setting[key] = True
+        if valid_rule_parameters[key] == "False":
+            required_setting[key] = False
+
+    # If parameter is not set, set required_setting to True
+    if 'IgnorePublicAcls' not in valid_rule_parameters:
+        required_setting['IgnorePublicAcls'] = True
+    if 'BlockPublicPolicy' not in valid_rule_parameters:
+        required_setting['BlockPublicPolicy'] = True
+    if 'BlockPublicAcls' not in valid_rule_parameters:
+        required_setting['BlockPublicAcls'] = True
+    if 'RestrictPublicBuckets' not in valid_rule_parameters:
+        required_setting['RestrictPublicBuckets'] = True
+
+
+    # Compare if the configuration item matches exactly with the required settings:
     if (
-            configuration_item['configuration']['ignorePublicAcls'] == valid_rule_parameters['IgnorePublicAcls'] and
-            configuration_item['configuration']['blockPublicPolicy'] == valid_rule_parameters['BlockPublicPolicy'] and
-            configuration_item['configuration']['blockPublicAcls'] == valid_rule_parameters['BlockPublicAcls'] and
-            configuration_item['configuration']['restrictPublicBuckets'] == valid_rule_parameters['RestrictPublicBuckets']
+            configuration_item['configuration']['ignorePublicAcls'] == required_setting['IgnorePublicAcls'] and
+            configuration_item['configuration']['blockPublicPolicy'] == required_setting['BlockPublicPolicy'] and
+            configuration_item['configuration']['blockPublicAcls'] == required_setting['BlockPublicAcls'] and
+            configuration_item['configuration']['restrictPublicBuckets'] == required_setting['RestrictPublicBuckets']
     ):
         return build_evaluation_from_config_item(configuration_item, 'COMPLIANT')
-    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Account level public access blocks do not meet requirements.')
+    return build_evaluation_from_config_item(configuration_item, 'NON_COMPLIANT', annotation='Account level Amazon S3 block public access do not meet requirements.')
 
 def evaluate_parameters(rule_parameters):
-    availble_values = ["On", "Off"]
+    available_values = ["True", "False"]
     for key in rule_parameters:
-        # Check if parameter values are "On" or "Off"
-        if rule_parameters[key] not in availble_values:
-            raise ValueError("Invalid value for parameter " + key + " , Expect 'On' or 'Off'")
-        # Set True or False based on On or Off
-        if rule_parameters[key] == "On":
-            rule_parameters[key] = True
-        if rule_parameters[key] == "Off":
-            rule_parameters[key] = False
-
-    # If parameter is not set, set to True
-    if 'IgnorePublicAcls' not in rule_parameters:
-        rule_parameters['IgnorePublicAcls'] = True
-    if 'BlockPublicPolicy' not in rule_parameters:
-        rule_parameters['BlockPublicPolicy'] = True
-    if 'BlockPublicAcls' not in rule_parameters:
-        rule_parameters['BlockPublicAcls'] = True
-    if 'RestrictPublicBuckets' not in rule_parameters:
-        rule_parameters['RestrictPublicBuckets'] = True
+        # Check if parameter values are "True" or "False"
+        if rule_parameters[key] not in available_values:
+            raise ValueError("Invalid value for parameter " + key + " , Expect 'True' or 'False'")
     return rule_parameters
 
 ####################
