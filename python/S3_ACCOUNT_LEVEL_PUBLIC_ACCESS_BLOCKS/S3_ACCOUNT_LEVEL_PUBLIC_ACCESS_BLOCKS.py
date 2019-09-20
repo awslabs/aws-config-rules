@@ -9,36 +9,45 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
 """
-#####################################
-##           Gherkin               ##
-#####################################
-Rule Name:
-  S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
-Description:
-  Check if the required public access block settings are configured from account level.
-Trigger:
-  Configuration Change on AWS::S3::AccountPublicAccessBlock
-Reports on:
-  AWS::S3::AccountPublicAccessBlock
-Rule Parameters:
-  IgnorePublicAcls
-    (Optional) IgnorePublicAcls is enforced or not, default True
-  BlockPublicPolicy
-    (Optional ) BlockPublicPolicy is enforced or not, default True
-  BlockPublicAcls
-    (Optional) BlockPublicAcls is enforced or not, default True
-  RestrictPublicBuckets
-    (Optional) RestrictPublicBuckets is enforced or not, default True
-Scenarios:
-  Scenario: 1
-     Given: The rule parameters are provided but are invalid
-      Then: Return ERROR
-  Scenario: 2
-     Given: All enforced settings from parameters (or default) are set to True from account level
-      Then: Return COMPLIANT
-  Scenario: 3
-     Given: One or more enforced settings from parameters (or default) are not set to True from account level
-      Then: Return NON_COMPLIANT
+  #####################################
+  ##           Gherkin               ##
+  #####################################
+  Rule Name:
+    S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
+  Description:
+    Check if the required public access block settings are configured from account level.
+  Trigger:
+    Configuration Change on AWS::S3::AccountPublicAccessBlock
+  Reports on:
+    AWS::S3::AccountPublicAccessBlock
+  Rule Parameters:
+    IgnorePublicAcls
+      (Optional) IgnorePublicAcls is enforced or not, default True
+    BlockPublicPolicy
+      (Optional ) BlockPublicPolicy is enforced or not, default True
+    BlockPublicAcls
+      (Optional) BlockPublicAcls is enforced or not, default True
+    RestrictPublicBuckets
+      (Optional) RestrictPublicBuckets is enforced or not, default True
+  Scenarios:
+    Scenario: 1
+       Given: The rule parameters are provided but are invalid
+        Then: Return ERROR
+    Scenario: 2
+       Given: All parameters are provided
+         And: Configuration Item matches all settings from parameters
+        Then: Return COMPLIANT
+    Scenario: 3
+       Given: No parameters are provided
+         And: Configuration Item matches the default setting
+        Then: Return COMPLIANT
+    Scenario: 4
+       Given: Some parameters are provided
+         And: Configuration Item matches the paratmeters if provided or default setting if not provided
+        Then: Return COMPLIANT
+    Scenario: 5
+       Given: Configuration Item does not match one or more settings from parameters (or default)
+        Then: Return NON_COMPLIANT
 """
 
 import json
@@ -57,7 +66,7 @@ except ImportError:
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::S3::AccountPublicAccessBlock'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False

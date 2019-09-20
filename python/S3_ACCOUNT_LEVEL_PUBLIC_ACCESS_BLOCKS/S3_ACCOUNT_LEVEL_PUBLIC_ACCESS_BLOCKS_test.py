@@ -48,6 +48,7 @@ RULE = __import__('S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS')
 class ComplianceTest(unittest.TestCase):
 
     rule_valid_parameters = '{"BlockPublicAcls":"False","IgnorePublicAcls":"True","BlockPublicPolicy":"False"}'
+    rule_all_parameters = '{"BlockPublicAcls":"False","IgnorePublicAcls":"False","BlockPublicPolicy":"False", "RestrictPublicBuckets":"False"}'
     rule_invalid_parameters = '{"BlockPublicAcls":"0"}'
 
     # Scenario 1: invalid rule parameter value
@@ -57,8 +58,52 @@ class ComplianceTest(unittest.TestCase):
             RULE.evaluate_parameters(json.loads(self.rule_invalid_parameters))
         self.assertTrue("Invalid value for parameter BlockPublicAcls , Expect 'True' or 'False'" in str(err.exception))
 
-    # Scenario 2: all account level block settings match with parameters specified
+    # Scenario 2: Configuration Item matches all settings from parameters (or default) with all parameters provided
     def test_scenario_2_compliant(self):
+        invoking_event = '{ \
+        "configurationItem": { \
+            "configuration": { \
+	        "blockPublicAcls": false, \
+	        "ignorePublicAcls": false, \
+	        "blockPublicPolicy": false, \
+	        "restrictPublicBuckets": false \
+	        }, \
+	    "resourceType": "AWS::S3::AccountPublicAccessBlock", \
+            "resourceId": "account_id", \
+	    "configurationItemStatus": "OK", \
+	    "configurationItemCaptureTime": "2019-09-06T14:45:05.839Z" \
+	}, \
+	"messageType":"ConfigurationItemChangeNotification" \
+        }'
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event, self.rule_all_parameters), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('COMPLIANT', 'account_id', 'AWS::S3::AccountPublicAccessBlock'))
+        assert_successful_evaluation(self, response, resp_expected)
+
+    # Scenario 3: Configuration Item matches all settings from parameters (or default) with no parameter provided
+    def test_scenario_3_compliant(self):
+        invoking_event = '{ \
+        "configurationItem": { \
+            "configuration": { \
+	        "blockPublicAcls": true, \
+	        "ignorePublicAcls": true, \
+	        "blockPublicPolicy": true, \
+	        "restrictPublicBuckets": true \
+	        }, \
+	    "resourceType": "AWS::S3::AccountPublicAccessBlock", \
+            "resourceId": "account_id", \
+	    "configurationItemStatus": "OK", \
+	    "configurationItemCaptureTime": "2019-09-06T14:45:05.839Z" \
+	}, \
+	"messageType":"ConfigurationItemChangeNotification" \
+        }'
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(invoking_event), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response('COMPLIANT', 'account_id', 'AWS::S3::AccountPublicAccessBlock'))
+        assert_successful_evaluation(self, response, resp_expected)
+
+    # Scenario 4: Configuration Item matches all settings from parameters (or default) with some parameters provided
+    def test_scenario_4_compliant(self):
         invoking_event = '{ \
         "configurationItem": { \
             "configuration": { \
@@ -79,8 +124,8 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', 'account_id', 'AWS::S3::AccountPublicAccessBlock'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    # Scenario 3: One or more enforced settings from parameters are not set to On
-    def test_scenario_3_non_compliant(self):
+    # Scenario 5: Configuration Item does not match one or more settings from parameters (or default)
+    def test_scenario_5_non_compliant(self):
         invoking_event = '{ \
         "configurationItem": { \
             "configuration": { \
