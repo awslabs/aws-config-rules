@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_SECURITY_GROUP_ATTACHED_TO_ENI",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::EC2::SecurityGroup",
+    "SourceIdentifier": "EC2_SECURITY_GROUP_ATTACHED_TO_ENI"
+  },
+  "Tags": "[]"
+}
