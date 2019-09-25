@@ -1,20 +1,13 @@
 {
-  "Version": "1.0", 
+  "Version": "1.0",
   "Parameters": {
     "RuleName": "ELB_LOGGING_ENABLED",
     "SourceRuntime": null,
     "CodeKey": null,
-    "SourceEvents": "AWS::ElasticLoadBalancingV2::LoadBalancer,AWS::ElasticLoadBalancing::LoadBalancer",
-    "OptionalParameters": "{\"s3BucketName\":\"\"}", 
     "InputParameters": "{}",
-    "SourceIdentifier": "ELB_LOGGING_ENABLED",
-    "RuleSets": [
-      "baseline",
-      "rulecriticity:high",
-      "pci",
-      "pci:10.1",
-      "elb",
-      "alb"
-    ]
-  }
+    "OptionalParameters": "{\"s3BucketNames\": \"\"}",
+    "SourceEvents": "AWS::ElasticLoadBalancing::LoadBalancer,AWS::ElasticLoadBalancingV2::LoadBalancer",
+    "SourceIdentifier": "ELB_LOGGING_ENABLED"
+  },
+  "Tags": "[]"
 }

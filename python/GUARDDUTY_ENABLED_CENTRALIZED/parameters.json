@@ -5,15 +5,9 @@
     "SourceRuntime": null,
     "CodeKey": null,
     "InputParameters": "{}",
-    "OptionalParameters": "{\"CentralMonitoringAccount\":\"\"}",
+    "OptionalParameters": "{\"CentralMonitoringAccount\": \"\"}",
     "SourcePeriodic": "TwentyFour_Hours",
-    "SourceIdentifier": "GUARDDUTY_ENABLED_CENTRALIZED",
-    "RuleSets": [
-      "baseline",
-      "rulecriticity:high",
-      "pci",
-      "pci:10.6",
-      "guardduty"
-    ]
-  }
+    "SourceIdentifier": "GUARDDUTY_ENABLED_CENTRALIZED"
+  },
+  "Tags": "[]"
 }

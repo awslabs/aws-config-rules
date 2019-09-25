@@ -5,13 +5,9 @@
     "SourceRuntime": null,
     "CodeKey": null,
     "InputParameters": "{}",
+    "OptionalParameters": "{\"kmsKeyId\": \"\"}",
     "SourceEvents": "AWS::RDS::DBInstance",
-    "SourceIdentifier": "RDS_STORAGE_ENCRYPTED",   
-    "RuleSets": [
-      "rulecriticity:high", 
-      "pci",
-      "pci:3.4",
-      "rds"
-    ]
-  }
+    "SourceIdentifier": "RDS_STORAGE_ENCRYPTED"
+  },
+  "Tags": "[]"
 }
