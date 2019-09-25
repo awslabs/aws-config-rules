@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ELB_PREDEFINED_SECURITY_POLICY_SSL_CHECK",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{\"predefinedPolicyName\": \"\"}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::ElasticLoadBalancing::LoadBalancer",
+    "SourceIdentifier": "ELB_PREDEFINED_SECURITY_POLICY_SSL_CHECK"
+  },
+  "Tags": "[]"
+}

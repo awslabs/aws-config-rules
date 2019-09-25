@@ -5,14 +5,9 @@
     "SourceRuntime": null,
     "CodeKey": null,
     "InputParameters": "{}",
+    "OptionalParameters": "{}",
     "SourceEvents": "AWS::RDS::DBInstance",
-    "SourceIdentifier": "RDS_INSTANCE_PUBLIC_ACCESS_CHECK",   
-    "RuleSets": [
-      "baseline",
-      "rulecriticity:critical", 
-      "pci",
-      "pci:1.2",
-      "rds"
-    ]
-  }
+    "SourceIdentifier": "RDS_INSTANCE_PUBLIC_ACCESS_CHECK"
+  },
+  "Tags": "[]"
 }

@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_VOLUME_INUSE_CHECK",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"deleteOnTermination\": \"\"}",
+    "SourceEvents": "AWS::EC2::Volume",
+    "SourceIdentifier": "EC2_VOLUME_INUSE_CHECK"
+  },
+  "Tags": "[]"
+}

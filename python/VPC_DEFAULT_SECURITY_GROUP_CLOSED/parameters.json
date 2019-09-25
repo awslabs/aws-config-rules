@@ -5,14 +5,9 @@
     "SourceRuntime": null,
     "CodeKey": null,
     "InputParameters": "{}",
+    "OptionalParameters": "{}",
     "SourceEvents": "AWS::EC2::SecurityGroup",
-    "SourceIdentifier": "VPC_DEFAULT_SECURITY_GROUP_CLOSED",
-    "RuleSets": [
-      "baseline",
-      "rulecriticity:medium",
-      "pci",
-      "pci:1.2",
-      "vpc"
-    ]
-  }
+    "SourceIdentifier": "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
+  },
+  "Tags": "[]"
 }

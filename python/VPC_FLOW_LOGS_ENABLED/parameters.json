@@ -5,14 +5,9 @@
     "SourceRuntime": null,
     "CodeKey": null,
     "InputParameters": "{}",
-    "OptionalParameters": "{\"trafficType\":\"\"}",
+    "OptionalParameters": "{\"trafficType\": \"\"}",
     "SourcePeriodic": "TwentyFour_Hours",
-    "SourceIdentifier": "VPC_FLOW_LOGS_ENABLED",
-    "RuleSets": [
-      "rulecriticity:medium",
-      "pci",
-      "pci:10.1",
-      "vpc"
-    ]
-  }
+    "SourceIdentifier": "VPC_FLOW_LOGS_ENABLED"
+  },
+  "Tags": "[]"
 }

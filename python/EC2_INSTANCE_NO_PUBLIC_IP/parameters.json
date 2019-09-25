@@ -2,11 +2,12 @@
   "Version": "1.0",
   "Parameters": {
     "RuleName": "EC2_INSTANCE_NO_PUBLIC_IP",
-    "SourceRuntime": "python3.6",
-    "CodeKey": "EC2_INSTANCE_NO_PUBLIC_IP.zip",
+    "SourceRuntime": null,
+    "CodeKey": null,
     "InputParameters": "{}",
     "OptionalParameters": "{}",
-    "SourceEvents": "AWS::EC2::Instance"
+    "SourceEvents": "AWS::EC2::Instance",
+    "SourceIdentifier": "EC2_INSTANCE_NO_PUBLIC_IP"
   },
   "Tags": "[]"
 }

@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ELB_ACM_CERTIFICATE_REQUIRED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::ElasticLoadBalancing::LoadBalancer",
+    "SourceIdentifier": "ELB_ACM_CERTIFICATE_REQUIRED"
+  },
+  "Tags": "[]"
+}
