@@ -66,14 +66,11 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     evaluations = []
-
     sagemaker_client = get_client('sagemaker', event)
     notebook_instance_list = get_all_notebook_instances(sagemaker_client)
-
     #SCENARIO 1: No Amazon SageMaker notebook instances exist
     if not notebook_instance_list:
         return None
-
     for notebook_instance in notebook_instance_list:
         notebook_instance_description = sagemaker_client.describe_notebook_instance(NotebookInstanceName=notebook_instance['NotebookInstanceName'])
         #SCENARIO 2: RootAccess is set to Disabled for the Amazon SageMaker notebook instance
@@ -82,7 +79,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         #SCENARIO 3: RootAccess is set to Enabled for the Amazon SageMaker notebook instance
         else:
             evaluations.append(build_evaluation(notebook_instance['NotebookInstanceName'], 'NON_COMPLIANT', event, annotation="This Amazon SageMaker Notebook Instance has root access enabled."))
- 
     return evaluations
 
 #Returns a list of all the SageMaker notebook instances by making use of Boto3's pagination methods.
