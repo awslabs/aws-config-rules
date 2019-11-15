@@ -52,8 +52,8 @@ class ComplianceTest(unittest.TestCase):
     notebook_instances_list = {'NotebookInstances': [{'NotebookInstanceName': 'test1'}, {'NotebookInstanceName': 'test2'}]}
     no_notebook_instances_list = {"NotebookInstances": []}
 
-    described_notebooks_root_enabled = [{'NotebookInstanceName': 'test1', 'RootAccess': 'Enabled'}, {'NotebookInstanceName': 'test2'}]
-    described_notebooks_root_disabled = [{'NotebookInstanceName': 'test1', 'RootAccess': 'Disabled'}, {'NotebookInstanceName': 'test2', 'RootAccess': 'Disabled'}]
+    described_root_enabled = [{'NotebookInstanceName': 'test1', 'RootAccess': 'Enabled'}, {'NotebookInstanceName': 'test2'}]
+    described_root_disabled = [{'NotebookInstanceName': 'test1', 'RootAccess': 'Disabled'}, {'NotebookInstanceName': 'test2', 'RootAccess': 'Disabled'}]
 
     #SCENARIO 2: No Amazon SageMaker Notebook Instances.
     def test_scenario_2_no_instance(self):
@@ -70,7 +70,7 @@ class ComplianceTest(unittest.TestCase):
         SAGEMAKER_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
             "paginate.return_value": [self.notebook_instances_list]})
-        SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=self.described_notebooks_root_enabled)
+        SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=self.described_root_enabled)
         lambda_event = build_lambda_scheduled_event()
         response = RULE.lambda_handler(lambda_event, {})
         expected_response = [build_expected_response('NON_COMPLIANT', 'test1', annotation='This Amazon SageMaker Notebook Instance has root access enabled.'),
@@ -82,7 +82,7 @@ class ComplianceTest(unittest.TestCase):
         SAGEMAKER_CLIENT_MOCK.configure_mock(**{
             "get_paginator.return_value": SAGEMAKER_CLIENT_MOCK,
             "paginate.return_value": [self.notebook_instances_list]})
-        SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=self.described_notebooks_root_disabled)
+        SAGEMAKER_CLIENT_MOCK.describe_notebook_instance = MagicMock(side_effect=self.described_root_disabled)
         lambda_event = build_lambda_scheduled_event()
         response = RULE.lambda_handler(lambda_event, {})
         expected_response = [build_expected_response('COMPLIANT', 'test1'),

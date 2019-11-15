@@ -28,12 +28,11 @@ Scenarios:
   Scenario: 2
      Given: At least one Amazon SageMaker notebook instance exists
        And: RootAccess is set to Disabled for the Amazon SageMaker notebook instance
-      Then: Return COMPLIANT    
+      Then: Return COMPLIANT
   Scenario: 3
      Given: At least one Amazon SageMaker notebook instance exists
        And: RootAccess is set to Enabled for the Amazon SageMaker notebook instance
       Then: Return NON_COMPLIANT with annotation "This Amazon SageMaker Notebook Instance has root access."
-
 '''
 
 import json
