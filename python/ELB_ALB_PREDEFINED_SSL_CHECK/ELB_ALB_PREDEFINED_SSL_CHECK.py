@@ -428,13 +428,19 @@ def lambda_handler(event, context):
         evaluations.append(build_evaluation_from_config_item(configuration_item, 'NOT_APPLICABLE'))
 
     # Put together the request that reports the evaluation status
-    resultToken = event['resultToken']
-    testMode = False
-    if resultToken == 'TESTMODE':
+    result_token = event['resultToken']
+    test_mode = False
+    if result_token == 'TESTMODE':
         # Used solely for RDK test to skip actual put_evaluation API call
-        testMode = True
+        test_mode = True
+
     # Invoke the Config API to report the result of the evaluation
-    AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluations, ResultToken=resultToken, TestMode=testMode)
+    evaluation_copy = []
+    evaluation_copy = evaluations[:]
+    while evaluation_copy:
+        AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluation_copy[:100], ResultToken=result_token, TestMode=test_mode)
+        del evaluation_copy[:100]
+
     # Used solely for RDK test to be able to test Lambda function
     return evaluations
 
