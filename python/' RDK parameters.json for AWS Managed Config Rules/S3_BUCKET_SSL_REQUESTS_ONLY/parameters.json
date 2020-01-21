@@ -1,0 +1,19 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "RuleName": "S3_BUCKET_SSL_REQUESTS_ONLY",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "SourceEvents": "AWS::S3::Bucket",
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}",
+    "SourceIdentifier": "S3_BUCKET_SSL_REQUESTS_ONLY",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:4.1",
+      "s3"
+    ]
+  }
+}

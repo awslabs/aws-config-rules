@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "CLOUDTRAIL_S3_DATAEVENTS_ENABLED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"S3BucketNames\": \"\"}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "CLOUDTRAIL_S3_DATAEVENTS_ENABLED"
+  },
+  "Tags": "[]"
+}

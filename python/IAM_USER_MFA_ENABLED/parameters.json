@@ -1,13 +1,16 @@
 {
-  "Version": "1.0",
   "Parameters": {
     "RuleName": "IAM_USER_MFA_ENABLED",
-    "SourceRuntime": null,
-    "CodeKey": null,
+    "SourceRuntime": "python3.6",
+    "CodeKey": "IAM_USER_MFA_ENABLED.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{}",
     "SourcePeriodic": "TwentyFour_Hours",
-    "SourceIdentifier": "IAM_USER_MFA_ENABLED"
-  },
-  "Tags": "[]"
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:8.1",
+      "iam"
+    ]
+  }
 }

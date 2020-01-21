@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ELASTICSEARCH_ENCRYPTED_AT_REST",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "ELASTICSEARCH_ENCRYPTED_AT_REST"
+  },
+  "Tags": "[]"
+}

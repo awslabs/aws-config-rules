@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EFS_ENCRYPTED_CHECK",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"KmsKeyId\": \"\"}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "EFS_ENCRYPTED_CHECK"
+  },
+  "Tags": "[]"
+}
