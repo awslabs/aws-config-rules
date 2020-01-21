@@ -333,11 +333,6 @@ def lambda_handler(event, context):
     if 'liblogging' in sys.modules:
         liblogging.logEvent(event)
 
-    if boto3.__version__ < '1.9.152':
-        print('boto3 version too old for secret pagination')
-        print('boto3 version: ' + boto3.__version__)
-        exit(1)
-
     global AWS_CONFIG_CLIENT
     global AWS_SECRETSMANAGER_CLIENT
 

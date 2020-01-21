@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "RDS_MULTI_AZ_SUPPORT",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::RDS::DBInstance",
+    "SourceIdentifier": "RDS_MULTI_AZ_SUPPORT"
+  },
+  "Tags": "[]"
+}

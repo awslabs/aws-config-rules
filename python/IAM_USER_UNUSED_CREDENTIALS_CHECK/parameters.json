@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "IAM_USER_UNUSED_CREDENTIALS_CHECK",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{\"maxCredentialUsageAge\": \"90\"}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "IAM_USER_UNUSED_CREDENTIALS_CHECK"
+  },
+  "Tags": "[]"
+}

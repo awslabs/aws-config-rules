@@ -7,12 +7,7 @@
     "InputParameters": "{}",
     "OptionalParameters": "{}",
     "SourceEvents": "AWS::DynamoDB::Table",
-    "SourceIdentifier": "DYNAMODB_TABLE_ENCRYPTION_ENABLED",
-    "RuleSets": [
-      "baseline",
-      "rulecriticity:high",
-      "pci",
-      "pci:3.4"
-    ]
-  }
+    "SourceIdentifier": "DYNAMODB_TABLE_ENCRYPTION_ENABLED"
+  },
+  "Tags": "[]"
 }

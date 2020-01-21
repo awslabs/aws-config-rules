@@ -88,7 +88,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                 event['accountId'],
                 'NON_COMPLIANT',
                 event,
-                annotation='Public Amazon Machine Image Id: {}'.format(",".join([image_id for image_id in generate_image_id_list(public_ami_result['Images'], event)]))
+                annotation='Public Amazon Machine Image Id: {}'.format(",".join([generate_image_id_list(public_ami_result['Images'], event)]))
             )
         )
         return evaluations

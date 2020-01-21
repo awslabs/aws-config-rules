@@ -2,11 +2,12 @@
   "Version": "1.0",
   "Parameters": {
     "RuleName": "ELASTICSEARCH_ENCRYPTED_AT_REST",
-    "SourceRuntime": "python3.6",
-    "CodeKey": "ELASTICSEARCH_ENCRYPTED_AT_REST.zip",
+    "SourceRuntime": null,
+    "CodeKey": null,
     "InputParameters": "{}",
     "OptionalParameters": "{}",
-    "SourcePeriodic": "TwentyFour_Hours"
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "ELASTICSEARCH_ENCRYPTED_AT_REST"
   },
   "Tags": "[]"
 }

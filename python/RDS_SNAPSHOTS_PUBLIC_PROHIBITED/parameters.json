@@ -5,13 +5,9 @@
     "SourceRuntime": null,
     "CodeKey": null,
     "InputParameters": "{}",
-    "SourceEvents": "AWS::RDS::DBInstance",
-    "SourceIdentifier": "RDS_SNAPSHOTS_PUBLIC_PROHIBITED",   
-    "RuleSets": [
-      "rulecriticity:critical", 
-      "pci",
-      "pci:1.2",
-      "rds"
-    ]
-  }
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::RDS::DBSnapshot",
+    "SourceIdentifier": "RDS_SNAPSHOTS_PUBLIC_PROHIBITED"
+  },
+  "Tags": "[]"
 }

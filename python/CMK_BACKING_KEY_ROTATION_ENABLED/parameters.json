@@ -5,13 +5,9 @@
     "SourceRuntime": null,
     "CodeKey": null,
     "InputParameters": "{}",
+    "OptionalParameters": "{}",
     "SourcePeriodic": "TwentyFour_Hours",
-    "SourceIdentifier": "CMK_BACKING_KEY_ROTATION_ENABLED",  
-    "RuleSets": [
-      "rulecriticity:medium",
-      "pci",
-      "pci:3.6",
-      "kms"
-    ]
-  }
+    "SourceIdentifier": "CMK_BACKING_KEY_ROTATION_ENABLED"
+  },
+  "Tags": "[]"
 }

@@ -2,11 +2,12 @@
   "Version": "1.0",
   "Parameters": {
     "RuleName": "ELASTICSEARCH_IN_VPC_ONLY",
-    "SourceRuntime": "python3.6",
-    "CodeKey": "ELASTICSEARCH_IN_VPC_ONLY.zip",
+    "SourceRuntime": null,
+    "CodeKey": null,
     "InputParameters": "{}",
     "OptionalParameters": "{}",
-    "SourcePeriodic": "TwentyFour_Hours"
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "ELASTICSEARCH_IN_VPC_ONLY"
   },
   "Tags": "[]"
 }

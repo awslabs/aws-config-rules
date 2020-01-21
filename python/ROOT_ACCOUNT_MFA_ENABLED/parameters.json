@@ -7,13 +7,7 @@
     "InputParameters": "{}",
     "OptionalParameters": "{}",
     "SourcePeriodic": "TwentyFour_Hours",
-    "SourceIdentifier": "ROOT_ACCOUNT_MFA_ENABLED",
-    "RuleSets": [
-      "baseline",
-      "rulecriticity:critical",
-      "pci",
-      "pci:8.3",
-      "root"
-    ]
-  }
+    "SourceIdentifier": "ROOT_ACCOUNT_MFA_ENABLED"
+  },
+  "Tags": "[]"
 }
