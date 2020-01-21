@@ -2,12 +2,11 @@
   "Version": "1.0",
   "Parameters": {
     "RuleName": "EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK",
-    "SourceRuntime": null,
-    "CodeKey": null,
+    "SourceRuntime": "python3.6",
+    "CodeKey": "EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK.zip",
     "InputParameters": "{}",
     "OptionalParameters": "{}",
-    "SourcePeriodic": "TwentyFour_Hours",
-    "SourceIdentifier": "EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK"
+    "SourcePeriodic": "TwentyFour_Hours"
   },
   "Tags": "[]"
 }

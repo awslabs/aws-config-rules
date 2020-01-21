@@ -2,12 +2,17 @@
   "Version": "1.0",
   "Parameters": {
     "RuleName": "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS",
-    "SourceRuntime": null,
-    "CodeKey": null,
+    "SourceRuntime": "python3.6",
+    "CodeKey": "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{\"authorizedTcpPorts\": \"\", \"authorizedUdpPorts\": \"\"}",
+    "OptionalParameters": "{\"authorizedUDPPorts\": \"\", \"authorizedTCPPorts\": \"\"}",
     "SourceEvents": "AWS::EC2::SecurityGroup",
-    "SourceIdentifier": "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS"
-  },
-  "Tags": "[]"
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:1.2",
+      "vpc"
+    ]
+  }
 }

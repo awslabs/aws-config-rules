@@ -1,0 +1,19 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "RuleName": "S3_BUCKET_PUBLIC_READ_PROHIBITED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "SourceEvents": "AWS::S3::Bucket",
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}",
+    "SourceIdentifier": "S3_BUCKET_PUBLIC_READ_PROHIBITED",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:critical",
+      "pci",
+      "pci:7.1",
+      "s3"
+    ]
+  }
+}
