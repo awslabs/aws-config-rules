@@ -56,10 +56,10 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         cluster_vpc = cluster_info['resourcesVpcConfig']
         public_access = cluster_vpc['endpointPublicAccess']
         if public_access == True:
-            evaluations.append(build_evaluation(cluster_info['name'], 'NON_COMPLIANT', event))
+            evaluations.append(build_evaluation(cluster_info['name'],'NON_COMPLIANT',event))
             #return 'NON_COMPLIANT'
         else:
-            evaluations.append(build_evaluation(cluster_info['name'], 'COMPLIANT', event))
+            evaluations.append(build_evaluation(cluster_info['name'],'COMPLIANT',event))
             #return 'COMPLIANT'
     return evaluations
 
