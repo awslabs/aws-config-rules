@@ -47,8 +47,6 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         return None
 
     evaluations = []
-
-    logging_types = ['api', 'audit', 'authenticator', 'controllerManager', 'scheduler']
     
     for cluster in cluster_list:
         cluster_status = eks_client.describe_cluster(name=cluster)
