@@ -69,18 +69,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         resource_id_count = 0
         is_gateway_compliant = True
         gateway_resources_list = get_all_api_gateway_resources(gateway, apigw_client)
-        
         for gateway_resource in gateway_resources_list:
             methods_list = get_all_api_gateway_methods(gateway, gateway_resource, apigw_client)
-            
             for api_method in methods_list:
                 if api_method['authorizationType'] == 'NONE':
                     is_gateway_compliant = False
                     resource_id_count += 1
-
         if is_gateway_compliant:
             evaluations.append(build_evaluation(gateway['arn'], 'COMPLIANT', event))
-        elif is_gateway_compliant == False:
+        elif not is_gateway_compliant:
             resource_id_count = str(resource_id_count)
             evaluations.append(build_evaluation(gateway['arn'], 'NON_COMPLIANT', event, annotation='This Gateway has '+ resource_id_count +' Methods with no AuthorizationType.'))
 
