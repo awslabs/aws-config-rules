@@ -70,7 +70,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         is_gateway_compliant = True
         gateway_resources_list = get_all_api_gateway_resources(gateway, apigw_client)
         for gateway_resource in gateway_resources_list:
-            methods_list = get_all_api_gateway_methods(gateway, gateway_resource, apigw_client) 
+            methods_list = get_all_api_gateway_methods(gateway, gateway_resource, apigw_client)
             for api_method in methods_list:
                 if api_method['authorizationType'] == 'NONE':
                     is_gateway_compliant = False
