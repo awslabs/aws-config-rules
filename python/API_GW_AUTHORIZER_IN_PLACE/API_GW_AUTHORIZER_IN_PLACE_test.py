@@ -120,7 +120,7 @@ def get_all_api_gateway_methods(gateway, gateway_resource, client):
         try:
             gateway_methods_list = client.get_method(restApiId=gateway['id'], resourceId=gateway_resource['id'], httpMethod=method)
             if 'authorizationType' in gateway_methods_list:
-                    methods_list.append(gateway_methods_list)
+                methods_list.append(gateway_methods_list)
         except:
             continue
     return methods_list
