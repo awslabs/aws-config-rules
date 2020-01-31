@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "IAM_IP_RESTRICTION",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "IAM_IP_RESTRICTION.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"authorizedIAMUserName01\": \"test-user\", \"maxIpNums\": \"20\"}",
+    "SourceEvents": "AWS::IAM::User"
+  },
+  "Tags": "[]"
+}
