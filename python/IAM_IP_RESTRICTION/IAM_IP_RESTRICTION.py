@@ -32,6 +32,7 @@ ASSUME_ROLE_MODE = False
 
 # Other parameters (no change needed)
 CONFIG_ROLE_TIMEOUT_SECONDS = 900
+DEFAULT_MAX_IP_NUMS = 20
 
 #############
 # Main Code #
@@ -64,15 +65,22 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     return 'NOT_APPLICABLE'
 
 def evaluate_parameters(rule_parameters):
-    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
+    authorized_iam_user_names = [rule_parameters[k] for k in rule_parameters.keys() if 'authorizedIAMUserName' in k]
+    for iam_user_name in authorized_iam_user_names:
+        if len(iam_user_name) > 64:
+            raise ValueError('authorizedIAMUserName must be less than 64 characters.')
 
-    Return:
-    anything suitable for the evaluate_compliance()
+    max_ip_nums = DEFAULT_MAX_IP_NUMS
+    if 'maxIpNums' in rule_parameters:
+        max_ip_nums = int(rule_parameters['maxIpNums'])
+        if max_ip_nums < 1:
+            raise ValueError('maxIpNums must be greater than 1.')
+        if max_ip_nums > 2**32-1:
+            raise ValueError('maxIpNums must be less than 2**32-1.')
 
-    Keyword arguments:
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    """
-    valid_rule_parameters = rule_parameters
+    valid_rule_parameters = {}
+    valid_rule_parameters['authorizedIamUserNames'] = authorized_iam_user_names
+    valid_rule_parameters['maxIpNums'] = max_ip_nums
     return valid_rule_parameters
 
 ####################
@@ -296,7 +304,7 @@ def clean_up_old_evaluations(latest_evaluations, event):
 
     return cleaned_evaluations + latest_evaluations
 
-def lambda_handler(event, context):
+def lambda_handler(event, _context):
     if 'liblogging' in sys.modules:
         liblogging.logEvent(event)
 
