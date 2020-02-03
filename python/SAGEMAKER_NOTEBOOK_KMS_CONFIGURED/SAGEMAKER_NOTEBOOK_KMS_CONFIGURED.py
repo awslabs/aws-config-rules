@@ -63,9 +63,9 @@ import json
 import sys
 import datetime
 import re
+from functools import reduce
 import boto3
 import botocore
-from functools import reduce
 
 try:
     import liblogging
