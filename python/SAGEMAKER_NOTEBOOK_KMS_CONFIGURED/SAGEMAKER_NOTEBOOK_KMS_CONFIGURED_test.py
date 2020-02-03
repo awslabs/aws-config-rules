@@ -53,9 +53,9 @@ class ComplianceTest(unittest.TestCase):
     no_notebook_instances_list = {"NotebookInstances": []}
     notebook_instances_list_mixed = [{'NotebookInstances': [{'NotebookInstanceName': 'trial12'}, {'NotebookInstanceName': 'trial123'}, {'NotebookInstanceName': 'trial1234'}]}]
 
-    described_notebook_instances = [{'NotebookInstanceName': 'trial12', 'KmsKeyId': 'arn:aws:kms:us-east-1:123456789012:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial123', 'KmsKeyId': 'arn:aws:kms:us-east-1:123456789012:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d'}]
+    described_notebook_instances = [{'NotebookInstanceName': 'trial12', 'KmsKeyId': '7af97db7-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial123', 'KmsKeyId': '7af97db7-f6a3-4d0a-87b9-a2737b54856d'}]
     described_notebooks_no_key = [{'NotebookInstanceName': 'trial12'}, {'NotebookInstanceName': 'trial123'}]
-    described_notebooks_mixed = [{'NotebookInstanceName': 'trial12', 'KmsKeyId': 'arn:aws:kms:us-east-1:123456789012:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial123', 'KmsKeyId': 'arn:aws:kms:us-east-1:123456789012:key/7af97db6-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial1234'}]
+    described_notebooks_mixed = [{'NotebookInstanceName': 'trial12', 'KmsKeyId': '7af97db7-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial123', 'KmsKeyId': '7af97db6-f6a3-4d0a-87b9-a2737b54856d'}, {'NotebookInstanceName': 'trial1234'}]
 
     rule_params_mismatched_key = '{"keyArns":"arn:aws:kms:us-east-1:123456789012:key/7af97db6-f6a3-4d0a-87b9-a2737b54856d, arn:aws:kms:us-east-1:123456789012:key/7af97db6-f6a3-4d0a-87b9-a2737b54856e"}'
     rule_params_matched_key = '{"keyArns":"arn:aws:kms:us-east-1:123456789012:key/7af97db7-f6a3-4d0a-87b9-a2737b54856d, arn:aws:kms:us-east-1:123456789012:key/7af97db7-f6a3-4d0a-87b9-a2737b54856e"}'

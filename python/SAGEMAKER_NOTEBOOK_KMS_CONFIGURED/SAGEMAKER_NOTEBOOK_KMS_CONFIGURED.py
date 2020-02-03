@@ -65,6 +65,7 @@ import datetime
 import re
 import boto3
 import botocore
+from functools import reduce
 
 try:
     import liblogging
@@ -107,7 +108,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         elif not valid_rule_parameters:
             evaluations.append(build_evaluation(notebook_instance['NotebookInstanceName'], 'COMPLIANT', event))
         #SCENARIO 5: KMS key specified for Amazon SageMaker Notebook Instance matches keyArn in rule parameter.
-        elif notebook_instance_description['KmsKeyId'] in valid_rule_parameters:
+        elif reduce((lambda x, y: x or y), [notebook_instance_description['KmsKeyId'] in keyId for keyId in valid_rule_parameters]):
             evaluations.append(build_evaluation(notebook_instance['NotebookInstanceName'], 'COMPLIANT', event))
         #SCENARIO 4: KMS key specified for Amazon SageMaker Notebook Instance does not match keyArn in rule parameter.
         else:
