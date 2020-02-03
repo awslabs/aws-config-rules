@@ -78,9 +78,9 @@ class ComplianceTest(unittest.TestCase):
         IAM_CLIENT_MOCK.reset_mock()
 
     user_list_empty = {"Users" : []}
-    whitelist_user = {'UserId': 'AIDAJYPPIFB65RV8YYLDU','UserName': 'sampleUser1'}
-    not_whitelist_user = {'UserId': 'AIDAJYPPIFB65RV8YYLDV','UserName': 'sampleUser2'}
-    user_list = {"Users": [whitelist_user, not_whitelist_user]}
+    user_whitelist = {'UserId': 'AIDAJYPPIFB65RV8YYLDU','UserName': 'sampleUser1'}
+    user_not_whitelist = {'UserId': 'AIDAJYPPIFB65RV8YYLDV','UserName': 'sampleUser2'}
+    user_list = {"Users": [user_whitelist, user_not_whitelist]}
 
     def test_sample(self):
         self.assertTrue(True)
@@ -91,6 +91,13 @@ class ComplianceTest(unittest.TestCase):
         resp_expected = []
         resp_expected.append(build_expected_response("NOT_APPLICABLE", "123456789012", compliance_resource_type="AWS::::Account"))
         assert_successful_evaluation(self, response, resp_expected)
+
+    def test_scenario4_compliant_user_whitelist(self):
+        IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list)
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
 ####################
 # Helper Functions #
