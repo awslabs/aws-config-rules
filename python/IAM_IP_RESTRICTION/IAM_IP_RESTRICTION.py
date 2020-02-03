@@ -9,6 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
 
+import ipaddress
 import json
 import sys
 import datetime
@@ -25,7 +26,7 @@ except ImportError:
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::IAM::User'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
@@ -58,11 +59,43 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
     """
 
-    ###############################
-    # Add your custom logic here. #
-    ###############################
+    iam_client = get_client('iam', event)
+    evaluations = []
 
-    return 'NOT_APPLICABLE'
+    users_list = get_all_users(iam_client)
+    authorized_iam_user_names = valid_rule_parameters['authorizedIamUserNames']
+    max_ip_nums = valid_rule_parameters['maxIpNums']
+
+    if not users_list:
+        return None
+
+    for user in users_list:
+        if user['UserName'] in authorized_iam_user_names:
+            evaluations.append(build_evaluation(user['UserId'], 'COMPLIANT', event, annotation=f"This user {user['UserId']} is authorized."))
+            continue
+
+        evaluater = ComplianceEvaluater(iam_client, user['UserName'], max_ip_nums)
+        compliance_type = evaluater.check()
+        annotation = evaluater.annotation
+
+        if compliance_type == 'NON_COMPLIANT' and annotation is None:
+            annotation = f"This user {user['UserId']} is not IP restricted."
+
+        evaluations.append(build_evaluation(user['UserId'], compliance_type, event, annotation=annotation))
+
+    return evaluations
+
+def get_all_users(client):
+    list_to_return = []
+    user_list = client.list_users()
+    while True:
+        for user in user_list['Users']:
+            list_to_return.append(user)
+        if 'Marker' in user_list:
+            user_list = client.list_users(Marker=user_list['Marker'])
+        else:
+            break
+    return list_to_return
 
 def evaluate_parameters(rule_parameters):
     authorized_iam_user_names = [rule_parameters[k] for k in rule_parameters.keys() if 'authorizedIAMUserName' in k]
@@ -82,6 +115,193 @@ def evaluate_parameters(rule_parameters):
     valid_rule_parameters['authorizedIamUserNames'] = authorized_iam_user_names
     valid_rule_parameters['maxIpNums'] = max_ip_nums
     return valid_rule_parameters
+
+class ComplianceEvaluater:
+    def __init__(self, iam_client, user_name, max_ip_num):
+        self.__iam_client = iam_client
+        self.__user_name = user_name
+        self.__max_ip_num = max_ip_num
+        self.__is_ip_denied = False
+        self.__is_all_policy_ip_allowed = None
+        self.__annotation = None
+
+    @property
+    def iam_client(self):
+        return self.__iam_client
+
+    @property
+    def user_name(self):
+        return self.__user_name
+
+    @property
+    def max_ip_num(self):
+        return self.__max_ip_num
+
+    @property
+    def is_ip_denied(self):
+        return self.__is_ip_denied
+
+    @is_ip_denied.setter
+    def is_ip_denied(self, value):
+        self.__is_ip_denied = value
+
+    @property
+    def is_all_policy_ip_allowed(self):
+        return self.__is_all_policy_ip_allowed
+
+    @is_all_policy_ip_allowed.setter
+    def is_all_policy_ip_allowed(self, value):
+        self.__is_all_policy_ip_allowed = value
+
+    @property
+    def annotation(self):
+        return self.__annotation
+
+    @annotation.setter
+    def annotation(self, value):
+        self.__annotation = value
+
+    def check(self):
+        compliance_type = 'NON_COMPLIANT'
+
+        self.__check_inline_policy()
+        self.__check_attached_policy()
+
+        user_groups = self.iam_client.list_groups_for_user(UserName=self.user_name)
+
+        for group in user_groups['Groups']:
+            group_name = group['GroupName']
+            self.__check_group_inline_policy(group_name)
+            self.__check_group_attached_policy(group_name)
+
+        if self.is_ip_denied is True \
+                or self.is_all_policy_ip_allowed is True:
+            compliance_type = 'COMPLIANT'
+
+        return compliance_type
+
+    def __check_inline_policy(self):
+        if self.is_ip_denied is True:
+            return
+
+        inline_policies = self.iam_client.list_user_policies(UserName=self.user_name)
+
+        for inline_policy_name in inline_policies['PolicyNames']:
+            inline_policy = self.iam_client.get_user_policy(
+                UserName=self.user_name,
+                PolicyName=inline_policy_name
+            )
+            statements = inline_policy['PolicyDocument']['Statement']
+            self.__check_ip_restricted_condition(statements)
+
+    def __check_attached_policy(self):
+        if self.is_ip_denied is True:
+            return
+
+        attached_policies = self.iam_client.list_attached_user_policies(UserName=self.user_name)
+
+        for attached_policy in attached_policies['AttachedPolicies']:
+            policy_document = self.__get_policy_document(attached_policy['PolicyArn'], self.iam_client)
+            statements = policy_document['Statement']
+            self.__check_ip_restricted_condition(statements)
+
+    def __check_group_inline_policy(self, group_name):
+        if self.is_ip_denied is True:
+            return
+
+        group_inline_policies = self.iam_client.list_group_policies(GroupName=group_name)
+
+        for group_inline_policy_name in group_inline_policies['PolicyNames']:
+            group_inline_policy = self.iam_client.get_group_policy(
+                GroupName=group_name,
+                PolicyName=group_inline_policy_name
+            )
+            statements = group_inline_policy['PolicyDocument']['Statement']
+            self.__check_ip_restricted_condition(statements)
+
+    def __check_group_attached_policy(self, group_name):
+        if self.is_ip_denied is True:
+            return
+
+        group_attached_policies = self.iam_client.list_attached_group_policies(GroupName=group_name)
+
+        for group_attached_policy in group_attached_policies['AttachedPolicies']:
+            policy_document = self.__get_policy_document(group_attached_policy['PolicyArn'], self.iam_client)
+            statements = policy_document['Statement']
+            self.__check_ip_restricted_condition(statements)
+
+    def __get_policy_document(self, policy_arn, iam_client):
+        policy = iam_client.get_policy(PolicyArn=policy_arn)
+        policy_version_id = policy['Policy']['DefaultVersionId']
+        policy_version = iam_client.get_policy_version(
+            PolicyArn=policy_arn,
+            VersionId=policy_version_id
+        )
+        return policy_version['PolicyVersion']['Document']
+
+    def __check_ip_restricted_condition(self, policy_statements):
+        # Statements can be allow both list and dict, so in case of dict, convert to list
+        if isinstance(policy_statements, dict):
+            policy_statements = [policy_statements]
+
+        for statement in policy_statements:
+            if self.__is_ip_deny_condition_satisfied(statement):
+                self.is_ip_denied = True
+                break
+            elif self.__is_ip_allow_condition_satisfied(statement):
+                if self.is_all_policy_ip_allowed is not False:
+                    self.is_all_policy_ip_allowed = True
+            else:
+                self.is_all_policy_ip_allowed = False
+
+    def __is_ip_deny_condition_satisfied(self, statement):
+        try:
+            allow_ips = []
+            condition = statement['Condition']
+            if statement['Effect'] == 'Deny':
+                if 'NotIpAddress' in condition.keys():
+                    allow_ips = condition['NotIpAddress']['aws:SourceIp']
+                elif 'ForAnyValue:NotIpAddress' in condition.keys():
+                    allow_ips = condition['ForAnyValue:NotIpAddress']['aws:SourceIp']
+        except KeyError:
+            pass
+
+        return self.__is_valid_ips(allow_ips)
+
+    def __is_ip_allow_condition_satisfied(self, statement):
+        try:
+            allow_ips = []
+            condition = statement['Condition']
+            if statement['Effect'] == 'Allow':
+                if 'IpAddress' in condition.keys():
+                    allow_ips = condition['IpAddress']['aws:SourceIp']
+                elif 'ForAnyValue:IpAddress' in condition.keys():
+                    allow_ips = condition['ForAnyValue:IpAddress']['aws:SourceIp']
+        except KeyError:
+            pass
+
+        return self.__is_valid_ips(allow_ips)
+
+    def __is_valid_ips(self, ips):
+        if not ips:
+            is_valid = False
+        elif self.__is_over_maximum_ip_nums(ips):
+            is_valid = False
+        else:
+            is_valid = True
+
+        return is_valid
+
+    def __is_over_maximum_ip_nums(self, ips):
+        is_over = False
+        unique_ips = list(set(ips))
+
+        ip_nums = sum(ipaddress.ip_network(ip).num_addresses for ip in unique_ips)
+        if ip_nums > self.max_ip_num:
+            self.annotation = f'IAM Policy includes more than maximum ip addresses: {ip_nums}'
+            is_over = True
+
+        return is_over
 
 ####################
 # Helper Functions #
