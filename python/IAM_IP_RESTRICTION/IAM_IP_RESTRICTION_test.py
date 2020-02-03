@@ -22,7 +22,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::IAM::User'
 
 #############
 # Main Code #
@@ -30,19 +30,42 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
+IAM_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
     @staticmethod
     def client(client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        if client_name == 'sts':
+        elif client_name == 'iam':
+            return IAM_CLIENT_MOCK
+        elif client_name == 'sts':
             return STS_CLIENT_MOCK
-        raise Exception("Attempting to create an unknown client")
+        else:
+            raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('IAM_IP_RESTRICTION')
+
+class InvalidParameterTest(unittest.TestCase):
+    def setUp(self):
+        CONFIG_CLIENT_MOCK.reset_mock()
+        IAM_CLIENT_MOCK.reset_mock()
+
+    too_many_char = ''.join([str(c) for c in range(60)])
+    invalid_params = {
+        'tooManyChar': '{"WhitelistedUserNames":"test-user-' + too_many_char + '"}',
+        'invalidMaxIpNums': '{"WhitelistedUserNames":"test-user01,test-user02", "maxIpNums":"0"}',
+    }
+
+    def test_scenario2_user_whitelist_too_many_characters(self):
+        response = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters=self.invalid_params['tooManyChar']), {})
+        assert_customer_error_response(self, response, 'InvalidParameterValueException')
+
+    def test_scenario3_max_ip_num_less_than_1(self):
+        response = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters=self.invalid_params['invalidMaxIpNums']), {})
+        assert_customer_error_response(self, response, 'InvalidParameterValueException')
 
 class ComplianceTest(unittest.TestCase):
 
@@ -51,17 +74,23 @@ class ComplianceTest(unittest.TestCase):
     invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
 
     def setUp(self):
-        pass
+        CONFIG_CLIENT_MOCK.reset_mock()
+        IAM_CLIENT_MOCK.reset_mock()
+
+    user_list_empty = {"Users" : []}
+    whitelist_user = {'UserId': 'AIDAJYPPIFB65RV8YYLDU','UserName': 'sampleUser1'}
+    not_whitelist_user = {'UserId': 'AIDAJYPPIFB65RV8YYLDV','UserName': 'sampleUser2'}
+    user_list = {"Users": [whitelist_user, not_whitelist_user]}
 
     def test_sample(self):
         self.assertTrue(True)
 
-    #def test_sample_2(self):
-    #    RULE.ASSUME_ROLE_MODE = False
-    #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
-    #    resp_expected = []
-    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-    #    assert_successful_evaluation(self, response, resp_expected)
+    def test_scenario1_no_iam_users(self):
+        IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list_empty)
+        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("NOT_APPLICABLE", "123456789012", compliance_resource_type="AWS::::Account"))
+        assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #

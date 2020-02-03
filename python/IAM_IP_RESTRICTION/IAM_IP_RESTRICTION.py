@@ -8,6 +8,82 @@
 # or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
+'''
+#####################################
+##           Gherkin               ##
+#####################################
+
+Rule Name:
+  IAM_IP_RESTRICTION
+
+Description:
+  To check IAM users are IP restricted.
+
+Trigger:
+  Periodic
+
+Reports on:
+  AWS::IAM::User
+
+Rule Parameters:
+  | ---------------------- | --------- | -------------------------------------------------------- |
+  | Parameter Name         | Type      | Description                                              |
+  | ---------------------- | --------- | -------------------------------------------------------- |
+  | WhitelistedUserNames   | Optional  | Represents the IAM user names which are exempted from    |
+  |                        |           | the IAM Config rule. The valid user names in this        |
+  |                        |           | parameter will be compliant by default.                  |
+  |                        |           | List of all the IAM user names separated by a comma.     |
+  | ---------------------- | --------- | -------------------------------------------------------- |
+  | maxIpNums              | Optional  | Numeric variable representing the maximum number of IP   |
+  |                        |           | addresses that can be restricted. The default is 20.     |
+  | ---------------------- | --------- | -------------------------------------------------------- |
+
+Feature:
+  In order to: enforce security best practices for IAM users
+           As: a Security Officer
+       I want: To ensure that IAM users are IP restricted, except if whitelisted
+
+Scenarios:
+  Scenario: 1
+    Given: No IAM Users
+     Then: Return "NOT_APPLICABLE"
+
+  Scenario: 2
+    Given: WhitelistedUserNames is configured
+      And: A user name in WhitelistedUserNames is greater than 64 characters
+     Then: Return an error
+
+  Scenario: 3
+    Given: maxIpNums is configured
+      And: maxIpNums is less than 0
+     Then: Return an error
+
+  Scenario: 4
+    Given: An IAM user
+      And: WhitelistedUserNames is configured and valid
+      And: The IAM user is listed on the WhitelistedUserNames
+     Then: Return COMPLIANT
+
+  Scenario: 5
+    Given: An IAM user
+      And: The IAM user is not listed on the WhitelistedUserNames, if configured
+      And: The IAM user policy is not IP restricted
+     Then: return NOT_COMPLIANT
+
+  Scenario: 6
+    Given: An IAM user
+      And: The IAM user is not listed on the WhitelistedUserNames, if configured
+      And: The IAM user policy is IP restricted
+      And: The number of set IP addresses are greater than maxIpNums
+     Then: return NOT_COMPLIANT
+
+  Scenario: 7
+    Given: An IAM user
+      And: The IAM user is not listed on the WhitelistedUserNames, if configured
+      And: The IAM user policy is IP restricted
+      And: The number of set IP addresses are less than maxIpNums
+     Then: return COMPLIANT
+'''
 
 import ipaddress
 import json
@@ -71,7 +147,7 @@ def evaluate_compliance(event, _configuration_item, valid_rule_parameters):
 
     for user in users_list:
         if user['UserName'] in whitelisted_user_names:
-            evaluations.append(build_evaluation(user['UserId'], 'COMPLIANT', event, annotation=f"This user {user['UserId']} is whitelisted."))
+            evaluations.append(build_evaluation(user['UserId'], 'COMPLIANT', event, annotation=f"This user {user['UserName']} is whitelisted."))
             continue
 
         evaluater = ComplianceEvaluater(iam_client, user['UserName'], max_ip_nums)
