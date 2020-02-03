@@ -39,7 +39,7 @@ DEFAULT_MAX_IP_NUMS = 20
 # Main Code #
 #############
 
-def evaluate_compliance(event, configuration_item, valid_rule_parameters):
+def evaluate_compliance(event, _configuration_item, valid_rule_parameters):
     """Form the evaluation(s) to be return to Config Rules
 
     Return either:
@@ -63,15 +63,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     evaluations = []
 
     users_list = get_all_users(iam_client)
-    authorized_iam_user_names = valid_rule_parameters['authorizedIamUserNames']
+    whitelisted_user_names = valid_rule_parameters['WhitelistedUserNames']
     max_ip_nums = valid_rule_parameters['maxIpNums']
 
     if not users_list:
         return None
 
     for user in users_list:
-        if user['UserName'] in authorized_iam_user_names:
-            evaluations.append(build_evaluation(user['UserId'], 'COMPLIANT', event, annotation=f"This user {user['UserId']} is authorized."))
+        if user['UserName'] in whitelisted_user_names:
+            evaluations.append(build_evaluation(user['UserId'], 'COMPLIANT', event, annotation=f"This user {user['UserId']} is whitelisted."))
             continue
 
         evaluater = ComplianceEvaluater(iam_client, user['UserName'], max_ip_nums)
@@ -98,10 +98,17 @@ def get_all_users(client):
     return list_to_return
 
 def evaluate_parameters(rule_parameters):
-    authorized_iam_user_names = [rule_parameters[k] for k in rule_parameters.keys() if 'authorizedIAMUserName' in k]
-    for iam_user_name in authorized_iam_user_names:
-        if len(iam_user_name) > 64:
-            raise ValueError('authorizedIAMUserName must be less than 64 characters.')
+    valid_rule_parameters = {}
+
+    valid_rule_parameters['WhitelistedUserNames'] = []
+    if 'WhitelistedUserNames' in rule_parameters:
+        whitelisted_user_names = rule_parameters['WhitelistedUserNames'].replace(' ', '').split(',')
+        valid_whitelist = []
+        for whitelisted_user_name in whitelisted_user_names:
+            if len(whitelisted_user_name) > 64:
+                raise ValueError('WhitelistedUserNames must be less than 64 characters.')
+            valid_whitelist.append(whitelisted_user_name)
+        valid_rule_parameters['WhitelistedUserNames'] = valid_whitelist
 
     max_ip_nums = DEFAULT_MAX_IP_NUMS
     if 'maxIpNums' in rule_parameters:
@@ -110,10 +117,8 @@ def evaluate_parameters(rule_parameters):
             raise ValueError('maxIpNums must be greater than 1.')
         if max_ip_nums > 2**32-1:
             raise ValueError('maxIpNums must be less than 2**32-1.')
-
-    valid_rule_parameters = {}
-    valid_rule_parameters['authorizedIamUserNames'] = authorized_iam_user_names
     valid_rule_parameters['maxIpNums'] = max_ip_nums
+
     return valid_rule_parameters
 
 class ComplianceEvaluater:
