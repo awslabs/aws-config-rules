@@ -102,57 +102,50 @@ class ComplianceTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario05_noncompliant_user_inline_policy_not_ip_allowed(self):
-        pass
+        self.__mock_only_user_inline_policy_not_ip_allowed()
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        resp_expected.append(build_expected_response("NON_COMPLIANT", self.user_not_whitelist['UserId'], annotation=f"This user {self.user_not_whitelist['UserName']} is not IP restricted."))
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario06_noncompliant_user_attached_policy_not_ip_allowed(self):
-        pass
+        self.__mock_only_user_attached_policy_not_ip_allowed()
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        resp_expected.append(build_expected_response("NON_COMPLIANT", self.user_not_whitelist['UserId'], annotation=f"This user {self.user_not_whitelist['UserName']} is not IP restricted."))
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario07_noncompliant_group_inline_policy_not_ip_allowed(self):
-        pass
+        self.__mock_only_group_inline_policy_not_ip_allowed()
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        resp_expected.append(build_expected_response("NON_COMPLIANT", self.user_not_whitelist['UserId'], annotation=f"This user {self.user_not_whitelist['UserName']} is not IP restricted."))
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario08_noncompliant_group_attached_policy_not_ip_allowed(self):
-        pass
+        self.__mock_only_group_attached_policy_not_ip_allowed()
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        resp_expected.append(build_expected_response("NON_COMPLIANT", self.user_not_whitelist['UserId'], annotation=f"This user {self.user_not_whitelist['UserName']} is not IP restricted."))
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario09_compliant_all_policy_ip_allowed(self):
-        pass
+        self.__mock_all_policy_ip_allowed()
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_not_whitelist['UserId']))
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario10_compliant_user_inline_policy_ip_denied(self):
         pass
 
     def test_scenario11_noncompliant_allowed_ip_addresses_greater_than_max_ip_nums(self):
         pass
-
-    def __mock_user_inline_policy_ip_denied(self):
-        self.__mock_base()
-        ip_denied_policy = self.__ip_restricted_policy('Deny')
-        base_policy = self.__policy_base('Allow')
-        IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=ip_denied_policy)
-        IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=base_policy)
-        IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': base_policy['PolicyDocument']}})
-
-    def __mock_user_attached_policy_ip_denied(self):
-        self.__mock_base()
-        ip_denied_policy = self.__ip_restricted_policy('Deny')
-        base_policy = self.__policy_base('Allow')
-        IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=base_policy)
-        IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=base_policy)
-        IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': ip_denied_policy['PolicyDocument']}})
-
-    def __mock_group_inline_policy_ip_denied(self):
-        self.__mock_base()
-        ip_denied_policy = self.__ip_restricted_policy('Deny')
-        base_policy = self.__policy_base('Allow')
-        IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=base_policy)
-        IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=ip_denied_policy)
-        IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': base_policy['PolicyDocument']}})
-
-    def __mock_group_attached_policy_ip_denied(self):
-        self.__mock_base()
-        ip_denied_policy = self.__ip_restricted_policy('Deny')
-        base_policy = self.__policy_base('Allow')
-        IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=base_policy)
-        IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=base_policy)
-        IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': ip_denied_policy['PolicyDocument']}})
 
     def __mock_only_user_inline_policy_not_ip_allowed(self):
         self.__mock_base()
@@ -185,6 +178,45 @@ class ComplianceTest(unittest.TestCase):
         IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=ip_allowed_policy)
         IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=ip_allowed_policy)
         IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': base_policy['PolicyDocument']}})
+
+    def __mock_all_policy_ip_allowed(self):
+        self.__mock_base()
+        ip_allowed_policy = self.__ip_restricted_policy('Allow')
+        IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=ip_allowed_policy)
+        IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=ip_allowed_policy)
+        IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': ip_allowed_policy['PolicyDocument']}})
+
+    def __mock_user_inline_policy_ip_denied(self):
+        self.__mock_base()
+        ip_denied_policy = self.__ip_restricted_policy('Deny')
+        base_policy = self.__policy_base('Allow')
+        IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=ip_denied_policy)
+        IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=base_policy)
+        IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': base_policy['PolicyDocument']}})
+
+    def __mock_user_attached_policy_ip_denied(self):
+        self.__mock_base()
+        ip_denied_policy = self.__ip_restricted_policy('Deny')
+        base_policy = self.__policy_base('Allow')
+        IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=base_policy)
+        IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=base_policy)
+        IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': ip_denied_policy['PolicyDocument']}})
+
+    def __mock_group_inline_policy_ip_denied(self):
+        self.__mock_base()
+        ip_denied_policy = self.__ip_restricted_policy('Deny')
+        base_policy = self.__policy_base('Allow')
+        IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=base_policy)
+        IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=ip_denied_policy)
+        IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': base_policy['PolicyDocument']}})
+
+    def __mock_group_attached_policy_ip_denied(self):
+        self.__mock_base()
+        ip_denied_policy = self.__ip_restricted_policy('Deny')
+        base_policy = self.__policy_base('Allow')
+        IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=base_policy)
+        IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=base_policy)
+        IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': ip_denied_policy['PolicyDocument']}})
 
     def __mock_base(self):
         inline_policy_name = {'PolicyNames': [self.user_policy_name]}

@@ -70,7 +70,7 @@ Feature:
       And: The IAM user  attached policy is     IP allowed
       And: The IAM group inline   policy is     IP allowed
       And: The IAM group attached policy is     IP allowed
-     Then: return NOT_COMPLIANT
+     Then: return NON_COMPLIANT
 
   Scenario: 6
     Given: An IAM user
@@ -79,7 +79,7 @@ Feature:
       And: The IAM user  attached policy is not IP allowed
       And: The IAM group inline   policy is     IP allowed
       And: The IAM group attached policy is     IP allowed
-     Then: return NOT_COMPLIANT
+     Then: return NON_COMPLIANT
 
   Scenario: 7
     Given: An IAM user
@@ -88,7 +88,7 @@ Feature:
       And: The IAM user  attached policy is     IP allowed
       And: The IAM group inline   policy is not IP allowed
       And: The IAM group attached policy is     IP allowed
-     Then: return NOT_COMPLIANT
+     Then: return NON_COMPLIANT
 
   Scenario: 8
     Given: An IAM user
@@ -97,7 +97,7 @@ Feature:
       And: The IAM user  attached policy is     IP allowed
       And: The IAM group inline   policy is     IP allowed
       And: The IAM group attached policy is not IP allowed
-     Then: return NOT_COMPLIANT
+     Then: return NON_COMPLIANT
 
   Scenario: 9
     Given: An IAM user
@@ -122,7 +122,7 @@ Feature:
       And: The IAM user is not listed on the WhitelistedUserNames, if configured
       And: The IAM user inline policy is IP denied
       And: The number of set IP addresses are greater than maxIpNums
-     Then: return NOT_COMPLIANT
+     Then: return NON_COMPLIANT
 '''
 
 import ipaddress
@@ -195,7 +195,7 @@ def evaluate_compliance(event, _configuration_item, valid_rule_parameters):
         annotation = evaluater.annotation
 
         if compliance_type == 'NON_COMPLIANT' and annotation is None:
-            annotation = f"This user {user['UserId']} is not IP restricted."
+            annotation = f"This user {user['UserName']} is not IP restricted."
 
         evaluations.append(build_evaluation(user['UserId'], compliance_type, event, annotation=annotation))
 
