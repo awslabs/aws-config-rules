@@ -5,7 +5,7 @@
     "SourceRuntime": "python3.7",
     "CodeKey": "IAM_IP_RESTRICTION.zip",
     "InputParameters": "{}",
-    "OptionalParameters": "{\"WhitelistedUserNames\": \"test-user\", \"maxIpNums\": \"20\"}",
+    "OptionalParameters": "{\"WhitelistedUserNames\": \"\", \"maxIpNums\": \"\"}",
     "SourceEvents": "AWS::IAM::User"
   },
   "Tags": "[]"
