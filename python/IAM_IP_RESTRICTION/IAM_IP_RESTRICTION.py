@@ -218,7 +218,7 @@ def evaluate_compliance(event, _configuration_item, valid_rule_parameters):
             continue
 
         evaluater = ComplianceEvaluater(iam_client, user['UserName'], max_ip_nums)
-        compliance_type = evaluater.check()
+        compliance_type = evaluater.check_compliant()
         annotation = evaluater.annotation
 
         if compliance_type == 'NON_COMPLIANT' and annotation is None:
@@ -265,6 +265,7 @@ def evaluate_parameters(rule_parameters):
     return valid_rule_parameters
 
 class ComplianceEvaluater:
+    # pylint: disable=R0902
     def __init__(self, iam_client, user_name, max_ip_num):
         self.__iam_client = iam_client
         self.__user_name = user_name
@@ -309,7 +310,7 @@ class ComplianceEvaluater:
     def annotation(self, value):
         self.__annotation = value
 
-    def check(self):
+    def check_compliant(self):
         compliance_type = 'NON_COMPLIANT'
 
         self.__check_inline_policy()
@@ -378,7 +379,8 @@ class ComplianceEvaluater:
             statements = policy_document['Statement']
             self.__check_ip_restricted_condition(statements)
 
-    def __get_policy_document(self, policy_arn, iam_client):
+    @staticmethod
+    def __get_policy_document(policy_arn, iam_client):
         policy = iam_client.get_policy(PolicyArn=policy_arn)
         policy_version_id = policy['Policy']['DefaultVersionId']
         policy_version = iam_client.get_policy_version(
@@ -396,7 +398,7 @@ class ComplianceEvaluater:
             if self.__is_ip_deny_condition_satisfied(statement):
                 self.is_ip_denied = True
                 break
-            elif self.__is_ip_allow_condition_satisfied(statement):
+            if self.__is_ip_allow_condition_satisfied(statement):
                 if self.is_all_policy_ip_allowed is not False:
                     self.is_all_policy_ip_allowed = True
             else:
