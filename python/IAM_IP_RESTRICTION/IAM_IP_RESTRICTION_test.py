@@ -37,12 +37,11 @@ class Boto3Mock():
     def client(client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        elif client_name == 'iam':
+        if client_name == 'iam':
             return IAM_CLIENT_MOCK
-        elif client_name == 'sts':
+        if client_name == 'sts':
             return STS_CLIENT_MOCK
-        else:
-            raise Exception("Attempting to create an unknown client")
+        raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
@@ -78,14 +77,11 @@ class ComplianceTest(unittest.TestCase):
         IAM_CLIENT_MOCK.reset_mock()
 
     user_list_empty = {"Users" : []}
-    user_whitelist = {'UserId': 'AIDAJYPPIFB65RV8YYLDU','UserName': 'sampleUser1'}
-    user_not_whitelist = {'UserId': 'AIDAJYPPIFB65RV8YYLDV','UserName': 'sampleUser2'}
+    user_whitelist = {'UserId': 'AIDAJYPPIFB65RV8YYLDU', 'UserName': 'sampleUser1'}
+    user_not_whitelist = {'UserId': 'AIDAJYPPIFB65RV8YYLDV', 'UserName': 'sampleUser2'}
     user_list = {"Users": [user_whitelist, user_not_whitelist]}
     user_policy_name = 'IAMIPRestrictPolicy'
     allow_ip = '192.169.30.1/32'
-
-    def test_sample(self):
-        self.assertTrue(True)
 
     def test_scenario01_no_iam_users(self):
         IAM_CLIENT_MOCK.list_users = MagicMock(return_value=self.user_list_empty)
@@ -296,7 +292,6 @@ class ComplianceTest(unittest.TestCase):
             condition = 'NotIpAddress'
         else:
             condition = 'IpAddress'
-        global DEFAULT_MAX_IP_NUMS
         too_many_ip_addresses = [f'192.169.30.{n}/32' for n in range(RULE.DEFAULT_MAX_IP_NUMS+1)]
 
         policy = self.__policy_base(effect)
