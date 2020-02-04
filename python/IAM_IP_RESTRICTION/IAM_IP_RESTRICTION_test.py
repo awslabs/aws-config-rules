@@ -142,9 +142,38 @@ class ComplianceTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario10_compliant_user_inline_policy_ip_denied(self):
-        pass
+        self.__mock_user_inline_policy_ip_denied()
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_not_whitelist['UserId']))
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
-    def test_scenario11_noncompliant_allowed_ip_addresses_greater_than_max_ip_nums(self):
+    def test_scenario11_compliant_user_attached_policy_ip_denied(self):
+        self.__mock_user_attached_policy_ip_denied()
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_not_whitelist['UserId']))
+        assert_successful_evaluation(self, response, resp_expected, 2)
+
+    def test_scenario12_compliant_group_inline_policy_ip_denied(self):
+        self.__mock_group_inline_policy_ip_denied()
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_not_whitelist['UserId']))
+        assert_successful_evaluation(self, response, resp_expected, 2)
+
+    def test_scenario13_compliant_group_attached_policy_ip_denied(self):
+        self.__mock_group_attached_policy_ip_denied()
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_not_whitelist['UserId']))
+        assert_successful_evaluation(self, response, resp_expected, 2)
+
+    def test_scenario14_noncompliant_allowed_ip_addresses_greater_than_max_ip_nums(self):
         pass
 
     def __mock_only_user_inline_policy_not_ip_allowed(self):

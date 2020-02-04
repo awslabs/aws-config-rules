@@ -120,6 +120,33 @@ Feature:
   Scenario: 11
     Given: An IAM user
       And: The IAM user is not listed on the WhitelistedUserNames, if configured
+      And: The IAM user  inline   policy is not IP allowed
+      And: The IAM user  attached policy is     IP denied
+      And: The IAM group inline   policy is not IP allowed
+      And: The IAM group attached policy is not IP allowed
+     Then: return COMPLIANT
+
+  Scenario: 12
+    Given: An IAM user
+      And: The IAM user is not listed on the WhitelistedUserNames, if configured
+      And: The IAM user  inline   policy is not IP allowed
+      And: The IAM user  attached policy is not IP allowed
+      And: The IAM group inline   policy is     IP denied
+      And: The IAM group attached policy is not IP allowed
+     Then: return COMPLIANT
+
+  Scenario: 13
+    Given: An IAM user
+      And: The IAM user is not listed on the WhitelistedUserNames, if configured
+      And: The IAM user  inline   policy is not IP allowed
+      And: The IAM user  attached policy is not IP allowed
+      And: The IAM group inline   policy is not IP allowed
+      And: The IAM group attached policy is     IP denied
+     Then: return COMPLIANT
+
+  Scenario: 14
+    Given: An IAM user
+      And: The IAM user is not listed on the WhitelistedUserNames, if configured
       And: The IAM user inline policy is IP denied
       And: The number of set IP addresses are greater than maxIpNums
      Then: return NON_COMPLIANT
