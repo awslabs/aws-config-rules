@@ -174,7 +174,12 @@ class ComplianceTest(unittest.TestCase):
         assert_successful_evaluation(self, response, resp_expected, 2)
 
     def test_scenario14_noncompliant_allowed_ip_addresses_greater_than_max_ip_nums(self):
-        pass
+        self.__mock_ip_restricted_greather_than_max_ip_nums()
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"WhitelistedUserNames":"sampleUser1"}'), {})
+        resp_expected = []
+        resp_expected.append(build_expected_response("COMPLIANT", self.user_whitelist['UserId'], annotation=f"This user {self.user_whitelist['UserName']} is whitelisted."))
+        resp_expected.append(build_expected_response("NON_COMPLIANT", self.user_not_whitelist['UserId'], annotation=f"IAM Policy includes more than maximum ip addresses: {RULE.DEFAULT_MAX_IP_NUMS+1}"))
+        assert_successful_evaluation(self, response, resp_expected, 2)
 
     def __mock_only_user_inline_policy_not_ip_allowed(self):
         self.__mock_base()
@@ -247,6 +252,14 @@ class ComplianceTest(unittest.TestCase):
         IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=base_policy)
         IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': ip_denied_policy['PolicyDocument']}})
 
+    def __mock_ip_restricted_greather_than_max_ip_nums(self):
+        self.__mock_base()
+        ip_denied_policy = self.__ip_restricted_greather_than_max_ip_nums_policy('Deny')
+        base_policy = self.__policy_base('Allow')
+        IAM_CLIENT_MOCK.get_user_policy = MagicMock(return_value=ip_denied_policy)
+        IAM_CLIENT_MOCK.get_group_policy = MagicMock(return_value=base_policy)
+        IAM_CLIENT_MOCK.get_policy_version = MagicMock(return_value={'PolicyVersion': {'Document': base_policy['PolicyDocument']}})
+
     def __mock_base(self):
         inline_policy_name = {'PolicyNames': [self.user_policy_name]}
         attached_policy_name = {'AttachedPolicies': [{'PolicyName': 'samplePolicy', 'PolicyArn': 'arn:aws:iam::123456789000:policy/samplePolicy'}]}
@@ -274,6 +287,22 @@ class ComplianceTest(unittest.TestCase):
         policy['PolicyDocument']['Statement'][0]['Condition'] = {
             condition: {
                 'aws:SourceIp': [self.allow_ip]
+            }
+        }
+        return policy
+
+    def __ip_restricted_greather_than_max_ip_nums_policy(self, effect):
+        if effect == 'Deny':
+            condition = 'NotIpAddress'
+        else:
+            condition = 'IpAddress'
+        global DEFAULT_MAX_IP_NUMS
+        too_many_ip_addresses = [f'192.169.30.{n}/32' for n in range(RULE.DEFAULT_MAX_IP_NUMS+1)]
+
+        policy = self.__policy_base(effect)
+        policy['PolicyDocument']['Statement'][0]['Condition'] = {
+            condition: {
+                'aws:SourceIp': too_many_ip_addresses
             }
         }
         return policy
