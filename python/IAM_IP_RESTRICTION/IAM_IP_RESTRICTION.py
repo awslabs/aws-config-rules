@@ -43,7 +43,6 @@ Feature:
            As: a Security Officer
        I want: To ensure that IAM users are IP restricted, except if whitelisted
 
-Scenarios:
   Scenario: 1
     Given: No IAM Users
      Then: Return "NOT_APPLICABLE"
@@ -67,22 +66,63 @@ Scenarios:
   Scenario: 5
     Given: An IAM user
       And: The IAM user is not listed on the WhitelistedUserNames, if configured
-      And: The IAM user policy is not IP restricted
+      And: The IAM user  inline   policy is not IP allowed
+      And: The IAM user  attached policy is     IP allowed
+      And: The IAM group inline   policy is     IP allowed
+      And: The IAM group attached policy is     IP allowed
      Then: return NOT_COMPLIANT
 
   Scenario: 6
     Given: An IAM user
       And: The IAM user is not listed on the WhitelistedUserNames, if configured
-      And: The IAM user policy is IP restricted
-      And: The number of set IP addresses are greater than maxIpNums
+      And: The IAM user  inline   policy is     IP allowed
+      And: The IAM user  attached policy is not IP allowed
+      And: The IAM group inline   policy is     IP allowed
+      And: The IAM group attached policy is     IP allowed
      Then: return NOT_COMPLIANT
 
   Scenario: 7
     Given: An IAM user
       And: The IAM user is not listed on the WhitelistedUserNames, if configured
-      And: The IAM user policy is IP restricted
-      And: The number of set IP addresses are less than maxIpNums
+      And: The IAM user  inline   policy is     IP allowed
+      And: The IAM user  attached policy is     IP allowed
+      And: The IAM group inline   policy is not IP allowed
+      And: The IAM group attached policy is     IP allowed
+     Then: return NOT_COMPLIANT
+
+  Scenario: 8
+    Given: An IAM user
+      And: The IAM user is not listed on the WhitelistedUserNames, if configured
+      And: The IAM user  inline   policy is     IP allowed
+      And: The IAM user  attached policy is     IP allowed
+      And: The IAM group inline   policy is     IP allowed
+      And: The IAM group attached policy is not IP allowed
+     Then: return NOT_COMPLIANT
+
+  Scenario: 9
+    Given: An IAM user
+      And: The IAM user is not listed on the WhitelistedUserNames, if configured
+      And: The IAM user  inline   policy is IP allowed
+      And: The IAM user  attached policy is IP allowed
+      And: The IAM group inline   policy is IP allowed
+      And: The IAM group attached policy is IP allowed
      Then: return COMPLIANT
+
+  Scenario: 10
+    Given: An IAM user
+      And: The IAM user is not listed on the WhitelistedUserNames, if configured
+      And: The IAM user  inline   policy is     IP denied
+      And: The IAM user  attached policy is not IP allowed
+      And: The IAM group inline   policy is not IP allowed
+      And: The IAM group attached policy is not IP allowed
+     Then: return COMPLIANT
+
+  Scenario: 11
+    Given: An IAM user
+      And: The IAM user is not listed on the WhitelistedUserNames, if configured
+      And: The IAM user inline policy is IP denied
+      And: The number of set IP addresses are greater than maxIpNums
+     Then: return NOT_COMPLIANT
 '''
 
 import ipaddress
