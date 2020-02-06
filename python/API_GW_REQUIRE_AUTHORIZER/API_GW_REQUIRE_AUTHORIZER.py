@@ -14,7 +14,6 @@ import sys
 import datetime
 import boto3
 import botocore
-import os
 
 try:
     import liblogging
