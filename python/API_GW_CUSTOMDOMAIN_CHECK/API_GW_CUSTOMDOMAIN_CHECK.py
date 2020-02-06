@@ -41,16 +41,22 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     apigw = get_client('apigateway', event)
     customdomains = []
     evaluations = []
-    # get all custom domain names
+    count = 0
+    # make the api call
     response = apigw.get_domain_names()
-    customdomains += response['items']
-    # print custom domains to Cloudwatch logs
-    print(customdomains)
-    for each_customdomain in customdomains:
-        if each_customdomain['domainName']:
-            evaluations.append(build_evaluation(each_customdomain['regionalDomainName'], 'COMPLIANT', event, annotation='This API Gateway has a custom domain name'))
-        else:
-            evaluations.append(build_evaluation(each_customdomain['regionalDomainName'], 'NON_COMPLIANT', event, annotation='This API Gateway does not have a custom domain name'))
+    # check whether there is a custom domain name
+    if not response['items']:
+        restapigws = apigw.get_rest_apis()
+        for count in range(len(restapigws['items'])):
+            print(restapigws['items'][count]['id'] + " API gateway does not have a custom domain name.\n")
+            evaluations.append(build_evaluation(restapigws['items'][count]['id'], 'NON_COMPLIANT', event, annotation='Your API Gateway does not have a custom domain name'))
+    else:
+        customdomains += response['items']
+        for each_customdomain in customdomains:
+            # print custom domain to Cloudwatch logs
+            print(each_customdomain)
+            if each_customdomain['domainName']:
+                evaluations.append(build_evaluation(each_customdomain['regionalDomainName'], 'COMPLIANT', event, annotation='This API Gateway has a custom domain name'))
     return evaluations
 
 def evaluate_parameters(rule_parameters):
