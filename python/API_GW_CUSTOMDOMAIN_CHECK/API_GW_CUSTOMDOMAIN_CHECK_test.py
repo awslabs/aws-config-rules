@@ -52,23 +52,22 @@ class ComplianceTest(unittest.TestCase):
     # sample data of api gateway without custom domain name
     apigw_no_customdomain = {
         "items": []
-    } 
-
-    # sample data of api gateway using custom domain name 
+    }
+    # sample data of api gateway using custom domain name
     apigw_customdomain = {
-        "items": [
+        "items":[
             {
-                "domainNameStatus": "AVAILABLE", 
-                "domainName": "api.sitepep.com", 
+                "domainNameStatus": "AVAILABLE",
+                "domainName": "api.sitepep.com",
                 "endpointConfiguration": {
                     "types": [
                         "REGIONAL"
                     ]
-                }, 
-                "regionalCertificateArn": "arn:aws:acm:us-east-2:052767133087:certificate/bdd25578-326f-4783-913a-2acef52be012", 
-                "regionalDomainName": "d-q4fqmhwah3.execute-api.us-east-2.amazonaws.com", 
-                "securityPolicy": "TLS_1_2", 
-                "regionalHostedZoneId": "ZOJJZC49E0EPZ", 
+                },
+                "regionalCertificateArn": "arn:aws:acm:us-east-2:052767133087:certificate/bdd25578-326f-4783-913a-2acef52be012",
+                "regionalDomainName": "d-q4fqmhwah3.execute-api.us-east-2.amazonaws.com",
+                "securityPolicy": "TLS_1_2",
+                "regionalHostedZoneId": "ZOJJZC49E0EPZ",
                 "certificateUploadDate": 1580864624
             }
         ]
@@ -77,18 +76,18 @@ class ComplianceTest(unittest.TestCase):
 
     def test_apigw_no_customdomain(self):
         RULE.ASSUME_ROLE_MODE = False
-        APIGW_CLIENT_MOCK.get_domain_names = MagicMock(return_value=self.apigw_no_customdomain) 
+        APIGW_CLIENT_MOCK.get_domain_names = MagicMock(return_value=self.apigw_no_customdomain)
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '', DEFAULT_RESOURCE_TYPE , 'This API Gateway does not have a custom domain name'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', '', DEFAULT_RESOURCE_TYPE, 'This API Gateway does not have a custom domain name'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_apigw_customdomain(self):
         RULE.ASSUME_ROLE_MODE = False
-        APIGW_CLIENT_MOCK.get_domain_names = MagicMock(return_value=self.apigw_customdomain) 
+        APIGW_CLIENT_MOCK.get_domain_names = MagicMock(return_value=self.apigw_customdomain)
         response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'd-q4fqmhwah3.execute-api.us-east-2.amazonaws.com', DEFAULT_RESOURCE_TYPE ,'This API Gateway has a custom domain name'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'd-q4fqmhwah3.execute-api.us-east-2.amazonaws.com', DEFAULT_RESOURCE_TYPE, 'This API Gateway has a custom domain name'))
         assert_successful_evaluation(self, response, resp_expected)
 
 
