@@ -4,7 +4,7 @@
     "RuleName": "API_GW_CUSTOMDOMAIN_CHECK",
     "SourceRuntime": "python3.7",
     "CodeKey": "API_GW_CUSTOMDOMAIN_CHECK.zip",
-    "InputParameters": "{}",
+    "InputParameters": "{\"CustomDomainName\":\"myowndomain.com\"}",
     "OptionalParameters": "{}",
     "SourcePeriodic": "One_Hour"
   },

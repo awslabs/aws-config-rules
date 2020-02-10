@@ -64,7 +64,7 @@ class ComplianceTest(unittest.TestCase):
                         "REGIONAL"
                     ]
                 },
-                "regionalCertificateArn": "arn:aws:acm:us-east-2:052767133087:certificate/bdd25578-326f-4783-913a-2acef52be012",
+                "regionalCertificateArn": "arn:aws:acm:us-east-2:123456789012:certificate/bdd25578-326f-4783-913a-2acef52be012",
                 "regionalDomainName": "d-q4fqmhwah3.execute-api.us-east-2.amazonaws.com",
                 "securityPolicy": "TLS_1_2",
                 "regionalHostedZoneId": "ZOJJZC49E0EPZ",

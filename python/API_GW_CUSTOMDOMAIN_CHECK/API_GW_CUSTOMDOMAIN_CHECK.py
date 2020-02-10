@@ -12,6 +12,7 @@
 import json
 import sys
 import datetime
+import re
 import boto3
 import botocore
 
@@ -42,8 +43,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     customdomains = []
     evaluations = []
     count = 0
-    # make the api call
-    response = apigw.get_domain_names()
+    # make the api call. Maximum limit 500 API gateway
+    response = apigw.get_domain_names(limit=500)
     # check whether there is a custom domain name
     if not response['items']:
         restapigws = apigw.get_rest_apis()
@@ -53,10 +54,14 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     else:
         customdomains += response['items']
         for each_customdomain in customdomains:
-            # print custom domain to Cloudwatch logs
-            print(each_customdomain)
             if each_customdomain['domainName']:
-                evaluations.append(build_evaluation(each_customdomain['regionalDomainName'], 'COMPLIANT', event, annotation='This API Gateway has a custom domain name'))
+                check = re.search('(?='+valid_rule_parameters['CustomDomainName'].strip().replace(".", r"\.")+'$)', each_customdomain['domainName'], re.I)
+                if check:
+                    evaluations.append(build_evaluation(each_customdomain['regionalDomainName'], 'COMPLIANT', event, annotation='This API Gateway has a COMPLIANT custom domain name: '+each_customdomain['domainName']))
+                else:
+                    # print non compliant custom domain to Cloudwatch logs
+                    print(each_customdomain)
+                    evaluations.append(build_evaluation(each_customdomain['regionalDomainName'], 'NON_COMPLIANT', event, annotation='This API Gateway has a NON_COMPLIANT custom domain name: '+each_customdomain['domainName']))
     return evaluations
 
 def evaluate_parameters(rule_parameters):
@@ -68,8 +73,18 @@ def evaluate_parameters(rule_parameters):
     Keyword arguments:
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
-    valid_rule_parameters = rule_parameters
-    return valid_rule_parameters
+    try:
+        if rule_parameters["CustomDomainName"] != "":
+            pattern = re.compile(r'(^[.]|[a-z0-9](?:[a-z0-9-]{0,61}?[a-z0-9])\.)+(?=[a-z]{2,}$)')
+            if pattern.match(rule_parameters["CustomDomainName"].strip()):
+                valid_rule_parameters = rule_parameters
+            else:
+                print("Please input a valid domain name e.g. myowndomain.com")
+        else:
+            print("Please input a domain name.")
+        return valid_rule_parameters
+    except LookupError:
+        print("Please input CustomDomainName as the key.")
 
 ####################
 # Helper Functions #
