@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "REST_API_GW_CUSTOMDOMAIN_CHECK",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "REST_API_GW_CUSTOMDOMAIN_CHECK.zip",
+    "InputParameters": "{\"CustomDomainName\":\"myowndomain.com\"}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}
