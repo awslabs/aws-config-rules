@@ -25,7 +25,7 @@ except ImportError:
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+DEFAULT_RESOURCE_TYPE = 'AWS::ApiGateway::Stage'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
@@ -39,16 +39,6 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 _client_cache = None
 _config_rule_response = []
-API_GATEWAY_STAGE_TYPE = "AWS::ApiGateway::Stage"
-
-
-def _add_response(stage, status, event, comment):
-    global _config_rule_response
-
-    _config_rule_response.append(
-        build_evaluation(resource_id=stage, compliance_type=status, event=event, resource_type=API_GATEWAY_STAGE_TYPE,
-                         annotation=comment))
-    print(f"Reporting {stage} as {status}: {comment}")
 
 
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
@@ -70,74 +60,90 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
     3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
     """
-    config_rule_event = json.loads(event.get("invokingEvent"))
-
     if valid_rule_parameters is not None:
         valid_authorizers = valid_rule_parameters.get("RequireAuthTypes")
 
-    if "configurationItem" in config_rule_event:
-        configuration_item = config_rule_event.get("configurationItem")
-        api_id = configuration_item.get("resourceId").split("/")[2]
-        api_region = configuration_item.get("awsRegion")
+    api_id = configuration_item.get("resourceId").split("/")[2]
+    api_region = configuration_item.get("awsRegion")
 
-        global _client_cache
-        if _client_cache is None:
-            _client_cache = {api_region: get_client(service="apigateway", event=event, region=api_region)}
+    global _client_cache
+    if _client_cache is None:
+        _client_cache = {api_region: get_client(service="apigateway", event=event, region=api_region)}
 
-        api_client = _client_cache.get(api_region)
+    api_client = _client_cache.get(api_region)
 
-        # get all resources for this API
-        resources = api_client.get_resources(
-            restApiId=api_id, limit=500,
-            embed=[
-                'methods',
-            ]
+    # get all resources for this API
+    last_position = None
+    resources = []
+    while True:
+        request = {"restApiId": api_id,
+                   "limit": 500,
+                   "embed": [
+                       'methods',
+                   ]}
+        if last_position is not None:
+            request["position"] = last_position
+
+        response = api_client.get_resources(
+            **request
         )
 
-        if "items" not in resources or resources.get("items") is None or len(resources.get("items")) == 0:
-            return 'NOT_APPLICABLE'
+        if "items" in response and len(response.get("items")) > 0:
+            last_position = response.get("position")
+            resources.append(response.get("items"))
         else:
-            # process each resource to ensure it has an authoriser
-            methods_compliant = True
-            no_auth = 0
-            invalid_auth = 0
-            ok_auth = 0
+            break
 
-            for resource in resources.get("items"):
-                if "resourceMethods" in resource:
-                    for method, method_config in resource.get("resourceMethods").items():
-                        resource_method = f"{api_id}:{method}:{resource.get('path')}"
-
-                        auth = method_config.get("authorizationType", None)
-
-                        if auth is None or auth == 'NONE':
-                            methods_compliant = False
-                            no_auth += 1
-                            print(f"No Authorizer found on {resource_method}")
-                        else:
-                            if valid_authorizers is not None:
-                                if auth in valid_authorizers:
-                                    # this authoriser is one of the valid authorisers from the input list
-                                    ok_auth += 1
-                                else:
-                                    methods_compliant = False
-                                    invalid_auth += 1
-                                    print(f"Invalid Authorizer found on {resource_method}")
-                            else:
-                                # no required authoriser types, so we can say this method is OK
-                                ok_auth += 1
-
-            # add the summary evaluation for the stage
-            if methods_compliant:
-                _add_response(stage=configuration_item.get("resourceId"), status="COMPLIANT",
-                              event=event,
-                              comment="All Stage Resource Methods are compliant with Authorizer Policy")
-            else:
-                _add_response(stage=configuration_item.get("resourceId"), status="NON_COMPLIANT",
-                              event=event,
-                              comment=f"Found {no_auth} methods without Authorizers, {invalid_auth} methods without Valid Authorizers, and {ok_auth} with correct Authorizers")
+    if len(resources) == 0:
+        return 'NOT_APPLICABLE'
     else:
-        print("Unable to process Summary Config Items for API GW")
+        # process each resource to ensure it has an authoriser
+        methods_compliant = True
+        no_auth = 0
+        invalid_auth = 0
+        ok_auth = 0
+
+        for resource in resources:
+            if "resourceMethods" in resource:
+                for method, method_config in resource.get("resourceMethods").items():
+                    resource_method = f"{api_id}:{method}:{resource.get('path')}"
+
+                    auth = method_config.get("authorizationType", None)
+
+                    if auth is None or auth == 'NONE':
+                        methods_compliant = False
+                        no_auth += 1
+                        print(f"No Authorizer found on {resource_method}")
+                    else:
+                        if valid_authorizers:
+                            if auth in valid_authorizers:
+                                # this authoriser is one of the valid authorisers from the input list
+                                ok_auth += 1
+                            else:
+                                methods_compliant = False
+                                invalid_auth += 1
+                                print(f"Invalid Authorizer found on {resource_method}")
+                                break
+                        else:
+                            # no required authoriser types, so we can say this method is OK
+                            ok_auth += 1
+
+        # add the summary evaluation for the stage
+        if methods_compliant:
+            compliant = "COMPLIANT"
+            comment = "All Stage Resource Methods are compliant with Authorizer Policy"
+        else:
+            compliant = "NON_COMPLIANT"
+            comment = f"Found {no_auth} methods without Authorizers, {invalid_auth} methods without Valid Authorizers, and {ok_auth} with correct Authorizers"
+
+        global _config_rule_response
+        stage = configuration_item.get("resourceId")
+        _config_rule_response.append(
+            build_evaluation(resource_id=stage,
+                             compliance_type=compliant,
+                             event=event,
+                             annotation=comment))
+        print(f"Reporting {stage} as {compliant}: {comment}")
 
     return _config_rule_response
 
