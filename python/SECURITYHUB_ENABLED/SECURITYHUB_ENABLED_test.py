@@ -11,8 +11,6 @@
 
 import unittest
 from mock import patch, MagicMock
-# from botocore.exceptions import ClientError
-# import rdklib
 from rdklib import Evaluation, ComplianceType
 import rdklibtest
 
