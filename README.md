@@ -9,6 +9,9 @@ See the [CONTRIBUTING.md](https://github.com/awslabs/aws-config-rules/CONTRIBUTI
 
 ## Related Projects
 RDK (Rule Development Kit) - https://github.com/awslabs/aws-config-rdk
+
+RDKLib (Library to run rules at scale) - https://github.com/awslabs/aws-config-rdklib
+
 Config Rules Engine (Deploy and manage Rules at scale) - https://github.com/awslabs/aws-config-engine-for-compliance-as-code
 
 ## Deploy one of the Config rules of this repo
