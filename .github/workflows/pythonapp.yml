@@ -1,6 +1,6 @@
 name: Python application
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -25,12 +25,11 @@ jobs:
       run: |
         pip install rdk
         pip install rdklib
-        ls
         cd python-rdklib
         rdk test-local --all
     - name: Test with pylint
       run: |
         pip install pylint
         pip install pylint_runner
-        ls
-        pylint_runner --rcfile ./.github/pylintrc
+        cd python-rdklib
+        pylint_runner --rcfile ../.github/pylintrc
