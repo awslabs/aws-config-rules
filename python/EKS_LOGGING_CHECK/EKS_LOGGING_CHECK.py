@@ -47,14 +47,13 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         return None
 
     evaluations = []
-    
     for cluster in cluster_list:
         cluster_status = eks_client.describe_cluster(name=cluster)
         cluster_info = cluster_status['cluster']
         cluster_logging = cluster_info['logging']
         logging_status = cluster_logging['clusterLogging']
         checking = logging_status[-1]
-        if checking['enabled'] == False:
+        if not checking['enabled']:
             evaluations.append(build_evaluation(cluster_info['name'], 'NON_COMPLIANT', event))
         else:
             evaluations.append(build_evaluation(cluster_info['name'], 'COMPLIANT', event))
