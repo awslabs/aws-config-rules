@@ -36,26 +36,29 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 #############
 # Main Code #
 #############
+
+#Check if comprehensive EKS control plane logging is not enabled
+
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     eks_client = get_client('eks', event)
-
     cluster_list = eks_client.list_clusters()['clusters']
 
     if not cluster_list:
         return None
 
     evaluations = []
-
     for cluster in cluster_list:
         cluster_status = eks_client.describe_cluster(name=cluster)
         cluster_info = cluster_status['cluster']
-        cluster_vpc = cluster_info['resourcesVpcConfig']
-        public_access = cluster_vpc['endpointPublicAccess']
-        if public_access:
+        cluster_logging = cluster_info['logging']
+        logging_status = cluster_logging['clusterLogging']
+        checking = logging_status[-1]
+        if not checking['enabled']:
             evaluations.append(build_evaluation(cluster_info['name'], 'NON_COMPLIANT', event))
         else:
             evaluations.append(build_evaluation(cluster_info['name'], 'COMPLIANT', event))
     return evaluations
+
 
 
 def evaluate_parameters(rule_parameters):
@@ -330,15 +333,13 @@ def lambda_handler(event, context):
     latest_evaluations = []
 
     if not compliance_result:
-        latest_evaluations.append(build_evaluation(event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::EKS::Cluster'))
-        #latest_evaluations.append(build_evaluation(event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::EKS::Cluster'))
+        latest_evaluations.append(build_evaluation(event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::::Account'))
         evaluations = clean_up_old_evaluations(latest_evaluations, event)
     elif isinstance(compliance_result, str):
         if configuration_item:
             evaluations.append(build_evaluation_from_config_item(configuration_item, compliance_result))
         else:
             evaluations.append(build_evaluation(event['accountId'], compliance_result, event, resource_type=DEFAULT_RESOURCE_TYPE))
-            #evaluations.append(build_evaluation(event['accountId'], compliance_result, event, resource_type=DEFAULT_RESOURCE_TYPE))
     elif isinstance(compliance_result, list):
         for evaluation in compliance_result:
             missing_fields = False
