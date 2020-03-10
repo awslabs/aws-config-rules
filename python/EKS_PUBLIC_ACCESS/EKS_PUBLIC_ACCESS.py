@@ -25,7 +25,6 @@ except ImportError:
 ##############
 
 # Define the default resource to report to Config Rules
-#DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 DEFAULT_RESOURCE_TYPE = 'AWS::EKS::Cluster'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
@@ -52,7 +51,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         cluster_info = cluster_status['cluster']
         cluster_vpc = cluster_info['resourcesVpcConfig']
         public_access = cluster_vpc['endpointPublicAccess']
-        if public_access == True:
+        if public_access:
             evaluations.append(build_evaluation(cluster_info['name'], 'NON_COMPLIANT', event))
         else:
             evaluations.append(build_evaluation(cluster_info['name'], 'COMPLIANT', event))
