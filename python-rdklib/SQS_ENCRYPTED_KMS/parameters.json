@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "SQS_ENCRYPTED_KMS",
+    "SourceRuntime": "python3.6-lib",
+    "CodeKey": "SQS_ENCRYPTED_KMS.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::SQS::Queue"
+  },
+  "Tags": "[]"
+}
