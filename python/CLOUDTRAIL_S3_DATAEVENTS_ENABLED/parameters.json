@@ -1,13 +1,12 @@
 {
-  "Version": "1.0",
+  "Version": "1.0", 
   "Parameters": {
-    "RuleName": "CLOUDTRAIL_S3_DATAEVENTS_ENABLED",
-    "SourceRuntime": null,
-    "CodeKey": null,
-    "InputParameters": "{}",
-    "OptionalParameters": "{\"S3BucketNames\": \"\"}",
-    "SourcePeriodic": "TwentyFour_Hours",
-    "SourceIdentifier": "CLOUDTRAIL_S3_DATAEVENTS_ENABLED"
-  },
+    "CodeKey": "CLOUDTRAIL_S3_DATAEVENTS_ENABLED.zip", 
+    "SourceRuntime": "python3.6", 
+    "SourcePeriodic": "TwentyFour_Hours", 
+    "RuleName": "CLOUDTRAIL_S3_DATAEVENTS_ENABLED", 
+    "OptionalParameters": "{\"S3BucketName\": \"\"}", 
+    "InputParameters": "{}"
+  }, 
   "Tags": "[]"
 }

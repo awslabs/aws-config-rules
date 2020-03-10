@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "API_GW_AUTHORIZER_IN_PLACE.zip", 
+    "SourceRuntime": "python3.7", 
+    "RuleName": "API_GW_AUTHORIZER_IN_PLACE", 
+    "SourceEvents": "AWS::ApiGateway::RestApi", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}

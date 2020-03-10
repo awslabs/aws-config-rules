@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_INSTANCE_NO_PUBLIC_IP",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::EC2::Instance",
+    "SourceIdentifier": "EC2_INSTANCE_NO_PUBLIC_IP"
+  },
+  "Tags": "[]"
+}

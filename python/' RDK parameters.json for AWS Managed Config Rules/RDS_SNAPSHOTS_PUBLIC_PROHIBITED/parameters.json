@@ -1,0 +1,17 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "RDS_SNAPSHOTS_PUBLIC_PROHIBITED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "SourceEvents": "AWS::RDS::DBInstance",
+    "SourceIdentifier": "RDS_SNAPSHOTS_PUBLIC_PROHIBITED",   
+    "RuleSets": [
+      "rulecriticity:critical", 
+      "pci",
+      "pci:1.2",
+      "rds"
+    ]
+  }
+}

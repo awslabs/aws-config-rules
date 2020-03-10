@@ -2,12 +2,11 @@
   "Version": "1.0",
   "Parameters": {
     "RuleName": "REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK",
-    "SourceRuntime": null,
-    "CodeKey": null,
+    "SourceRuntime": "python3.6",
+    "CodeKey": "REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK.zip",
     "InputParameters": "{}",
     "OptionalParameters": "{}",
-    "SourceEvents": "AWS::Redshift::Cluster",
-    "SourceIdentifier": "REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK"
+    "SourceEvents": "AWS::Redshift::Cluster"
   },
   "Tags": "[]"
 }

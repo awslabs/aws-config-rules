@@ -1,0 +1,19 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "IAM_PASSWORD_POLICY",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{\"RequireUppercaseCharacters\":\"true\",\"RequireLowercaseCharacters\":\"true\",\"RequireNumbers\":\"true\",\"MinimumPasswordLength\":\"8\",\"PasswordReusePrevention\":\"6\",\"MaxPasswordAge\":\"60\"}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "IAM_PASSWORD_POLICY",
+    "RuleSets": [
+      "baseline",
+      "rulecriticity:high",
+      "pci",
+      "pci:8.1",
+      "iam"
+    ]
+  }
+}

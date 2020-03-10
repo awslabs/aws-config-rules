@@ -2,12 +2,11 @@
   "Version": "1.0",
   "Parameters": {
     "RuleName": "VPC_VPN_2_TUNNELS_UP",
-    "SourceRuntime": null,
-    "CodeKey": null,
+    "SourceRuntime": "python3.6",
+    "CodeKey": "VPC_VPN_2_TUNNELS_UP.zip",
     "InputParameters": "{}",
     "OptionalParameters": "{}",
-    "SourceEvents": "AWS::EC2::VPNConnection",
-    "SourceIdentifier": "VPC_VPN_2_TUNNELS_UP"
+    "SourceEvents": "AWS::EC2::VPNConnection"
   },
   "Tags": "[]"
 }
