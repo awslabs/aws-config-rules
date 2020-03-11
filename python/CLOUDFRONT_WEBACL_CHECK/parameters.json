@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "CLOUDFRONT_WEBACL_CHECK",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "CLOUDFRONT_WEBACL_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::CloudFront::Distribution"
+  },
+  "Tags": "[]"
+}
