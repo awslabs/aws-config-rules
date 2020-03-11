@@ -59,7 +59,6 @@ class ComplianceTest(unittest.TestCase):
         resp_expected = []
         resp_expected.append(build_expected_response("COMPLIANT", "E1JPFIF67X6L0R"))
         assert_successful_evaluation(self, response, resp_expected)
-        
     #def test_sample_2(self):
     #    RULE.ASSUME_ROLE_MODE = False
     #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})

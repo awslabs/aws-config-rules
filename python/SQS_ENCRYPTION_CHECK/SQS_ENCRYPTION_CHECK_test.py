@@ -52,14 +52,14 @@ class ComplianceTest(unittest.TestCase):
     sqs_encrypted_queue = '{"Attributes":{"QueueArn": "arn:aws:sqs:us-east-1:012345678910:test","KmsMasterKeyId": "alias/aws/sqs","KmsDataKeyReusePeriodSeconds": "300"}}'
 
     sqs_unencrypted_queue = '{"Attributes":{"QueueArn": "arn:aws:sqs:us-east-1:012345678910:test"}}'
-    
+
     def test_sqs_queue_unencrypted(self):
         SQS_CLIENT_MOCK.get_queue_attributes = MagicMock(return_value=self.sqs_unencrypted_queue)
         response = RULE.lambda_handler(build_lambda_scheduled_event('{"QueueNameStartsWith":"tes"}'), {})
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'https://queue.amazonaws.com/012345678910/test', DEFAULT_RESOURCE_TYPE, 'SQS Queue URL is not encrypted'))
         assert_successful_evaluation(self, response, resp_expected)
-        
+
     def test_sqs_queue_encrypted(self):
         SQS_CLIENT_MOCK.get_queue_attributes = MagicMock(return_value=self.sqs_encrypted_queue)
         response = RULE.lambda_handler(build_lambda_scheduled_event('{"QueueNameStartsWith":"tes"}'), {})
