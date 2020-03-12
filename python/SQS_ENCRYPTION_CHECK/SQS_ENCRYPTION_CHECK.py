@@ -85,7 +85,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     if valid_rule_parameters:
         yourqueues = valid_rule_parameters["QueueNameStartsWith"].split(",")
         for queue in yourqueues:
-            response = sqs.list_queues(QueueNamePrefix=queue.strip())
+            caseinsensitivequeue = queue.lower()
+            response = sqs.list_queues(QueueNamePrefix=caseinsensitivequeue.strip())
             if "QueueUrls" not in response.keys():
                 print("There are no SQS queues to check for.")
                 return None

@@ -86,13 +86,15 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     if valid_rule_parameters:
         yourqueues = valid_rule_parameters["QueueNameStartsWith"].split(",")
         for queue in yourqueues:
-            response = sqs.list_queues(QueueNamePrefix=queue.strip())
+            caseinsensitivequeue = queue.lower()
+            response = sqs.list_queues(QueueNamePrefix=caseinsensitivequeue.strip())
             if "QueueUrls" not in response.keys():
                 print("There are no SQS queues to check for.")
                 return None
             for qurl in response["QueueUrls"]:
                 check = sqs.get_queue_attributes(QueueUrl=qurl, AttributeNames=['Policy'],)
                 if "Attributes" in check.keys():
+                    # case sensitive boolean match
                     encrypted = re.compile('"Condition":{"Bool":{"aws:SecureTransport":"true"')
                     if encrypted.search(check["Attributes"]["Policy"]):
                         evaluations.append(build_evaluation(qurl, 'COMPLIANT', event, annotation='SQS Queue is TLS encrypted.'))
@@ -107,7 +109,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             print("There are no SQS queues to check for.")
             return None
         for qurl in response["QueueUrls"]:
-            check = sqs.get_queue_attributes(QueueUrl=qurl, AttributeNames=['KmsMasterKeyId'],)
+            check = sqs.get_queue_attributes(QueueUrl=qurl, AttributeNames=['Policy'],)
             if "Attributes" in check.keys():
                 encrypted = re.compile('"Condition":{"Bool":{"aws:SecureTransport":"true"')
                 if encrypted.search(check["Attributes"]["Policy"]):
