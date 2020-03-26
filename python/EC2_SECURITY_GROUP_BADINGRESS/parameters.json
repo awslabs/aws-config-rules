@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_SECURITY_GROUP_BADINGRESS",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "EC2_SECURITY_GROUP_BADINGRESS.zip",
+    "InputParameters": "{\"BlacklistedPorts\":\"443, 53, 21, 20, 4333, 3306, 137, 138, 5432, 3389, 25, 1433, 1434, 23,5500, 5900, 135, 22\"}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::EC2::SecurityGroup"
+  },
+  "Tags": "[]"
+}
