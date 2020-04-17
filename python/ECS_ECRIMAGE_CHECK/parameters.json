@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ECS_ECRIMAGE_CHECK",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "ECS_ECRIMAGE_CHECK.zip",
+    "InputParameters": "{\"TaskDefinition\": \"MyServiceTaskDefinition, MyServiceTwoTaskDefinition\",\"RegionName\": \"us-west-2\"}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "Three_Hours"
+  },
+  "Tags": "[]"
+}

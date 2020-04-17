@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ECS_AWSLOGS_CHECK",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "ECS_AWSLOGS_CHECK.zip",
+    "InputParameters": "{\"TaskDefinition\": \"MyServiceTaskDefinition, MyServiceTwoTaskDefinition\"}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "Three_Hours"
+  },
+  "Tags": "[]"
+}
