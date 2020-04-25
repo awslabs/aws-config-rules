@@ -42,7 +42,7 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('<%RuleName%>')
+RULE = __import__('SECRETSMANAGER_MAX_SECRET_AGE')
 
 class ComplianceTest(unittest.TestCase):
 

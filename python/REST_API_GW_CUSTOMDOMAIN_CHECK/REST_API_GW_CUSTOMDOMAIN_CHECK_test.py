@@ -16,6 +16,7 @@ try:
 except ImportError:
     from mock import MagicMock
 import botocore
+from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -73,21 +74,30 @@ class ComplianceTest(unittest.TestCase):
         ]
     }
 
+    apigw_restapis = {
+        "items": [
+            {
+                "id": "ZOJJZC49E0EPZ",
+            }
+        ]
+    }
+
 
     def test_apigw_no_customdomain(self):
         RULE.ASSUME_ROLE_MODE = False
         APIGW_CLIENT_MOCK.get_domain_names = MagicMock(return_value=self.apigw_no_customdomain)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        APIGW_CLIENT_MOCK.get_rest_apis = MagicMock(return_value=self.apigw_restapis)
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"CustomDomainName": "foo.com"}'), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', '', DEFAULT_RESOURCE_TYPE, 'This API Gateway does not have a custom domain name'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'ZOJJZC49E0EPZ', DEFAULT_RESOURCE_TYPE, 'Your API Gateway does not have a custom domain name'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_apigw_customdomain(self):
         RULE.ASSUME_ROLE_MODE = False
         APIGW_CLIENT_MOCK.get_domain_names = MagicMock(return_value=self.apigw_customdomain)
-        response = RULE.lambda_handler(build_lambda_scheduled_event(), {})
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{"CustomDomainName": "api.sitepep.com"}'), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'd-q4fqmhwah3.execute-api.us-east-2.amazonaws.com', DEFAULT_RESOURCE_TYPE, 'This API Gateway has a custom domain name'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'd-q4fqmhwah3.execute-api.us-east-2.amazonaws.com', DEFAULT_RESOURCE_TYPE, 'This API Gateway has a COMPLIANT custom domain name: api.sitepep.com'))
         assert_successful_evaluation(self, response, resp_expected)
 
 

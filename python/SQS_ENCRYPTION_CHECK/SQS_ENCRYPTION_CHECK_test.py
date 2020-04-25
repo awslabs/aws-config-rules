@@ -16,6 +16,7 @@ try:
 except ImportError:
     from mock import MagicMock
 import botocore
+from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -49,22 +50,28 @@ RULE = __import__('SQS_ENCRYPTION_CHECK')
 
 class ComplianceTest(unittest.TestCase):
 
-    sqs_encrypted_queue = '{"Attributes":{"QueueArn": "arn:aws:sqs:us-east-1:012345678910:test","KmsMasterKeyId": "alias/aws/sqs","KmsDataKeyReusePeriodSeconds": "300"}}'
+    sqs_encrypted_queue = {"Attributes":{"QueueArn": "arn:aws:sqs:us-east-1:012345678910:test", "KmsMasterKeyId": "alias/aws/sqs", "KmsDataKeyReusePeriodSeconds": "300"}}
 
-    sqs_unencrypted_queue = '{"Attributes":{"QueueArn": "arn:aws:sqs:us-east-1:012345678910:test"}}'
+    queue_list_encrypted = {"QueueUrls": ['https://queue.amazonaws.com/012345678910/test']}
+
+    sqs_unencrypted_queue = {}
+
+    queue_list_unencrypted = {"QueueUrls": ['https://queue.amazonaws.com/012345678910/test']}
 
     def test_sqs_queue_unencrypted(self):
         SQS_CLIENT_MOCK.get_queue_attributes = MagicMock(return_value=self.sqs_unencrypted_queue)
-        response = RULE.lambda_handler(build_lambda_scheduled_event('{"QueueNameStartsWith":"tes"}'), {})
+        SQS_CLIENT_MOCK.list_queues = MagicMock(return_value=self.queue_list_unencrypted)
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{}'), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'https://queue.amazonaws.com/012345678910/test', DEFAULT_RESOURCE_TYPE, 'SQS Queue URL is not encrypted'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'https://queue.amazonaws.com/012345678910/test', DEFAULT_RESOURCE_TYPE, 'SQS Queue URL is not encrypted.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_sqs_queue_encrypted(self):
         SQS_CLIENT_MOCK.get_queue_attributes = MagicMock(return_value=self.sqs_encrypted_queue)
+        SQS_CLIENT_MOCK.list_queues = MagicMock(return_value=self.queue_list_encrypted)
         response = RULE.lambda_handler(build_lambda_scheduled_event('{"QueueNameStartsWith":"tes"}'), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'https://queue.amazonaws.com/012345678910/test'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'https://queue.amazonaws.com/012345678910/test', DEFAULT_RESOURCE_TYPE, 'SQS Queue URL is encrypted with KMS key: alias/aws/sqs'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #def test_sample_2(self):

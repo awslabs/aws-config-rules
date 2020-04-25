@@ -117,6 +117,10 @@ class Scenario_2_TestWhitelistedUser(unittest.TestCase):
             {'UserId': 'AIDAIDFOUX2OSRO6DO7XM',
              'UserName': 'user-name-2'}]}
         iam_client_mock.list_users = MagicMock(return_value=user_list)
+        old_eval = {'EvaluationResults': [
+            {'EvaluationResultIdentifier': {'EvaluationResultQualifier': {'ResourceId': 'AIDAIDFOUX2OSRO6DO7XN'}}},
+            {'EvaluationResultIdentifier': {'EvaluationResultQualifier': {'ResourceId': 'AIDAIDFOUX2OSRO6DO7XM'}}}]}
+        config_client_mock.get_compliance_details_by_config_rule = MagicMock(return_value=old_eval)
         ruleParam = '{ "WhitelistedUserList" : "AIDAIDFOUX2OSRO6DO7XM, AIDAIDFOUX2OSRO6DO7XN"}'
         lambda_event = build_lambda_scheduled_event(rule_parameters=ruleParam)
         response = rule.lambda_handler(lambda_event, {})

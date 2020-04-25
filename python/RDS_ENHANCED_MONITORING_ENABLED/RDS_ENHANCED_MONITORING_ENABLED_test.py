@@ -54,7 +54,11 @@ class ComplianceTest(unittest.TestCase):
         invoking_event = generate_invoking_event(self.valid_em_interval_configured)
         response = RULE.lambda_handler(
             build_lambda_configurationchange_event(invoking_event, rule_parameters=self.rule_invalid_parameter), {})
-        assert_customer_error_response(self, response, 'Invalid value for the parameter "monitoringInterval", Expected a valid integer from the list [1, 5, 10, 15, 30, 60].')
+        assert_customer_error_response(
+            self,
+            response,
+            'InvalidParameterValueException',
+            'Invalid value for the parameter "monitoringInterval", Expected a valid integer from the list [1, 5, 10, 15, 30, 60].')
 
     def test_scenario_2_interval_zero(self):
         invoking_event = generate_invoking_event(self.invalid_em_not_configured)

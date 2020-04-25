@@ -16,6 +16,7 @@ try:
 except ImportError:
     from mock import MagicMock
 import botocore
+from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -51,20 +52,26 @@ class ComplianceTest(unittest.TestCase):
 
     sqs_tls_encrypted_policy = {"Attributes":{"Policy":"{\"Version\":\"2012-10-17\",\"Id\":\"arn:aws:sqs:us-east-1:012345678910:test/SQSDefaultPolicy\",\"Statement\":[{\"Sid\":\"Sid1584014253602\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::012345678910:root\"},\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:us-east-1:012345678910:test\",\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"true\"}}}]}"}}
 
+    queue_list_encrypted = {"QueueUrls": ['https://queue.amazonaws.com/012345678910/test']}
+
     sqs_tls_unencrypted_policy = {"Attributes":{"Policy":"{\"Version\":\"2012-10-17\",\"Id\":\"arn:aws:sqs:us-east-1:012345678910:test/SQSDefaultPolicy\",\"Statement\":[{\"Sid\":\"Sid1584014253602\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::012345678910:root\"},\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:us-east-1:012345678910:test\"}]}"}}
+
+    queue_list_unencrypted = {"QueueUrls": ['https://queue.amazonaws.com/012345678910/test']}
 
     def test_sqs_tls_unencrypted(self):
         SQS_CLIENT_MOCK.get_queue_attributes = MagicMock(return_value=self.sqs_tls_unencrypted_policy)
-        response = RULE.lambda_handler(build_lambda_scheduled_event('{"QueueNameStartsWith":"tes"}'), {})
+        SQS_CLIENT_MOCK.list_queues = MagicMock(return_value=self.queue_list_unencrypted)
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{}'), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('NON_COMPLIANT', 'https://queue.amazonaws.com/012345678910/test', DEFAULT_RESOURCE_TYPE, 'SQS Queue does not have TLS encryption queue access policy enforced'))
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'https://queue.amazonaws.com/012345678910/test', DEFAULT_RESOURCE_TYPE, 'SQS Queue is not TLS encrypted.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_sqs_tls_encrypted(self):
         SQS_CLIENT_MOCK.get_queue_attributes = MagicMock(return_value=self.sqs_tls_encrypted_policy)
-        response = RULE.lambda_handler(build_lambda_scheduled_event('{"QueueNameStartsWith":"tes"}'), {})
+        SQS_CLIENT_MOCK.list_queues = MagicMock(return_value=self.queue_list_encrypted)
+        response = RULE.lambda_handler(build_lambda_scheduled_event('{}'), {})
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'https://queue.amazonaws.com/012345678910/test'))
+        resp_expected.append(build_expected_response('COMPLIANT', 'https://queue.amazonaws.com/012345678910/test', DEFAULT_RESOURCE_TYPE, 'SQS Queue is TLS encrypted.'))
         assert_successful_evaluation(self, response, resp_expected)
 
     #def test_sample_2(self):

@@ -31,7 +31,7 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('EC2_INSTANCE_NO_PUBLIC_IP')
+RULE = __import__('EC2_INSTANCE_NO_PUBLIC_IP_1')
 
 class ComplianceTest(unittest.TestCase):
 
