@@ -25,7 +25,8 @@ STS_CLIENT_MOCK = MagicMock()
 
 
 class Boto3Mock():
-    def client(self, client_name, *args, **kwargs):
+    @staticmethod
+    def client(client_name, *args, **kwargs):
         if client_name == 'cloudformation':
             return CLOUDFORMATION_CLIENT_MOCK
         if client_name == 'config':
