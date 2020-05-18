@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EKS_PUBLIC_ACCESS",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "EKS_PUBLIC_ACCESS.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}

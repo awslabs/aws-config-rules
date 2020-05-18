@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "DB_INSTANCE_BACKUP_ENABLED",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"backupRetentionPeriod\": \"\", \"preferredBackupWindow\": \"\", \"checkReadReplicas\": \"\"}",
+    "SourceEvents": "AWS::RDS::DBInstance",
+    "SourceIdentifier": "DB_INSTANCE_BACKUP_ENABLED"
+  },
+  "Tags": "[]"
+}

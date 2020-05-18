@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EKS_LOGGING_CHECK",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "EKS_LOGGING_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}

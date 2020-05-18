@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK",
+    "SourceRuntime": null,
+    "CodeKey": null,
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours",
+    "SourceIdentifier": "ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK"
+  },
+  "Tags": "[]"
+}
