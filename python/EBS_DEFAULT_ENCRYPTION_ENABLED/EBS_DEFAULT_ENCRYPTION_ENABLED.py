@@ -9,7 +9,7 @@
 Rule Name:
   ebs-default-encryption-enabled
 Description:
-  Check that the EC2 account-level setting for EBS default encruption is enabled.
+  Check that the EC2 account-level setting for EBS default encryption is enabled.
 Trigger:
   Scheduled Frequency
 Reports on:
@@ -199,8 +199,7 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     eval_cc['ComplianceResourceType'] = resource_type
     eval_cc['ComplianceResourceId'] = resource_id
     eval_cc['ComplianceType'] = compliance_type
-    eval_cc['OrderingTimestamp'] = str(json.loads(event['invokingEvent'])[
-                                       'notificationCreationTime'])
+    eval_cc['OrderingTimestamp'] = str(json.loads(event['invokingEvent'])['notificationCreationTime'])
     return eval_cc
 
 
