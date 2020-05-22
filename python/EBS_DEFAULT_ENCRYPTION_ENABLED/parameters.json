@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EBS_DEFAULT_ENCRYPTION_ENABLED",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "EBS_DEFAULT_ENCRYPTION_ENABLED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"KmsKeyId\": \"\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
