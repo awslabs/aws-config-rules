@@ -4,7 +4,6 @@
 # Created with the Rule Development Kit: https://github.com/awslabs/aws-config-rdk
 # Can be used stand-alone or with the Rule Compliance Engine: https://github.com/awslabs/aws-config-engine-for-compliance-as-code
 #
-
 '''
 Rule Name:
   ebs-default-encryption-enabled
