@@ -25,7 +25,7 @@ Parameters:
 Feature:
     In order to: protect the data confidentiality
              As: a Security Officer
-         I want: To ensure that all EBS volumes in an account are encrypted by default.
+         I want: To ensure that all new EBS volumes in an account are encrypted by default.
 Scenarios:
     Scenario 1:
       Given: the KmsKeyId is not specified.
