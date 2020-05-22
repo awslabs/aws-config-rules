@@ -44,7 +44,7 @@ Scenarios:
     Scenario 4:
       Given: the desired KmsKeyId is alias/cmk/custom-ebs-key.
         And: the EC2 EBS default encryption is enabled
-        And: the encryption key is the AWS Managed alias/cmk/custom-ebs-key key
+        And: the encryption key is the Customer Managed alias/cmk/custom-ebs-key key
        Then: return COMPLIANT
 '''
 
