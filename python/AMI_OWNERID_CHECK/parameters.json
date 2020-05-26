@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "AMI_OWNERID_CHECK",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "AMI_OWNERID_CHECK.zip",
+    "InputParameters": "{\"VpcId\": \"vpc-06ad19353fa90a742, vpc-06ad19353fb81a231\",\"OwnerId\": \"845575274112\"}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}

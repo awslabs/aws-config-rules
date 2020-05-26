@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "WAFV2_WEBACL_LOGGING_ENABLED",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "WAFV2_WEBACL_LOGGING_EBALED.zip",
+    "InputParameters": "{\"Scope\":\"CLOUDFRONT, REGIONAL\"}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "Three_Hours"
+  },
+  "Tags": "[]"
+}
