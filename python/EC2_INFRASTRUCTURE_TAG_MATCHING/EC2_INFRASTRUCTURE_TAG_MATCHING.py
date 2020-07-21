@@ -71,9 +71,9 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     # Custom logic starts here #
     ############################
     ec2 = boto3.client("ec2")
-    invokingEvent = json.loads(event["invokingEvent"])
-    ruleParameters = evaluate_parameters(json.loads(event["ruleParameters"]))
-    if invokingEvent["configurationItem"]["resourceType"] == DEFAULT_RESOURCE_TYPE:
+    invoking_event = json.loads(event["invokingEvent"])
+    rule_parameters = evaluate_parameters(json.loads(event["ruleParameters"]))
+    if invoking_event["configurationItem"]["resourceType"] == DEFAULT_RESOURCE_TYPE:
         # Collect Workload Tags
         # init
         resource_tags = dict()
@@ -82,8 +82,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
         resource_tags["SecurityGroups"] = dict()
         resource_tags["Subnet"] = dict()
         resource_tags["VPC"] = dict()
-        resource_tags["EC2"] = invokingEvent["configurationItem"]["tags"]
-        for resource in invokingEvent["configurationItem"]["relationships"]:
+        resource_tags["EC2"] = invoking_event["configurationItem"]["tags"]
+        for resource in invoking_event["configurationItem"]["relationships"]:
             if resource["resourceType"] == "AWS::EC2::NetworkInterface":
                 resource_id = resource["resourceId"]
                 for networkinterface in ec2.describe_network_interfaces(NetworkInterfaceIds=[resource_id])["NetworkInterfaces"]:
@@ -120,38 +120,38 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                     except KeyError:
                         print(resource_id + " does not have any Tags. Tag enforcement is not monitored by this config rule!")
         print(resource_tags)
-        
+
         # Evaluate Tags for compliancy
-        tagName = ruleParameters["TagName"]
+        tag_name = rule_parameters["TagName"]
         try:
-            tagValue = resource_tags["EC2"][tagName]
-            print("EC2 tagged with " + tagName + " " + tagValue)
+            tag_value = resource_tags["EC2"][tag_name]
+            print("EC2 tagged with " + tag_name + " " + tag_value)
         except KeyError:
             print("Tag missing on EC2 instance. This config rule does not enforce tags!")
             print("COMPLIANT")
             return "COMPLIANT"
 
-        for resource in ruleParameters:
+        for resource in rule_parameters:
             if resource == "TagName":
                 continue
-            if ruleParameters[resource].lower() == "true":
-                TAG_NOT_FOUND = True
-                for item in resource_tags[resource]:
-                    for tag in resource_tags[resource][item]:
-                        print(item + " tagged with " + tagName + " " + tag["Value"])
-                        if tag["Key"] == tagName:
-                            TAG_NOT_FOUND = False
-                            if tag["Value"] != tagValue:
-                                print(item + " tag is NOT compliant.")
-                                print("NON_COMPLIANT")
-                                return "NON_COMPLIANT"
-                            else:
-                                print(item + " tag is compliant.")
-                    if TAG_NOT_FOUND:
-                        print(resource + " is not tagged with " + tagName)
-                        # This Config rule does not enforce tagging. This should be done via tag policies and SCPs!
-            else:
+            if rule_parameters[resource].lower() != "true":
                 print(resource + " is not checked.")
+                continue
+            tag_not_found = True
+            for item in resource_tags[resource]:
+                for tag in resource_tags[resource][item]:
+                    if tag["Key"] != tag_name:
+                        continue
+                    tag_not_found = False
+                    print(item + " tagged with " + tag_name + " " + tag["Value"])
+                    if tag["Value"] != tag_value:
+                        print(item + " tag is NOT compliant.")
+                        print("NON_COMPLIANT")
+                        return "NON_COMPLIANT"
+                    print(item + " tag is compliant.")
+                if tag_not_found:
+                    print(resource + " is not tagged with " + tag_name)
+                    # This Config rule does not enforce tagging. This should be done via tag policies and SCPs!
 
         print("COMPLIANT")
         return "COMPLIANT"

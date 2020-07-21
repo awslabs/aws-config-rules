@@ -16,7 +16,6 @@ try:
     from unittest.mock import MagicMock
 except ImportError:
     from mock import MagicMock
-import botocore
 
 ##############
 # Parameters #
@@ -47,25 +46,26 @@ RULE = __import__('EC2_INFRASTRUCTURE_TAG_MATCHING')
 
 class ComplianceTest(unittest.TestCase):
 
-    rule_parameters = '{"TagName":"SecurityProfile","VPC":"True","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
-
-    def test_sample(self):
-        self.assertTrue(True)
-
-    def test_rule_EC2_not_tagged(self):
+    def test_rule_ec2_not_tagged(self):
         # The EC2 instance is not tagged with the "SecurityProfile" Tag. This config rule does not enforce tags => COMPLIANT
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"True","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
-        invoking_event = build_invoking_event()
+        invoking_event = build_invoking_event(tags={})
         response = RULE.lambda_handler(build_lambda_configurationchange_event(rule_parameters=rule_parameters, invoking_event=invoking_event), "")
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'i-08849914c0be5c303')) 
+        resp_expected.append(build_expected_response('COMPLIANT', 'i-08849914c0be5c303'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_rule_resource_not_tagged(self):
         # In rule_parameters, VPC is set to True, but the VPC is not tagged. Since this Config rule does not enforce tags, this is evaluated as COMPLIANT.
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"True","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
-        invoking_event = build_invoking_event(tags = {"SecurityProfile":"Medium"})
-        ec2_mock(Vpcs=[])
+        invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
+        ec2_mock(
+            network_interfaces=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            security_groups=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            subnets=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            volumes=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            vpcs=[]
+        )
         response = RULE.lambda_handler(build_lambda_configurationchange_event(rule_parameters=rule_parameters, invoking_event=invoking_event), "")
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'i-08849914c0be5c303')) # This rule does not enforce tags!
@@ -74,8 +74,14 @@ class ComplianceTest(unittest.TestCase):
     def test_rule_tags_do_not_match_of_relevant_resources(self):
         # In rule_parameters, VPC is set to True, but the TagValue of the VPC does not match the TagValue of the EC2 = NON_COMPLIANT
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"True","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
-        invoking_event = build_invoking_event(tags = {"SecurityProfile":"Medium"})
-        ec2_mock(Vpcs=[{"Key":"SecurityProfile","Value":"Low"}])
+        invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
+        ec2_mock(
+            network_interfaces=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            security_groups=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            subnets=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            volumes=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            vpcs=[{"Key":"SecurityProfile", "Value":"Low"}]
+        )
         response = RULE.lambda_handler(build_lambda_configurationchange_event(rule_parameters=rule_parameters, invoking_event=invoking_event), "")
         resp_expected = []
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'i-08849914c0be5c303'))
@@ -84,8 +90,14 @@ class ComplianceTest(unittest.TestCase):
     def test_rule_tags_do_not_match_of_not_relevant_resources(self):
         # In rule_parameters, VPC is set to False and the TagValue of the VPC does not match the TagValue of the EC2 => COMPLIANT
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"False","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
-        invoking_event = build_invoking_event(tags = {"SecurityProfile":"Medium"})
-        ec2_mock(Vpcs=[{"Key":"SecurityProfile","Value":"Low"}])
+        invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
+        ec2_mock(
+            network_interfaces=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            security_groups=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            subnets=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            volumes=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            vpcs=[{"Key":"SecurityProfile", "Value":"Low"}]
+        )
         response = RULE.lambda_handler(build_lambda_configurationchange_event(rule_parameters=rule_parameters, invoking_event=invoking_event), "")
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'i-08849914c0be5c303'))
@@ -94,8 +106,14 @@ class ComplianceTest(unittest.TestCase):
     def test_rule_tags_match(self):
         # In rule_parameters, VPC is set to True and the TagValue of the VPC does match the TagValue of the EC2 => COMPLIANT
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"True","SecurityGroups":"True","ENIs":"True","Subnet":"True","Volumes":"True"}'
-        invoking_event = build_invoking_event(tags = {"SecurityProfile":"Medium"})
-        ec2_mock()
+        invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
+        ec2_mock(
+            network_interfaces=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            security_groups=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            subnets=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            volumes=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            vpcs=[{"Key":"SecurityProfile", "Value":"Medium"}]
+        )
         response = RULE.lambda_handler(build_lambda_configurationchange_event(rule_parameters=rule_parameters, invoking_event=invoking_event), "")
         resp_expected = []
         resp_expected.append(build_expected_response('COMPLIANT', 'i-08849914c0be5c303'))
@@ -105,8 +123,9 @@ class ComplianceTest(unittest.TestCase):
 # Helper Functions #
 ####################
 
-def build_invoking_event(tags={}):
-    invoking_event = {   "configurationItemDiff":"None",
+def build_invoking_event(tags):
+    invoking_event = {
+        "configurationItemDiff":"None",
         "configurationItem":{
             "relationships":[
                 {
@@ -114,7 +133,6 @@ def build_invoking_event(tags={}):
                     "resourceName":"None",
                     "resourceType":"AWS::EC2::NetworkInterface",
                     "name":"Contains NetworkInterface"
-                
                 },
                 {
                     "resourceId":"sg-0138abfdacdab11cf",
@@ -226,40 +244,35 @@ def assert_customer_error_response(test_class, response, customer_error_code=Non
     if "internalErrorDetails" in response:
         test_class.assertTrue(response['internalErrorDetails'])
 
-def ec2_mock(NetworkInterfaces=[{"Key":"SecurityProfile", "Value":"Medium"}],
-             SecurityGroups=[{"Key":"SecurityProfile", "Value":"Medium"}],
-             Subnets=[{"Key":"SecurityProfile", "Value":"Medium"}],
-             Volumes=[{"Key":"SecurityProfile", "Value":"Medium"}],
-             Vpcs=[{"Key":"SecurityProfile", "Value":"Medium"}],
-    ):
-    describe_network_interfaces_response = {
+def ec2_mock(network_interfaces, security_groups, subnets, volumes, vpcs):
+    describe_network_interfaces_res = {
         "NetworkInterfaces": [{
-            "TagSet" : NetworkInterfaces
+            "TagSet" : network_interfaces
             }]
         }
-    describe_security_groups_response = {
+    describe_security_groups_res = {
         "SecurityGroups": [{
-            "Tags": SecurityGroups
+            "Tags": security_groups
             }]
         }
-    describe_subnets_response = {
+    describe_subnets_res = {
         "Subnets": [{
-            "Tags": Subnets
+            "Tags": subnets
             }]
         }
-    describe_volumes_response = {
+    describe_volumes_res = {
         "Volumes": [{
-            "Tags": Volumes
+            "Tags": volumes
             }]
         }
-    describe_vpcs_response = {
+    describe_vpcs_res = {
         "Vpcs": [{
-            "Tags": Vpcs
+            "Tags": vpcs
             }]
         }
     EC2_CLIENT_MOCK.reset_mock(return_value=True)
-    EC2_CLIENT_MOCK.describe_network_interfaces = MagicMock(return_value=describe_network_interfaces_response)
-    EC2_CLIENT_MOCK.describe_security_groups = MagicMock(return_value=describe_security_groups_response)
-    EC2_CLIENT_MOCK.describe_subnets = MagicMock(return_value=describe_subnets_response)
-    EC2_CLIENT_MOCK.describe_volumes = MagicMock(return_value=describe_volumes_response)
-    EC2_CLIENT_MOCK.describe_vpcs = MagicMock(return_value=describe_vpcs_response)
+    EC2_CLIENT_MOCK.describe_network_interfaces = MagicMock(return_value=describe_network_interfaces_res)
+    EC2_CLIENT_MOCK.describe_security_groups = MagicMock(return_value=describe_security_groups_res)
+    EC2_CLIENT_MOCK.describe_subnets = MagicMock(return_value=describe_subnets_res)
+    EC2_CLIENT_MOCK.describe_volumes = MagicMock(return_value=describe_volumes_res)
+    EC2_CLIENT_MOCK.describe_vpcs = MagicMock(return_value=describe_vpcs_res)
