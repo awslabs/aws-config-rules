@@ -52,7 +52,7 @@ class ComplianceTest(unittest.TestCase):
         invoking_event = build_invoking_event(tags={})
         response = RULE.lambda_handler(build_lambda_configurationchange_event(rule_parameters=rule_parameters, invoking_event=invoking_event), "")
         resp_expected = []
-        resp_expected.append(build_expected_response('COMPLIANT', 'i-08849914c0be5c303'))
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', 'i-08849914c0be5c303'))
         assert_successful_evaluation(self, response, resp_expected)
 
     def test_rule_resource_not_tagged(self):

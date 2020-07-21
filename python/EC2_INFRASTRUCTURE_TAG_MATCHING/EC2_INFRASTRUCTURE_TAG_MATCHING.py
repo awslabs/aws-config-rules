@@ -10,14 +10,60 @@
 # the specific language governing permissions and limitations under the License.
 #
 #
-# Rule Name:
-#   EC2-INFRASTRUCTURE-TAG-MATCHING
-#
-# Description:
-#   Compares the tags of the EC2 instance and the related resources (VPC, SecurityGroups, ENIs, Subnet and Volumes). The rule parameters define which tag will be compared (TagName) and which infrastracture resources will be evaluated.
-#
-# Trigger:
-#   Configuration Changes on AWS::EC2::Instance
+'''
+#####################################
+##           Gherkin               ##
+#####################################
+ Rule Name:
+   EC2-INFRASTRUCTURE-TAG-MATCHING
+
+ Description
+    Compares the tags of the EC2 instance and the related resources (VPC, SecurityGroups, ENIs, Subnet and Volumes). The rule parameters define which tag will be compared (TagName) and which infrastracture resources will be evaluated.
+
+ Trigger
+    Configuration Change on AWS::EC2::Instance
+
+ Reports on:
+    AWS::EC2::Instance
+
+ Rule Parameters:
+    TagName (mandatory):
+       The name of the Tag which is compared.
+    VPC (mandatory):
+       True/False - If True, the value of Tag "TagName" attached to this resource is compared to the value of the same Tag on the EC2 instance. If False, this resource is ignored for the evaluation.
+    SecurityGroups (optional):
+       True/False - If True, the value of Tag "TagName" attached to this resource is compared to the value of the same Tag on the EC2 instance. If False, this resource is ignored for the evaluation.
+    ENIs (optional):
+       True/False - If True, the value of Tag "TagName" attached to this resource is compared to the value of the same Tag on the EC2 instance. If False, this resource is ignored for the evaluation.
+    Subnet (optional):
+       True/False - If True, the value of Tag "TagName" attached to this resource is compared to the value of the same Tag on the EC2 instance. If False, this resource is ignored for the evaluation.
+    Volumes (optional):
+       True/False - If True, the value of Tag "TagName" attached to this resource is compared to the value of the same Tag on the EC2 instance. If False, this resource is ignored for the evaluation.
+
+ Scenarios:
+   Scenario 1:
+   Given: EC2 instance not tagged with "TagName".
+    Then: Return NOT_APPLICABLE
+
+   Scenario 2:
+   Given: Resource is not tagged with "TagName"
+    Then: Return COMPLIANT
+
+   Scenario 3:
+   Given: Resource Tag and EC2 Tag do not match
+   And:   Rule Parameter for this Resource is set to "True"
+    Then: Return NON_COMPLIANT
+
+   Scenario 4:
+   Given: Resource Tag and EC2 Tag do not match
+   And:   Rule Parameter for these Resources are set to "False"
+    Then: Return COMPLIANT
+
+   Scenario 5:
+   Given: Resource Tag and EC2 Tag do match
+   And:   Rule Parameter for these Resources are set to "True"
+    Then: Return COMPLIANT
+'''
 
 import json
 import sys
@@ -128,8 +174,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             print("EC2 tagged with " + tag_name + " " + tag_value)
         except KeyError:
             print("Tag missing on EC2 instance. This config rule does not enforce tags!")
-            print("COMPLIANT")
-            return "COMPLIANT"
+            print("NOT_APPLICABLE")
+            return "NOT_APPLICABLE"
 
         for resource in rule_parameters:
             if resource == "TagName":
