@@ -46,8 +46,8 @@ RULE = __import__('EC2_INFRASTRUCTURE_TAG_MATCHING')
 
 class ComplianceTest(unittest.TestCase):
 
-    def test_rule_ec2_not_tagged(self):
-        # The EC2 instance is not tagged with the "SecurityProfile" Tag. This config rule does not enforce tags => COMPLIANT
+    def test_scenario_1(self):
+        # The EC2 instance is not tagged with the "SecurityProfile" Tag. This config rule does not enforce tags => NOT_APPLICABLE
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"True","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
         invoking_event = build_invoking_event(tags={})
         response = RULE.lambda_handler(build_lambda_configurationchange_event(rule_parameters=rule_parameters, invoking_event=invoking_event), "")
@@ -55,8 +55,8 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NOT_APPLICABLE', 'i-08849914c0be5c303'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_rule_relevant_resource_not_tagged(self):
-        # In rule_parameters, VPC is set to True, but the VPC is not tagged. Since this Config rule does not enforce tags, this is evaluated as COMPLIANT.
+    def test_scenario_2(self):
+        # In rule_parameters, VPC is set to True, but the VPC is not tagged. => NOT_COMPLIANT
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"True","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
         invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
         ec2_mock(
@@ -71,8 +71,8 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'i-08849914c0be5c303')) # This rule does not enforce tags!
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_rule_non_relevant_resource_not_tagged(self):
-        # In rule_parameters, VPC is set to True, but the VPC is not tagged. Since this Config rule does not enforce tags, this is evaluated as COMPLIANT.
+    def test_scenario_3(self):
+        # In rule_parameters, VPC is set to False, but the VPC is not tagged. => COMPLIANT
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"False","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
         invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
         ec2_mock(
@@ -87,7 +87,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', 'i-08849914c0be5c303')) # This rule does not enforce tags!
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_rule_tags_do_not_match_of_relevant_resources(self):
+    def test_scenario_4(self):
         # In rule_parameters, VPC is set to True, but the TagValue of the VPC does not match the TagValue of the EC2 = NON_COMPLIANT
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"True","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
         invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
@@ -103,7 +103,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NON_COMPLIANT', 'i-08849914c0be5c303'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_rule_tags_do_not_match_of_not_relevant_resources(self):
+    def test_scenario_5(self):
         # In rule_parameters, VPC is set to False and the TagValue of the VPC does not match the TagValue of the EC2 => COMPLIANT
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"False","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
         invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
@@ -119,7 +119,7 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('COMPLIANT', 'i-08849914c0be5c303'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_rule_tags_match(self):
+    def test_scenario_6(self):
         # In rule_parameters, VPC is set to True and the TagValue of the VPC does match the TagValue of the EC2 => COMPLIANT
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"True","SecurityGroups":"True","ENIs":"True","Subnet":"True","Volumes":"True"}'
         invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
