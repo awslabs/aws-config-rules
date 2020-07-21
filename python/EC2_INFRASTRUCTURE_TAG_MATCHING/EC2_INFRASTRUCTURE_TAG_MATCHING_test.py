@@ -55,9 +55,25 @@ class ComplianceTest(unittest.TestCase):
         resp_expected.append(build_expected_response('NOT_APPLICABLE', 'i-08849914c0be5c303'))
         assert_successful_evaluation(self, response, resp_expected)
 
-    def test_rule_resource_not_tagged(self):
+    def test_rule_relevant_resource_not_tagged(self):
         # In rule_parameters, VPC is set to True, but the VPC is not tagged. Since this Config rule does not enforce tags, this is evaluated as COMPLIANT.
         rule_parameters = '{"TagName":"SecurityProfile","VPC":"True","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
+        invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
+        ec2_mock(
+            network_interfaces=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            security_groups=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            subnets=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            volumes=[{"Key":"SecurityProfile", "Value":"Medium"}],
+            vpcs=[]
+        )
+        response = RULE.lambda_handler(build_lambda_configurationchange_event(rule_parameters=rule_parameters, invoking_event=invoking_event), "")
+        resp_expected = []
+        resp_expected.append(build_expected_response('NON_COMPLIANT', 'i-08849914c0be5c303')) # This rule does not enforce tags!
+        assert_successful_evaluation(self, response, resp_expected)
+
+    def test_rule_non_relevant_resource_not_tagged(self):
+        # In rule_parameters, VPC is set to True, but the VPC is not tagged. Since this Config rule does not enforce tags, this is evaluated as COMPLIANT.
+        rule_parameters = '{"TagName":"SecurityProfile","VPC":"False","SecurityGroups":"False","ENIs":"False","Subnet":"False","Volumes":"False"}'
         invoking_event = build_invoking_event(tags={"SecurityProfile":"Medium"})
         ec2_mock(
             network_interfaces=[{"Key":"SecurityProfile", "Value":"Medium"}],

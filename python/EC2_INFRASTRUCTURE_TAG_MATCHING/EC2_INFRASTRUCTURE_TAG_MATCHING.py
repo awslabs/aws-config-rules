@@ -45,24 +45,30 @@
    Given: EC2 instance not tagged with "TagName".
     Then: Return NOT_APPLICABLE
 
-   Scenario 2:
-   Given: Resource is not tagged with "TagName"
-    Then: Return COMPLIANT
+  Scenario 2:
+  Given: Resource is not tagged with "TagName"
+  And:    Rule Parameter for these Resources are set to "True"
+   Then: Return NON_COMPLIANT
 
-   Scenario 3:
-   Given: Resource Tag and EC2 Tag do not match
-   And:   Rule Parameter for this Resource is set to "True"
-    Then: Return NON_COMPLIANT
+  Scenario 3:
+  Given: Resource is not tagged with "TagName"
+  And:    Rule Parameter for these Resources are set to "False"
+   Then: Return COMPLIANT
 
-   Scenario 4:
-   Given: Resource Tag and EC2 Tag do not match
-   And:   Rule Parameter for these Resources are set to "False"
-    Then: Return COMPLIANT
+  Scenario 4:
+  Given: Resource Tag and EC2 Tag do not match
+  And:   Rule Parameter for this Resource is set to "True"
+   Then: Return NON_COMPLIANT
 
-   Scenario 5:
-   Given: Resource Tag and EC2 Tag do match
-   And:   Rule Parameter for these Resources are set to "True"
-    Then: Return COMPLIANT
+  Scenario 5:
+  Given: Resource Tag and EC2 Tag do not match
+  And:   Rule Parameter for these Resources are set to "False"
+   Then: Return COMPLIANT
+
+  Scenario 6:
+  Given: Resource Tag and EC2 Tag do match
+  And:   Rule Parameter for these Resources are set to "True"
+   Then: Return COMPLIANT
 '''
 
 import json
@@ -136,35 +142,35 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                     try:
                         resource_tags["NetowrkInterfaces"][resource_id] = networkinterface["TagSet"]
                     except KeyError:
-                        print(resource_id + " does not have any Tags. Tag enforcement is not monitored by this config rule!")
+                        print(resource_id + " does not have any Tags.")
             if resource["resourceType"] == "AWS::EC2::SecurityGroup":
                 resource_id = resource["resourceId"]
                 for securitygroup in ec2.describe_security_groups(GroupIds=[resource_id])["SecurityGroups"]:
                     try:
                         resource_tags["SecurityGroups"][resource_id] = securitygroup["Tags"]
                     except KeyError:
-                        print(resource_id + " does not have any Tags. Tag enforcement is not monitored by this config rule!")
+                        print(resource_id + " does not have any Tags.")
             if resource["resourceType"] == "AWS::EC2::Subnet":
                 resource_id = resource["resourceId"]
                 for subnet in ec2.describe_subnets(SubnetIds=[resource_id])["Subnets"]:
                     try:
                         resource_tags["Subnet"][resource_id] = subnet["Tags"]
                     except KeyError:
-                        print(resource_id + " does not have any Tags. Tag enforcement is not monitored by this config rule!")
+                        print(resource_id + " does not have any Tags.")
             if resource["resourceType"] == "AWS::EC2::Volume":
                 resource_id = resource["resourceId"]
                 for volume in ec2.describe_volumes(VolumeIds=[resource_id])["Volumes"]:
                     try:
                         resource_tags["Volumes"][resource_id] = volume["Tags"]
                     except KeyError:
-                        print(resource_id + " does not have any Tags. Tag enforcement is not monitored by this config rule!")
+                        print(resource_id + " does not have any Tags.")
             if resource["resourceType"] == "AWS::EC2::VPC":
                 resource_id = resource["resourceId"]
                 for vpc in ec2.describe_vpcs(VpcIds=[resource_id])["Vpcs"]:
                     try:
                         resource_tags["VPC"][resource_id] = vpc["Tags"]
                     except KeyError:
-                        print(resource_id + " does not have any Tags. Tag enforcement is not monitored by this config rule!")
+                        print(resource_id + " does not have any Tags.")
         print(resource_tags)
 
         # Evaluate Tags for compliancy
@@ -173,7 +179,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
             tag_value = resource_tags["EC2"][tag_name]
             print("EC2 tagged with " + tag_name + " " + tag_value)
         except KeyError:
-            print("Tag missing on EC2 instance. This config rule does not enforce tags!")
+            print("Tag missing on EC2 instance. This config rule does not enforce tags on EC2 instances!")
             print("NOT_APPLICABLE")
             return "NOT_APPLICABLE"
 
@@ -197,7 +203,8 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                     print(item + " tag is compliant.")
                 if tag_not_found:
                     print(resource + " is not tagged with " + tag_name)
-                    # This Config rule does not enforce tagging. This should be done via tag policies and SCPs!
+                    print("NON_COMPLIANT")
+                    return "NON_COMPLIANT"
 
         print("COMPLIANT")
         return "COMPLIANT"
