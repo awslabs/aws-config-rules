@@ -51,7 +51,22 @@
     In order to: validate environment variables used on my lambda functions
              As: a Security Officer
          I want: To ensure that updated Lambdas have valid environment variables.
-         
+
+ Permissions required:
+    - AWSConfigRulesExecutionRole (managed)
+    - "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Action": [
+          "lambda:GetFunction",
+          "lambda:GetFunctionConfiguration"
+          ],
+        "Resource": [
+          "*"
+        ],
+        "Effect": "Allow"
+        }
+      ]   
 */
 
 const aws = require('aws-sdk');
