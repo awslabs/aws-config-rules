@@ -1,0 +1,34 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_TAG_VOLUMES",
+    "SourceRuntime": "python3.6-lib",
+    "CodeKey": "EC2_TAG_VOLUMES.zip",
+    "InputParameters": "{\"ExecutionRoleName\": \"Rdk-XA-Role\"}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::EC2::Volume",
+    "Remediation": {
+      "ConfigRuleName": "EC2_TAG_VOLUMES",
+      "Parameters": {
+        "AutomationAssumeRole": {
+          "StaticValue": {
+            "Values": [
+              {
+                "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/Rdk-SSMAutomation-Admin-Role"
+              }
+            ]
+          }
+        },
+        "Volume": {
+          "ResourceValue": {
+            "Value": "RESOURCE_ID"
+          }
+        }
+      },
+      "ResourceType": "AWS::EC2::Volume",
+      "TargetId": "Ec2TagVolumes-Script",
+      "TargetType": "SSM_DOCUMENT"
+    }
+  },
+  "Tags": "[]"
+}

@@ -1,0 +1,87 @@
+description: 'Tags Volumes to ensure it includes the same Tags as those of the EC2 Instance its attached to.'
+schemaVersion: '0.3'
+assumeRole: '{{ AutomationAssumeRole }}'
+parameters:
+  Volume:
+    type: String
+    description: (Required) The EBS Volume ID that will have tags applied.
+  AutomationAssumeRole:
+    type: String
+    default: 'arn:aws:iam::{{global:ACCOUNT_ID}}:role/Rdk-SSMAutomation-Admin-Role'
+    description: >-
+      (Optional) The Amazon Resource Name (ARN) of the role that allows SSM
+      Automation to perform the actions on your behalf.
+mainSteps:
+  - name: tag_volumes
+    action: 'aws:executeScript'
+    inputs:
+      Runtime: python3.6
+      Handler: tag_volumes_handler
+      Script: |
+        import sys
+
+        import boto3
+
+
+        def tag_volumes_handler(events, context):
+            ec2_client = boto3.client("ec2")
+            volume_id = events.get("Volume")
+            instance_id = get_instance_attached_to_volume(ec2_client, volume_id)
+            if not instance_id:
+                return "Exiting! EBS Volume not attached to an EC2 instance."
+            volume_tags = get_volume_tags(ec2_client, volume_id)
+            instance_tags = get_instance_tags(ec2_client, instance_id)
+            tags_to_apply = compare_instance_tags_to_volume_tags(instance_tags, volume_tags)
+            results = tag_volume(ec2_client, volume_id, tags_to_apply)
+            if results:
+                return "Tags Applied!"
+            if not results:
+                return "No Tags to Apply!"
+
+
+        def get_instance_attached_to_volume(ec2_client, volume_id):
+            response = ec2_client.describe_volumes(VolumeIds=[volume_id])
+            if response.get("Volumes")[0].get("Attachments"):
+                instance_id = response.get("Volumes")[0].get("Attachments")[0].get("InstanceId")
+            if not response.get("Volumes")[0].get("Attachments"):
+                instance_id = False
+            return instance_id
+
+
+        def get_volume_tags(ec2_client, volume_id):
+            response = ec2_client.describe_tags(Filters=[{"Name": "resource-id", "Values": [volume_id]}])
+            volume_tags = list()
+            for tag in response.get("Tags"):
+                # Skip Tag Keys starting with "aws:", as they are reserved for internal AWS use.
+                if tag["Key"].startswith("aws:"):
+                    continue
+                tag_value = {"Key": tag["Key"], "Value": tag["Value"]}
+                volume_tags.append(tag_value)
+            return volume_tags
+
+
+        def get_instance_tags(ec2_client, instance_id):
+            response = ec2_client.describe_tags(Filters=[{"Name": "resource-id", "Values": [instance_id]}])
+            instance_tags = list()
+            for tag in response.get("Tags"):
+                # Skip Tag Keys starting with "aws:", as they are reserved for internal AWS use.
+                if tag["Key"].startswith("aws:"):
+                    continue
+                tag_value = {"Key": tag["Key"], "Value": tag["Value"]}
+                instance_tags.append(tag_value)
+            return instance_tags
+
+
+        def compare_instance_tags_to_volume_tags(instance_tags, volume_tags):
+            tags_to_apply = [i for i in instance_tags if i not in volume_tags]
+            return tags_to_apply
+
+
+        def tag_volume(ec2_client, volume_id, tags_to_apply):
+            if tags_to_apply:
+                ec2_client.create_tags(Resources=[volume_id], Tags=tags_to_apply)
+                return True
+            if not tags_to_apply:
+                return False
+      InputPayload:
+        Volume: '{{Volume}}'
