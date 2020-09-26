@@ -1,0 +1,29 @@
+################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for Amazon DynamoDB
+#
+################################################################################
+
+Resources:
+  DynamoDbAutoscalingEnabled:
+    Properties:
+      ConfigRuleName: DynamoDbAutoscalingEnabled
+      Description: "This rule checks whether Auto Scaling is enabled on your DynamoDB tables. Optionally you can set the read and write capacity units for the table."
+      MaximumExecutionFrequency: Six_Hours
+      Scope:
+        ComplianceResourceTypes:
+          - "AWS::DynamoDB::Table"
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
+    Type: "AWS::Config::ConfigRule"
+  DynamoDbThroughputLimitCheck:
+    Properties:
+      ConfigRuleName: DynamoDbThroughputLimitCheck
+      Description: "Checks whether provisioned DynamoDB throughput is approaching the maximum limit for your account."
+      MaximumExecutionFrequency: Six_Hours
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_THROUGHPUT_LIMIT_CHECK
+    Type: "AWS::Config::ConfigRule"

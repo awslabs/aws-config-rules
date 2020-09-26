@@ -1,0 +1,137 @@
+################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for AWS Identity and Access Management
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+################################################################################
+
+Parameters:
+  AccessKeysRotatedParameterMaxAccessKeyAge:
+    Description: Maximum number of days without rotation. Default 90.
+    Type: String
+    Default: 90
+  IAMUserUnusedCredentialsCheckParameterMaxCredentialUsageAge:
+    Description: Maximum number of days a credential cannot be used. The default value
+      is 90 days.
+    Type: String
+    Default: 90
+Resources:
+  AccessKeysRotated:
+    Properties:
+      ConfigRuleName: AccessKeysRotated
+      Description: Checks whether the active access keys are rotated within the number
+        of days specified in maxAccessKeyAge. The rule is non-compliant if the access
+        keys have not been rotated for more than maxAccessKeyAge number of days.
+      InputParameters:
+        maxAccessKeyAge:
+          Ref: AccessKeysRotatedParameterMaxAccessKeyAge
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+    Type: AWS::Config::ConfigRule
+  IAMGroupHasUsersCheck:
+    Properties:
+      ConfigRuleName: IAMGroupHasUsersCheck
+      Description: Checks whether IAM groups have at least one IAM user.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
+    Type: AWS::Config::ConfigRule
+  IAMPasswordPolicy:
+    Properties:
+      ConfigRuleName: IAMPasswordPolicy
+      Description: Checks whether the account password policy for IAM users meets
+        the specified requirements.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_PASSWORD_POLICY
+    Type: AWS::Config::ConfigRule
+  IAMPolicyNoStatementsWithAdminAccess:
+    Properties:
+      ConfigRuleName: IAMPolicyNoStatementsWithAdminAccess
+      Description: 'Checks whether the default version of AWS Identity and Access
+        Management (IAM) policies do not have administrator access. If any statement
+        has "Effect": "Allow" with "Action": "*" over "Resource": "*", the rule is
+        non-compliant.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+    Type: AWS::Config::ConfigRule
+  IAMRootAccessKeyCheck:
+    Properties:
+      ConfigRuleName: IAMRootAccessKeyCheck
+      Description: Checks whether the root user access key is available. The rule
+        is compliant if the user access key does not exist.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
+    Type: AWS::Config::ConfigRule
+  IAMUserGroupMembershipCheck:
+    Properties:
+      ConfigRuleName: IAMUserGroupMembershipCheck
+      Description: Checks whether IAM users are members of at least one IAM group.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_GROUP_MEMBERSHIP_CHECK
+    Type: AWS::Config::ConfigRule
+  IAMUserMFAEnabled:
+    Properties:
+      ConfigRuleName: IAMUserMFAEnabled
+      Description: Checks whether the AWS Identity and Access Management users have
+        multi-factor authentication (MFA) enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  IAMUserNoPoliciesCheck:
+    Properties:
+      ConfigRuleName: IAMUserNoPoliciesCheck
+      Description: Checks that none of your IAM users have policies attached. IAM
+        users must inherit permissions from IAM groups or roles.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_NO_POLICIES_CHECK
+    Type: AWS::Config::ConfigRule
+  IAMUserUnusedCredentialsCheck:
+    Properties:
+      ConfigRuleName: IAMUserUnusedCredentialsCheck
+      Description: Checks whether your AWS Identity and Access Management (IAM) users
+        have passwords or active access keys that have not been used within the specified
+        number of days you provided.
+      InputParameters:
+        maxCredentialUsageAge:
+          Ref: IAMUserUnusedCredentialsCheckParameterMaxCredentialUsageAge
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
+    Type: AWS::Config::ConfigRule
+  MFAEnabledForIAMConsoleAccess:
+    Properties:
+      ConfigRuleName: MFAEnabledForIAMConsoleAccess
+      Description: Checks whether AWS Multi-Factor Authentication (MFA) is enabled
+        for all AWS Identity and Access Management (IAM) users that use a console
+        password. The rule is compliant if MFA is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+    Type: AWS::Config::ConfigRule
+  RootAccountHardwareMFAEnabled:
+    Properties:
+      ConfigRuleName: RootAccountHardwareMFAEnabled
+      Description: Checks whether your AWS account is enabled to use multi-factor
+        authentication (MFA) hardware device to sign in with root credentials.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  RootAccountMFAEnabled:
+    Properties:
+      ConfigRuleName: RootAccountMFAEnabled
+      Description: Checks whether the root user of your AWS account requires multi-factor
+        authentication for console sign-in.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
