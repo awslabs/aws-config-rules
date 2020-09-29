@@ -1,0 +1,169 @@
+###################################################################################
+#
+#   Conformance Pack:
+#     AWS Control Tower Detective Guardrails Conformance Pack
+#
+#    The AWS Control Tower detective guardrails conformance pack contains all of the
+#    AWS Config Rules based guardrails from AWS Control Tower. Use this conformance
+#    pack to apply AWS Control Tower detective guardrails to your existing accounts
+#    prior to enrolling them in AWS Control Tower or to manage resources in your
+#    accounts in regions not currently supported by AWS Control Tower.
+###################################################################################
+
+Resources:
+  CheckForEbsOptimizedInstance:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForEbsOptimizedInstance
+      Description: Disallow launch of EC2 instance types that are not EBS-optimized - Checks whether EBS optimization is enabled for your EC2 instances that can be EBS-optimized
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_OPTIMIZED_INSTANCE
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Instance
+  CheckForEc2VolumesInUse:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForEc2VolumesInUs
+      Description: Disallow EBS volumes that are unattached to an EC2 instance - Checks whether EBS volumes are attached to EC2 instances
+      InputParameters:
+        deleteOnTermination: true
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_VOLUME_INUSE_CHECK
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Volume
+  CheckForEncryptedVolumes:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForEncryptedVolumes
+      Description: Enable encryption for EBS volumes attached to EC2 instances - Checks whether EBS volumes that are in an attached state are encrypted.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ENCRYPTED_VOLUMES
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Volume
+  CheckForIAMUserMFA:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForIAMUserMFA
+      Description: Disallow access to IAM users without MFA - Checks whether the AWS Identity and Access Management users have multi-factor authentication (MFA) enabled. The rule is COMPLIANT if MFA is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_MFA_ENABLED
+      MaximumExecutionFrequency: One_Hour
+  CheckForIAMUserConsoleMFA:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForIAMUserConsoleMFA
+      Description: Disallow console access to IAM users without MFA - Checks whether AWS Multi-Factor Authentication (MFA) is enabled for all AWS Identity and Access Management (IAM) users that use a console password. The rule is COMPLIANT if MFA is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+      MaximumExecutionFrequency: One_Hour
+  CheckForRdsPublicAccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForRdsPublicAccess
+      Description: Disallow public access to RDS database instances - Checks whether the Amazon Relational Database Service (RDS) instances are not publicly accessible. The rule is non-compliant if the publiclyAccessible field is true in the instance configuration item.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_PUBLIC_ACCESS_CHECK
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::RDS::DBInstance
+  CheckForPublicRdsSnapshots:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForPublicRdsSnapshots
+      Description: Disallow public access to RDS database snapshots - Checks if Amazon Relational Database Service (Amazon RDS) snapshots are public. The rule is non-compliant if any existing and new Amazon RDS snapshots are public.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_SNAPSHOTS_PUBLIC_PROHIBITED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::RDS::DBSnapshot
+  CheckForRdsStorageEncryption:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForRdsStorageEncryption
+      Description: Disallow RDS database instances that are not storage encrypted - Checks whether storage encryption is enabled for your RDS DB instances.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_STORAGE_ENCRYPTED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::RDS::DBInstance
+  CheckForRestrictedCommonPortsPolicy:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForRestrictedCommonPortsPolicy
+      Description: Disallow internet connection through RDP - Checks whether security groups that are in use disallow unrestricted incoming TCP traffic to the specified ports.
+      InputParameters:
+        blockedPort1: 20
+        blockedPort2: 21
+        blockedPort3: 3389
+        blockedPort4: 3306
+        blockedPort5: 4333
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
+  CheckForRestrictedSshPolicy:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForRestrictedSshPolicy
+      Description: Disallow internet connection through SSH - Checks whether security groups that are in use disallow unrestricted incoming SSH traffic.
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: INCOMING_SSH_DISABLED
+  CheckForRootMfa:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForRootMfa
+      Description: Enable MFA for the root user - Checks whether the root user of your AWS account requires multi-factor authentication for console sign-in.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+      MaximumExecutionFrequency: One_Hour
+  CheckForS3PublicRead:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForS3PublicRead
+      Description: Disallow public read access to S3 buckets - Checks that your S3 buckets do not allow public read access. If an S3 bucket policy or bucket ACL allows public read access, the bucket is noncompliant.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+  CheckForS3PublicWrite:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForS3PublicWrite
+      Description: Disallow public write access to S3 buckets - Checks that your S3 buckets do not allow public write access. If an S3 bucket policy or bucket ACL allows public write access, the bucket is noncompliant.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+  CheckForS3VersioningEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CheckForS3VersioningEnabled
+      Description: Disallow S3 buckets that are not versioning enabled - Checks whether versioning is enabled for your S3 buckets.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
