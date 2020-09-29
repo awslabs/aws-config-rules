@@ -1,0 +1,419 @@
+##################################################################################
+#
+#   Conformance Pack:
+#   Operational Best Practices based on Security, Identity, and Compliance Services
+#
+#   This  pack contains AWS Config rules based on Security, Identity, and Compliance Services
+#   (https://aws.amazon.com/products/security). This Conformance Pack has
+#   been designed for compatibility with the majority of AWS regions and to not require
+#   setting of any Parameters. Additional managed rules that require parameters to be set
+#   for your environment and/or for your specific region can be found at
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+##################################################################################
+
+Parameters:
+  AccessKeysRotatedParamMaxAccessKeyAge:
+    Default: '90'
+    Type: String
+  AcmCertificateExpirationCheckParamDaysToExpiration:
+    Default: '90'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysHighSev:
+    Default: '1'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysLowSev:
+    Default: '30'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysMediumSev:
+    Default: '7'
+    Type: String
+  IamPasswordPolicyParamMaxPasswordAge:
+    Default: '90'
+    Type: String
+  IamPasswordPolicyParamMinimumPasswordLength:
+    Default: '14'
+    Type: String
+  IamPasswordPolicyParamPasswordReusePrevention:
+    Default: '24'
+    Type: String
+  IamPasswordPolicyParamRequireLowercaseCharacters:
+    Default: 'TRUE'
+    Type: String
+  IamPasswordPolicyParamRequireNumbers:
+    Default: 'TRUE'
+    Type: String
+  IamPasswordPolicyParamRequireSymbols:
+    Default: 'TRUE'
+    Type: String
+  IamPasswordPolicyParamRequireUppercaseCharacters:
+    Default: 'TRUE'
+    Type: String
+  IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
+    Default: '90'
+    Type: String
+Resources:
+  AccessKeysRotated:
+    Properties:
+      ConfigRuleName: access-keys-rotated
+      InputParameters:
+        maxAccessKeyAge:
+          Fn::If:
+          - accessKeysRotatedParamMaxAccessKeyAge
+          - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+    Type: AWS::Config::ConfigRule
+  AccountPartOfOrganizations:
+    Properties:
+      ConfigRuleName: account-part-of-organizations
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCOUNT_PART_OF_ORGANIZATIONS
+    Type: AWS::Config::ConfigRule
+  AcmCertificateExpirationCheck:
+    Properties:
+      ConfigRuleName: acm-certificate-expiration-check
+      InputParameters:
+        daysToExpiration:
+          Fn::If:
+          - acmCertificateExpirationCheckParamDaysToExpiration
+          - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ACM::Certificate
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACM_CERTIFICATE_EXPIRATION_CHECK
+    Type: AWS::Config::ConfigRule
+  AlbWafEnabled:
+    Properties:
+      ConfigRuleName: alb-waf-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_WAF_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailCloudWatchLogsEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-cloud-watch-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEncryptionEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-encryption-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailLogFileValidationEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-log-file-validation-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  CmkBackingKeyRotationEnabled:
+    Properties:
+      ConfigRuleName: cmk-backing-key-rotation-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  GuarddutyEnabledCentralized:
+    Properties:
+      ConfigRuleName: guardduty-enabled-centralized
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+    Type: AWS::Config::ConfigRule
+  GuarddutyNonArchivedFindings:
+    Properties:
+      ConfigRuleName: guardduty-non-archived-findings
+      InputParameters:
+        daysHighSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysHighSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+          - Ref: AWS::NoValue
+        daysLowSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysLowSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+          - Ref: AWS::NoValue
+        daysMediumSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysMediumSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_NON_ARCHIVED_FINDINGS
+    Type: AWS::Config::ConfigRule
+  IamGroupHasUsersCheck:
+    Properties:
+      ConfigRuleName: iam-group-has-users-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
+    Type: AWS::Config::ConfigRule
+  IamNoInlinePolicyCheck:
+    Properties:
+      ConfigRuleName: iam-no-inline-policy-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+        - AWS::IAM::Role
+        - AWS::IAM::Group
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_NO_INLINE_POLICY_CHECK
+    Type: AWS::Config::ConfigRule
+  IamPasswordPolicy:
+    Properties:
+      ConfigRuleName: iam-password-policy
+      InputParameters:
+        MaxPasswordAge:
+          Fn::If:
+          - iamPasswordPolicyParamMaxPasswordAge
+          - Ref: IamPasswordPolicyParamMaxPasswordAge
+          - Ref: AWS::NoValue
+        MinimumPasswordLength:
+          Fn::If:
+          - iamPasswordPolicyParamMinimumPasswordLength
+          - Ref: IamPasswordPolicyParamMinimumPasswordLength
+          - Ref: AWS::NoValue
+        PasswordReusePrevention:
+          Fn::If:
+          - iamPasswordPolicyParamPasswordReusePrevention
+          - Ref: IamPasswordPolicyParamPasswordReusePrevention
+          - Ref: AWS::NoValue
+        RequireLowercaseCharacters:
+          Fn::If:
+          - iamPasswordPolicyParamRequireLowercaseCharacters
+          - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+          - Ref: AWS::NoValue
+        RequireNumbers:
+          Fn::If:
+          - iamPasswordPolicyParamRequireNumbers
+          - Ref: IamPasswordPolicyParamRequireNumbers
+          - Ref: AWS::NoValue
+        RequireSymbols:
+          Fn::If:
+          - iamPasswordPolicyParamRequireSymbols
+          - Ref: IamPasswordPolicyParamRequireSymbols
+          - Ref: AWS::NoValue
+        RequireUppercaseCharacters:
+          Fn::If:
+          - iamPasswordPolicyParamRequireUppercaseCharacters
+          - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_PASSWORD_POLICY
+    Type: AWS::Config::ConfigRule
+  IamPolicyNoStatementsWithAdminAccess:
+    Properties:
+      ConfigRuleName: iam-policy-no-statements-with-admin-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+    Type: AWS::Config::ConfigRule
+  IamRootAccessKeyCheck:
+    Properties:
+      ConfigRuleName: iam-root-access-key-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
+    Type: AWS::Config::ConfigRule
+  IamUserGroupMembershipCheck:
+    Properties:
+      ConfigRuleName: iam-user-group-membership-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_GROUP_MEMBERSHIP_CHECK
+    Type: AWS::Config::ConfigRule
+  IamUserMfaEnabled:
+    Properties:
+      ConfigRuleName: iam-user-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  IamUserNoPoliciesCheck:
+    Properties:
+      ConfigRuleName: iam-user-no-policies-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_NO_POLICIES_CHECK
+    Type: AWS::Config::ConfigRule
+  IamUserUnusedCredentialsCheck:
+    Properties:
+      ConfigRuleName: iam-user-unused-credentials-check
+      InputParameters:
+        maxCredentialUsageAge:
+          Fn::If:
+          - iamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+          - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
+    Type: AWS::Config::ConfigRule
+  KmsCmkNotScheduledForDeletion:
+    Properties:
+      ConfigRuleName: kms-cmk-not-scheduled-for-deletion
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::KMS::Key
+      Source:
+        Owner: AWS
+        SourceIdentifier: KMS_CMK_NOT_SCHEDULED_FOR_DELETION
+    Type: AWS::Config::ConfigRule
+  MfaEnabledForIamConsoleAccess:
+    Properties:
+      ConfigRuleName: mfa-enabled-for-iam-console-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+    Type: AWS::Config::ConfigRule
+  RootAccountHardwareMfaEnabled:
+    Properties:
+      ConfigRuleName: root-account-hardware-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  RootAccountMfaEnabled:
+    Properties:
+      ConfigRuleName: root-account-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerRotationEnabledCheck:
+    Properties:
+      ConfigRuleName: secretsmanager-rotation-enabled-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_ROTATION_ENABLED_CHECK
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerScheduledRotationSuccessCheck:
+    Properties:
+      ConfigRuleName: secretsmanager-scheduled-rotation-success-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SCHEDULED_ROTATION_SUCCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  SecurityhubEnabled:
+    Properties:
+      ConfigRuleName: securityhub-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+    Type: AWS::Config::ConfigRule
+  Wafv2LoggingEnabled:
+    Properties:
+      ConfigRuleName: wafv2-logging-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAFV2_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+Conditions:
+  accessKeysRotatedParamMaxAccessKeyAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+  acmCertificateExpirationCheckParamDaysToExpiration:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
+  guarddutyNonArchivedFindingsParamDaysHighSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+  guarddutyNonArchivedFindingsParamDaysLowSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+  guarddutyNonArchivedFindingsParamDaysMediumSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+  iamPasswordPolicyParamMaxPasswordAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamMaxPasswordAge
+  iamPasswordPolicyParamMinimumPasswordLength:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamMinimumPasswordLength
+  iamPasswordPolicyParamPasswordReusePrevention:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamPasswordReusePrevention
+  iamPasswordPolicyParamRequireLowercaseCharacters:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+  iamPasswordPolicyParamRequireNumbers:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireNumbers
+  iamPasswordPolicyParamRequireSymbols:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireSymbols
+  iamPasswordPolicyParamRequireUppercaseCharacters:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+  iamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge

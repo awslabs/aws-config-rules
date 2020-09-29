@@ -1,0 +1,110 @@
+##################################################################################
+#
+#   Conformance Pack:
+#   Operational Best Practices for AWS Config rules based on Management and Governance Services                                  
+#
+#   This  pack contains AWS Config rules based on Management and Governance Services
+#   (https://aws.amazon.com/products/management-tools/). This Conformance Pack has
+#   been designed for compatibility with the majority of AWS regions and to not require
+#   setting of any Parameters. Additional managed rules that require parameters to be set
+#   for your environment and/or for your specific region can be found at
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+##################################################################################
+
+Resources:
+  AccountPartOfOrganizations:
+    Properties:
+      ConfigRuleName: account-part-of-organizations
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCOUNT_PART_OF_ORGANIZATIONS
+    Type: AWS::Config::ConfigRule
+  CloudTrailCloudWatchLogsEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-cloud-watch-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEncryptionEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-encryption-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailLogFileValidationEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-log-file-validation-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudtrailS3DataeventsEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-s3-dataevents-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDTRAIL_S3_DATAEVENTS_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudtrailSecurityTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-security-trail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDTRAIL_SECURITY_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmActionCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-action-check
+      InputParameters:
+        alarmActionRequired: 'TRUE'
+        insufficientDataActionRequired: 'TRUE'
+        okActionRequired: 'FALSE'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
+    Type: AWS::Config::ConfigRule
+  CloudwatchLogGroupEncrypted:
+    Properties:
+      ConfigRuleName: cloudwatch-log-group-encrypted
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  CwLoggroupRetentionPeriodCheck:
+    Properties:
+      ConfigRuleName: cw-loggroup-retention-period-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceManagedBySsm:
+    Properties:
+      ConfigRuleName: ec2-instance-managed-by-systems-manager
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+        - AWS::SSM::ManagedInstanceInventory
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_MANAGED_BY_SSM
+    Type: AWS::Config::ConfigRule
+  MultiRegionCloudTrailEnabled:
+    Properties:
+      ConfigRuleName: multi-region-cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule

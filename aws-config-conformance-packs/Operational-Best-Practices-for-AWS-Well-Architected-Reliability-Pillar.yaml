@@ -1,0 +1,221 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for AWS Well-Architected (WA) Reliability Pillar
+#
+#   This conformance pack helps verify compliance with the AWS WA Reliability Pillar 
+#   (https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/welcome.html) 
+#   requirements.
+#   
+#   This Conformance Pack has been designed for compatibility with the majority of AWS 
+#   regions and to not require setting of any Parameters. Additional managed rules that 
+#   require parameters to be set for your environment and/or for your specific region can 
+#   be found at https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  LambdaConcurrencyCheckParamConcurrencyLimitHigh:
+    Default: '1000'
+    Type: String
+  LambdaConcurrencyCheckParamConcurrencyLimitLow:
+    Default: '500'
+    Type: String
+  RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Default: 'TRUE'
+    Type: String
+Resources:
+  DbInstanceBackupEnabled:
+    Properties:
+      ConfigRuleName: db-instance-backup-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: DB_INSTANCE_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbAutoscalingEnabled:
+    Properties:
+      ConfigRuleName: dynamodb-autoscaling-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbInBackupPlan:
+    Properties:
+      ConfigRuleName: dynamodb-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  DynamodbPitrEnabled:
+    Properties:
+      ConfigRuleName: dynamodb-pitr-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_PITR_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbThroughputLimitCheck:
+    Properties:
+      ConfigRuleName: dynamodb-throughput-limit-check
+      InputParameters:
+        accountRCUThresholdPercentage:
+          Fn::If:
+          - dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+          - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+          - Ref: AWS::NoValue
+        accountWCUThresholdPercentage:
+          Fn::If:
+          - dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+          - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_THROUGHPUT_LIMIT_CHECK
+    Type: AWS::Config::ConfigRule
+  EbsInBackupPlan:
+    Properties:
+      ConfigRuleName: ebs-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  EfsInBackupPlan:
+    Properties:
+      ConfigRuleName: efs-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  ElasticacheRedisClusterAutomaticBackupCheck:
+    Properties:
+      ConfigRuleName: elasticache-redis-cluster-automatic-backup-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
+    Type: AWS::Config::ConfigRule
+  ElbCrossZoneLoadBalancingEnabled:
+    Properties:
+      ConfigRuleName: elb-cross-zone-load-balancing-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_CROSS_ZONE_LOAD_BALANCING_ENABLED
+    Type: AWS::Config::ConfigRule
+  LambdaConcurrencyCheck:
+    Properties:
+      ConfigRuleName: lambda-concurrency-check
+      InputParameters:
+        ConcurrencyLimitHigh:
+          Fn::If:
+          - lambdaConcurrencyCheckParamConcurrencyLimitHigh
+          - Ref: LambdaConcurrencyCheckParamConcurrencyLimitHigh
+          - Ref: AWS::NoValue
+        ConcurrencyLimitLow:
+          Fn::If:
+          - lambdaConcurrencyCheckParamConcurrencyLimitLow
+          - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_CONCURRENCY_CHECK
+    Type: AWS::Config::ConfigRule
+  RdsInBackupPlan:
+    Properties:
+      ConfigRuleName: rds-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  RdsMultiAzSupport:
+    Properties:
+      ConfigRuleName: rds-multi-az-support
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_MULTI_AZ_SUPPORT
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterMaintenancesettingsCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-maintenancesettings-check
+      InputParameters:
+        allowVersionUpgrade:
+          Fn::If:
+          - redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+          - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_MAINTENANCESETTINGS_CHECK
+    Type: AWS::Config::ConfigRule
+  S3BucketReplicationEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-replication-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_REPLICATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  VpcVpn2TunnelsUp:
+    Properties:
+      ConfigRuleName: vpc-vpn-2-tunnels-up
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::VPNConnection
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_VPN_2_TUNNELS_UP
+    Type: AWS::Config::ConfigRule
+Conditions:
+  dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+  dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+  lambdaConcurrencyCheckParamConcurrencyLimitHigh:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: LambdaConcurrencyCheckParamConcurrencyLimitHigh
+  lambdaConcurrencyCheckParamConcurrencyLimitLow:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
+  redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade

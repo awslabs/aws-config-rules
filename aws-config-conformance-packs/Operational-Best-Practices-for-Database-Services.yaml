@@ -1,0 +1,262 @@
+##################################################################################
+#
+#   Conformance Pack:                                                             
+#   Operational Best Practices based on Databases Services                                 
+#                                                                                 
+#   This  pack contains AWS Config rules based on Databases Services
+#   (https://aws.amazon.com/products/databases/). This Conformance Pack has 
+#   been designed for compatibility with the majority of AWS regions and to not require 
+#   setting of any Parameters. Additional managed rules that require parameters to be set 
+#   for your environment and/or for your specific region can be found at 
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html                                                                                                                  
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Default: 'TRUE'
+    Type: String
+Resources:
+  DbInstanceBackupEnabled:
+    Properties:
+      ConfigRuleName: db-instance-backup-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: DB_INSTANCE_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
+  DmsReplicationNotPublic:
+    Properties:
+      ConfigRuleName: dms-replication-not-public
+      Scope:
+        ComplianceResourceTypes: []
+      Source:
+        Owner: AWS
+        SourceIdentifier: DMS_REPLICATION_NOT_PUBLIC
+    Type: AWS::Config::ConfigRule
+  DynamodbAutoscalingEnabled:
+    Properties:
+      ConfigRuleName: dynamodb-autoscaling-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbInBackupPlan:
+    Properties:
+      ConfigRuleName: dynamodb-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  DynamodbPitrEnabled:
+    Properties:
+      ConfigRuleName: dynamodb-pitr-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_PITR_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbTableEncryptedKms:
+    Properties:
+      ConfigRuleName: dynamodb-table-encrypted-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS
+    Type: AWS::Config::ConfigRule
+  DynamodbThroughputLimitCheck:
+    Properties:
+      ConfigRuleName: dynamodb-throughput-limit-check
+      InputParameters:
+        accountRCUThresholdPercentage:
+          Fn::If:
+          - dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+          - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+          - Ref: AWS::NoValue
+        accountWCUThresholdPercentage:
+          Fn::If:
+          - dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+          - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_THROUGHPUT_LIMIT_CHECK
+    Type: AWS::Config::ConfigRule
+  ElasticacheRedisClusterAutomaticBackupCheck:
+    Properties:
+      ConfigRuleName: elasticache-redis-cluster-automatic-backup-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
+    Type: AWS::Config::ConfigRule
+  RdsEnhancedMonitoringEnabled:
+    Properties:
+      ConfigRuleName: rds-enhanced-monitoring-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_ENHANCED_MONITORING_ENABLED
+    Type: AWS::Config::ConfigRule
+  RdsInBackupPlan:
+    Properties:
+      ConfigRuleName: rds-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  RdsInstanceDeletionProtectionEnabled:
+    Properties:
+      ConfigRuleName: rds-instance-deletion-protection-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_DELETION_PROTECTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  RdsInstancePublicAccessCheck:
+    Properties:
+      ConfigRuleName: rds-instance-public-access-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  RdsLoggingEnabled:
+    Properties:
+      ConfigRuleName: rds-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  RdsMultiAzSupport:
+    Properties:
+      ConfigRuleName: rds-multi-az-support
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_MULTI_AZ_SUPPORT
+    Type: AWS::Config::ConfigRule
+  RdsSnapshotEncrypted:
+    Properties:
+      ConfigRuleName: rds-snapshot-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBSnapshot
+        - AWS::RDS::DBClusterSnapshot
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_SNAPSHOT_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  RdsSnapshotsPublicProhibited:
+    Properties:
+      ConfigRuleName: rds-snapshots-public-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBSnapshot
+        - AWS::RDS::DBClusterSnapshot
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_SNAPSHOTS_PUBLIC_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  RdsStorageEncrypted:
+    Properties:
+      ConfigRuleName: rds-storage-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_STORAGE_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterConfigurationCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-configuration-check
+      InputParameters:
+        clusterDbEncrypted: 'TRUE'
+        loggingEnabled: 'TRUE'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterMaintenancesettingsCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-maintenancesettings-check
+      InputParameters:
+        allowVersionUpgrade:
+          Fn::If:
+          - redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+          - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_MAINTENANCESETTINGS_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterPublicAccessCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-public-access-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftRequireTlsSsl:
+    Properties:
+      ConfigRuleName: redshift-require-tls-ssl
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_REQUIRE_TLS_SSL
+    Type: AWS::Config::ConfigRule
+Conditions:
+  dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+  dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+  redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade

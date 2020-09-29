@@ -1,0 +1,707 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for Cybersecurity Maturity Model Certification (CMMC) Level 1
+#
+#   This conformance pack helps verify compliance with CMMC Level 1 requirements.
+#                                                                                 
+#   This Conformance Pack has been designed for compatibility with the majority of AWS 
+#   regions and to not require setting of any Parameters. Additional managed rules that 
+#   require parameters to be set for your environment and/or for your specific region can 
+#   be found at https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  IamPasswordPolicyParamMaxPasswordAge:
+    Default: '90'
+    Type: String
+  IamPasswordPolicyParamMinimumPasswordLength:
+    Default: '14'
+    Type: String
+  IamPasswordPolicyParamPasswordReusePrevention:
+    Default: '24'
+    Type: String
+  IamPasswordPolicyParamRequireLowercaseCharacters:
+    Default: 'TRUE'
+    Type: String
+  IamPasswordPolicyParamRequireNumbers:
+    Default: 'TRUE'
+    Type: String
+  IamPasswordPolicyParamRequireSymbols:
+    Default: 'TRUE'
+    Type: String
+  IamPasswordPolicyParamRequireUppercaseCharacters:
+    Default: 'TRUE'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort1:
+    Default: '20'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort2:
+    Default: '21'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort3:
+    Default: '3389'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort4:
+    Default: '3306'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort5:
+    Default: '4333'
+    Type: String
+  S3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
+    Default: 'True'
+    Type: String
+  S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
+    Default: 'True'
+    Type: String
+  S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
+    Default: 'True'
+    Type: String
+  S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
+    Default: 'True'
+    Type: String
+  VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
+    Default: '443'
+    Type: String
+Resources:
+  AlbHttpDropInvalidHeaderEnabled:
+    Properties:
+      ConfigRuleName: alb-http-drop-invalid-header-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_HTTP_DROP_INVALID_HEADER_ENABLED
+    Type: AWS::Config::ConfigRule
+  AlbHttpToHttpsRedirectionCheck:
+    Properties:
+      ConfigRuleName: alb-http-to-https-redirection-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK
+    Type: AWS::Config::ConfigRule
+  AlbWafEnabled:
+    Properties:
+      ConfigRuleName: alb-waf-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_WAF_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmActionCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-action-check
+      InputParameters:
+        alarmActionRequired: 'TRUE'
+        insufficientDataActionRequired: 'TRUE'
+        okActionRequired: 'FALSE'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
+    Type: AWS::Config::ConfigRule
+  DmsReplicationNotPublic:
+    Properties:
+      ConfigRuleName: dms-replication-not-public
+      Scope:
+        ComplianceResourceTypes: []
+      Source:
+        Owner: AWS
+        SourceIdentifier: DMS_REPLICATION_NOT_PUBLIC
+    Type: AWS::Config::ConfigRule
+  EbsSnapshotPublicRestorableCheck:
+    Properties:
+      ConfigRuleName: ebs-snapshot-public-restorable-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2Imdsv2Check:
+    Properties:
+      ConfigRuleName: ec2-imdsv2-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_IMDSV2_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceNoPublicIp:
+    Properties:
+      ConfigRuleName: ec2-instance-no-public-ip
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
+    Type: AWS::Config::ConfigRule
+  ElasticsearchInVpcOnly:
+    Properties:
+      ConfigRuleName: elasticsearch-in-vpc-only
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  ElasticsearchNodeToNodeEncryptionCheck:
+    Properties:
+      ConfigRuleName: elasticsearch-node-to-node-encryption-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Elasticsearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
+    Type: AWS::Config::ConfigRule
+  ElbAcmCertificateRequired:
+    Properties:
+      ConfigRuleName: elb-acm-certificate-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_ACM_CERTIFICATE_REQUIRED
+    Type: AWS::Config::ConfigRule
+  ElbTlsHttpsListenersOnly:
+    Properties:
+      ConfigRuleName: elb-tls-https-listeners-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
+    Type: AWS::Config::ConfigRule
+  EmrKerberosEnabled:
+    Properties:
+      ConfigRuleName: emr-kerberos-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: EMR_KERBEROS_ENABLED
+    Type: AWS::Config::ConfigRule
+  EmrMasterNoPublicIp:
+    Properties:
+      ConfigRuleName: emr-master-no-public-ip
+      Scope:
+        ComplianceResourceTypes: []
+      Source:
+        Owner: AWS
+        SourceIdentifier: EMR_MASTER_NO_PUBLIC_IP
+    Type: AWS::Config::ConfigRule
+  GuarddutyEnabledCentralized:
+    Properties:
+      ConfigRuleName: guardduty-enabled-centralized
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+    Type: AWS::Config::ConfigRule
+  IamGroupHasUsersCheck:
+    Properties:
+      ConfigRuleName: iam-group-has-users-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
+    Type: AWS::Config::ConfigRule
+  IamNoInlinePolicyCheck:
+    Properties:
+      ConfigRuleName: iam-no-inline-policy-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+        - AWS::IAM::Role
+        - AWS::IAM::Group
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_NO_INLINE_POLICY_CHECK
+    Type: AWS::Config::ConfigRule
+  IamPasswordPolicy:
+    Properties:
+      ConfigRuleName: iam-password-policy
+      InputParameters:
+        MaxPasswordAge:
+          Fn::If:
+          - iamPasswordPolicyParamMaxPasswordAge
+          - Ref: IamPasswordPolicyParamMaxPasswordAge
+          - Ref: AWS::NoValue
+        MinimumPasswordLength:
+          Fn::If:
+          - iamPasswordPolicyParamMinimumPasswordLength
+          - Ref: IamPasswordPolicyParamMinimumPasswordLength
+          - Ref: AWS::NoValue
+        PasswordReusePrevention:
+          Fn::If:
+          - iamPasswordPolicyParamPasswordReusePrevention
+          - Ref: IamPasswordPolicyParamPasswordReusePrevention
+          - Ref: AWS::NoValue
+        RequireLowercaseCharacters:
+          Fn::If:
+          - iamPasswordPolicyParamRequireLowercaseCharacters
+          - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+          - Ref: AWS::NoValue
+        RequireNumbers:
+          Fn::If:
+          - iamPasswordPolicyParamRequireNumbers
+          - Ref: IamPasswordPolicyParamRequireNumbers
+          - Ref: AWS::NoValue
+        RequireSymbols:
+          Fn::If:
+          - iamPasswordPolicyParamRequireSymbols
+          - Ref: IamPasswordPolicyParamRequireSymbols
+          - Ref: AWS::NoValue
+        RequireUppercaseCharacters:
+          Fn::If:
+          - iamPasswordPolicyParamRequireUppercaseCharacters
+          - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_PASSWORD_POLICY
+    Type: AWS::Config::ConfigRule
+  IamPolicyNoStatementsWithAdminAccess:
+    Properties:
+      ConfigRuleName: iam-policy-no-statements-with-admin-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+    Type: AWS::Config::ConfigRule
+  IamRootAccessKeyCheck:
+    Properties:
+      ConfigRuleName: iam-root-access-key-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
+    Type: AWS::Config::ConfigRule
+  IamUserGroupMembershipCheck:
+    Properties:
+      ConfigRuleName: iam-user-group-membership-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_GROUP_MEMBERSHIP_CHECK
+    Type: AWS::Config::ConfigRule
+  IamUserMfaEnabled:
+    Properties:
+      ConfigRuleName: iam-user-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  IamUserNoPoliciesCheck:
+    Properties:
+      ConfigRuleName: iam-user-no-policies-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_NO_POLICIES_CHECK
+    Type: AWS::Config::ConfigRule
+  IncomingSshDisabled:
+    Properties:
+      ConfigRuleName: restricted-ssh
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: INCOMING_SSH_DISABLED
+    Type: AWS::Config::ConfigRule
+  InstancesInVpc:
+    Properties:
+      ConfigRuleName: ec2-instances-in-vpc
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: INSTANCES_IN_VPC
+    Type: AWS::Config::ConfigRule
+  InternetGatewayAuthorizedVpcOnly:
+    Properties:
+      ConfigRuleName: internet-gateway-authorized-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::InternetGateway
+      Source:
+        Owner: AWS
+        SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  LambdaFunctionPublicAccessProhibited:
+    Properties:
+      ConfigRuleName: lambda-function-public-access-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_FUNCTION_PUBLIC_ACCESS_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  LambdaInsideVpc:
+    Properties:
+      ConfigRuleName: lambda-inside-vpc
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_INSIDE_VPC
+    Type: AWS::Config::ConfigRule
+  MfaEnabledForIamConsoleAccess:
+    Properties:
+      ConfigRuleName: mfa-enabled-for-iam-console-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+    Type: AWS::Config::ConfigRule
+  MultiRegionCloudTrailEnabled:
+    Properties:
+      ConfigRuleName: multi-region-cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  RdsInstancePublicAccessCheck:
+    Properties:
+      ConfigRuleName: rds-instance-public-access-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  RdsLoggingEnabled:
+    Properties:
+      ConfigRuleName: rds-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  RdsSnapshotsPublicProhibited:
+    Properties:
+      ConfigRuleName: rds-snapshots-public-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBSnapshot
+        - AWS::RDS::DBClusterSnapshot
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_SNAPSHOTS_PUBLIC_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterConfigurationCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-configuration-check
+      InputParameters:
+        clusterDbEncrypted: 'TRUE'
+        loggingEnabled: 'TRUE'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterPublicAccessCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-public-access-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftRequireTlsSsl:
+    Properties:
+      ConfigRuleName: redshift-require-tls-ssl
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_REQUIRE_TLS_SSL
+    Type: AWS::Config::ConfigRule
+  RestrictedIncomingTraffic:
+    Properties:
+      ConfigRuleName: restricted-common-ports
+      InputParameters:
+        blockedPort1:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort1
+          - Ref: RestrictedIncomingTrafficParamBlockedPort1
+          - Ref: AWS::NoValue
+        blockedPort2:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort2
+          - Ref: RestrictedIncomingTrafficParamBlockedPort2
+          - Ref: AWS::NoValue
+        blockedPort3:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort3
+          - Ref: RestrictedIncomingTrafficParamBlockedPort3
+          - Ref: AWS::NoValue
+        blockedPort4:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort4
+          - Ref: RestrictedIncomingTrafficParamBlockedPort4
+          - Ref: AWS::NoValue
+        blockedPort5:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort5
+          - Ref: RestrictedIncomingTrafficParamBlockedPort5
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
+    Type: AWS::Config::ConfigRule
+  RootAccountHardwareMfaEnabled:
+    Properties:
+      ConfigRuleName: root-account-hardware-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  RootAccountMfaEnabled:
+    Properties:
+      ConfigRuleName: root-account-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3AccountLevelPublicAccessBlocks:
+    Properties:
+      ConfigRuleName: s3-account-level-public-access-blocks
+      InputParameters:
+        BlockPublicAcls:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+          - Ref: AWS::NoValue
+        BlockPublicPolicy:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+          - Ref: AWS::NoValue
+        IgnorePublicAcls:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+          - Ref: AWS::NoValue
+        RestrictPublicBuckets:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+          - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::AccountPublicAccessBlock
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
+    Type: AWS::Config::ConfigRule
+  S3BucketLoggingEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketPolicyGranteeCheck:
+    Properties:
+      ConfigRuleName: s3-bucket-policy-grantee-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_POLICY_GRANTEE_CHECK
+    Type: AWS::Config::ConfigRule
+  S3BucketPublicReadProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-public-read-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  S3BucketPublicWriteProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-public-write-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  S3BucketSslRequestsOnly:
+    Properties:
+      ConfigRuleName: s3-bucket-ssl-requests-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
+    Type: AWS::Config::ConfigRule
+  SagemakerNotebookNoDirectInternetAccess:
+    Properties:
+      ConfigRuleName: sagemaker-notebook-no-direct-internet-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS
+    Type: AWS::Config::ConfigRule
+  SecurityhubEnabled:
+    Properties:
+      ConfigRuleName: securityhub-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+    Type: AWS::Config::ConfigRule
+  VpcDefaultSecurityGroupClosed:
+    Properties:
+      ConfigRuleName: vpc-default-security-group-closed
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
+    Type: AWS::Config::ConfigRule
+  VpcSgOpenOnlyToAuthorizedPorts:
+    Properties:
+      ConfigRuleName: vpc-sg-open-only-to-authorized-ports
+      InputParameters:
+        authorizedTcpPorts:
+          Fn::If:
+          - vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+          - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
+    Type: AWS::Config::ConfigRule
+Conditions:
+  iamPasswordPolicyParamMaxPasswordAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamMaxPasswordAge
+  iamPasswordPolicyParamMinimumPasswordLength:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamMinimumPasswordLength
+  iamPasswordPolicyParamPasswordReusePrevention:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamPasswordReusePrevention
+  iamPasswordPolicyParamRequireLowercaseCharacters:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+  iamPasswordPolicyParamRequireNumbers:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireNumbers
+  iamPasswordPolicyParamRequireSymbols:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireSymbols
+  iamPasswordPolicyParamRequireUppercaseCharacters:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+  restrictedIncomingTrafficParamBlockedPort1:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort1
+  restrictedIncomingTrafficParamBlockedPort2:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort2
+  restrictedIncomingTrafficParamBlockedPort3:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort3
+  restrictedIncomingTrafficParamBlockedPort4:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort4
+  restrictedIncomingTrafficParamBlockedPort5:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort5
+  s3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+  s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+  s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+  s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+  vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts

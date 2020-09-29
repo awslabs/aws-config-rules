@@ -1,0 +1,186 @@
+##################################################################################
+#
+#   Conformance Pack:                                                             
+#   Operational Best Practices based on Storage Services                                  
+#                                                                                 
+#   This  pack contains AWS Config rules based on Storage Services
+#   (https://aws.amazon.com/products/storage/). This Conformance Pack has 
+#   been designed for compatibility with the majority of AWS regions and to not require 
+#   setting of any Parameters. Additional managed rules that require parameters to be set 
+#   for your environment and/or for your specific region can be found at 
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html   
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  S3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
+    Default: 'True'
+    Type: String
+  S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
+    Default: 'True'
+    Type: String
+  S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
+    Default: 'True'
+    Type: String
+  S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
+    Default: 'True'
+    Type: String
+Resources:
+  EfsEncryptedCheck:
+    Properties:
+      ConfigRuleName: efs-encrypted-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ENCRYPTED_CHECK
+    Type: AWS::Config::ConfigRule
+  EfsInBackupPlan:
+    Properties:
+      ConfigRuleName: efs-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  S3AccountLevelPublicAccessBlocks:
+    Properties:
+      ConfigRuleName: s3-account-level-public-access-blocks
+      InputParameters:
+        BlockPublicAcls:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+          - Ref: AWS::NoValue
+        BlockPublicPolicy:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+          - Ref: AWS::NoValue
+        IgnorePublicAcls:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+          - Ref: AWS::NoValue
+        RestrictPublicBuckets:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+          - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::AccountPublicAccessBlock
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
+    Type: AWS::Config::ConfigRule
+  S3BucketDefaultLockEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-default-lock-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketLoggingEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketPublicReadProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-public-read-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  S3BucketPublicWriteProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-public-write-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  S3BucketReplicationEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-replication-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_REPLICATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketServerSideEncryptionEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-server-side-encryption-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketSslRequestsOnly:
+    Properties:
+      ConfigRuleName: s3-bucket-ssl-requests-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
+    Type: AWS::Config::ConfigRule
+  S3BucketVersioningEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-versioning-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3DefaultEncryptionKms:
+    Properties:
+      ConfigRuleName: s3-default-encryption-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_DEFAULT_ENCRYPTION_KMS
+    Type: AWS::Config::ConfigRule
+Conditions:
+  s3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+  s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+  s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+  s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets

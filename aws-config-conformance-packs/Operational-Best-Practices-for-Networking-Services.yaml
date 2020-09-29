@@ -1,0 +1,253 @@
+##################################################################################
+#
+#   Conformance Pack:
+#   Operational Best Practices based on Networking and Content Delivery Services
+#
+#   This  pack contains AWS Config rules based on Networking and Content Delivery Services
+#   (https://aws.amazon.com/products/networking/). This Conformance Pack has
+#   been designed for compatibility with the majority of AWS regions and to not require
+#   setting of any Parameters. Additional managed rules that require parameters to be set
+#   for your environment and/or for your specific region can be found at
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+##################################################################################
+
+Parameters:
+  RestrictedIncomingTrafficParamBlockedPort1:
+    Default: '20'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort2:
+    Default: '21'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort3:
+    Default: '3389'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort4:
+    Default: '3306'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort5:
+    Default: '4333'
+    Type: String
+  VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
+    Default: '443'
+    Type: String
+Resources:
+  AlbHttpDropInvalidHeaderEnabled:
+    Properties:
+      ConfigRuleName: alb-http-drop-invalid-header-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_HTTP_DROP_INVALID_HEADER_ENABLED
+    Type: AWS::Config::ConfigRule
+  AlbHttpToHttpsRedirectionCheck:
+    Properties:
+      ConfigRuleName: alb-http-to-https-redirection-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK
+    Type: AWS::Config::ConfigRule
+  ApiGwCacheEnabledAndEncrypted:
+    Properties:
+      ConfigRuleName: api-gw-cache-enabled-and-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_CACHE_ENABLED_AND_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  ApiGwExecutionLoggingEnabled:
+    Properties:
+      ConfigRuleName: api-gw-execution-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+        - AWS::ApiGatewayV2::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ElbAcmCertificateRequired:
+    Properties:
+      ConfigRuleName: elb-acm-certificate-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_ACM_CERTIFICATE_REQUIRED
+    Type: AWS::Config::ConfigRule
+  ElbCrossZoneLoadBalancingEnabled:
+    Properties:
+      ConfigRuleName: elb-cross-zone-load-balancing-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_CROSS_ZONE_LOAD_BALANCING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ElbDeletionProtectionEnabled:
+    Properties:
+      ConfigRuleName: elb-deletion-protection-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_DELETION_PROTECTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  ElbLoggingEnabled:
+    Properties:
+      ConfigRuleName: elb-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ElbTlsHttpsListenersOnly:
+    Properties:
+      ConfigRuleName: elb-tls-https-listeners-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
+    Type: AWS::Config::ConfigRule
+  InstancesInVpc:
+    Properties:
+      ConfigRuleName: ec2-instances-in-vpc
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: INSTANCES_IN_VPC
+    Type: AWS::Config::ConfigRule
+  InternetGatewayAuthorizedVpcOnly:
+    Properties:
+      ConfigRuleName: internet-gateway-authorized-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::InternetGateway
+      Source:
+        Owner: AWS
+        SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  RestrictedIncomingTraffic:
+    Properties:
+      ConfigRuleName: restricted-common-ports
+      InputParameters:
+        blockedPort1:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort1
+          - Ref: RestrictedIncomingTrafficParamBlockedPort1
+          - Ref: AWS::NoValue
+        blockedPort2:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort2
+          - Ref: RestrictedIncomingTrafficParamBlockedPort2
+          - Ref: AWS::NoValue
+        blockedPort3:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort3
+          - Ref: RestrictedIncomingTrafficParamBlockedPort3
+          - Ref: AWS::NoValue
+        blockedPort4:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort4
+          - Ref: RestrictedIncomingTrafficParamBlockedPort4
+          - Ref: AWS::NoValue
+        blockedPort5:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort5
+          - Ref: RestrictedIncomingTrafficParamBlockedPort5
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
+    Type: AWS::Config::ConfigRule
+  VpcDefaultSecurityGroupClosed:
+    Properties:
+      ConfigRuleName: vpc-default-security-group-closed
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
+    Type: AWS::Config::ConfigRule
+  VpcFlowLogsEnabled:
+    Properties:
+      ConfigRuleName: vpc-flow-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+  VpcSgOpenOnlyToAuthorizedPorts:
+    Properties:
+      ConfigRuleName: vpc-sg-open-only-to-authorized-ports
+      InputParameters:
+        authorizedTcpPorts:
+          Fn::If:
+          - vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+          - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
+    Type: AWS::Config::ConfigRule
+  VpcVpn2TunnelsUp:
+    Properties:
+      ConfigRuleName: vpc-vpn-2-tunnels-up
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::VPNConnection
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_VPN_2_TUNNELS_UP
+    Type: AWS::Config::ConfigRule
+Conditions:
+  restrictedIncomingTrafficParamBlockedPort1:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort1
+  restrictedIncomingTrafficParamBlockedPort2:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort2
+  restrictedIncomingTrafficParamBlockedPort3:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort3
+  restrictedIncomingTrafficParamBlockedPort4:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort4
+  restrictedIncomingTrafficParamBlockedPort5:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort5
+  vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
