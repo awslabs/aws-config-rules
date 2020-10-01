@@ -1,0 +1,275 @@
+################################################################################
+#
+#   Conformance Pack:
+#     CIS compliance rules
+#
+#   This conformance pack helps verify compliance with CIS requirements. Note that
+#   this will not cover all CIS requirements but only those that can be covered
+#   using Config Rules
+################################################################################
+
+Resources:
+  MFAEnabledForIamConsoleAccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: MFAEnabledForIamConsoleAccess
+      Description: Checks whether AWS Multi-Factor Authentication (MFA) is enabled
+        for all AWS Identity and Access Management (IAM) users that use a console
+        password. The rule is compliant if MFA is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+      MaximumExecutionFrequency: Twelve_Hours
+  IAMUserUnusedCredentialCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: IAMUserUnusedCredentialCheck
+      Description: Checks whether your AWS Identity and Access Management (IAM) users
+        have passwords or active access keys that have not been used within the specified
+        number of days you provided.
+      InputParameters:
+        maxCredentialUsageAge: 90
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
+      MaximumExecutionFrequency: Twelve_Hours
+  AccessKeysRotated:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: AccessKeysRotated
+      Description: Checks whether the active access keys are rotated within the number
+        of days specified in maxAccessKeyAge. The rule is non-compliant if the access
+        keys have not been rotated for more than maxAccessKeyAge number of days.
+      InputParameters:
+        maxAccessKeyAge: 90
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+      MaximumExecutionFrequency: Twelve_Hours
+  IAMPasswordPolicyCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: IAMPasswordPolicyCheck
+      Description: Checks whether the account password policy for IAM users meets
+        the specified requirements.
+      InputParameters:
+        RequireUppercaseCharacters: true
+        RequireLowercaseCharacters: true
+        RequireSymbols: true
+        RequireNumbers: true
+        MinimumPasswordLength: 14
+        PasswordReusePrevention: 24
+        MaxPasswordAge: 90
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_PASSWORD_POLICY
+      MaximumExecutionFrequency: Twelve_Hours
+  IAMRootAccessKeyCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: IAMRootAccessKeyCheck
+      Description: Checks whether the root user access key is available.
+        The rule is compliant if the user access key does not exist.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
+      MaximumExecutionFrequency: Twelve_Hours
+  RootAccountMFAEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: RootAccountMFAEnabled
+      Description: Checks whether the root user of your AWS account requires multi-factor
+        authentication for console sign-in.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+      MaximumExecutionFrequency: Twelve_Hours
+  RootAccountHardwareMFAEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: RootAccountHardwareMFAEnabled
+      Description: Checks whether your AWS account is enabled to use multi-factor
+        authentication (MFA) hardware device to sign in with root credentials.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
+      MaximumExecutionFrequency: Twelve_Hours
+  IAMUserNoPoliciesCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: IAMUserNoPoliciesCheck
+      Description: Checks that none of your IAM users have policies attached. IAM
+        users must inherit permissions from IAM groups or roles.
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_NO_POLICIES_CHECK
+  IAMSupportPolicyInUse:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: IAMSupportPolicyInUse
+      Description: Checks that the 'AWSSupportAccess' managed policy is attached to any IAM user, group, or role
+      InputParameters:
+        policyARN: arn:aws:iam::aws:policy/AWSSupportAccess
+        policyUsageType: ANY
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_IN_USE
+      MaximumExecutionFrequency: Twelve_Hours
+  IAMPolicyNoStatementWithAdminAccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: IAMPolicyNoStatementWithAdminAccess
+      Description: Checks whether the default version of AWS Identity and Access
+        Management (IAM) policies do not have administrator access.
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+  MultiRegionCloudTrailEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: MultiRegionCloudTrailEnabled
+      Description: Checks that there is at least one multi-region AWS CloudTrail.
+        The rule is non-compliant if the trails do not match input parameters
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+      MaximumExecutionFrequency: Twelve_Hours
+  CloudTrailLogFileValidationEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CloudTrailLogFileValidationEnabled
+      Description: Checks whether AWS CloudTrail creates a signed digest file with
+        logs
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
+      MaximumExecutionFrequency: Twelve_Hours
+  S3BucketPublicReadProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: S3BucketPublicReadProhibited
+      Description: Checks that your Amazon S3 buckets do not allow public read access.
+        The rule checks the Block Public Access settings, the bucket policy, and the
+        bucket access control list (ACL).
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+      MaximumExecutionFrequency: Twelve_Hours
+  S3BucketPublicWriteProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: S3BucketPublicWriteProhibited
+      Description: Checks that your Amazon S3 buckets do not allow public write access.
+        The rule checks the Block Public Access settings, the bucket policy, and the
+        bucket access control list (ACL).
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+      MaximumExecutionFrequency: Twelve_Hours
+  CloudTrailCloudWatchLogsEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CloudTrailCloudWatchLogsEnabled
+      Description: Checks whether AWS CloudTrail trails are configured to send logs
+        to Amazon CloudWatch logs.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
+      MaximumExecutionFrequency: Twelve_Hours
+  S3BucketLoggingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: S3BucketLoggingEnabled
+      Description: Checks whether logging is enabled for your S3 buckets.
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
+  CloudTrailEncryptionEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CloudTrailEncryptionEnabled
+      Description: Checks whether AWS CloudTrail is configured to use the server side
+        encryption (SSE) AWS Key Management Service (AWS KMS) customer master key
+        (CMK) encryption.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
+      MaximumExecutionFrequency: Twelve_Hours
+  CMKBackingKeyRotationEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: CMKBackingKeyRotationEnabled
+      Description: Checks that key rotation is enabled for each key and matches to
+        the key ID of the customer created customer master key (CMK). The rule is
+        compliant, if the key rotation is enabled for specific key object.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
+      MaximumExecutionFrequency: Twelve_Hours
+  VPCFlowLogsEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: VPCFlowLogsEnabled
+      Description: Checks whether Amazon Virtual Private Cloud flow logs are found
+        and enabled for Amazon VPC.
+      InputParameters:
+        trafficType: REJECT
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
+      MaximumExecutionFrequency: Twelve_Hours
+  IncomingSSHDisabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: IncomingSSHDisabled
+      Description: Checks whether the incoming SSH traffic for the security groups is accessible.
+        The rule is COMPLIANT when the IP addresses of the incoming SSH traffic in the security
+        groups are restricted. This rule applies only to IPv4.
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: INCOMING_SSH_DISABLED
+  RestrictedIncomingTraffic:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: RestrictedIncomingTraffic
+      Description: Checks whether security groups that are in use disallow unrestricted
+        incoming TCP traffic to the specified ports.
+      InputParameters:
+        blockedPort1: 3389
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
+  VPCDefaultSecurityGroupClosed:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: VPCDefaultSecurityGroupClosed
+      Description: Checks that the default security group of any Amazon Virtual Private
+        Cloud (VPC) does not allow inbound or outbound traffic. The rule is non-compliant
+        if the default security group has one or more inbound or outbound traffic.
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
