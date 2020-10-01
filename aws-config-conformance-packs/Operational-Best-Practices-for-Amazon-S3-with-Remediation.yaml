@@ -1,0 +1,205 @@
+################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for Amazon S3, with Remediation
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+################################################################################
+
+Parameters:
+  S3TargetBucketNameForEnableLogging:
+    Description: The target s3 bucket where the logging should be enabled.
+    Type: String
+Resources:
+  S3BucketPublicReadProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: S3BucketPublicReadProhibited
+      Description: >-
+        Checks that your Amazon S3 buckets do not allow public read access.
+        The rule checks the Block Public Access settings, the bucket policy, and the
+        bucket access control list (ACL).
+      Scope:
+        ComplianceResourceTypes:
+        - "AWS::S3::Bucket"
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+      MaximumExecutionFrequency: Six_Hours
+  S3BucketPublicReadProhibitedRemediation:
+    DependsOn: S3BucketPublicReadProhibited
+    Type: 'AWS::Config::RemediationConfiguration'
+    Properties:
+      ConfigRuleName: S3BucketPublicReadProhibited
+      ResourceType: "AWS::S3::Bucket"
+      TargetId: "AWS-DisableS3BucketPublicReadWrite"
+      TargetType: "SSM_DOCUMENT"
+      TargetVersion: "1"
+      Parameters:
+        AutomationAssumeRole:
+          StaticValue:
+            Values:
+              - arn:aws:iam::<Account-Id>:role/S3OperationsAutomationsExecutionRole
+        S3BucketName:
+          ResourceValue:
+            Value: "RESOURCE_ID"
+      ExecutionControls:
+        SsmControls:
+          ConcurrentExecutionRatePercentage: 10
+          ErrorPercentage: 10
+      Automatic: True
+      MaximumAutomaticAttempts: 10
+      RetryAttemptSeconds: 600
+
+  S3BucketPublicWriteProhibited:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: S3BucketPublicWriteProhibited
+      Description: "Checks that your Amazon S3 buckets do not allow public write access. The rule checks the Block Public Access settings, the bucket policy, and the bucket access control list (ACL)."
+      Scope:
+        ComplianceResourceTypes:
+        - "AWS::S3::Bucket"
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+      MaximumExecutionFrequency: Six_Hours
+  S3BucketPublicWriteProhibitedRemediation:
+    DependsOn: S3BucketPublicWriteProhibited
+    Type: 'AWS::Config::RemediationConfiguration'
+    Properties:
+      ConfigRuleName: S3BucketPublicWriteProhibited
+      ResourceType: "AWS::S3::Bucket"
+      TargetId: "AWS-DisableS3BucketPublicReadWrite"
+      TargetType: "SSM_DOCUMENT"
+      TargetVersion: "1"
+      Parameters:
+        AutomationAssumeRole:
+          StaticValue:
+            Values:
+              - arn:aws:iam::<Account-Id>:role/S3OperationsAutomationsExecutionRole
+        S3BucketName:
+          ResourceValue:
+            Value: "RESOURCE_ID"
+      ExecutionControls:
+        SsmControls:
+          ConcurrentExecutionRatePercentage: 10
+          ErrorPercentage: 10
+      Automatic: True
+      MaximumAutomaticAttempts: 10
+      RetryAttemptSeconds: 600
+
+  S3BucketReplicationEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: S3BucketReplicationEnabled
+      Description: "Checks whether the Amazon S3 buckets have cross-region replication enabled."
+      Scope:
+        ComplianceResourceTypes:
+        - "AWS::S3::Bucket"
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_REPLICATION_ENABLED
+  S3BucketSSLRequestsOnly:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: S3BucketSSLRequestsOnly
+      Description: "Checks whether S3 buckets have policies that require requests to use Secure Socket Layer (SSL)."
+      Scope:
+        ComplianceResourceTypes:
+        - "AWS::S3::Bucket"
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
+
+  S3BucketServerSideEncryptionEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: S3BucketServerSideEncryptionEnabled
+      Description: "Checks that your Amazon S3 bucket either has S3 default encryption enabled or that the S3 bucket policy explicitly denies put-object requests without server side encryption."
+      Scope:
+        ComplianceResourceTypes:
+        - "AWS::S3::Bucket"
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+  S3BucketServerSideEncryptionEnabledRemediation:
+    DependsOn: S3BucketServerSideEncryptionEnabled
+    Type: 'AWS::Config::RemediationConfiguration'
+    Properties:
+      ConfigRuleName: S3BucketServerSideEncryptionEnabled
+      ResourceType: "AWS::S3::Bucket"
+      TargetId: "AWS-EnableS3BucketEncryption"
+      TargetType: "SSM_DOCUMENT"
+      TargetVersion: "1"
+      Parameters:
+        AutomationAssumeRole:
+          StaticValue:
+            Values:
+              - arn:aws:iam::<Account-Id>:role/S3OperationsAutomationsExecutionRole
+        BucketName:
+          ResourceValue:
+            Value: "RESOURCE_ID"
+        SSEAlgorithm:
+          StaticValue:
+            Values:
+              - "AES256"
+      ExecutionControls:
+        SsmControls:
+          ConcurrentExecutionRatePercentage: 10
+          ErrorPercentage: 10
+      Automatic: True
+      MaximumAutomaticAttempts: 10
+      RetryAttemptSeconds: 600
+
+  S3BucketLoggingEnabled:
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: S3BucketLoggingEnabled
+      Description: "Checks whether logging is enabled for your S3 buckets."
+      Scope:
+        ComplianceResourceTypes:
+        - "AWS::S3::Bucket"
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
+  S3BucketLoggingEnabledRemediation:
+    DependsOn: S3BucketLoggingEnabled
+    Type: 'AWS::Config::RemediationConfiguration'
+    Properties:
+      ConfigRuleName: S3BucketLoggingEnabled
+      ResourceType: "AWS::S3::Bucket"
+      TargetId: "AWS-ConfigureS3BucketLogging"
+      TargetType: "SSM_DOCUMENT"
+      TargetVersion: "1"
+      Parameters:
+        AutomationAssumeRole:
+          StaticValue:
+            Values:
+              - arn:aws:iam::<Account-Id>:role/S3OperationsAutomationsExecutionRole
+        BucketName:
+          ResourceValue:
+            Value: "RESOURCE_ID"
+        TargetBucket:
+          StaticValue:
+            Values:
+              - Ref: S3TargetBucketNameForEnableLogging
+        GrantedPermission:
+          StaticValue:
+            Values:
+              - "FULL_CONTROL"
+        GranteeType:
+          StaticValue:
+            Values:
+              - "Group"
+        GranteeUri:
+          StaticValue:
+            Values:
+              - "http://acs.amazonaws.com/groups/s3/LogDelivery"
+      ExecutionControls:
+        SsmControls:
+          ConcurrentExecutionRatePercentage: 10
+          ErrorPercentage: 10
+      Automatic: True
+      MaximumAutomaticAttempts: 10
+      RetryAttemptSeconds: 600
