@@ -19,8 +19,10 @@ Parameters:
     Type: String
   IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
     Type: String
+    Default: kms:Decrypt,kms:ReEncryptFrom
   IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
     Type: String
+    Default: kms:Decrypt,kms:ReEncryptFrom
 Resources:
   AcmCertificateExpirationCheck:
     Properties:
