@@ -1,0 +1,206 @@
+##################################################################################
+#                                                                                 
+#   Conformance Pack:                                                             
+#     Operational Best Practices for Publicly Accessible Resources                                   
+#                                                                                 
+#   This conformance pack helps identify resources that may be publicly accessible. 
+#
+#   This Conformance Pack has been designed for compatibility with the majority of 
+#   AWS regions and to not require setting of any Parameters. Additional managed rules 
+#   that require parameters to be set for your environment and/or for your specific 
+#   region can be found at:
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html  
+#                                                                                 
+#   See Parameters section for names and descriptions of required parameters.     
+#                                                                                 
+##################################################################################
+
+Parameters:
+  S3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
+    Default: 'TRUE'
+    Type: String
+  S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
+    Default: 'TRUE'
+    Type: String
+  S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
+    Default: 'TRUE'
+    Type: String
+  S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
+    Default: 'TRUE'
+    Type: String
+Resources:
+  DmsReplicationNotPublic:
+    Properties:
+      ConfigRuleName: dms-replication-not-public
+      Scope:
+        ComplianceResourceTypes: []
+      Source:
+        Owner: AWS
+        SourceIdentifier: DMS_REPLICATION_NOT_PUBLIC
+    Type: AWS::Config::ConfigRule
+  EbsSnapshotPublicRestorableCheck:
+    Properties:
+      ConfigRuleName: ebs-snapshot-public-restorable-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceNoPublicIp:
+    Properties:
+      ConfigRuleName: ec2-instance-no-public-ip
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
+    Type: AWS::Config::ConfigRule
+  ElasticsearchInVpcOnly:
+    Properties:
+      ConfigRuleName: elasticsearch-in-vpc-only
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  EmrMasterNoPublicIp:
+    Properties:
+      ConfigRuleName: emr-master-no-public-ip
+      Scope:
+        ComplianceResourceTypes: []
+      Source:
+        Owner: AWS
+        SourceIdentifier: EMR_MASTER_NO_PUBLIC_IP
+    Type: AWS::Config::ConfigRule
+  InstancesInVpc:
+    Properties:
+      ConfigRuleName: ec2-instances-in-vpc
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: INSTANCES_IN_VPC
+    Type: AWS::Config::ConfigRule
+  InternetGatewayAuthorizedVpcOnly:
+    Properties:
+      ConfigRuleName: internet-gateway-authorized-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::InternetGateway
+      Source:
+        Owner: AWS
+        SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  LambdaFunctionPublicAccessProhibited:
+    Properties:
+      ConfigRuleName: lambda-function-public-access-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_FUNCTION_PUBLIC_ACCESS_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  RdsInstancePublicAccessCheck:
+    Properties:
+      ConfigRuleName: rds-instance-public-access-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  RdsSnapshotsPublicProhibited:
+    Properties:
+      ConfigRuleName: rds-snapshots-public-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBSnapshot
+        - AWS::RDS::DBClusterSnapshot
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_SNAPSHOTS_PUBLIC_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterPublicAccessCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-public-access-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  S3AccountLevelPublicAccessBlocks:
+    Properties:
+      ConfigRuleName: s3-account-level-public-access-blocks
+      InputParameters:
+        BlockPublicAcls:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+          - Ref: AWS::NoValue
+        BlockPublicPolicy:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+          - Ref: AWS::NoValue
+        IgnorePublicAcls:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+          - Ref: AWS::NoValue
+        RestrictPublicBuckets:
+          Fn::If:
+          - s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+          - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::AccountPublicAccessBlock
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
+    Type: AWS::Config::ConfigRule
+  S3BucketPublicReadProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-public-read-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  S3BucketPublicWriteProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-public-write-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+    Type: AWS::Config::ConfigRule
+Conditions:
+  s3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+  s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+  s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+  s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
