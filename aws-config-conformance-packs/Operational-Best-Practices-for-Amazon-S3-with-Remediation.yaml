@@ -123,6 +123,7 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+
   S3BucketServerSideEncryptionEnabledRemediation:
     DependsOn: S3BucketServerSideEncryptionEnabled
     Type: 'AWS::Config::RemediationConfiguration'
