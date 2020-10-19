@@ -34,25 +34,13 @@ Parameters:
     Default: '3653'
     Type: String
   IamPasswordPolicyParamMaxPasswordAge:
-    Default: '90'
+    Default: '365'
     Type: String
   IamPasswordPolicyParamMinimumPasswordLength:
     Default: '14'
     Type: String
   IamPasswordPolicyParamPasswordReusePrevention:
-    Default: '24'
-    Type: String
-  IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
-    Type: String
-  IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
-    Type: String
-  IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
-    Type: String
-  IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: '100'
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '30'
@@ -493,26 +481,6 @@ Resources:
           Fn::If:
           - iamPasswordPolicyParamPasswordReusePrevention
           - Ref: IamPasswordPolicyParamPasswordReusePrevention
-          - Ref: AWS::NoValue
-        RequireLowercaseCharacters:
-          Fn::If:
-          - iamPasswordPolicyParamRequireLowercaseCharacters
-          - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
-          - Ref: AWS::NoValue
-        RequireNumbers:
-          Fn::If:
-          - iamPasswordPolicyParamRequireNumbers
-          - Ref: IamPasswordPolicyParamRequireNumbers
-          - Ref: AWS::NoValue
-        RequireSymbols:
-          Fn::If:
-          - iamPasswordPolicyParamRequireSymbols
-          - Ref: IamPasswordPolicyParamRequireSymbols
-          - Ref: AWS::NoValue
-        RequireUppercaseCharacters:
-          Fn::If:
-          - iamPasswordPolicyParamRequireUppercaseCharacters
-          - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
           - Ref: AWS::NoValue
       Source:
         Owner: AWS
@@ -1047,26 +1015,6 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamPasswordPolicyParamPasswordReusePrevention
-  iamPasswordPolicyParamRequireLowercaseCharacters:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
-  iamPasswordPolicyParamRequireNumbers:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamPasswordPolicyParamRequireNumbers
-  iamPasswordPolicyParamRequireSymbols:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamPasswordPolicyParamRequireSymbols
-  iamPasswordPolicyParamRequireUppercaseCharacters:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
   iamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Fn::Not:
     - Fn::Equals:
