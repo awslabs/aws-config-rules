@@ -1,0 +1,177 @@
+##################################################################################
+#                                                                                 
+#   Conformance Pack:                                                             
+#     Operational Best Practices for Serverless                                   
+#                                                                                 
+#   This Conformance Pack has been designed for compatibility with the majority of 
+#   AWS regions and to not require setting of any Parameters. Additional managed rules 
+#   that require parameters to be set for your environment and/or for your specific 
+#   region can be found at:
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html  
+#                                                                                 
+#   See Parameters section for names and descriptions of required parameters.   
+#                                                                                 
+##################################################################################
+
+Parameters:
+  DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  LambdaConcurrencyCheckParamConcurrencyLimitHigh:
+    Default: '1000'
+    Type: String
+  LambdaConcurrencyCheckParamConcurrencyLimitLow:
+    Default: '500'
+    Type: String
+Resources:
+  ApiGwCacheEnabledAndEncrypted:
+    Properties:
+      ConfigRuleName: api-gw-cache-enabled-and-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_CACHE_ENABLED_AND_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  ApiGwExecutionLoggingEnabled:
+    Properties:
+      ConfigRuleName: api-gw-execution-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+        - AWS::ApiGatewayV2::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbAutoscalingEnabled:
+    Properties:
+      ConfigRuleName: dynamodb-autoscaling-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbInBackupPlan:
+    Properties:
+      ConfigRuleName: dynamodb-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  DynamodbPitrEnabled:
+    Properties:
+      ConfigRuleName: dynamodb-pitr-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_PITR_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbTableEncryptedKms:
+    Properties:
+      ConfigRuleName: dynamodb-table-encrypted-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS
+    Type: AWS::Config::ConfigRule
+  DynamodbThroughputLimitCheck:
+    Properties:
+      ConfigRuleName: dynamodb-throughput-limit-check
+      InputParameters:
+        accountRCUThresholdPercentage:
+          Fn::If:
+          - dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+          - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+          - Ref: AWS::NoValue
+        accountWCUThresholdPercentage:
+          Fn::If:
+          - dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+          - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_THROUGHPUT_LIMIT_CHECK
+    Type: AWS::Config::ConfigRule
+  LambdaConcurrencyCheck:
+    Properties:
+      ConfigRuleName: lambda-concurrency-check
+      InputParameters:
+        ConcurrencyLimitHigh:
+          Fn::If:
+          - lambdaConcurrencyCheckParamConcurrencyLimitHigh
+          - Ref: LambdaConcurrencyCheckParamConcurrencyLimitHigh
+          - Ref: AWS::NoValue
+        ConcurrencyLimitLow:
+          Fn::If:
+          - lambdaConcurrencyCheckParamConcurrencyLimitLow
+          - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_CONCURRENCY_CHECK
+    Type: AWS::Config::ConfigRule
+  LambdaDlqCheck:
+    Properties:
+      ConfigRuleName: lambda-dlq-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_DLQ_CHECK
+    Type: AWS::Config::ConfigRule
+  LambdaFunctionPublicAccessProhibited:
+    Properties:
+      ConfigRuleName: lambda-function-public-access-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_FUNCTION_PUBLIC_ACCESS_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  LambdaInsideVpc:
+    Properties:
+      ConfigRuleName: lambda-inside-vpc
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_INSIDE_VPC
+    Type: AWS::Config::ConfigRule
+Conditions:
+  dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+  dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+  lambdaConcurrencyCheckParamConcurrencyLimitHigh:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: LambdaConcurrencyCheckParamConcurrencyLimitHigh
+  lambdaConcurrencyCheckParamConcurrencyLimitLow:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow

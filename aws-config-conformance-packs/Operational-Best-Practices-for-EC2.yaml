@@ -1,0 +1,137 @@
+##################################################################################
+#                                                                                 
+#   Conformance Pack:                                                             
+#     Operational Best Practices for EC2                                  
+#                                                                                                                                                                 
+#   This Conformance Pack has been designed for compatibility with the majority of 
+#   AWS regions and to not require setting of any Parameters. Additional managed rules 
+#   that require parameters to be set for your environment and/or for your specific 
+#   region can be found at:
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html  
+#                                                                                 
+#   See Parameters section for names and descriptions of required parameters.         
+#                                                                                 
+##################################################################################
+
+Parameters:
+  Ec2VolumeInuseCheckParamDeleteOnTermination:
+    Default: 'TRUE'
+    Type: String
+Resources:
+  Ec2EbsEncryptionByDefault:
+    Properties:
+      ConfigRuleName: ec2-ebs-encryption-by-default
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_EBS_ENCRYPTION_BY_DEFAULT
+    Type: AWS::Config::ConfigRule
+  Ec2Imdsv2Check:
+    Properties:
+      ConfigRuleName: ec2-imdsv2-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_IMDSV2_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceDetailedMonitoringEnabled:
+    Properties:
+      ConfigRuleName: ec2-instance-detailed-monitoring-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_DETAILED_MONITORING_ENABLED
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceManagedBySsm:
+    Properties:
+      ConfigRuleName: ec2-instance-managed-by-systems-manager
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+        - AWS::SSM::ManagedInstanceInventory
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_MANAGED_BY_SSM
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceNoPublicIp:
+    Properties:
+      ConfigRuleName: ec2-instance-no-public-ip
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
+    Type: AWS::Config::ConfigRule
+  Ec2ManagedinstanceAssociationComplianceStatusCheck:
+    Properties:
+      ConfigRuleName: ec2-managedinstance-association-compliance-status-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SSM::AssociationCompliance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_MANAGEDINSTANCE_ASSOCIATION_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2ManagedinstancePatchComplianceStatusCheck:
+    Properties:
+      ConfigRuleName: ec2-managedinstance-patch-compliance-status-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SSM::PatchCompliance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2SecurityGroupAttachedToEni:
+    Properties:
+      ConfigRuleName: ec2-security-group-attached-to-eni
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI
+    Type: AWS::Config::ConfigRule
+  Ec2StoppedInstance:
+    Properties:
+      ConfigRuleName: ec2-stopped-instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_STOPPED_INSTANCE
+    Type: AWS::Config::ConfigRule
+  Ec2VolumeInuseCheck:
+    Properties:
+      ConfigRuleName: ec2-volume-inuse-check
+      InputParameters:
+        deleteOnTermination:
+          Fn::If:
+          - ec2VolumeInuseCheckParamDeleteOnTermination
+          - Ref: Ec2VolumeInuseCheckParamDeleteOnTermination
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Volume
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_VOLUME_INUSE_CHECK
+    Type: AWS::Config::ConfigRule
+  InstancesInVpc:
+    Properties:
+      ConfigRuleName: ec2-instances-in-vpc
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: INSTANCES_IN_VPC
+    Type: AWS::Config::ConfigRule
+Conditions:
+  ec2VolumeInuseCheckParamDeleteOnTermination:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: Ec2VolumeInuseCheckParamDeleteOnTermination

@@ -1,0 +1,104 @@
+##################################################################################
+#                                                                                 
+#   Conformance Pack:                                                             
+#     Operational Best Practices for Load Balancing                                    
+#                                                                                 
+#   This Conformance Pack has been designed for compatibility with the majority of 
+#   AWS regions and to not require setting of any Parameters. Additional managed rules 
+#   that require parameters to be set for your environment and/or for your specific 
+#   region can be found at:
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html  
+#                                                                                 
+#   See Parameters section for names and descriptions of required parameters.     
+#                                                                                 
+##################################################################################
+
+Resources:
+  AlbHttpDropInvalidHeaderEnabled:
+    Properties:
+      ConfigRuleName: alb-http-drop-invalid-header-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_HTTP_DROP_INVALID_HEADER_ENABLED
+    Type: AWS::Config::ConfigRule
+  AlbHttpToHttpsRedirectionCheck:
+    Properties:
+      ConfigRuleName: alb-http-to-https-redirection-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK
+    Type: AWS::Config::ConfigRule
+  AlbWafEnabled:
+    Properties:
+      ConfigRuleName: alb-waf-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_WAF_ENABLED
+    Type: AWS::Config::ConfigRule
+  AutoscalingGroupElbHealthcheckRequired:
+    Properties:
+      ConfigRuleName: autoscaling-group-elb-healthcheck-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
+    Type: AWS::Config::ConfigRule
+  ElbAcmCertificateRequired:
+    Properties:
+      ConfigRuleName: elb-acm-certificate-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_ACM_CERTIFICATE_REQUIRED
+    Type: AWS::Config::ConfigRule
+  ElbCrossZoneLoadBalancingEnabled:
+    Properties:
+      ConfigRuleName: elb-cross-zone-load-balancing-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_CROSS_ZONE_LOAD_BALANCING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ElbDeletionProtectionEnabled:
+    Properties:
+      ConfigRuleName: elb-deletion-protection-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_DELETION_PROTECTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  ElbLoggingEnabled:
+    Properties:
+      ConfigRuleName: elb-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ElbTlsHttpsListenersOnly:
+    Properties:
+      ConfigRuleName: elb-tls-https-listeners-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
+    Type: AWS::Config::ConfigRule
