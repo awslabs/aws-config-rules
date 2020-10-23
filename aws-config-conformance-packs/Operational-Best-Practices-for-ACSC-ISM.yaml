@@ -1,6 +1,6 @@
 ##################################################################################
-#
-#   Conformance Pack:
+#                                                                                 
+#   Conformance Pack:                                                             
 #     Operational Best Practices for Australian Cyber Security Centre (ACSC) Information 
 #   Security Manual (ISM) 2020-06
 #
@@ -13,10 +13,9 @@
 #   Public License and copyright information for the framework (including a disclaimer 
 #   of warranties) can be found at https://www.cyber.gov.au/acsc/copyright
 #
-#   See Parameters section for names and descriptions of required parameters.
+#   See Parameters section for names and descriptions of required parameters.  
 #                                                                                 
 ##################################################################################
-
 
 Parameters:
   AcmCertificateExpirationCheckParamDaysToExpiration:
@@ -699,16 +698,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: RDS_STORAGE_ENCRYPTED
-    Type: AWS::Config::ConfigRule
-  RedshiftBackupEnabled:
-    Properties:
-      ConfigRuleName: redshift-backup-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::Redshift::Cluster
-      Source:
-        Owner: AWS
-        SourceIdentifier: REDSHIFT_BACKUP_ENABLED
     Type: AWS::Config::ConfigRule
   RedshiftClusterConfigurationCheck:
     Properties:
