@@ -1,9 +1,9 @@
 ##################################################################################
 #
 #   Conformance Pack:
-#     Operational Best Practices for CIS AWS Benchmark Level 1 v1.3
+#     Operational Best Practices for CIS AWS Foundations Benchmark Level 1 v1.3
 #
-#   This conformance pack helps verify compliance with CIS AWS Benchmark Level 1 v1.3 requirements.
+#   This conformance pack helps verify compliance with CIS AWS Foundations Benchmark Level 1 v1.3 requirements.
 #
 #   This Conformance Pack has been designed for compatibility with the majority of AWS 
 #   regions and to not require setting of any Parameters. Additional managed rules that 
