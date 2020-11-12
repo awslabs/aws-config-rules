@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "SECURITYHUB_ENABLED",
+    "SourceRuntime": "python3.6-lib",
+    "CodeKey": "SECURITYHUB_ENABLED.zip",
+    "InputParameters": "{\"ExecutionRoleName\": \"YOUR_ROLE_NAME\"}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
