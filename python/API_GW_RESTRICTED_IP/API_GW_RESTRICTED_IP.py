@@ -136,21 +136,21 @@ def evaluate_compliance(event, configuration_item, rule_parameters):
     for gateway in gateways_list:
 
         if gateway['endpointConfiguration']['types'] == ['PRIVATE']:
-            evaluations.append(build_evaluation(gateway['name'], 'NOT_APPLICABLE', event))
+            evaluations.append(build_evaluation(gateway['id'], 'NOT_APPLICABLE', event))
             continue
         
         
         if 'policy' not in gateway:
-            evaluations.append(build_evaluation(gateway['name'], 'NON_COMPLIANT', event, annotation='No resource policy is attached.'))
+            evaluations.append(build_evaluation(gateway['id'], 'NON_COMPLIANT', event, annotation='No resource policy is attached.'))
             continue
 
         policy = json.loads(gateway['policy'].replace('\\',''))
         
         if is_policy_allows_more_than_whitelist(policy, rule_parameters):
-            evaluations.append(build_evaluation(gateway['name'], 'NON_COMPLIANT', event, annotation='The attached policy allows more than the whitelist.'))
+            evaluations.append(build_evaluation(gateway['id'], 'NON_COMPLIANT', event, annotation='The attached policy allows more than the whitelist.'))
             continue
         
-        evaluations.append(build_evaluation(gateway['name'], 'COMPLIANT', event))
+        evaluations.append(build_evaluation(gateway['id'], 'COMPLIANT', event))
 
     return evaluations
 
