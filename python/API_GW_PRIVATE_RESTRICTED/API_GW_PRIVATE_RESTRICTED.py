@@ -141,12 +141,12 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
         #Scenario 1:
         if 'PRIVATE' not in gateway['endpointConfiguration']['types']:
-            evaluations.append(build_evaluation(gateway['name'], 'NOT_APPLICABLE', event))
+            evaluations.append(build_evaluation(gateway['id'], 'NOT_APPLICABLE', event))
             continue
 
         #Scenario 2:
         if 'policy' not in gateway:
-            evaluations.append(build_evaluation(gateway['name'], 'NON_COMPLIANT', event, annotation='No resource policy is attached.'))
+            evaluations.append(build_evaluation(gateway['id'], 'NON_COMPLIANT', event, annotation='No resource policy is attached.'))
             continue
 
         policy = json.loads(gateway['policy'].replace('\\', ''))
@@ -159,31 +159,31 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
                 policy_has_allow_statement = True
 
                 if not allow_statement_has_options(statement):
-                    evaluations.append(build_evaluation(gateway['name'], 'NON_COMPLIANT', event, annotation='The Allow statement does not have VPC nor a VPCe.'))
+                    evaluations.append(build_evaluation(gateway['id'], 'NON_COMPLIANT', event, annotation='The Allow statement does not have VPC nor a VPCe.'))
                     is_gateway_compliant = False
                     break
 
                 if allow_statement_has_attrib(statement, 'aws:sourceVpc'):
                     vpc_list = statement['Condition']['StringEquals']['aws:sourceVpc']
                     if not is_resource_in_same_account(vpc_list, 'VpcId', all_vpc_in_account['Vpcs']):
-                        evaluations.append(build_evaluation(gateway['name'], 'NON_COMPLIANT', event, annotation='The VPCs are not in the same account than this API Gateway.'))
+                        evaluations.append(build_evaluation(gateway['id'], 'NON_COMPLIANT', event, annotation='The VPCs are not in the same account than this API Gateway.'))
                         is_gateway_compliant = False
                         break
 
                 if allow_statement_has_attrib(statement, 'aws:sourceVpce'):
                     vpce_list = statement['Condition']['StringEquals']['aws:sourceVpce']
                     if not is_resource_in_same_account(vpce_list, 'VpcEndpointId', all_vpce_in_account):
-                        evaluations.append(build_evaluation(gateway['name'], 'NON_COMPLIANT', event, annotation='The VPCEs are not in the same account than this API Gateway.'))
+                        evaluations.append(build_evaluation(gateway['id'], 'NON_COMPLIANT', event, annotation='The VPCEs are not in the same account than this API Gateway.'))
                         is_gateway_compliant = False
                         break
 
         if not policy_has_allow_statement:
-            evaluations.append(build_evaluation(gateway['name'], 'NON_COMPLIANT', event, annotation='This API has no resource policy with an Allow statement.'))
+            evaluations.append(build_evaluation(gateway['id'], 'NON_COMPLIANT', event, annotation='This API has no resource policy with an Allow statement.'))
             is_gateway_compliant = False
             continue
 
         if is_gateway_compliant:
-            evaluations.append(build_evaluation(gateway['name'], 'COMPLIANT', event))
+            evaluations.append(build_evaluation(gateway['id'], 'COMPLIANT', event))
 
     return evaluations
 
