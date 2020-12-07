@@ -55,10 +55,10 @@ Resources:
       Source: 
         Owner: AWS
         SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
-  ServerSideReplicationEnabled: 
+  ServerSideEncryptionEnabled: 
     Type: "AWS::Config::ConfigRule"
     Properties: 
-      ConfigRuleName: ServerSideReplicationEnabled
+      ConfigRuleName: ServerSideEncryptionEnabled
       Description: "Checks that your Amazon S3 bucket either has S3 default encryption enabled or that the S3 bucket policy explicitly denies put-object requests without server side encryption."
       Scope: 
         ComplianceResourceTypes: 
