@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ECR_REPOSITORY_SCAN_ON_PUSH_CHECK",
+    "Description": "ECR_REPOSITORY_SCAN_ON_PUSH_CHECK",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "ECR_REPOSITORY_SCAN_ON_PUSH_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}
