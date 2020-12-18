@@ -1,15 +1,10 @@
 ##################################################################################
 #
 #   Conformance Pack:
-#     Operational Best Practices for CIS AWS Foundations Benchmark Level 1 v1.3
+#     Operational Best Practices for CIS AWS Foundations Benchmark Level 1
 #
-#   This conformance pack helps verify compliance with CIS AWS Foundations Benchmark Level 1 v1.3 requirements.
+#   This conformance pack helps verify compliance with CIS AWS Foundations Benchmark Level 1 requirements.
 #
-#   This Conformance Pack has been designed for compatibility with the majority of AWS 
-#   regions and to not require setting of any Parameters. Additional managed rules that 
-#   require parameters to be set for your environment and/or for your specific region can 
-#   be found at https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
-#   
 #   See Parameters section for names and descriptions of required parameters.
 #
 ##################################################################################
@@ -65,20 +60,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
-    Type: AWS::Config::ConfigRule
-  CloudwatchAlarmActionCheck:
-    Properties:
-      ConfigRuleName: cloudwatch-alarm-action-check
-      InputParameters:
-        alarmActionRequired: 'TRUE'
-        insufficientDataActionRequired: 'TRUE'
-        okActionRequired: 'FALSE'
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CloudWatch::Alarm
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
     Type: AWS::Config::ConfigRule
   Ec2EbsEncryptionByDefault:
     Properties:
@@ -299,6 +280,174 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  AccountContactDetailsConfigured:
+    Properties:
+      ConfigRuleName: account-contact-details-configured
+      Description: Ensure the contact email and telephone number for AWS accounts are current and map to more than one individual in your organization. Within the My Account section of the console ensure correct information is specified in the Contact Information section.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AccountSecurityContactConfigured:
+    Properties:
+      ConfigRuleName: account-security-contact-configured
+      Description: Ensure the contact email and telephone number for the your organizations security team are current. Within the My Account section of the AWS Management Console ensure the correct information is specified in the Security section.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AccountSecurityQuestionsConfigured:
+    Properties:
+      ConfigRuleName: account-security-questions-configured
+      Description: Ensure the security questions that can be used to authenticate individuals calling AWS customer service for support are configured. Within the My Account section of the AWS Management Console ensure three security challenge questions are configured.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  RootAccountRegularUse:
+    Properties:
+      ConfigRuleName: root-account-regular-use
+      Description: Ensure the use of the root account is avoided for everyday tasks. Within IAM, run a credential report to examine when the root user was last used.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  IAMUserConsoleAndAPIAccessAtCreation:
+    Properties:
+      ConfigRuleName: iam-user-console-and-api-access-at-creation
+      Description: Ensure access keys are not setup during the initial user setup for all IAM users that have a console password. For all IAM users with console access, compare the user 'Creation time` to the Access Key `Created` date.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  IAMUserSingleAccessKey:
+    Properties:
+      ConfigRuleName: iam-user-single-access-key
+      Description: Ensure there is only one active access key available for any single IAM user. For all IAM users check that there is only one active key used within the Security Credentials tab for each user within IAM.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  IAMSupportRoleCreated:
+    Properties:
+      ConfigRuleName: iam-support-role-created
+      Description: Ensure a support role has been created to manage incidents with AWS Support. Check that the AWSSupportAccess policy is attached to an IAM role.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  IAMExpiredCertificates:
+    Properties:
+      ConfigRuleName: iam-expired-certificates
+      Description: Ensure that all the expired SSL/TLS certificates stored in IAM are removed. From the command line with the installed AWS CLI run the 'aws iam list-server-certificates' command and determine if there are any expired server certificates.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  IAMAccessAnalyzerEnabled:
+    Properties:
+      ConfigRuleName: iam-access-analyzer-enabled
+      Description: Ensure that IAM Access analyzer is enabled. Within the IAM section of the console, select Access analyzer and ensure that the STATUS is set to Active.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  ConfigEnabledAllRegions:
+    Properties:
+      ConfigRuleName: config-enabled-all-regions
+      Description: Ensure AWS Config is enabled in all AWS Regions. Within the AWS Config section of the console, for each Region enabled ensure the AWS Config recorder is configured correctly. Ensure recording of global AWS resources is enabled at least in one Region.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AlarmUnauthorizedAPIcalls:
+    Properties:
+      ConfigRuleName: alarm-unauthorized-api-calls
+      Description: Ensure a log metric filter and an alarm exists for unauthorized API calls.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AlarmSignInWithoutMFA:
+    Properties:
+      ConfigRuleName: alarm-sign-in-without-mfa
+      Description: Ensure a log metric filter and an alarm exists for AWS Management Console sign-in without Multi-Factor Authentication (MFA).
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AlarmRootAccountUse:
+    Properties:
+      ConfigRuleName: alarm-root-account-use
+      Description: Ensure a log metric filter and an alarm exists for usage of the root account.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AlarmIAMpolicyChange:
+    Properties:
+      ConfigRuleName: alarm-iam-policy-change
+      Description: Ensure a log metric filter and an alarm exists for IAM policy changes.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AlarmCloudtrailConfigChange:
+    Properties:
+      ConfigRuleName: alarm-cloudtrail-config-change
+      Description: Ensure a log metric filter and an alarm exists for AWS CloudTrail configuration changes.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AlarmS3BucketPolicyChange:
+    Properties:
+      ConfigRuleName: alarm-s3-bucket-policy-change
+      Description: Ensure a log metric filter and an alarm exists for Amazon S3 bucket policy changes.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AlarmVPCNetworkGatewayChange:
+    Properties:
+      ConfigRuleName: alarm-vpc-network-gateway-change
+      Description: Ensure a log metric filter and an alarm exists for changes to network gateways.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AlarmVPCroutetableChange:
+    Properties:
+      ConfigRuleName: alarm-vpc-route-table-change
+      Description: Ensure a log metric filter and an alarm exists for route table changes.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AlarmVPCChange:
+    Properties:
+      ConfigRuleName: alarm-vpc-change
+      Description: Ensure a log metric filter and an alarm exists for Amazon Virtual Private Cloud (VPC) changes.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AlarmOrganizationsChange:
+    Properties:
+      ConfigRuleName: alarm-organizations-change
+      Description: Ensure a log metric filter and an alarm exists for AWS Organizations changes.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  VPCNetworkACLOpenAdminPorts:
+    Properties:
+      ConfigRuleName: vpc-networkacl-open-admin-ports
+      Description: Ensure no network ACLs allow public ingress to the remote server administration ports. Within the VPC section of the console, ensure there are network ACLs with a source of '0.0.0.0/0' with allowing ports or port ranges including remote server admin ports.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
   accessKeysRotatedParamMaxAccessKeyAge:
