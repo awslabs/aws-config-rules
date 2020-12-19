@@ -7,7 +7,7 @@
 #    AWS Config Rules based guardrails from AWS Control Tower. Use this conformance
 #    pack to apply AWS Control Tower detective guardrails to your existing accounts
 #    prior to enrolling them in AWS Control Tower or to manage resources in your
-#    accounts in regions not currently supported by AWS Control Tower. ccp-1rb7nm3q8
+#    accounts in regions not currently supported by AWS Control Tower. 
 ###################################################################################
 
 Resources:
