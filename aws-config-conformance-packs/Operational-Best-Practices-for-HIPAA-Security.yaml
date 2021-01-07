@@ -58,6 +58,9 @@ Parameters:
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
     Type: String
+  InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Default: ' '
+    Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
     Type: String
@@ -551,6 +554,12 @@ Resources:
   InternetGatewayAuthorizedVpcOnly:
     Properties:
       ConfigRuleName: internet-gateway-authorized-vpc-only
+      InputParameters:
+         AuthorizedVpcIds:
+           Fn::If:
+           - internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+           - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+           - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::InternetGateway
@@ -1014,6 +1023,11 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+  internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcId
   restrictedIncomingTrafficParamBlockedPort1:
     Fn::Not:
     - Fn::Equals:
