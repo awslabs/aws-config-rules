@@ -58,9 +58,19 @@ class NotApplicable(unittest.TestCase):
         expected_response = [build_expected_response("NOT_APPLICABLE", '123456789012', 'AWS::::Account')]
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
+class InvalidParameter(unittest.TestCase):
+    def test_scenario_2_invalid_parameter(self):
+        list_repositories_result = {"repositories": []}
+
+        ECR_CLIENT_MOCK.describe_repositories = MagicMock(return_value=list_repositories_result)
+        rule_parameters = '{\"Parameter\":\"Value\"}'
+        lambda_result = RULE.lambda_handler(build_lambda_scheduled_event(rule_parameters), {})
+        expected_error_code = 'InvalidParameterValueException'
+        expected_error_message = 'This rule is not configured to take any input parameters.'
+        assert_customer_error_response(self, lambda_result, expected_error_code, expected_error_message)
 
 class NonComplianceTest(unittest.TestCase):
-    def test_scenario_2_compliant_resources_with_key(self):
+    def test_scenario_3_compliant_resources_with_key(self):
         list_repositories_result = {"repositories": 
             [
                 {
@@ -81,7 +91,7 @@ class NonComplianceTest(unittest.TestCase):
         assert_successful_evaluation(self, lambda_result, expected_response, len(lambda_result))
 
 class ComplianceTest(unittest.TestCase):
-    def test_scenario_3_compliant_resources_with_key(self):
+    def test_scenario_4_compliant_resources_with_key(self):
         list_repositories_result = {"repositories": 
             [
                 {

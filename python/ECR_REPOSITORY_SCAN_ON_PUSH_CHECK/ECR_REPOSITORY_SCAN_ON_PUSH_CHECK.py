@@ -125,12 +125,18 @@ def evaluate_parameters(rule_parameters):
     Keyword arguments:
     rule_parameters -- the Key/Value dictionary of the Config Rules parameters
     """
+    if parameters_exist(rule_parameters):
+        raise ValueError('This rule is not configured to take any input parameters.')
+
     valid_rule_parameters = rule_parameters
     return valid_rule_parameters
 
 ####################
 # Helper Functions #
 ####################
+
+def parameters_exist(parameters):
+    return len(parameters) > 0
 
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
