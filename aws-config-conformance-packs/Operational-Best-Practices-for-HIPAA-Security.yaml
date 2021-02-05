@@ -1027,7 +1027,7 @@ Conditions:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcId
+      - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
   restrictedIncomingTrafficParamBlockedPort1:
     Fn::Not:
     - Fn::Equals:
