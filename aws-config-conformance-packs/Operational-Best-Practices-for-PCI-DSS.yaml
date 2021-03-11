@@ -52,6 +52,9 @@ Parameters:
     Description: Maximum number of days a credential cannot be used. The default value
       is 90 days.
     Type: String
+  InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Default: ' '
+    Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
     Description: Blocked TCP port number.
@@ -738,13 +741,14 @@ Resources:
         SourceIdentifier: INCOMING_SSH_DISABLED
     Type: AWS::Config::ConfigRule
   InternetGatewayAuthorizedVpcOnly:
-    Controls:
-      - '1.3'
     Properties:
       ConfigRuleName: internet-gateway-authorized-vpc-only
-      Description: Checks that Internet gateways (IGWs) are only attached to an authorized
-        Amazon Virtual Private Cloud (VPCs). The rule is NON_COMPLIANT if IGWs are
-        not attached to an authorized VPC.
+      InputParameters:
+        AuthorizedVpcIds:
+          Fn::If:
+            - internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+            - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+            - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
           - AWS::EC2::InternetGateway
@@ -1301,6 +1305,11 @@ Conditions:
       - Fn::Equals:
           - ''
           - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+  internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
   restrictedIncomingTrafficParamBlockedPort1:
     Fn::Not:
       - Fn::Equals:
