@@ -48,7 +48,7 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('vpc-interface-endpoint-open-policy')
+RULE = __import__('VPC_ENDPOINT_DEFAULT_POLICY')
 
 class ComplianceTest(unittest.TestCase):
      # Unit test for no VPC is present -- GHERKIN Scenario 1
