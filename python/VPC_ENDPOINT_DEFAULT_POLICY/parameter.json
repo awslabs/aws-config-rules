@@ -1,10 +1,10 @@
 {
     "Version": "1.0", 
     "Parameters": {
-      "CodeKey": "vpc-interface-endpoint-open-policy.zip", 
+      "CodeKey": "VPC_ENDPOINT_DEFAULT_POLICY.zip", 
       "SourceRuntime": "python3.7", 
       "SourcePeriodic": "TwentyFour_Hours", 
-      "RuleName": "vpc-interface-endpoint-open-policy", 
+      "RuleName": "VPC_ENDPOINT_DEFAULT_POLICY", 
       "OptionalParameters": "{}", 
       "InputParameters": "{}"
     }, 
