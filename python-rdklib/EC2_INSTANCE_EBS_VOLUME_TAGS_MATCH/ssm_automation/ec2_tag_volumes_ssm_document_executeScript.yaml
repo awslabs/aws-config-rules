@@ -1,0 +1,130 @@
+schemaVersion: '0.3'
+description: |
+  ### Document name - EC2-Tag-Volumes
+
+  ## What does this document do?
+  This document tags Amazon EBS volumes using the [CreateTags](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html) API to ensure it includes the same Tags as those of the EC2 Instance its attached to.
+
+  ## Input Parameters
+  * AutomationAssumeRole: (Required) The ARN of the role that allows Automation to perform the actions on your behalf.
+  * VolumeId: (Required) The ID of the Amazon EBS volume that you want to modify.
+
+  ## Output Parameters
+  * ApplyTagsOnEBSVolumeAndVerify.Output
+
+assumeRole: '{{ AutomationAssumeRole }}'
+parameters:
+  AutomationAssumeRole:
+    type: String
+    description:
+      (Required) The Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role that allows Systems Manager Automation to perform
+      the actions on your behalf.
+    allowedPattern: ^arn:(aws[a-zA-Z-]*)?:iam::\d{12}:role/[\w+=,.@-]+
+  VolumeId:
+    type: String
+    description: (Required) The ID of the Amazon EBS volume that you want to modify.
+    allowedPattern: ^vol-[a-z0-9]+$
+outputs:
+  - ApplyTagsOnEBSVolumeAndVerify.Output
+mainSteps:
+  - name: ApplyTagsOnEBSVolumeAndVerify
+    action: aws:executeScript
+    description: |
+      ## ApplyTagsOnEBSVolumeAndVerify
+      Applies Tags on the Amazon EBS volume you specify in the 'VolumeId' parameter to include the same tags from the Amazon EC2 instance its attached to.
+      ## Outputs
+      * Output: A success message or failure exception.
+    isEnd: true
+    timeoutSeconds: 600
+    inputs:
+      Runtime: python3.7
+      Handler: handler
+      InputPayload:
+        VolumeId: '{{ VolumeId }}'
+      Script: |-
+        from time import sleep
+
+        import boto3
+
+        EC2_DESCRIBE_TAGS_PAGE_SIZE = 100
+        EC2_DESCRIBE_TAGS_THROTTLE_PERIOD = 0.05
+
+
+        def get_instance_attached_to_volume(ec2_client, volume_id):
+            try:
+                ec2_paginator = ec2_client.get_paginator("describe_volumes")
+                page_iterator = ec2_paginator.paginate(VolumeIds=[volume_id], PaginationConfig={"MaxItems": EC2_DESCRIBE_TAGS_PAGE_SIZE})
+                for page in page_iterator:
+                    for volume in page["Volumes"]:
+                        for attachment in volume["Attachments"]:
+                            return attachment.get("InstanceId")
+            except Exception as error:
+                if error.response["Error"]["Code"] == "InvalidVolume.NotFound":
+                    error_message = f"AMAZON EBS VOLUME {volume_id} DOES NOT EXIST."
+                    raise Exception(error_message)
+                raise error
+
+
+        def get_resource_tags(ec2_client, resource_id):
+            ec2_paginator = ec2_client.get_paginator("describe_tags")
+            page_iterator = ec2_paginator.paginate(
+                Filters=[{"Name": "resource-id", "Values": [resource_id]}], PaginationConfig={"PageSize": EC2_DESCRIBE_TAGS_PAGE_SIZE}
+            )
+            resource_tags = []
+            for page in page_iterator:
+                for tag in page["Tags"]:
+                    # Skip Tag Keys starting with "aws:", as they are reserved for internal AWS use.
+                    if tag["Key"].startswith("aws:"):
+                        continue
+                    tag_value = {"Key": tag["Key"], "Value": tag["Value"]}
+                    resource_tags.append(tag_value)
+                sleep(EC2_DESCRIBE_TAGS_THROTTLE_PERIOD)
+            return resource_tags
+
+
+        def compare_instance_tags_to_volume_tags(instance_tags, volume_tags):
+            tags_to_apply = []
+            for tag in instance_tags:
+                if tag["Key"].startswith("aws:"):
+                    continue
+                if tag not in volume_tags:
+                    tags_to_apply.append(tag)
+            return tags_to_apply
+
+
+        def tag_volume(ec2_client, volume_id, tags_to_apply):
+            if tags_to_apply:
+                response = ec2_client.create_tags(Resources=[volume_id], Tags=tags_to_apply)
+                return response
+            return False
+
+
+        def verify_ebs_volume_has_ec2_instance_tags(ec2_client, volume_id, instance_tags):
+            volume_tags = get_resource_tags(ec2_client, volume_id)
+            return compare_instance_tags_to_volume_tags(instance_tags, volume_tags)
+
+
+        def handler(event, context):
+            ec2_client = boto3.client("ec2")
+            volume_id = event["VolumeId"]
+            instance_id = get_instance_attached_to_volume(ec2_client, volume_id)
+            if not instance_id:
+                return {"output": f"Amazon EBS volume {volume_id} is not attached to an EC2 instance."}
+            volume_tags = get_resource_tags(ec2_client, volume_id)
+            instance_tags = get_resource_tags(ec2_client, instance_id)
+            tags_to_apply = compare_instance_tags_to_volume_tags(instance_tags, volume_tags)
+            if not tags_to_apply:
+                return {"output": f"Amazon EBS volume {volume_id} already has the tags from EC2 instance {instance_id}"}
+            create_tags_response = tag_volume(ec2_client, volume_id, tags_to_apply)
+            missing_tags = verify_ebs_volume_has_ec2_instance_tags(ec2_client, volume_id, instance_tags)
+            if not missing_tags:
+                return {
+                    "output": f"Verification of tags applied successfully to Amazon EBS volume {volume_id} with the tags from EC2 instance {instance_id}",
+                    "CreateTagsResponse": create_tags_response,
+                }
+            error_message = f"VERIFICATION FAILED. AMAZON EBS VOLUME {volume_id} MISSING TAGS FROM EC2 INSTANCE {instance_id}."
+            raise Exception(error_message)
+    outputs:
+      - Name: Output
+        Selector: $.Payload
+        Type: StringMap
