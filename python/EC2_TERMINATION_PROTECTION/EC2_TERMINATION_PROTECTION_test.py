@@ -49,8 +49,8 @@ RULE = __import__('EC2_TERMINATION_PROTECTION')
 
 class ComplianceTest(unittest.TestCase):
 
-    invoking_event_ec2_scenario1 = '{"configurationItem":{"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","accountId": "681361479661","configurationItemStatus": "ResourceDiscovered","resourceType": "AWS::EC2::Instance","resourceId": "i-058180476cbe2999e","supplementaryConfiguration":{}},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-    invoking_event_ec2_scenario2 = '{"configurationItem":{"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","accountId": "681361479661","configurationItemStatus": "ResourceDiscovered","resourceType": "AWS::EC2::Instance","resourceId": "i-08d88c46031cc32e9","supplementaryConfiguration":{}},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
+    invoking_event_ec2_scenario1 = '{"configurationItem":{"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","accountId": "123456789012","configurationItemStatus": "ResourceDiscovered","resourceType": "AWS::EC2::Instance","resourceId": "i-058180476cbe2999e","supplementaryConfiguration":{}},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
+    invoking_event_ec2_scenario2 = '{"configurationItem":{"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","accountId": "123456789012","configurationItemStatus": "ResourceDiscovered","resourceType": "AWS::EC2::Instance","resourceId": "i-08d88c46031cc32e9","supplementaryConfiguration":{}},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
 
     # Scenario 1: Termination Protection Enabled on EC2 Instance
     def test_scenario_1_ec2_termination_protection_enabled(self):
