@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_INSTANCE_EBS_VOLUME_TAGS_MATCH",
+    "Description": "EC2_INSTANCE_EBS_VOLUME_TAGS_MATCH",
+    "SourceRuntime": "python3.6-lib",
+    "CodeKey": "EC2_INSTANCE_EBS_VOLUME_TAGS_MATCH.zip",
+    "InputParameters": "{\"ExecutionRoleName\": \"YOUR_ROLE_NAME\"}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::EC2::Volume,AWS::EC2::Instance"
+  },
+  "Tags": "[]"
+}
