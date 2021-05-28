@@ -5,7 +5,7 @@ AWS Community repository of custom Config rules. Contributions welcome. Instruct
 **Please review each rule carefully and test within your dev/test environment before integrating into production.**
 
 ## Getting started with the developement of AWS Config Rules
-See the [CONTRIBUTING.md](https://github.com/awslabs/aws-config-rules/CONTRIBUTING.md).
+See the [CONTRIBUTING.md](https://github.com/awslabs/aws-config-rules/blob/master/CONTRIBUTING.md).
 
 ## Related Projects
 RDK (Rule Development Kit) - https://github.com/awslabs/aws-config-rdk
