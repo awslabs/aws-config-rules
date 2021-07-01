@@ -1,20 +1,20 @@
 ##################################################################################
 #
 #   Conformance Pack:
-#     Operational Best Practices for Reserve Bank of India’s (RBI) Circular No.1/18.01.000/2018-19 
-#    “Basic Cyber Security Framework for Primary (Urban) Cooperative Banks (UCBs)” (BCSF-UCB)
+#     Operational Best Practices for Reserve Bank of India's (RBI) Circular No.1/18.01.000/2018-19
+#    Basic Cyber Security Framework for Primary (Urban) Cooperative Banks (UCBs) (BCSF-UCB)
 #
 #   This Conformance Pack helps verify compliance with RBI BCSF-UCB requirements.
 #
-#   This Conformance Pack has been designed for compatibility with the majority of 
-#   AWS regions and to not require setting of any Parameters. Additional managed rules 
-#   that require parameters to be set for your environment and/or for your specific 
+#   This Conformance Pack has been designed for compatibility with the majority of
+#   AWS regions and to not require setting of any Parameters. Additional managed rules
+#   that require parameters to be set for your environment and/or for your specific
 #   region can be found at:
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html  
-#                                                                                 
-#   See Parameters section for names and descriptions of required parameters.    
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
 #
+#   See Parameters section for names and descriptions of required parameters.
 ##################################################################################
+
 
 Parameters:
   AcmCertificateExpirationCheckParamDaysToExpiration:
@@ -39,16 +39,16 @@ Parameters:
     Default: '24'
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'

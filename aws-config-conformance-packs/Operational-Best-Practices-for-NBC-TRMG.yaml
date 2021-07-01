@@ -1,23 +1,18 @@
 ##################################################################################
-#
 #   Conformance Pack:
-#     Operational Best Practices for National Bank of Cambodia (NBC) Technology 
-#    Risk Management (TRM) Guidelines 
-#
+#   Operational Best Practices for National Bank of Cambodia (NBC) Technology
+#    Risk Management (TRM) Guidelines
 #   This conformance pack helps verify compliance with NBC TRM requirements.
-#  
-#   This sample conformance pack template contains mappings to controls within the National 
-#   Bank of Cambodia’s (NBC) Technology Risk Management (TRM) Guidelines framework, which 
-#   can be accessed here: 
+#
+#   This sample conformance pack template contains mappings to controls within the NBC TRM Guidelines framework, which
+#   can be accessed here:
 #   https://www.nbc.org.kh/download_files/publication/itguideline_eng/NBC-Risk-Management-Guidelines-July%202019.pdf
 #
-#   This Conformance Pack has been designed for compatibility with the majority of AWS 
-#   regions and to not require setting of any Parameters. Additional managed rules that 
-#   require parameters to be set for your environment and/or for your specific region can 
+#   This Conformance Pack has been designed for compatibility with the majority of AWS
+#   regions and to not require setting of any Parameters. Additional managed rules that
+#   require parameters to be set for your environment and/or for your specific region can
 #   be found at https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
-#
-#   See Parameters section for names and descriptions of required parameters. 
-#
+#   See Parameters section for names and descriptions of required parameters.
 ##################################################################################
 
 Parameters:
@@ -52,16 +47,16 @@ Parameters:
     Default: '24'
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
