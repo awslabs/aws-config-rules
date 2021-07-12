@@ -1,0 +1,31 @@
+# Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "This template creates an IAM cross account role with organisational permissions"
+
+Parameters:
+  PrincipalOrgId:
+    Type: String
+    Default: "o-q8vqgayqo0"
+
+Resources:
+  CrossAccountOrganisationsRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              "sts:AssumeRole"
+            Condition:
+              StringEquals:
+                "aws:PrincipalOrgID": !Ref PrincipalOrgId
+      Path: /
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AWSSSOMasterAccountAdministrator"
+        - "arn:aws:iam::aws:policy/AWSSSOMemberAccountAdministrator"
+        - "arn:aws:iam::aws:policy/AWSOrganizationsFullAccess"

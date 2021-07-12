@@ -1,0 +1,103 @@
+# Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: 'This template Checks the given resource policy for the S3 Bucket and ensures S3 Bucket is owned by the same account.'
+
+              
+Parameters: 
+  OrganizationUnitId:
+    Type: String
+  OrgAssumableConfigRoleArn:
+    Type: String 
+  S3BucketName:
+    Type: String
+    Default: 'bucket-name'
+  S3zipfile:
+    Type: String
+    Default: 'filename.zip'
+  ConfigLambdaLayer:
+    Type: String
+    Default: 'Config-Lambda-Layer:1'
+
+Resources:
+  CoreS3OutsideAccessDisabledRule:
+    Type: 'AWS::Config::ConfigRule'
+    Properties:
+      ConfigRuleName: core-s3-policy-outside-access-disabled
+      Source:
+        Owner: CUSTOM_LAMBDA
+        SourceIdentifier: !GetAtt CoreS3OutsideAccessDisabledFunction.Arn
+        SourceDetails:
+           - EventSource: aws.config
+             MessageType: ScheduledNotification
+      Description: Checks the given resource policy for the S3 Bucket and ensures S3 Bucket is owned by the same account.
+      Scope: 
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+    DependsOn: CoreS3OutsideAccessDisabledPermission
+      
+  CoreS3OutsideAccessDisabledFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref S3BucketName
+        S3Key: !Ref S3zipfile
+      Role: !GetAtt CoreS3OutsideAccessDisabledRole.Arn
+      Timeout: 300
+      MemorySize: 256
+      FunctionName: core-s3-outside-access-disabled
+      Handler: core-s3-outside-access-disabled.lambda_handler
+      Runtime: python3.8
+      Layers:
+        - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:${ConfigLambdaLayer}'
+      Environment:
+        Variables: 
+          OrgAssumableConfigRoleArn: !Ref OrgAssumableConfigRoleArn
+          OrganizationUnitId: !Ref OrganizationUnitId
+          
+
+  CoreS3OutsideAccessDisabledPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !GetAtt CoreS3OutsideAccessDisabledFunction.Arn
+      Principal: config.amazonaws.com
+  CoreS3OutsideAccessDisabledRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub 'core-s3-policy-outside-access-disabled-role-${AWS::Region}'
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSConfigRulesExecutionRole'
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - 'logs:*'
+                  - 'config:DeleteEvaluationResults'
+                  - 'glue:GetResourcePolicy'
+                  - 'config:PutEvaluations'
+                  - 's3:ListAllMyBuckets'
+                  - 's3:GetBucketPolicy'
+                Resource: '*'
+                Effect: Allow
+        - PolicyName: LambdaExec
+          PolicyDocument:
+              Statement:
+              - Effect: Allow
+                Action: 
+                  - 'sts:AssumeRole'
+                Resource: !Sub '${OrgAssumableConfigRoleArn}'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
