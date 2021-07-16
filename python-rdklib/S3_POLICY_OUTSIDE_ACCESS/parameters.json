@@ -4,7 +4,7 @@
     "RuleName": "S3_POLICY_OUTSIDE_ACCESS",
     "SourceRuntime": "python3.7-lib",
     "CodeKey": "S3_POLICY_OUTSIDE_ACCESS.zip",
-    "InputParameters": "[{\"OrganizationUnitId\": \"Desired OU to evaluate\"},{\"OrgAssumableConfigRoleArn\": \"Your cross assumable role\"},{\"BucketName\": \"Bucket Name of Code\"},{\"S3zipfile\": \" Name of Code\"},{\"ConfigLambdaLayer\": \" Name of Lambda Layer\"}]",
+    "InputParameters": "[{\"OrganizationUnitId\": \"Desired OU to evaluate\"},{\"OrgAssumableConfigRoleArn\": \"Your cross assumable role\"},{\"S3BucketName\": \"Bucket Name of Code\"},{\"S3zipfile\": \" Name of Code\"},{\"ConfigLambdaLayer\": \" Name of Lambda Layer\"}]",
     "OptionalParameters": "{}",
     "SourcePeriodic": "TwentyFour_Hours"
   },
