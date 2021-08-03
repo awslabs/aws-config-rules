@@ -1,17 +1,31 @@
 ##################################################################################
-#                                                                                 
-#   Conformance Pack:                                                             
-#     Operational Best Practices for CMMC Level 3                                   
-#                                                                                 
-#   This conformance pack helps verify compliance with CMMC Level 3 requirements.   
-#                                                                                 
-#   See Parameters section for names and descriptions of required parameters.    
-#                                                                                 
+#
+#   Conformance Pack:
+#     Operational Best Practices for Cybersecurity Maturity Model Certification (CMMC) Level 3
+#
+#   This conformance pack helps verify compliance with CMMC Level 3 requirements.
+#
+#   This Conformance Pack has been designed for compatibility with the majority of AWS
+#   regions and to not require setting of any Parameters. Additional managed rules that
+#   require parameters to be set for your environment and/or for your specific region can
+#   be found at https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
 ##################################################################################
 
 Parameters:
   Ec2VolumeInuseCheckParamDeleteOnTermination:
     Default: 'TRUE'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysHighSev:
+    Default: '1'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysLowSev:
+    Default: '30'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysMediumSev:
+    Default: '7'
     Type: String
   IamPasswordPolicyParamMaxPasswordAge:
     Default: '90'
@@ -23,16 +37,16 @@ Parameters:
     Default: '24'
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
@@ -53,22 +67,25 @@ Parameters:
     Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
-    Default: 'TRUE'
+    Default: 'True'
     Type: String
   S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
-    Default: 'TRUE'
+    Default: 'True'
     Type: String
   S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
-    Default: 'TRUE'
+    Default: 'True'
     Type: String
   S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
-    Default: 'TRUE'
+    Default: 'True'
     Type: String
   VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Default: '443'
     Type: String
 Resources:
   AccountPartOfOrganizations:
+    Controls:
+    - CM.2.064
+    - SC.3.180
     Properties:
       ConfigRuleName: account-part-of-organizations
       Source:
@@ -76,6 +93,12 @@ Resources:
         SourceIdentifier: ACCOUNT_PART_OF_ORGANIZATIONS
     Type: AWS::Config::ConfigRule
   AlbHttpDropInvalidHeaderEnabled:
+    Controls:
+    - SC.1.175
+    - IA.2.081
+    - AC.3.014
+    - SC.3.185
+    - SC.3.190
     Properties:
       ConfigRuleName: alb-http-drop-invalid-header-enabled
       Scope:
@@ -86,13 +109,36 @@ Resources:
         SourceIdentifier: ALB_HTTP_DROP_INVALID_HEADER_ENABLED
     Type: AWS::Config::ConfigRule
   AlbHttpToHttpsRedirectionCheck:
+    Controls:
+    - SC.1.175
+    - IA.2.081
+    - AC.3.014
+    - SC.3.185
+    - SC.3.190
     Properties:
       ConfigRuleName: alb-http-to-https-redirection-check
       Source:
         Owner: AWS
         SourceIdentifier: ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK
     Type: AWS::Config::ConfigRule
+  AlbWafEnabled:
+    Controls:
+    - AC.1.003
+    - SI.2.216
+    - SC.3.180
+    Properties:
+      ConfigRuleName: alb-waf-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_WAF_ENABLED
+    Type: AWS::Config::ConfigRule
   ApiGwCacheEnabledAndEncrypted:
+    Controls:
+    - IA.2.081
+    - SC.3.191
     Properties:
       ConfigRuleName: api-gw-cache-enabled-and-encrypted
       Scope:
@@ -103,6 +149,9 @@ Resources:
         SourceIdentifier: API_GW_CACHE_ENABLED_AND_ENCRYPTED
     Type: AWS::Config::ConfigRule
   ApiGwExecutionLoggingEnabled:
+    Controls:
+    - AU.2.042
+    - SI.2.217
     Properties:
       ConfigRuleName: api-gw-execution-logging-enabled
       Scope:
@@ -114,6 +163,14 @@ Resources:
         SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
   CloudTrailCloudWatchLogsEnabled:
+    Controls:
+    - AC.2.013
+    - AU.2.041
+    - AU.2.042
+    - SI.2.214
+    - SI.2.216
+    - SI.2.217
+    - AU.3.046
     Properties:
       ConfigRuleName: cloud-trail-cloud-watch-logs-enabled
       Source:
@@ -121,6 +178,13 @@ Resources:
         SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
     Type: AWS::Config::ConfigRule
   CloudTrailEnabled:
+    Controls:
+    - IA.1.076
+    - AU.2.041
+    - AU.2.042
+    - CM.2.065
+    - SI.2.217
+    - AC.3.018
     Properties:
       ConfigRuleName: cloudtrail-enabled
       Source:
@@ -128,6 +192,9 @@ Resources:
         SourceIdentifier: CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
   CloudTrailEncryptionEnabled:
+    Controls:
+    - AU.3.049
+    - SC.3.191
     Properties:
       ConfigRuleName: cloud-trail-encryption-enabled
       Source:
@@ -135,6 +202,9 @@ Resources:
         SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
     Type: AWS::Config::ConfigRule
   CloudTrailLogFileValidationEnabled:
+    Controls:
+    - CM.2.064
+    - AU.3.049
     Properties:
       ConfigRuleName: cloud-trail-log-file-validation-enabled
       Source:
@@ -142,6 +212,11 @@ Resources:
         SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
     Type: AWS::Config::ConfigRule
   CloudtrailS3DataeventsEnabled:
+    Controls:
+    - AU.2.041
+    - AU.2.042
+    - SI.2.217
+    - AC.3.018
     Properties:
       ConfigRuleName: cloudtrail-s3-dataevents-enabled
       Source:
@@ -149,6 +224,9 @@ Resources:
         SourceIdentifier: CLOUDTRAIL_S3_DATAEVENTS_ENABLED
     Type: AWS::Config::ConfigRule
   CloudtrailSecurityTrailEnabled:
+    Controls:
+    - CM.2.064
+    - SC.3.180
     Properties:
       ConfigRuleName: cloudtrail-security-trail-enabled
       Source:
@@ -156,6 +234,14 @@ Resources:
         SourceIdentifier: CLOUDTRAIL_SECURITY_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
   CloudwatchAlarmActionCheck:
+    Controls:
+    - SC.1.175
+    - SI.1.210
+    - AC.2.013
+    - IR.2.092
+    - IR.2.093
+    - SI.2.214
+    - AU.3.046
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
       InputParameters:
@@ -170,6 +256,9 @@ Resources:
         SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
     Type: AWS::Config::ConfigRule
   CloudwatchLogGroupEncrypted:
+    Controls:
+    - AU.3.049
+    - SC.3.191
     Properties:
       ConfigRuleName: cloudwatch-log-group-encrypted
       Source:
@@ -177,13 +266,41 @@ Resources:
         SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
     Type: AWS::Config::ConfigRule
   CmkBackingKeyRotationEnabled:
+    Controls:
+    - SC.3.187
     Properties:
       ConfigRuleName: cmk-backing-key-rotation-enabled
       Source:
         Owner: AWS
         SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
     Type: AWS::Config::ConfigRule
+  CodebuildProjectEnvvarAwscredCheck:
+    Controls:
+    - SC.3.180
+    Properties:
+      ConfigRuleName: codebuild-project-envvar-awscred-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ENVVAR_AWSCRED_CHECK
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectSourceRepoUrlCheck:
+    Controls:
+    - SC.3.180
+    Properties:
+      ConfigRuleName: codebuild-project-source-repo-url-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_SOURCE_REPO_URL_CHECK
+    Type: AWS::Config::ConfigRule
   CwLoggroupRetentionPeriodCheck:
+    Controls:
+    - AU.2.042
     Properties:
       ConfigRuleName: cw-loggroup-retention-period-check
       Source:
@@ -191,6 +308,9 @@ Resources:
         SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK
     Type: AWS::Config::ConfigRule
   DbInstanceBackupEnabled:
+    Controls:
+    - RE.2.137
+    - RE.3.139
     Properties:
       ConfigRuleName: db-instance-backup-enabled
       Scope:
@@ -201,6 +321,14 @@ Resources:
         SourceIdentifier: DB_INSTANCE_BACKUP_ENABLED
     Type: AWS::Config::ConfigRule
   DmsReplicationNotPublic:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
     Properties:
       ConfigRuleName: dms-replication-not-public
       Scope:
@@ -209,7 +337,32 @@ Resources:
         Owner: AWS
         SourceIdentifier: DMS_REPLICATION_NOT_PUBLIC
     Type: AWS::Config::ConfigRule
+  DynamodbAutoscalingEnabled:
+    Controls:
+    - SC.3.180
+    Properties:
+      ConfigRuleName: dynamodb-autoscaling-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbInBackupPlan:
+    Controls:
+    - RE.2.137
+    - RE.3.139
+    Properties:
+      ConfigRuleName: dynamodb-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
   DynamodbPitrEnabled:
+    Controls:
+    - RE.2.137
+    - RE.3.139
     Properties:
       ConfigRuleName: dynamodb-pitr-enabled
       Scope:
@@ -219,7 +372,19 @@ Resources:
         Owner: AWS
         SourceIdentifier: DYNAMODB_PITR_ENABLED
     Type: AWS::Config::ConfigRule
+  EbsInBackupPlan:
+    Controls:
+    - RE.2.137
+    - RE.3.139
+    Properties:
+      ConfigRuleName: ebs-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
   EbsOptimizedInstance:
+    Controls:
+    - SC.3.180
     Properties:
       ConfigRuleName: ebs-optimized-instance
       Scope:
@@ -230,6 +395,14 @@ Resources:
         SourceIdentifier: EBS_OPTIMIZED_INSTANCE
     Type: AWS::Config::ConfigRule
   EbsSnapshotPublicRestorableCheck:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
     Properties:
       ConfigRuleName: ebs-snapshot-public-restorable-check
       Source:
@@ -237,6 +410,9 @@ Resources:
         SourceIdentifier: EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK
     Type: AWS::Config::ConfigRule
   Ec2EbsEncryptionByDefault:
+    Controls:
+    - IA.2.081
+    - SC.3.191
     Properties:
       ConfigRuleName: ec2-ebs-encryption-by-default
       Source:
@@ -244,6 +420,9 @@ Resources:
         SourceIdentifier: EC2_EBS_ENCRYPTION_BY_DEFAULT
     Type: AWS::Config::ConfigRule
   Ec2Imdsv2Check:
+    Controls:
+    - AC.1.001
+    - AC.2.007
     Properties:
       ConfigRuleName: ec2-imdsv2-check
       Scope:
@@ -254,6 +433,12 @@ Resources:
         SourceIdentifier: EC2_IMDSV2_CHECK
     Type: AWS::Config::ConfigRule
   Ec2InstanceManagedBySsm:
+    Controls:
+    - CM.2.061
+    - CM.2.062
+    - CM.2.063
+    - CM.2.064
+    - CM.2.065
     Properties:
       ConfigRuleName: ec2-instance-managed-by-systems-manager
       Scope:
@@ -265,6 +450,14 @@ Resources:
         SourceIdentifier: EC2_INSTANCE_MANAGED_BY_SSM
     Type: AWS::Config::ConfigRule
   Ec2InstanceNoPublicIp:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
     Properties:
       ConfigRuleName: ec2-instance-no-public-ip
       Scope:
@@ -275,6 +468,14 @@ Resources:
         SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
     Type: AWS::Config::ConfigRule
   Ec2ManagedinstanceAssociationComplianceStatusCheck:
+    Controls:
+    - CM.2.061
+    - CM.2.062
+    - CM.2.063
+    - CM.2.064
+    - CM.2.065
+    - SI.2.214
+    - SI.2.217
     Properties:
       ConfigRuleName: ec2-managedinstance-association-compliance-status-check
       Scope:
@@ -285,6 +486,10 @@ Resources:
         SourceIdentifier: EC2_MANAGEDINSTANCE_ASSOCIATION_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
   Ec2ManagedinstancePatchComplianceStatusCheck:
+    Controls:
+    - CM.2.061
+    - CM.2.064
+    - RM.2.142
     Properties:
       ConfigRuleName: ec2-managedinstance-patch-compliance-status-check
       Scope:
@@ -295,6 +500,8 @@ Resources:
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
   Ec2SecurityGroupAttachedToEni:
+    Controls:
+    - CM.2.061
     Properties:
       ConfigRuleName: ec2-security-group-attached-to-eni
       Scope:
@@ -305,6 +512,8 @@ Resources:
         SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI
     Type: AWS::Config::ConfigRule
   Ec2StoppedInstance:
+    Controls:
+    - CM.2.061
     Properties:
       ConfigRuleName: ec2-stopped-instance
       Source:
@@ -312,6 +521,10 @@ Resources:
         SourceIdentifier: EC2_STOPPED_INSTANCE
     Type: AWS::Config::ConfigRule
   Ec2VolumeInuseCheck:
+    Controls:
+    - CM.2.061
+    - CM.2.062
+    - SC.3.182
     Properties:
       ConfigRuleName: ec2-volume-inuse-check
       InputParameters:
@@ -328,13 +541,28 @@ Resources:
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
     Type: AWS::Config::ConfigRule
   EfsEncryptedCheck:
+    Controls:
+    - IA.2.081
+    - SC.3.191
     Properties:
       ConfigRuleName: efs-encrypted-check
       Source:
         Owner: AWS
         SourceIdentifier: EFS_ENCRYPTED_CHECK
     Type: AWS::Config::ConfigRule
+  EfsInBackupPlan:
+    Controls:
+    - RE.2.137
+    - RE.3.139
+    Properties:
+      ConfigRuleName: efs-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
   EipAttached:
+    Controls:
+    - CM.2.061
     Properties:
       ConfigRuleName: eip-attached
       Scope:
@@ -345,6 +573,9 @@ Resources:
         SourceIdentifier: EIP_ATTACHED
     Type: AWS::Config::ConfigRule
   ElasticacheRedisClusterAutomaticBackupCheck:
+    Controls:
+    - RE.2.137
+    - RE.3.139
     Properties:
       ConfigRuleName: elasticache-redis-cluster-automatic-backup-check
       Source:
@@ -352,6 +583,9 @@ Resources:
         SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
     Type: AWS::Config::ConfigRule
   ElasticsearchEncryptedAtRest:
+    Controls:
+    - IA.2.081
+    - SC.3.191
     Properties:
       ConfigRuleName: elasticsearch-encrypted-at-rest
       Source:
@@ -359,6 +593,14 @@ Resources:
         SourceIdentifier: ELASTICSEARCH_ENCRYPTED_AT_REST
     Type: AWS::Config::ConfigRule
   ElasticsearchInVpcOnly:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
     Properties:
       ConfigRuleName: elasticsearch-in-vpc-only
       Source:
@@ -366,6 +608,11 @@ Resources:
         SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
     Type: AWS::Config::ConfigRule
   ElasticsearchNodeToNodeEncryptionCheck:
+    Controls:
+    - SC.1.175
+    - IA.2.081
+    - AC.3.014
+    - SC.3.185
     Properties:
       ConfigRuleName: elasticsearch-node-to-node-encryption-check
       Scope:
@@ -375,7 +622,24 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELASTICSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
     Type: AWS::Config::ConfigRule
+  ElbAcmCertificateRequired:
+    Controls:
+    - SC.1.175
+    - IA.2.081
+    - AC.3.014
+    - SC.3.185
+    Properties:
+      ConfigRuleName: elb-acm-certificate-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_ACM_CERTIFICATE_REQUIRED
+    Type: AWS::Config::ConfigRule
   ElbCrossZoneLoadBalancingEnabled:
+    Controls:
+    - SC.3.180
     Properties:
       ConfigRuleName: elb-cross-zone-load-balancing-enabled
       Scope:
@@ -386,6 +650,8 @@ Resources:
         SourceIdentifier: ELB_CROSS_ZONE_LOAD_BALANCING_ENABLED
     Type: AWS::Config::ConfigRule
   ElbDeletionProtectionEnabled:
+    Controls:
+    - SC.3.180
     Properties:
       ConfigRuleName: elb-deletion-protection-enabled
       Scope:
@@ -396,6 +662,10 @@ Resources:
         SourceIdentifier: ELB_DELETION_PROTECTION_ENABLED
     Type: AWS::Config::ConfigRule
   ElbLoggingEnabled:
+    Controls:
+    - AU.2.041
+    - AU.2.042
+    - SI.2.217
     Properties:
       ConfigRuleName: elb-logging-enabled
       Scope:
@@ -407,6 +677,12 @@ Resources:
         SourceIdentifier: ELB_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
   ElbTlsHttpsListenersOnly:
+    Controls:
+    - SC.1.175
+    - IA.2.081
+    - AC.3.014
+    - SC.3.185
+    - SC.3.190
     Properties:
       ConfigRuleName: elb-tls-https-listeners-only
       Scope:
@@ -417,6 +693,14 @@ Resources:
         SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
     Type: AWS::Config::ConfigRule
   EmrKerberosEnabled:
+    Controls:
+    - AC.1.001
+    - IA.1.076
+    - IA.1.077
+    - AC.2.007
+    - AC.2.008
+    - AC.3.017
+    - AC.3.018
     Properties:
       ConfigRuleName: emr-kerberos-enabled
       Source:
@@ -424,6 +708,14 @@ Resources:
         SourceIdentifier: EMR_KERBEROS_ENABLED
     Type: AWS::Config::ConfigRule
   EmrMasterNoPublicIp:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
     Properties:
       ConfigRuleName: emr-master-no-public-ip
       Scope:
@@ -433,6 +725,9 @@ Resources:
         SourceIdentifier: EMR_MASTER_NO_PUBLIC_IP
     Type: AWS::Config::ConfigRule
   EncryptedVolumes:
+    Controls:
+    - IA.2.081
+    - SC.3.191
     Properties:
       ConfigRuleName: encrypted-volumes
       Scope:
@@ -442,7 +737,59 @@ Resources:
         Owner: AWS
         SourceIdentifier: ENCRYPTED_VOLUMES
     Type: AWS::Config::ConfigRule
+  GuarddutyEnabledCentralized:
+    Controls:
+    - SC.1.175
+    - SI.1.210
+    - SI.1.211
+    - AC.2.013
+    - IR.2.092
+    - IR.2.093
+    - SI.2.214
+    - SI.2.216
+    - SI.2.217
+    - AU.3.046
+    - AU.3.051
+    - CA.3.161
+    Properties:
+      ConfigRuleName: guardduty-enabled-centralized
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+    Type: AWS::Config::ConfigRule
+  GuarddutyNonArchivedFindings:
+    Controls:
+    - IR.2.092
+    Properties:
+      ConfigRuleName: guardduty-non-archived-findings
+      InputParameters:
+        daysHighSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysHighSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+          - Ref: AWS::NoValue
+        daysLowSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysLowSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+          - Ref: AWS::NoValue
+        daysMediumSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysMediumSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_NON_ARCHIVED_FINDINGS
+    Type: AWS::Config::ConfigRule
   IamGroupHasUsersCheck:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - AC.2.007
+    - AC.2.008
+    - AC.3.017
+    - AC.3.018
     Properties:
       ConfigRuleName: iam-group-has-users-check
       Scope:
@@ -453,6 +800,13 @@ Resources:
         SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
     Type: AWS::Config::ConfigRule
   IamNoInlinePolicyCheck:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - AC.2.007
+    - AC.2.008
+    - AC.3.017
+    - AC.3.018
     Properties:
       ConfigRuleName: iam-no-inline-policy-check
       Scope:
@@ -465,6 +819,14 @@ Resources:
         SourceIdentifier: IAM_NO_INLINE_POLICY_CHECK
     Type: AWS::Config::ConfigRule
   IamPasswordPolicy:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - IA.1.077
+    - IA.2.078
+    - IA.2.079
+    - IA.3.085
+    - IA.3.086
     Properties:
       ConfigRuleName: iam-password-policy
       InputParameters:
@@ -508,6 +870,13 @@ Resources:
         SourceIdentifier: IAM_PASSWORD_POLICY
     Type: AWS::Config::ConfigRule
   IamPolicyNoStatementsWithAdminAccess:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - AC.2.007
+    - AC.2.008
+    - AC.3.017
+    - AC.3.018
     Properties:
       ConfigRuleName: iam-policy-no-statements-with-admin-access
       Scope:
@@ -518,6 +887,13 @@ Resources:
         SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
     Type: AWS::Config::ConfigRule
   IamRootAccessKeyCheck:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - AC.2.007
+    - AC.2.008
+    - AC.3.017
+    - AC.3.018
     Properties:
       ConfigRuleName: iam-root-access-key-check
       Source:
@@ -525,6 +901,13 @@ Resources:
         SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
     Type: AWS::Config::ConfigRule
   IamUserGroupMembershipCheck:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - AC.2.007
+    - AC.2.008
+    - AC.3.017
+    - AC.3.018
     Properties:
       ConfigRuleName: iam-user-group-membership-check
       Scope:
@@ -535,6 +918,12 @@ Resources:
         SourceIdentifier: IAM_USER_GROUP_MEMBERSHIP_CHECK
     Type: AWS::Config::ConfigRule
   IamUserMfaEnabled:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - IA.1.077
+    - MA.2.113
+    - IA.3.083
     Properties:
       ConfigRuleName: iam-user-mfa-enabled
       Source:
@@ -542,6 +931,13 @@ Resources:
         SourceIdentifier: IAM_USER_MFA_ENABLED
     Type: AWS::Config::ConfigRule
   IamUserNoPoliciesCheck:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - AC.2.007
+    - AC.2.008
+    - AC.3.017
+    - AC.3.018
     Properties:
       ConfigRuleName: iam-user-no-policies-check
       Scope:
@@ -552,6 +948,8 @@ Resources:
         SourceIdentifier: IAM_USER_NO_POLICIES_CHECK
     Type: AWS::Config::ConfigRule
   IamUserUnusedCredentialsCheck:
+    Controls:
+    - IA.3.086
     Properties:
       ConfigRuleName: iam-user-unused-credentials-check
       InputParameters:
@@ -565,6 +963,13 @@ Resources:
         SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
     Type: AWS::Config::ConfigRule
   IncomingSshDisabled:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.016
+    - CM.3.068
+    - SC.3.180
     Properties:
       ConfigRuleName: restricted-ssh
       Scope:
@@ -575,6 +980,12 @@ Resources:
         SourceIdentifier: INCOMING_SSH_DISABLED
     Type: AWS::Config::ConfigRule
   InstancesInVpc:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.016
+    - SC.3.180
     Properties:
       ConfigRuleName: ec2-instances-in-vpc
       Scope:
@@ -585,6 +996,15 @@ Resources:
         SourceIdentifier: INSTANCES_IN_VPC
     Type: AWS::Config::ConfigRule
   InternetGatewayAuthorizedVpcOnly:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - SC.1.176
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
     Properties:
       ConfigRuleName: internet-gateway-authorized-vpc-only
       Scope:
@@ -595,6 +1015,8 @@ Resources:
         SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
     Type: AWS::Config::ConfigRule
   KmsCmkNotScheduledForDeletion:
+    Controls:
+    - SC.3.187
     Properties:
       ConfigRuleName: kms-cmk-not-scheduled-for-deletion
       Scope:
@@ -605,6 +1027,9 @@ Resources:
         SourceIdentifier: KMS_CMK_NOT_SCHEDULED_FOR_DELETION
     Type: AWS::Config::ConfigRule
   LambdaDlqCheck:
+    Controls:
+    - IR.2.092
+    - IR.2.093
     Properties:
       ConfigRuleName: lambda-dlq-check
       Scope:
@@ -615,6 +1040,14 @@ Resources:
         SourceIdentifier: LAMBDA_DLQ_CHECK
     Type: AWS::Config::ConfigRule
   LambdaFunctionPublicAccessProhibited:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
     Properties:
       ConfigRuleName: lambda-function-public-access-prohibited
       Scope:
@@ -625,6 +1058,12 @@ Resources:
         SourceIdentifier: LAMBDA_FUNCTION_PUBLIC_ACCESS_PROHIBITED
     Type: AWS::Config::ConfigRule
   LambdaInsideVpc:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.016
+    - SC.3.180
     Properties:
       ConfigRuleName: lambda-inside-vpc
       Scope:
@@ -635,6 +1074,12 @@ Resources:
         SourceIdentifier: LAMBDA_INSIDE_VPC
     Type: AWS::Config::ConfigRule
   MfaEnabledForIamConsoleAccess:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - IA.1.077
+    - MA.2.113
+    - IA.3.083
     Properties:
       ConfigRuleName: mfa-enabled-for-iam-console-access
       Source:
@@ -642,13 +1087,32 @@ Resources:
         SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
     Type: AWS::Config::ConfigRule
   MultiRegionCloudTrailEnabled:
+    Controls:
+    - IA.1.076
+    - AU.2.041
+    - AU.2.042
+    - CM.2.065
+    - SI.2.217
+    - AC.3.018
     Properties:
       ConfigRuleName: multi-region-cloudtrail-enabled
       Source:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
+  RdsInBackupPlan:
+    Controls:
+    - RE.2.137
+    - RE.3.139
+    Properties:
+      ConfigRuleName: rds-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
   RdsInstanceDeletionProtectionEnabled:
+    Controls:
+    - SC.3.180
     Properties:
       ConfigRuleName: rds-instance-deletion-protection-enabled
       Scope:
@@ -659,6 +1123,14 @@ Resources:
         SourceIdentifier: RDS_INSTANCE_DELETION_PROTECTION_ENABLED
     Type: AWS::Config::ConfigRule
   RdsInstancePublicAccessCheck:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
     Properties:
       ConfigRuleName: rds-instance-public-access-check
       Scope:
@@ -669,6 +1141,13 @@ Resources:
         SourceIdentifier: RDS_INSTANCE_PUBLIC_ACCESS_CHECK
     Type: AWS::Config::ConfigRule
   RdsLoggingEnabled:
+    Controls:
+    - IA.1.076
+    - AU.2.041
+    - AU.2.042
+    - CM.2.065
+    - SI.2.217
+    - AC.3.018
     Properties:
       ConfigRuleName: rds-logging-enabled
       Scope:
@@ -679,6 +1158,8 @@ Resources:
         SourceIdentifier: RDS_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
   RdsMultiAzSupport:
+    Controls:
+    - SC.3.180
     Properties:
       ConfigRuleName: rds-multi-az-support
       Scope:
@@ -689,6 +1170,9 @@ Resources:
         SourceIdentifier: RDS_MULTI_AZ_SUPPORT
     Type: AWS::Config::ConfigRule
   RdsSnapshotEncrypted:
+    Controls:
+    - IA.2.081
+    - SC.3.191
     Properties:
       ConfigRuleName: rds-snapshot-encrypted
       Scope:
@@ -700,6 +1184,14 @@ Resources:
         SourceIdentifier: RDS_SNAPSHOT_ENCRYPTED
     Type: AWS::Config::ConfigRule
   RdsSnapshotsPublicProhibited:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
     Properties:
       ConfigRuleName: rds-snapshots-public-prohibited
       Scope:
@@ -711,6 +1203,9 @@ Resources:
         SourceIdentifier: RDS_SNAPSHOTS_PUBLIC_PROHIBITED
     Type: AWS::Config::ConfigRule
   RdsStorageEncrypted:
+    Controls:
+    - IA.2.081
+    - SC.3.191
     Properties:
       ConfigRuleName: rds-storage-encrypted
       Scope:
@@ -721,6 +1216,12 @@ Resources:
         SourceIdentifier: RDS_STORAGE_ENCRYPTED
     Type: AWS::Config::ConfigRule
   RedshiftClusterConfigurationCheck:
+    Controls:
+    - IA.1.076
+    - CM.2.065
+    - IA.2.081
+    - SI.2.217
+    - SC.3.191
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
       InputParameters:
@@ -734,6 +1235,14 @@ Resources:
         SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
     Type: AWS::Config::ConfigRule
   RedshiftClusterPublicAccessCheck:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
     Properties:
       ConfigRuleName: redshift-cluster-public-access-check
       Scope:
@@ -744,6 +1253,11 @@ Resources:
         SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
     Type: AWS::Config::ConfigRule
   RedshiftRequireTlsSsl:
+    Controls:
+    - SC.1.175
+    - IA.2.081
+    - AC.3.014
+    - SC.3.185
     Properties:
       ConfigRuleName: redshift-require-tls-ssl
       Scope:
@@ -754,6 +1268,13 @@ Resources:
         SourceIdentifier: REDSHIFT_REQUIRE_TLS_SSL
     Type: AWS::Config::ConfigRule
   RestrictedIncomingTraffic:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.016
+    - CM.3.068
+    - SC.3.180
     Properties:
       ConfigRuleName: restricted-common-ports
       InputParameters:
@@ -789,7 +1310,40 @@ Resources:
         Owner: AWS
         SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
     Type: AWS::Config::ConfigRule
+  RootAccountHardwareMfaEnabled:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - IA.1.077
+    - IA.3.083
+    Properties:
+      ConfigRuleName: root-account-hardware-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  RootAccountMfaEnabled:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - IA.1.077
+    - IA.3.083
+    Properties:
+      ConfigRuleName: root-account-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
   S3AccountLevelPublicAccessBlocks:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - AU.3.049
+    - SC.3.180
     Properties:
       ConfigRuleName: s3-account-level-public-access-blocks
       InputParameters:
@@ -821,6 +1375,8 @@ Resources:
         SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
     Type: AWS::Config::ConfigRule
   S3BucketDefaultLockEnabled:
+    Controls:
+    - AU.3.049
     Properties:
       ConfigRuleName: s3-bucket-default-lock-enabled
       Scope:
@@ -831,6 +1387,13 @@ Resources:
         SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
     Type: AWS::Config::ConfigRule
   S3BucketLoggingEnabled:
+    Controls:
+    - IA.1.076
+    - AU.2.041
+    - AU.2.042
+    - CM.2.065
+    - SI.2.217
+    - AC.3.018
     Properties:
       ConfigRuleName: s3-bucket-logging-enabled
       Scope:
@@ -841,6 +1404,12 @@ Resources:
         SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
   S3BucketPolicyGranteeCheck:
+    Controls:
+    - AC.1.001
+    - AC.2.007
+    - AC.3.017
+    - AC.3.018
+    - AU.3.049
     Properties:
       ConfigRuleName: s3-bucket-policy-grantee-check
       Scope:
@@ -851,6 +1420,15 @@ Resources:
         SourceIdentifier: S3_BUCKET_POLICY_GRANTEE_CHECK
     Type: AWS::Config::ConfigRule
   S3BucketPublicReadProhibited:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - AU.3.049
+    - SC.3.180
     Properties:
       ConfigRuleName: s3-bucket-public-read-prohibited
       Scope:
@@ -861,6 +1439,15 @@ Resources:
         SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
     Type: AWS::Config::ConfigRule
   S3BucketPublicWriteProhibited:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - AU.3.049
+    - SC.3.180
     Properties:
       ConfigRuleName: s3-bucket-public-write-prohibited
       Scope:
@@ -871,6 +1458,9 @@ Resources:
         SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
     Type: AWS::Config::ConfigRule
   S3BucketReplicationEnabled:
+    Controls:
+    - RE.2.137
+    - RE.3.139
     Properties:
       ConfigRuleName: s3-bucket-replication-enabled
       Scope:
@@ -881,6 +1471,10 @@ Resources:
         SourceIdentifier: S3_BUCKET_REPLICATION_ENABLED
     Type: AWS::Config::ConfigRule
   S3BucketServerSideEncryptionEnabled:
+    Controls:
+    - IA.2.081
+    - AU.3.049
+    - SC.3.191
     Properties:
       ConfigRuleName: s3-bucket-server-side-encryption-enabled
       Scope:
@@ -891,6 +1485,11 @@ Resources:
         SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
     Type: AWS::Config::ConfigRule
   S3BucketSslRequestsOnly:
+    Controls:
+    - SC.1.175
+    - IA.2.081
+    - AC.3.014
+    - SC.3.185
     Properties:
       ConfigRuleName: s3-bucket-ssl-requests-only
       Scope:
@@ -901,6 +1500,9 @@ Resources:
         SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
     Type: AWS::Config::ConfigRule
   S3BucketVersioningEnabled:
+    Controls:
+    - RE.2.137
+    - AU.3.049
     Properties:
       ConfigRuleName: s3-bucket-versioning-enabled
       Scope:
@@ -910,7 +1512,56 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
     Type: AWS::Config::ConfigRule
+  SagemakerEndpointConfigurationKmsKeyConfigured:
+    Controls:
+    - IA.2.081
+    - SC.3.191
+    Properties:
+      ConfigRuleName: sagemaker-endpoint-configuration-kms-key-configured
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_ENDPOINT_CONFIGURATION_KMS_KEY_CONFIGURED
+    Type: AWS::Config::ConfigRule
+  SagemakerNotebookInstanceKmsKeyConfigured:
+    Controls:
+    - IA.2.081
+    - SC.3.191
+    Properties:
+      ConfigRuleName: sagemaker-notebook-instance-kms-key-configured
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_NOTEBOOK_INSTANCE_KMS_KEY_CONFIGURED
+    Type: AWS::Config::ConfigRule
+  SagemakerNotebookNoDirectInternetAccess:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.3.180
+    Properties:
+      ConfigRuleName: sagemaker-notebook-no-direct-internet-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS
+    Type: AWS::Config::ConfigRule
   SecurityhubEnabled:
+    Controls:
+    - SC.1.175
+    - SI.1.210
+    - SI.1.211
+    - AC.2.013
+    - CM.2.064
+    - IR.2.092
+    - IR.2.093
+    - SI.2.214
+    - SI.2.216
+    - SI.2.217
+    - AU.3.046
+    - AU.3.051
+    - CA.3.161
     Properties:
       ConfigRuleName: securityhub-enabled
       Source:
@@ -918,6 +1569,9 @@ Resources:
         SourceIdentifier: SECURITYHUB_ENABLED
     Type: AWS::Config::ConfigRule
   SnsEncryptedKms:
+    Controls:
+    - IA.2.081
+    - SC.3.191
     Properties:
       ConfigRuleName: sns-encrypted-kms
       Scope:
@@ -928,6 +1582,13 @@ Resources:
         SourceIdentifier: SNS_ENCRYPTED_KMS
     Type: AWS::Config::ConfigRule
   VpcDefaultSecurityGroupClosed:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.016
+    - CM.3.068
+    - SC.3.180
     Properties:
       ConfigRuleName: vpc-default-security-group-closed
       Scope:
@@ -938,6 +1599,9 @@ Resources:
         SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
     Type: AWS::Config::ConfigRule
   VpcFlowLogsEnabled:
+    Controls:
+    - AU.2.042
+    - SI.2.217
     Properties:
       ConfigRuleName: vpc-flow-logs-enabled
       Source:
@@ -945,6 +1609,13 @@ Resources:
         SourceIdentifier: VPC_FLOW_LOGS_ENABLED
     Type: AWS::Config::ConfigRule
   VpcSgOpenOnlyToAuthorizedPorts:
+    Controls:
+    - AC.1.001
+    - AC.1.003
+    - SC.1.175
+    - AC.2.016
+    - CM.3.068
+    - SC.3.180
     Properties:
       ConfigRuleName: vpc-sg-open-only-to-authorized-ports
       InputParameters:
@@ -961,6 +1632,8 @@ Resources:
         SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
     Type: AWS::Config::ConfigRule
   VpcVpn2TunnelsUp:
+    Controls:
+    - SC.3.180
     Properties:
       ConfigRuleName: vpc-vpn-2-tunnels-up
       Scope:
@@ -970,12 +1643,37 @@ Resources:
         Owner: AWS
         SourceIdentifier: VPC_VPN_2_TUNNELS_UP
     Type: AWS::Config::ConfigRule
+  Wafv2LoggingEnabled:
+    Controls:
+    - AU.2.042
+    - SI.2.217
+    Properties:
+      ConfigRuleName: wafv2-logging-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAFV2_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
 Conditions:
   ec2VolumeInuseCheckParamDeleteOnTermination:
     Fn::Not:
     - Fn::Equals:
       - ''
       - Ref: Ec2VolumeInuseCheckParamDeleteOnTermination
+  guarddutyNonArchivedFindingsParamDaysHighSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+  guarddutyNonArchivedFindingsParamDaysLowSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+  guarddutyNonArchivedFindingsParamDaysMediumSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
   iamPasswordPolicyParamMaxPasswordAge:
     Fn::Not:
     - Fn::Equals:
