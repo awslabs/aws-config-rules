@@ -1,0 +1,973 @@
+Resources:
+  AcmCertificateExpirationCheck:
+    Controls: ['1667']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: acm-certificate-expiration-check
+      InputParameters:
+        daysToExpiration: '90'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ACM::Certificate
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACM_CERTIFICATE_EXPIRATION_CHECK
+      Description: "SHOULD 14.5.8.C.01[CID:1667]| Software security/Web Application Development/Web applications"
+  AlbHttpToHttpsRedirectionCheck:
+    Controls: ['1847', '2091']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: alb-http-to-https-redirection-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK
+      Description: "MUST 16.1.37.C.01[CID:1847], MUST 17.1.48.C.03[CID:2091]| Access Control and Passwords/Identification, Authentication and Passwords/Protecting authentication data in transit & Cryptography/Cryptographic Fundamentals/Information and Systems Protection"
+  AlbWafEnabled:
+    Controls: ['3562', '4333']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: alb-waf-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_WAF_ENABLED
+      Description: "MUST 19.1.12.C.01[CID:3562], SHOULD 20.3.7.C.02[CID:4333]| Gateway security/Gateways/Configuration of gateways & Data management/Content Filtering/Content validation"
+  ApiGwCacheEnabledAndEncrypted:
+    Controls: ['2082']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: api-gw-cache-enabled-and-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_CACHE_ENABLED_AND_ENCRYPTED
+      Description: "SHOULD 17.1.46.C.04[CID:2082]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical transfer requirements"
+  ApiGwExecutionLoggingEnabled:
+    Controls: ['2013']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: api-gw-execution-logging-enabled
+      InputParameters:
+        loggingLevel: 'ERROR'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+        - AWS::ApiGatewayV2::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
+      Description: "SHOULD 16.6.10.C.02[CID:2013]| Access Control and Passwords/Event Logging and Auditing/Additional events to be logged"
+  CloudTrailCloudWatchLogsEnabled:
+    Controls: ['1998', '6860']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloud-trail-cloud-watch-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
+      Description: "SHOULD 16.6.6.C.02[CID:1998], MUST 16.4.35.C.02[CID:6860]| Access Control and Passwords: (Event Logging and Auditing/Maintaining system management logs & Privileged Access Management/Monitoring and Review)"
+  CloudTrailEncryptionEnabled:
+    Controls: ['2082']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloud-trail-encryption-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
+      Description: "SHOULD 17.1.46.C.04[CID:2082]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical transfer requirements"
+  CloudTrailLogFileValidationEnabled:
+    Controls: ['2022']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloud-trail-log-file-validation-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
+      Description: "MUST 16.6.12.C.01[CID:2022]| Access Control and Passwords/Event Logging and Auditing/Event log protection"
+  CloudtrailEnabled:
+    Controls: ['1998', '2013', '6860']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+      Description: "SHOULD 16.6.6.C.02[CID:1998], SHOULD 16.6.10.C.02[CID:2013], MUST 16.4.35.C.02[CID:6860]| Access Control and Passwords: (Event Logging and Auditing: (Maintaining system management logs & Additional events to be logged) & Privileged Access Management/..."
+  CloudtrailS3DataeventsEnabled:
+    Controls: ['4838']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-s3-dataevents-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDTRAIL_S3_DATAEVENTS_ENABLED
+      Description: "SHOULD 22.1.24.C.03[CID:4838]| Enterprise systems security/Cloud Computing/Unauthorised Access"
+  CloudtrailSecurityTrailEnabled:
+    Controls: ['6861']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-security-trail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDTRAIL_SECURITY_TRAIL_ENABLED
+      Description: "MUST 16.4.35.C.03[CID:6861]| Access Control and Passwords/Privileged Access Management/Monitoring and Review"
+  CloudwatchLogGroupEncrypted:
+    Controls: ['2022']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudwatch-log-group-encrypted
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
+      Description: "MUST 16.6.12.C.01[CID:2022]| Access Control and Passwords/Event Logging and Auditing/Event log protection"
+  CmkBackingKeyRotationEnabled:
+    Controls: ['3021']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cmk-backing-key-rotation-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
+      Description: "SHOULD 17.9.25.C.01[CID:3021]| Cryptography/Key Management/Contents of KMPs"
+  CwLoggroupRetentionPeriodCheck:
+    Controls: ['1998', '2028']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cw-loggroup-retention-period-check
+      InputParameters:
+        MinRetentionTime: '545'
+      Source:
+        Owner: AWS
+        SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK
+      Description: "SHOULD 16.6.6.C.02[CID:1998], MUST 16.6.13.C.01[CID:2028]| Access Control and Passwords/Event Logging and Auditing: (Maintaining system management logs & Event log archives)"
+  DbInstanceBackupEnabled:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: db-instance-backup-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: DB_INSTANCE_BACKUP_ENABLED
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  DmsReplicationNotPublic:
+    Controls: ['3548', '3562']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dms-replication-not-public
+      Source:
+        Owner: AWS
+        SourceIdentifier: DMS_REPLICATION_NOT_PUBLIC
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562]| Gateway security/Gateways: (Using gateways & Configuration of gateways)"
+  DynamodbAutoscalingEnabled:
+    Controls: ['4829']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-autoscaling-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
+      Description: "MUST 22.1.23.C.01[CID:4829]| Enterprise systems security/Cloud Computing/System Availability"
+  DynamodbInBackupPlan:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  DynamodbPitrEnabled:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-pitr-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_PITR_ENABLED
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  DynamodbTableEncryptedKms:
+    Controls: ['4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-table-encrypted-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS
+      Description: "SHOULD 22.1.24.C.04[CID:4839]| Enterprise systems security/Cloud Computing/Unauthorised Access"
+  EbsInBackupPlan:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ebs-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_IN_BACKUP_PLAN
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  EbsSnapshotPublicRestorableCheck:
+    Controls: ['4838']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ebs-snapshot-public-restorable-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK
+      Description: "SHOULD 22.1.24.C.03[CID:4838]| Enterprise systems security/Cloud Computing/Unauthorised Access"
+  Ec2CriticalSecurityPatchAutoApproval:
+    Controls: ['3451']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ec2-critical-security-patch-auto-approval
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+      Description: "SHOULD 12.4.4.C.04[CID:3451]| Patch Baselines for Windows and/or Linux have been configured in Patch Manager, including auto-approval of critical security patches within 2 days of release."
+  Ec2EbsEncryptionByDefault:
+    Controls: ['2082']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ec2-ebs-encryption-by-default
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_EBS_ENCRYPTION_BY_DEFAULT
+      Description: "SHOULD 17.1.46.C.04[CID:2082]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical transfer requirements"
+  Ec2HardeningAndStateManagement:
+    Controls: ['1149']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ec2-hardening-and-state-management
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+      Description: "SHOULD 14.1.8.C.01[CID:1149]| Hardened EC2 server image build processes and State Manager Associations are configured to remove unneeded components and services, and install anti-malware software and log agents."
+  Ec2Imdsv2Check:
+    Controls: ['3562']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ec2-imdsv2-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_IMDSV2_CHECK
+      Description: "MUST 19.1.12.C.01[CID:3562]| Gateway security/Gateways/Configuration of gateways"
+  Ec2InstanceManagedBySystemsManager:
+    Controls: ['1149']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ec2-instance-managed-by-systems-manager
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+        - AWS::SSM::ManagedInstanceInventory
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_MANAGED_BY_SSM
+      Description: "SHOULD 14.1.8.C.01[CID:1149]| Software security/Standard Operating Environments/Developing hardened SOEs"
+  Ec2InstanceNoPublicIp:
+    Controls: ['3548', '3562']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ec2-instance-no-public-ip
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562]| Gateway security/Gateways: (Using gateways & Configuration of gateways)"
+  Ec2InstancesInVpc:
+    Controls: ['3548', '3562']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ec2-instances-in-vpc
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: INSTANCES_IN_VPC
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562]| Gateway security/Gateways: (Using gateways & Configuration of gateways)"
+  Ec2ManagedinstanceAssociationComplianceStatusCheck:
+    Controls: ['1149']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ec2-managedinstance-association-compliance-status-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SSM::AssociationCompliance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_MANAGEDINSTANCE_ASSOCIATION_COMPLIANCE_STATUS_CHECK
+      Description: "SHOULD 14.1.8.C.01[CID:1149]| Software security/Standard Operating Environments/Developing hardened SOEs"
+  Ec2ManagedinstancePatchComplianceStatusCheck:
+    Controls: ['3449', '3451', '3452', '3453']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ec2-managedinstance-patch-compliance-status-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SSM::PatchCompliance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
+      Description: "MUST 12.4.4.C.02[CID:3449], SHOULD 12.4.4.C.04[CID:3451], SHOULD 12.4.4.C.05[CID:3452], SHOULD 12.4.4.C.06[CID:3453]| Product Security/Product Patching and Updating/Patching vulnerabilities in products"
+  EfsEncryptedCheck:
+    Controls: ['2082', '4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: efs-encrypted-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ENCRYPTED_CHECK
+      Description: "SHOULD 17.1.46.C.04[CID:2082], SHOULD 22.1.24.C.04[CID:4839]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical transfer requirements & Enterprise systems security/Cloud Computing/Unauthorised Access"
+  EfsInBackupPlan:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: efs-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_IN_BACKUP_PLAN
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  ElasticacheRedisClusterAutomaticBackupCheck:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: elasticache-redis-cluster-automatic-backup-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  ElasticsearchEncryptedAtRest:
+    Controls: ['2082', '4441', '4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: elasticsearch-encrypted-at-rest
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICSEARCH_ENCRYPTED_AT_REST
+      Description: "SHOULD 17.1.46.C.04[CID:2082], SHOULD 20.4.4.C.02[CID:4441], SHOULD 22.1.24.C.04[CID:4839]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical transfer requirements & Data management/Databases/Database files & Enterprise systems se..."
+  ElasticsearchInVpcOnly:
+    Controls: ['3548', '3562', '3623']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: elasticsearch-in-vpc-only
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562], SHOULD 19.1.14.C.02[CID:3623]| Gateway security/Gateways: (Using gateways & Configuration of gateways & Demilitarised zones)"
+  ElasticsearchNodeToNodeEncryptionCheck:
+    Controls: ['1847', '4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: elasticsearch-node-to-node-encryption-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Elasticsearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
+      Description: "MUST 16.1.37.C.01[CID:1847], SHOULD 22.1.24.C.04[CID:4839]| Access Control and Passwords/Identification, Authentication and Passwords/Protecting authentication data in transit & Enterprise systems security/Cloud Computing/Unauthorised Access"
+  ElbCrossZoneLoadBalancingEnabled:
+    Controls: ['4829']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: elb-cross-zone-load-balancing-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_CROSS_ZONE_LOAD_BALANCING_ENABLED
+      Description: "MUST 22.1.23.C.01[CID:4829]| Enterprise systems security/Cloud Computing/System Availability"
+  ElbCustomSecurityPolicySslCheck:
+    Controls: ['2598', '2600']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: elb-custom-security-policy-ssl-check
+      InputParameters:
+        sslProtocolsAndCiphers: 'Protocol-TLSv1.2,ECDHE-ECDSA-AES256-GCM-SHA384'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_CUSTOM_SECURITY_POLICY_SSL_CHECK
+      Description: "SHOULD 17.4.16.C.01[CID:2598], SHOULD NOT 17.4.16.C.02[CID:2600]| Cryptography/Transport Layer Security/Using TLS"
+  ElbLoggingEnabled:
+    Controls: ['2013']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: elb-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_LOGGING_ENABLED
+      Description: "SHOULD 16.6.10.C.02[CID:2013]| Access Control and Passwords/Event Logging and Auditing/Additional events to be logged"
+  ElbTlsHttpsListenersOnly:
+    Controls: ['1667', '1847', '2091', '4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: elb-tls-https-listeners-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
+      Description: "SHOULD 14.5.8.C.01[CID:1667], MUST 16.1.37.C.01[CID:1847], MUST 17.1.48.C.03[CID:2091], SHOULD 22.1.24.C.04[CID:4839]| Software security/Web Application Development/Web applications & Access Control and Passwords/Identification, Authentication and Pa..."
+  EmrMasterNoPublicIp:
+    Controls: ['3548', '3562']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: emr-master-no-public-ip
+      Source:
+        Owner: AWS
+        SourceIdentifier: EMR_MASTER_NO_PUBLIC_IP
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562]| Gateway security/Gateways: (Using gateways & Configuration of gateways)"
+  EncryptedVolumes:
+    Controls: ['2082', '4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: encrypted-volumes
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Volume
+      Source:
+        Owner: AWS
+        SourceIdentifier: ENCRYPTED_VOLUMES
+      Description: "SHOULD 17.1.46.C.04[CID:2082], SHOULD 22.1.24.C.04[CID:4839]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical transfer requirements & Enterprise systems security/Cloud Computing/Unauthorised Access"
+  FederateWithCentralIdp:
+    Controls: ['1893', '6852']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: federate-with-central-idp
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+      Description: "SHOULD 16.1.46.C.02[CID:1893], MUST 16.4.33.C.01[CID:6852]| Workforce identities requiring access to AWS resources authenticate with a central IdP that is federated with AWS SSO. The central IdP locks-out system users after 3 failed logon attempts."
+  GuarddutyEnabledCentralized:
+    Controls: ['3562', '3815', '3875']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-enabled-centralized
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+      Description: "MUST 19.1.12.C.01[CID:3562], MUST 18.4.9.C.01[CID:3815], SHOULD 18.4.12.C.01[CID:3875]| Gateway security/Gateways/Configuration of gateways & Network security/Intrusion Detection and Prevention: (IDS/IPS Maintenance & Event management and correlation..."
+  IamPasswordPolicy:
+    Controls: ['1858']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-password-policy
+      InputParameters:
+        MaxPasswordAge: '90'
+        MinimumPasswordLength: '10'
+        PasswordReusePrevention: '8'
+        RequireUppercaseCharacters: 'true'
+        RequireLowercaseCharacters: 'true'
+        RequireSymbols: 'true'
+        RequireNumbers: 'true'
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_PASSWORD_POLICY
+      Description: "SHOULD 16.1.40.C.02[CID:1858]| Access Control and Passwords/Identification, Authentication and Passwords/Password selection policy"
+  IamPolicyNoStatementsWithAdminAccess:
+    Controls: ['1946']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-policy-no-statements-with-admin-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+      Description: "SHOULD 16.3.5.C.02[CID:1946]| Access Control and Passwords/Privileged User Access/Use of privileged accounts"
+  IamRootAccessKeyCheck:
+    Controls: ['1946']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-root-access-key-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
+      Description: "SHOULD 16.3.5.C.02[CID:1946]| Access Control and Passwords/Privileged User Access/Use of privileged accounts"
+  IamUserMfaEnabled:
+    Controls: ['1841']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-user-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_MFA_ENABLED
+      Description: "SHOULD 16.1.35.C.02[CID:1841]| Access Control and Passwords/Identification, Authentication and Passwords/Methods for system user identification and authentication"
+  IamUserUnusedCredentialsCheck:
+    Controls: ['1893', '6852']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-user-unused-credentials-check
+      InputParameters:
+        maxCredentialUsageAge: '30'
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
+      Description: "SHOULD 16.1.46.C.02[CID:1893], MUST 16.4.33.C.01[CID:6852]| Access Control and Passwords: (Identification, Authentication and Passwords/Suspension of access & Privileged Access Management/Suspension and Revocation of Privileged Access Credentials)"
+  KmsCmkForEachDataClassification:
+    Controls: ['3021']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: kms-cmk-for-each-data-classification
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+      Description: "SHOULD 17.9.25.C.01[CID:3021]| At least one KMS Customer Master Key (CMK) has been defined for each distinct data classification, and the CMK(s) are being used to encrypt all data stored at that classification."
+  LambdaFunctionPublicAccessProhibited:
+    Controls: ['3548', '3562']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: lambda-function-public-access-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_FUNCTION_PUBLIC_ACCESS_PROHIBITED
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562]| Gateway security/Gateways: (Using gateways & Configuration of gateways)"
+  MfaEnabledForIamConsoleAccess:
+    Controls: ['1841', '6843', '6953']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: mfa-enabled-for-iam-console-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+      Description: "SHOULD 16.1.35.C.02[CID:1841], SHOULD 16.4.31.C.02[CID:6843], SHOULD 16.7.34.C.02[CID:6953]| Access Control and Passwords: (Identification, Authentication and Passwords/Methods for system user identification and authentication & Privileged Access Man..."
+  RdsClusterDeletionProtectionEnabled:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-cluster-deletion-protection-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_CLUSTER_DELETION_PROTECTION_ENABLED
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  RdsClusterMultiAzEnabled:
+    Controls: ['4829']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-cluster-multi-az-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_CLUSTER_MULTI_AZ_ENABLED
+      Description: "MUST 22.1.23.C.01[CID:4829]| Enterprise systems security/Cloud Computing/System Availability"
+  RdsInBackupPlan:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_IN_BACKUP_PLAN
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  RdsInstanceDeletionProtectionEnabled:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-instance-deletion-protection-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_DELETION_PROTECTION_ENABLED
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  RdsInstancePublicAccessCheck:
+    Controls: ['3548', '3562', '3623']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-instance-public-access-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_PUBLIC_ACCESS_CHECK
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562], SHOULD 19.1.14.C.02[CID:3623]| Gateway security/Gateways: (Using gateways & Configuration of gateways & Demilitarised zones)"
+  RdsLoggingEnabled:
+    Controls: ['2013', '4441', '4445']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_LOGGING_ENABLED
+      Description: "SHOULD 16.6.10.C.02[CID:2013], SHOULD 20.4.4.C.02[CID:4441], SHOULD 20.4.5.C.02[CID:4445]| Access Control and Passwords/Event Logging and Auditing/Additional events to be logged & Data management/Databases: (Database files & Accountability)"
+  RdsMultiAzSupport:
+    Controls: ['4829']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-multi-az-support
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_MULTI_AZ_SUPPORT
+      Description: "MUST 22.1.23.C.01[CID:4829]| Enterprise systems security/Cloud Computing/System Availability"
+  RdsSnapshotEncrypted:
+    Controls: ['2082', '4441', '4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-snapshot-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBSnapshot
+        - AWS::RDS::DBClusterSnapshot
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_SNAPSHOT_ENCRYPTED
+      Description: "SHOULD 17.1.46.C.04[CID:2082], SHOULD 20.4.4.C.02[CID:4441], SHOULD 22.1.24.C.04[CID:4839]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical transfer requirements & Data management/Databases/Database files & Enterprise systems se..."
+  RdsSnapshotsPublicProhibited:
+    Controls: ['4441']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-snapshots-public-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBSnapshot
+        - AWS::RDS::DBClusterSnapshot
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_SNAPSHOTS_PUBLIC_PROHIBITED
+      Description: "SHOULD 20.4.4.C.02[CID:4441]| Data management/Databases/Database files"
+  RdsStorageEncrypted:
+    Controls: ['2082', '4441', '4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-storage-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_STORAGE_ENCRYPTED
+      Description: "SHOULD 17.1.46.C.04[CID:2082], SHOULD 20.4.4.C.02[CID:4441], SHOULD 22.1.24.C.04[CID:4839]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical transfer requirements & Data management/Databases/Database files & Enterprise systems se..."
+  RedshiftBackupEnabled:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: redshift-backup-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_BACKUP_ENABLED
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  RedshiftClusterConfigurationCheck:
+    Controls: ['4441', '4445', '4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: redshift-cluster-configuration-check
+      InputParameters:
+        clusterDbEncrypted: 'TRUE'
+        loggingEnabled: 'TRUE'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
+      Description: "SHOULD 20.4.4.C.02[CID:4441], SHOULD 20.4.5.C.02[CID:4445], SHOULD 22.1.24.C.04[CID:4839]| Data management/Databases: (Database files & Accountability) & Enterprise systems security/Cloud Computing/Unauthorised Access"
+  RedshiftClusterMaintenancesettingsCheck:
+    Controls: ['3449', '3453']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: redshift-cluster-maintenancesettings-check
+      InputParameters:
+        allowVersionUpgrade: 'TRUE'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_MAINTENANCESETTINGS_CHECK
+      Description: "MUST 12.4.4.C.02[CID:3449], SHOULD 12.4.4.C.06[CID:3453]| Product Security/Product Patching and Updating/Patching vulnerabilities in products"
+  RedshiftClusterPublicAccessCheck:
+    Controls: ['3548', '3562', '3623']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: redshift-cluster-public-access-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562], SHOULD 19.1.14.C.02[CID:3623]| Gateway security/Gateways: (Using gateways & Configuration of gateways & Demilitarised zones)"
+  RedshiftRequireTlsSsl:
+    Controls: ['2091', '4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: redshift-require-tls-ssl
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_REQUIRE_TLS_SSL
+      Description: "MUST 17.1.48.C.03[CID:2091], SHOULD 22.1.24.C.04[CID:4839]| Cryptography/Cryptographic Fundamentals/Information and Systems Protection & Enterprise systems security/Cloud Computing/Unauthorised Access"
+  RestrictedSsh:
+    Controls: ['2726']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: restricted-ssh
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: INCOMING_SSH_DISABLED
+      Description: "SHOULD 17.5.8.C.02[CID:2726]| Cryptography/Secure Shell/Automated remote access"
+  RootAccountHardwareMfaEnabled:
+    Controls: ['1841', '6843', '6953']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: root-account-hardware-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
+      Description: "SHOULD 16.1.35.C.02[CID:1841], SHOULD 16.4.31.C.02[CID:6843], SHOULD 16.7.34.C.02[CID:6953]| Access Control and Passwords: (Identification, Authentication and Passwords/Methods for system user identification and authentication & Privileged Access Man..."
+  RootAccountMfaEnabled:
+    Controls: ['1841']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: root-account-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+      Description: "SHOULD 16.1.35.C.02[CID:1841]| Access Control and Passwords/Identification, Authentication and Passwords/Methods for system user identification and authentication"
+  S3AccountLevelPublicAccessBlocksPeriodic:
+    Controls: ['3548', '3562', '4838']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-account-level-public-access-blocks-periodic
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562], SHOULD 22.1.24.C.03[CID:4838]| Gateway security/Gateways: (Using gateways & Configuration of gateways) & Enterprise systems security/Cloud Computing/Unauthorised Access"
+  S3BucketPublicReadProhibited:
+    Controls: ['4838']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-public-read-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+      Description: "SHOULD 22.1.24.C.03[CID:4838]| Enterprise systems security/Cloud Computing/Unauthorised Access"
+  S3BucketPublicWriteProhibited:
+    Controls: ['4838']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-public-write-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+      Description: "SHOULD 22.1.24.C.03[CID:4838]| Enterprise systems security/Cloud Computing/Unauthorised Access"
+  S3BucketServerSideEncryptionEnabled:
+    Controls: ['2082']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-server-side-encryption-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+      Description: "SHOULD 17.1.46.C.04[CID:2082]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical transfer requirements"
+  S3BucketSslRequestsOnly:
+    Controls: ['4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-ssl-requests-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
+      Description: "SHOULD 22.1.24.C.04[CID:4839]| Enterprise systems security/Cloud Computing/Unauthorised Access"
+  S3BucketVersioningEnabled:
+    Controls: ['4849']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-versioning-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+      Description: "MUST 22.1.26.C.01[CID:4849]| Enterprise systems security/Cloud Computing/Backup, Recovery Archiving and Data Remanence"
+  S3DefaultEncryptionKms:
+    Controls: ['2082']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-default-encryption-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_DEFAULT_ENCRYPTION_KMS
+      Description: "SHOULD 17.1.46.C.04[CID:2082]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical transfer requirements"
+  SagemakerEndpointConfigurationKmsKeyConfigured:
+    Controls: ['4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-endpoint-configuration-kms-key-configured
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_ENDPOINT_CONFIGURATION_KMS_KEY_CONFIGURED
+      Description: "SHOULD 22.1.24.C.04[CID:4839]| Enterprise systems security/Cloud Computing/Unauthorised Access"
+  SagemakerNotebookInstanceKmsKeyConfigured:
+    Controls: ['4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-notebook-instance-kms-key-configured
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_NOTEBOOK_INSTANCE_KMS_KEY_CONFIGURED
+      Description: "SHOULD 22.1.24.C.04[CID:4839]| Enterprise systems security/Cloud Computing/Unauthorised Access"
+  SagemakerNotebookNoDirectInternetAccess:
+    Controls: ['3548', '3562']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-notebook-no-direct-internet-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562]| Gateway security/Gateways: (Using gateways & Configuration of gateways)"
+  SecretsmanagerUsingCmk:
+    Controls: ['4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: secretsmanager-using-cmk
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_USING_CMK
+      Description: "SHOULD 22.1.24.C.04[CID:4839]| Enterprise systems security/Cloud Computing/Unauthorised Access"
+  SecurityhubEnabled:
+    Controls: ['3875']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: securityhub-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+      Description: "SHOULD 18.4.12.C.01[CID:3875]| Network security/Intrusion Detection and Prevention/Event management and correlation"
+  SnsEncryptedKms:
+    Controls: ['4839']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sns-encrypted-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SNS::Topic
+      Source:
+        Owner: AWS
+        SourceIdentifier: SNS_ENCRYPTED_KMS
+      Description: "SHOULD 22.1.24.C.04[CID:4839]| Enterprise systems security/Cloud Computing/Unauthorised Access"
+  SsmDocumentNotPublic:
+    Controls: ['3548']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ssm-document-not-public
+      Source:
+        Owner: AWS
+        SourceIdentifier: SSM_DOCUMENT_NOT_PUBLIC
+      Description: "MUST 19.1.11.C.01[CID:3548]| Gateway security/Gateways/Using gateways"
+  VpcDefaultSecurityGroupClosed:
+    Controls: ['3548', '3562']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: vpc-default-security-group-closed
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
+      Description: "MUST 19.1.11.C.01[CID:3548], MUST 19.1.12.C.01[CID:3562]| Gateway security/Gateways: (Using gateways & Configuration of gateways)"
+  VpcFlowLogsEnabled:
+    Controls: ['3562']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: vpc-flow-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
+      Description: "MUST 19.1.12.C.01[CID:3562]| Gateway security/Gateways/Configuration of gateways"
+  VpcSgOpenOnlyToAuthorizedPorts:
+    Controls: ['3205']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: vpc-sg-open-only-to-authorized-ports
+      InputParameters:
+        authorizedTcpPorts: '443'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
+      Description: "SHOULD 18.1.13.C.02[CID:3205]| Network security/Network Management/Limiting network access"
+  Wafv2LoggingEnabled:
+    Controls: ['2013']
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: wafv2-logging-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAFV2_LOGGING_ENABLED
+      Description: "SHOULD 16.6.10.C.02[CID:2013]| Access Control and Passwords/Event Logging and Auditing/Additional events to be logged"
