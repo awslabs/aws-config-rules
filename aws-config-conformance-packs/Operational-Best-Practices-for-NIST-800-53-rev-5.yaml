@@ -1,12 +1,12 @@
 ##################################################################################
-#
-#   Conformance Pack:
-#     Operational Best Practices for APRA CPG 234
-#
-#   This conformance pack helps verify compliance with APRA CPG 234 requirements.
-#
-#   See Parameters section for names and descriptions of required parameters.
-#
+#                                                                                 
+#   Conformance Pack:                                                             
+#     Operational Best Practices for NIST 800-53 Rev5                                   
+#                                                                                 
+#   This conformance pack helps verify compliance with NIST 800-53 Rev5 requirements.   
+#                                                                                 
+#   See Parameters section for names and descriptions of required parameters.     
+#                                                                                 
 ##################################################################################
 
 Parameters:
@@ -16,26 +16,17 @@ Parameters:
   AcmCertificateExpirationCheckParamDaysToExpiration:
     Default: '90'
     Type: String
-  DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
-    Default: '80'
+  CloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Default: 'TRUE'
     Type: String
-  DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
-    Default: '80'
+  CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Default: 'TRUE'
     Type: String
-  GuarddutyNonArchivedFindingsParamDaysHighSev:
-    Default: '1'
+  CloudwatchAlarmActionCheckParamOkActionRequired:
+    Default: 'FALSE'
     Type: String
-  GuarddutyNonArchivedFindingsParamDaysLowSev:
-    Default: '30'
-    Type: String
-  GuarddutyNonArchivedFindingsParamDaysMediumSev:
-    Default: '7'
-    Type: String
-  IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
-    Default: kms:ReEncryptFrom, kms:Decrypt
-    Type: String
-  IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
-    Default: kms:ReEncryptFrom, kms:Decrypt
+  CwLoggroupRetentionPeriodCheckParamMinRetentionTime:
+    Default: '365'
     Type: String
   IamPasswordPolicyParamMaxPasswordAge:
     Default: '90'
@@ -61,11 +52,11 @@ Parameters:
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
     Type: String
-  LambdaConcurrencyCheckParamConcurrencyLimitHigh:
-    Default: '1000'
+  RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
+    Default: 'TRUE'
     Type: String
-  LambdaConcurrencyCheckParamConcurrencyLimitLow:
-    Default: '500'
+  RedshiftClusterConfigurationCheckParamLoggingEnabled:
+    Default: 'TRUE'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Default: 'TRUE'
@@ -96,6 +87,12 @@ Parameters:
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
     Default: 'True'
+    Type: String
+  SecretsmanagerSecretPeriodicRotationParamMaxDaysSinceRotation:
+    Default: '90'
+    Type: String
+  SecretsmanagerSecretUnusedParamUnusedForDays:
+    Default: '90'
     Type: String
   VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Default: '443'
@@ -246,6 +243,13 @@ Resources:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
     Type: AWS::Config::ConfigRule
+  CloudTrailLogFileValidationEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-log-file-validation-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
+    Type: AWS::Config::ConfigRule
   CloudtrailS3DataeventsEnabled:
     Properties:
       ConfigRuleName: cloudtrail-s3-dataevents-enabled
@@ -253,20 +257,25 @@ Resources:
         Owner: AWS
         SourceIdentifier: CLOUDTRAIL_S3_DATAEVENTS_ENABLED
     Type: AWS::Config::ConfigRule
-  CloudtrailSecurityTrailEnabled:
-    Properties:
-      ConfigRuleName: cloudtrail-security-trail-enabled
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDTRAIL_SECURITY_TRAIL_ENABLED
-    Type: AWS::Config::ConfigRule
   CloudwatchAlarmActionCheck:
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
       InputParameters:
-        alarmActionRequired: 'TRUE'
-        insufficientDataActionRequired: 'TRUE'
-        okActionRequired: 'FALSE'
+        alarmActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: AWS::NoValue
+        insufficientDataActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: AWS::NoValue
+        okActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -288,25 +297,18 @@ Resources:
         Owner: AWS
         SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
     Type: AWS::Config::ConfigRule
-  CodebuildProjectEnvvarAwscredCheck:
+  CwLoggroupRetentionPeriodCheck:
     Properties:
-      ConfigRuleName: codebuild-project-envvar-awscred-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CodeBuild::Project
+      ConfigRuleName: cw-loggroup-retention-period-check
+      InputParameters:
+        MinRetentionTime:
+          Fn::If:
+          - cwLoggroupRetentionPeriodCheckParamMinRetentionTime
+          - Ref: CwLoggroupRetentionPeriodCheckParamMinRetentionTime
+          - Ref: AWS::NoValue
       Source:
         Owner: AWS
-        SourceIdentifier: CODEBUILD_PROJECT_ENVVAR_AWSCRED_CHECK
-    Type: AWS::Config::ConfigRule
-  CodebuildProjectSourceRepoUrlCheck:
-    Properties:
-      ConfigRuleName: codebuild-project-source-repo-url-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CodeBuild::Project
-      Source:
-        Owner: AWS
-        SourceIdentifier: CODEBUILD_PROJECT_SOURCE_REPO_URL_CHECK
+        SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK
     Type: AWS::Config::ConfigRule
   DbInstanceBackupEnabled:
     Properties:
@@ -367,17 +369,6 @@ Resources:
   DynamodbThroughputLimitCheck:
     Properties:
       ConfigRuleName: dynamodb-throughput-limit-check
-      InputParameters:
-        accountRCUThresholdPercentage:
-          Fn::If:
-          - dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
-          - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
-          - Ref: AWS::NoValue
-        accountWCUThresholdPercentage:
-          Fn::If:
-          - dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
-          - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
-          - Ref: AWS::NoValue
       Source:
         Owner: AWS
         SourceIdentifier: DYNAMODB_THROUGHPUT_LIMIT_CHECK
@@ -388,6 +379,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EBS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  EbsOptimizedInstance:
+    Properties:
+      ConfigRuleName: ebs-optimized-instance
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_OPTIMIZED_INSTANCE
     Type: AWS::Config::ConfigRule
   EbsSnapshotPublicRestorableCheck:
     Properties:
@@ -463,6 +464,23 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2StoppedInstance:
+    Properties:
+      ConfigRuleName: ec2-stopped-instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_STOPPED_INSTANCE
+    Type: AWS::Config::ConfigRule
+  Ec2VolumeInuseCheck:
+    Properties:
+      ConfigRuleName: ec2-volume-inuse-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Volume
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_VOLUME_INUSE_CHECK
     Type: AWS::Config::ConfigRule
   EcsTaskDefinitionUserForHostModeCheck:
     Properties:
@@ -597,13 +615,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELBV2_ACM_CERTIFICATE_REQUIRED
     Type: AWS::Config::ConfigRule
-  EmrKerberosEnabled:
-    Properties:
-      ConfigRuleName: emr-kerberos-enabled
-      Source:
-        Owner: AWS
-        SourceIdentifier: EMR_KERBEROS_ENABLED
-    Type: AWS::Config::ConfigRule
   EmrMasterNoPublicIp:
     Properties:
       ConfigRuleName: emr-master-no-public-ip
@@ -629,63 +640,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
-    Type: AWS::Config::ConfigRule
-  GuarddutyNonArchivedFindings:
-    Properties:
-      ConfigRuleName: guardduty-non-archived-findings
-      InputParameters:
-        daysHighSev:
-          Fn::If:
-          - guarddutyNonArchivedFindingsParamDaysHighSev
-          - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
-          - Ref: AWS::NoValue
-        daysLowSev:
-          Fn::If:
-          - guarddutyNonArchivedFindingsParamDaysLowSev
-          - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
-          - Ref: AWS::NoValue
-        daysMediumSev:
-          Fn::If:
-          - guarddutyNonArchivedFindingsParamDaysMediumSev
-          - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
-          - Ref: AWS::NoValue
-      Source:
-        Owner: AWS
-        SourceIdentifier: GUARDDUTY_NON_ARCHIVED_FINDINGS
-    Type: AWS::Config::ConfigRule
-  IamCustomerPolicyBlockedKmsActions:
-    Properties:
-      ConfigRuleName: iam-customer-policy-blocked-kms-actions
-      InputParameters:
-        blockedActionsPatterns:
-          Fn::If:
-          - iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
-          - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
-          - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::IAM::Policy
-      Source:
-        Owner: AWS
-        SourceIdentifier: IAM_CUSTOMER_POLICY_BLOCKED_KMS_ACTIONS
-    Type: AWS::Config::ConfigRule
-  IamInlinePolicyBlockedKmsActions:
-    Properties:
-      ConfigRuleName: iam-inline-policy-blocked-kms-actions
-      InputParameters:
-        blockedActionsPatterns:
-          Fn::If:
-          - iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
-          - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
-          - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::IAM::Group
-        - AWS::IAM::Role
-        - AWS::IAM::User
-      Source:
-        Owner: AWS
-        SourceIdentifier: IAM_INLINE_POLICY_BLOCKED_KMS_ACTIONS
     Type: AWS::Config::ConfigRule
   IamNoInlinePolicyCheck:
     Properties:
@@ -829,16 +783,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: INSTANCES_IN_VPC
     Type: AWS::Config::ConfigRule
-  InternetGatewayAuthorizedVpcOnly:
-    Properties:
-      ConfigRuleName: internet-gateway-authorized-vpc-only
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::InternetGateway
-      Source:
-        Owner: AWS
-        SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
-    Type: AWS::Config::ConfigRule
   KmsCmkNotScheduledForDeletion:
     Properties:
       ConfigRuleName: kms-cmk-not-scheduled-for-deletion
@@ -852,17 +796,6 @@ Resources:
   LambdaConcurrencyCheck:
     Properties:
       ConfigRuleName: lambda-concurrency-check
-      InputParameters:
-        ConcurrencyLimitHigh:
-          Fn::If:
-          - lambdaConcurrencyCheckParamConcurrencyLimitHigh
-          - Ref: LambdaConcurrencyCheckParamConcurrencyLimitHigh
-          - Ref: AWS::NoValue
-        ConcurrencyLimitLow:
-          Fn::If:
-          - lambdaConcurrencyCheckParamConcurrencyLimitLow
-          - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
-          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::Lambda::Function
@@ -923,16 +856,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
-    Type: AWS::Config::ConfigRule
-  RdsAutomaticMinorVersionUpgradeEnabled:
-    Properties:
-      ConfigRuleName: rds-automatic-minor-version-upgrade-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::RDS::DBInstance
-      Source:
-        Owner: AWS
-        SourceIdentifier: RDS_AUTOMATIC_MINOR_VERSION_UPGRADE_ENABLED
     Type: AWS::Config::ConfigRule
   RdsEnhancedMonitoringEnabled:
     Properties:
@@ -1037,8 +960,16 @@ Resources:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
       InputParameters:
-        clusterDbEncrypted: 'TRUE'
-        loggingEnabled: 'TRUE'
+        clusterDbEncrypted:
+          Fn::If:
+          - redshiftClusterConfigurationCheckParamClusterDbEncrypted
+          - Ref: RedshiftClusterConfigurationCheckParamClusterDbEncrypted
+          - Ref: AWS::NoValue
+        loggingEnabled:
+          Fn::If:
+          - redshiftClusterConfigurationCheckParamLoggingEnabled
+          - Ref: RedshiftClusterConfigurationCheckParamLoggingEnabled
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster
@@ -1301,15 +1232,41 @@ Resources:
         Owner: AWS
         SourceIdentifier: SECRETSMANAGER_ROTATION_ENABLED_CHECK
     Type: AWS::Config::ConfigRule
-  SecretsmanagerScheduledRotationSuccessCheck:
+  SecretsmanagerSecretPeriodicRotation:
     Properties:
-      ConfigRuleName: secretsmanager-scheduled-rotation-success-check
+      ConfigRuleName: secretsmanager-secret-periodic-rotation
+      InputParameters:
+        maxDaysSinceRotation:
+          Fn::If:
+          - secretsmanagerSecretPeriodicRotationParamMaxDaysSinceRotation
+          - Ref: SecretsmanagerSecretPeriodicRotationParamMaxDaysSinceRotation
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SECRET_PERIODIC_ROTATION
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerSecretUnused:
+    Properties:
+      ConfigRuleName: secretsmanager-secret-unused
+      InputParameters:
+        unusedForDays:
+          Fn::If:
+          - secretsmanagerSecretUnusedParamUnusedForDays
+          - Ref: SecretsmanagerSecretUnusedParamUnusedForDays
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SECRET_UNUSED
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerUsingCmk:
+    Properties:
+      ConfigRuleName: secretsmanager-using-cmk
       Scope:
         ComplianceResourceTypes:
         - AWS::SecretsManager::Secret
       Source:
         Owner: AWS
-        SourceIdentifier: SECRETSMANAGER_SCHEDULED_ROTATION_SUCCESS_CHECK
+        SourceIdentifier: SECRETSMANAGER_USING_CMK
     Type: AWS::Config::ConfigRule
   SecurityhubEnabled:
     Properties:
@@ -1395,10 +1352,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
+  SecurityAwarenessProgramExists:
+    Properties:
+      ConfigRuleName: security-awareness-program-exists
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
   ResponsePlanExistsMaintained:
     Properties:
       ConfigRuleName: response-plan-exists-maintained
-      Description: Ensure incident response plans are established, maintained, and distributed to responsible personnel.
       Source:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
@@ -1406,15 +1369,20 @@ Resources:
   ResponsePlanTested:
     Properties:
       ConfigRuleName: response-plan-tested
-      Description: Ensure Incident response and recovery plans are tested. This can assist in understanding if your plan will be effective during an incident and if any gaps or updates need to be addressed.
       Source:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
-  SecurityAwarenessProgramExists:
+  VulnMitigatedAccepted:
     Properties:
-      ConfigRuleName: security-awareness-program-exists
-      Description: Establish and maintain a security awareness program for your organization. Security awareness programs educate employees on how to protect their organization from various security breaches or incidents.
+      ConfigRuleName: vuln-mitigated-accepted
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  AuditLogPolicyExists:
+    Properties:
+      ConfigRuleName: audit-log-policy-exists
       Source:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
@@ -1430,41 +1398,26 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
-  dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+  cloudwatchAlarmActionCheckParamAlarmActionRequired:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
-  dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+      - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+  cloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
-  guarddutyNonArchivedFindingsParamDaysHighSev:
+      - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+  cloudwatchAlarmActionCheckParamOkActionRequired:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
-  guarddutyNonArchivedFindingsParamDaysLowSev:
+      - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+  cwLoggroupRetentionPeriodCheckParamMinRetentionTime:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
-  guarddutyNonArchivedFindingsParamDaysMediumSev:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
-  iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
-  iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+      - Ref: CwLoggroupRetentionPeriodCheckParamMinRetentionTime
   iamPasswordPolicyParamMaxPasswordAge:
     Fn::Not:
     - Fn::Equals:
@@ -1505,16 +1458,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
-  lambdaConcurrencyCheckParamConcurrencyLimitHigh:
+  redshiftClusterConfigurationCheckParamClusterDbEncrypted:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: LambdaConcurrencyCheckParamConcurrencyLimitHigh
-  lambdaConcurrencyCheckParamConcurrencyLimitLow:
+      - Ref: RedshiftClusterConfigurationCheckParamClusterDbEncrypted
+  redshiftClusterConfigurationCheckParamLoggingEnabled:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
+      - Ref: RedshiftClusterConfigurationCheckParamLoggingEnabled
   redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Fn::Not:
     - Fn::Equals:
@@ -1565,6 +1518,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
+  secretsmanagerSecretPeriodicRotationParamMaxDaysSinceRotation:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: SecretsmanagerSecretPeriodicRotationParamMaxDaysSinceRotation
+  secretsmanagerSecretUnusedParamUnusedForDays:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: SecretsmanagerSecretUnusedParamUnusedForDays
   vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Fn::Not:
     - Fn::Equals:

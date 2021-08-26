@@ -1,29 +1,102 @@
 ################################################################################
 #
 #   Conformance Pack:
-#     Operational Best Practices for Amazon DynamoDB. 
+#     Operational Best Practices for Amazon DynamoDB
 #
 ################################################################################
 
+Parameters:
+  DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  ServiceVpcEndpointEnabledParamServiceName:
+    Default: dynamodb
+    Type: String
 Resources:
-  DynamoDbAutoscalingEnabled:
+  DynamodbAutoscalingEnabled:
     Properties:
-      ConfigRuleName: DynamoDbAutoscalingEnabled
-      Description: "This rule checks whether Auto Scaling is enabled on your DynamoDB tables. Optionally you can set the read and write capacity units for the table."
-      MaximumExecutionFrequency: Six_Hours
+      ConfigRuleName: dynamodb-autoscaling-enabled
       Scope:
         ComplianceResourceTypes:
-          - "AWS::DynamoDB::Table"
+        - AWS::DynamoDB::Table
       Source:
         Owner: AWS
         SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
-    Type: "AWS::Config::ConfigRule"
-  DynamoDbThroughputLimitCheck:
+    Type: AWS::Config::ConfigRule
+  DynamodbInBackupPlan:
     Properties:
-      ConfigRuleName: DynamoDbThroughputLimitCheck
-      Description: "Checks whether provisioned DynamoDB throughput is approaching the maximum limit for your account."
-      MaximumExecutionFrequency: Six_Hours
+      ConfigRuleName: dynamodb-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  DynamodbPitrEnabled:
+    Properties:
+      ConfigRuleName: dynamodb-pitr-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_PITR_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbTableEncryptedKms:
+    Properties:
+      ConfigRuleName: dynamodb-table-encrypted-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS
+    Type: AWS::Config::ConfigRule
+  DynamodbThroughputLimitCheck:
+    Properties:
+      ConfigRuleName: dynamodb-throughput-limit-check
+      InputParameters:
+        accountRCUThresholdPercentage:
+          Fn::If:
+          - dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+          - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+          - Ref: AWS::NoValue
+        accountWCUThresholdPercentage:
+          Fn::If:
+          - dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+          - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+          - Ref: AWS::NoValue
       Source:
         Owner: AWS
         SourceIdentifier: DYNAMODB_THROUGHPUT_LIMIT_CHECK
-    Type: "AWS::Config::ConfigRule"
+    Type: AWS::Config::ConfigRule
+  ServiceVpcEndpointEnabled:
+    Properties:
+      ConfigRuleName: service-vpc-endpoint-enabled
+      InputParameters:
+        serviceName:
+          Fn::If:
+          - serviceVpcEndpointEnabledParamServiceName
+          - Ref: ServiceVpcEndpointEnabledParamServiceName
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: SERVICE_VPC_ENDPOINT_ENABLED
+    Type: AWS::Config::ConfigRule
+Conditions:
+  dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+  dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+  serviceVpcEndpointEnabledParamServiceName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ServiceVpcEndpointEnabledParamServiceName

@@ -1,16 +1,12 @@
 ##################################################################################
-#                                                                                 
-#   Conformance Pack:                                                             
-#     Operational Best Practices for Asset Management                                   
-#                                                                                 
-#   This Conformance Pack has been designed for compatibility with the majority of 
-#   AWS regions and to not require setting of any Parameters. Additional managed rules 
-#   that require parameters to be set for your environment and/or for your specific 
-#   region can be found at:
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html  
-#                                                                                 
-#   See Parameters section for names and descriptions of required parameters.    
-#                                                                                 
+#
+#   Conformance Pack:
+#     Operational Best Practices for Asset Management
+#
+#   This conformance pack helps verify compliance with Asset Management requirements.
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
 ##################################################################################
 
 Parameters:
@@ -21,6 +17,13 @@ Parameters:
     Default: '90'
     Type: String
 Resources:
+  AccountPartOfOrganizations:
+    Properties:
+      ConfigRuleName: account-part-of-organizations
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCOUNT_PART_OF_ORGANIZATIONS
+    Type: AWS::Config::ConfigRule
   Ec2InstanceManagedBySsm:
     Properties:
       ConfigRuleName: ec2-instance-managed-by-systems-manager
@@ -51,16 +54,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
-    Type: AWS::Config::ConfigRule
-  Ec2SecurityGroupAttachedToEni:
-    Properties:
-      ConfigRuleName: ec2-security-group-attached-to-eni
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI
     Type: AWS::Config::ConfigRule
   Ec2StoppedInstance:
     Properties:
@@ -107,6 +100,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
+    Type: AWS::Config::ConfigRule
+  VpcNetworkAclUnusedCheck:
+    Properties:
+      ConfigRuleName: vpc-network-acl-unused-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::NetworkAcl
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_NETWORK_ACL_UNUSED_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
   ec2VolumeInuseCheckParamDeleteOnTermination:

@@ -5,7 +5,7 @@
 #
 #   This conformance pack helps verify compliance with NIST 800-171 requirements.
 #
-#   See Parameters section for names and descriptions of required parameters. 
+#   See Parameters section for names and descriptions of required parameters.
 #
 ##################################################################################
 
@@ -44,16 +44,16 @@ Parameters:
     Default: '24'
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
@@ -401,16 +401,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
-    Type: AWS::Config::ConfigRule
-  Ec2SecurityGroupAttachedToEni:
-    Properties:
-      ConfigRuleName: ec2-security-group-attached-to-eni
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI
     Type: AWS::Config::ConfigRule
   Ec2StoppedInstance:
     Properties:
