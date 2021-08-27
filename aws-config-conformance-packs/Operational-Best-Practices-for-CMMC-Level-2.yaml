@@ -10,7 +10,7 @@
 #   require parameters to be set for your environment and/or for your specific region can 
 #   be found at https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
 #
-#   See Parameters section for names and descriptions of required parameters.    
+#   See Parameters section for names and descriptions of required parameters.     
 #                                                                                 
 ##################################################################################
 
@@ -37,16 +37,16 @@ Parameters:
     Default: '24'
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
