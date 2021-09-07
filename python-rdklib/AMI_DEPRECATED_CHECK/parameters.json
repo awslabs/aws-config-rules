@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "AMI_DEPRECATED_CHECK",
+    "Description": "AMI_DEPRECATED_CHECK",
+    "SourceRuntime": "python3.8-lib",
+    "CodeKey": "AMI_DEPRECATED_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
