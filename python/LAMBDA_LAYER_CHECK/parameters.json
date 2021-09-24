@@ -1,0 +1,12 @@
+{
+    "Version": "1.0",
+    "Parameters": {
+      "RuleName": "LAMBDA_LAYER_CHECK",
+      "SourceRuntime": "python3.8",
+      "CodeKey": "LAMBDA_LAYER_CHECK.zip",
+      "InputParameters": "{\"LayerArn\":\"arn:aws:lambda:region:account:layer:layer_name\", \"MinLayerVersion\":\"1\"}",
+      "OptionalParameters": "{}",
+      "SourceEvents": "AWS::Lambda::Function"
+    },
+    "Tags": "[]"
+  }
