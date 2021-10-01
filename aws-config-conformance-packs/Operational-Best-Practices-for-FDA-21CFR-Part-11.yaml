@@ -5,7 +5,7 @@
 #
 #   This conformance pack helps verify compliance with Title 21 CFR Part 11 requirements.
 #
-#   See Parameters section for names and descriptions of required parameters. 
+#   See Parameters section for names and descriptions of required parameters.
 #
 ##################################################################################
 
@@ -15,6 +15,12 @@ Parameters:
     Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
     Default: 'TRUE'
+    Type: String
+  IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:ReEncryptFrom, kms:Decrypt
+    Type: String
+  IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:ReEncryptFrom, kms:Decrypt
     Type: String
   IamPasswordPolicyParamMaxPasswordAge:
     Default: '90'
@@ -26,16 +32,16 @@ Parameters:
     Default: '24'
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
@@ -84,6 +90,30 @@ Resources:
         Owner: AWS
         SourceIdentifier: ACCESS_KEYS_ROTATED
     Type: AWS::Config::ConfigRule
+  AccountPartOfOrganizations:
+    Properties:
+      ConfigRuleName: account-part-of-organizations
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCOUNT_PART_OF_ORGANIZATIONS
+    Type: AWS::Config::ConfigRule
+  AlbHttpToHttpsRedirectionCheck:
+    Properties:
+      ConfigRuleName: alb-http-to-https-redirection-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK
+    Type: AWS::Config::ConfigRule
+  ApiGwCacheEnabledAndEncrypted:
+    Properties:
+      ConfigRuleName: api-gw-cache-enabled-and-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_CACHE_ENABLED_AND_ENCRYPTED
+    Type: AWS::Config::ConfigRule
   ApiGwExecutionLoggingEnabled:
     Properties:
       ConfigRuleName: api-gw-execution-logging-enabled
@@ -94,6 +124,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ApiGwSslEnabled:
+    Properties:
+      ConfigRuleName: api-gw-ssl-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_SSL_ENABLED
     Type: AWS::Config::ConfigRule
   CloudTrailCloudWatchLogsEnabled:
     Properties:
@@ -108,6 +148,13 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEncryptionEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-encryption-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
     Type: AWS::Config::ConfigRule
   CloudTrailLogFileValidationEnabled:
     Properties:
@@ -262,6 +309,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
     Type: AWS::Config::ConfigRule
+  Ec2InstanceProfileAttached:
+    Properties:
+      ConfigRuleName: ec2-instance-profile-attached
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
+    Type: AWS::Config::ConfigRule
   Ec2ManagedinstanceAssociationComplianceStatusCheck:
     Properties:
       ConfigRuleName: ec2-managedinstance-association-compliance-status-check
@@ -305,6 +362,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
     Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionUserForHostModeCheck:
+    Properties:
+      ConfigRuleName: ecs-task-definition-user-for-host-mode-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK
+    Type: AWS::Config::ConfigRule
   EfsEncryptedCheck:
     Properties:
       ConfigRuleName: efs-encrypted-check
@@ -339,6 +406,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  ElasticsearchLogsToCloudwatch:
+    Properties:
+      ConfigRuleName: elasticsearch-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Elasticsearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICSEARCH_LOGS_TO_CLOUDWATCH
     Type: AWS::Config::ConfigRule
   ElasticsearchNodeToNodeEncryptionCheck:
     Properties:
@@ -401,6 +478,13 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
     Type: AWS::Config::ConfigRule
+  Elbv2AcmCertificateRequired:
+    Properties:
+      ConfigRuleName: elbv2-acm-certificate-required
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELBV2_ACM_CERTIFICATE_REQUIRED
+    Type: AWS::Config::ConfigRule
   EmrKerberosEnabled:
     Properties:
       ConfigRuleName: emr-kerberos-enabled
@@ -434,6 +518,22 @@ Resources:
         Owner: AWS
         SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
     Type: AWS::Config::ConfigRule
+  IamCustomerPolicyBlockedKmsActions:
+    Properties:
+      ConfigRuleName: iam-customer-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_CUSTOMER_POLICY_BLOCKED_KMS_ACTIONS
+    Type: AWS::Config::ConfigRule
   IamGroupHasUsersCheck:
     Properties:
       ConfigRuleName: iam-group-has-users-check
@@ -443,6 +543,24 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
+    Type: AWS::Config::ConfigRule
+  IamInlinePolicyBlockedKmsActions:
+    Properties:
+      ConfigRuleName: iam-inline-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
+        - AWS::IAM::Role
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_INLINE_POLICY_BLOCKED_KMS_ACTIONS
     Type: AWS::Config::ConfigRule
   IamNoInlinePolicyCheck:
     Properties:
@@ -508,6 +626,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+    Type: AWS::Config::ConfigRule
+  IamPolicyNoStatementsWithFullAccess:
+    Properties:
+      ConfigRuleName: iam-policy-no-statements-with-full-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_FULL_ACCESS
     Type: AWS::Config::ConfigRule
   IamRootAccessKeyCheck:
     Properties:
@@ -630,6 +758,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
+  NoUnrestrictedRouteToIgw:
+    Properties:
+      ConfigRuleName: no-unrestricted-route-to-igw
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::RouteTable
+      Source:
+        Owner: AWS
+        SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
+    Type: AWS::Config::ConfigRule
   RdsInBackupPlan:
     Properties:
       ConfigRuleName: rds-in-backup-plan
@@ -709,6 +847,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_STORAGE_ENCRYPTED
     Type: AWS::Config::ConfigRule
+  RedshiftBackupEnabled:
+    Properties:
+      ConfigRuleName: redshift-backup-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
   RedshiftClusterConfigurationCheck:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
@@ -722,6 +870,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
     Type: AWS::Config::ConfigRule
+  RedshiftClusterKmsEnabled:
+    Properties:
+      ConfigRuleName: redshift-cluster-kms-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_KMS_ENABLED
+    Type: AWS::Config::ConfigRule
   RedshiftClusterPublicAccessCheck:
     Properties:
       ConfigRuleName: redshift-cluster-public-access-check
@@ -731,6 +889,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftEnhancedVpcRoutingEnabled:
+    Properties:
+      ConfigRuleName: redshift-enhanced-vpc-routing-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_ENHANCED_VPC_ROUTING_ENABLED
     Type: AWS::Config::ConfigRule
   RedshiftRequireTlsSsl:
     Properties:
@@ -823,6 +991,13 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
     Type: AWS::Config::ConfigRule
+  S3AccountLevelPublicAccessBlocksPeriodic:
+    Properties:
+      ConfigRuleName: s3-account-level-public-access-blocks-periodic
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
+    Type: AWS::Config::ConfigRule
   S3BucketDefaultLockEnabled:
     Properties:
       ConfigRuleName: s3-bucket-default-lock-enabled
@@ -832,6 +1007,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketLevelPublicAccessProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-level-public-access-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LEVEL_PUBLIC_ACCESS_PROHIBITED
     Type: AWS::Config::ConfigRule
   S3BucketLoggingEnabled:
     Properties:
@@ -913,6 +1098,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
     Type: AWS::Config::ConfigRule
+  S3DefaultEncryptionKms:
+    Properties:
+      ConfigRuleName: s3-default-encryption-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_DEFAULT_ENCRYPTION_KMS
+    Type: AWS::Config::ConfigRule
   SagemakerEndpointConfigurationKmsKeyConfigured:
     Properties:
       ConfigRuleName: sagemaker-endpoint-configuration-kms-key-configured
@@ -954,6 +1149,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: SECRETSMANAGER_SCHEDULED_ROTATION_SUCCESS_CHECK
     Type: AWS::Config::ConfigRule
+  SecretsmanagerUsingCmk:
+    Properties:
+      ConfigRuleName: secretsmanager-using-cmk
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_USING_CMK
+    Type: AWS::Config::ConfigRule
   SecurityhubEnabled:
     Properties:
       ConfigRuleName: securityhub-enabled
@@ -970,6 +1175,23 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: SNS_ENCRYPTED_KMS
+    Type: AWS::Config::ConfigRule
+  SsmDocumentNotPublic:
+    Properties:
+      ConfigRuleName: ssm-document-not-public
+      Source:
+        Owner: AWS
+        SourceIdentifier: SSM_DOCUMENT_NOT_PUBLIC
+    Type: AWS::Config::ConfigRule
+  SubnetAutoAssignPublicIpDisabled:
+    Properties:
+      ConfigRuleName: subnet-auto-assign-public-ip-disabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Subnet
+      Source:
+        Owner: AWS
+        SourceIdentifier: SUBNET_AUTO_ASSIGN_PUBLIC_IP_DISABLED
     Type: AWS::Config::ConfigRule
   VpcDefaultSecurityGroupClosed:
     Properties:
@@ -1021,6 +1243,14 @@ Resources:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
+  SecurityAwarenessProgramExists:
+    Properties:
+      ConfigRuleName: security-awareness-program-exists
+      Description: Establish and maintain a security awareness program for your organization. Security awareness programs educate employees on how to protect their organization from various security breaches or incidents.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
 Conditions:
   accessKeysRotatedParamMaxAccessKeyAge:
     Fn::Not:
@@ -1032,6 +1262,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: Ec2VolumeInuseCheckParamDeleteOnTermination
+  iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+  iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
   iamPasswordPolicyParamMaxPasswordAge:
     Fn::Not:
     - Fn::Equals:

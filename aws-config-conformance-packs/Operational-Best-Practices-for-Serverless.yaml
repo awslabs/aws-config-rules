@@ -1,16 +1,16 @@
 ##################################################################################
-#                                                                                 
-#   Conformance Pack:                                                             
-#     Operational Best Practices for Serverless                                   
-#                                                                                 
-#   This Conformance Pack has been designed for compatibility with the majority of 
-#   AWS regions and to not require setting of any Parameters. Additional managed rules 
-#   that require parameters to be set for your environment and/or for your specific 
+#
+#   Conformance Pack:
+#     Operational Best Practices for Serverless
+#
+#   This Conformance Pack has been designed for compatibility with the majority of
+#   AWS regions and to not require setting of any Parameters. Additional managed rules
+#   that require parameters to be set for your environment and/or for your specific
 #   region can be found at:
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html  
-#                                                                                 
-#   See Parameters section for names and descriptions of required parameters.  
-#                                                                                 
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
 ##################################################################################
 
 Parameters:
@@ -26,7 +26,23 @@ Parameters:
   LambdaConcurrencyCheckParamConcurrencyLimitLow:
     Default: '500'
     Type: String
+  ServiceVpcEndpointEnabled2ParamServiceName:
+    Default: lambda
+    Type: String
+  ServiceVpcEndpointEnabledParamServiceName:
+    Default: execute-api
+    Type: String
 Resources:
+  ApiGwAssociatedWithWaf:
+    Properties:
+      ConfigRuleName: api-gw-associated-with-waf
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_ASSOCIATED_WITH_WAF
+    Type: AWS::Config::ConfigRule
   ApiGwCacheEnabledAndEncrypted:
     Properties:
       ConfigRuleName: api-gw-cache-enabled-and-encrypted
@@ -47,6 +63,26 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ApiGwSslEnabled:
+    Properties:
+      ConfigRuleName: api-gw-ssl-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_SSL_ENABLED
+    Type: AWS::Config::ConfigRule
+  ApiGwXrayEnabled:
+    Properties:
+      ConfigRuleName: api-gw-xray-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_XRAY_ENABLED
     Type: AWS::Config::ConfigRule
   DynamodbAutoscalingEnabled:
     Properties:
@@ -154,6 +190,32 @@ Resources:
         Owner: AWS
         SourceIdentifier: LAMBDA_INSIDE_VPC
     Type: AWS::Config::ConfigRule
+  ServiceVpcEndpointEnabled:
+    Properties:
+      ConfigRuleName: service-vpc-endpoint-enabled
+      InputParameters:
+        serviceName:
+          Fn::If:
+          - serviceVpcEndpointEnabledParamServiceName
+          - Ref: ServiceVpcEndpointEnabledParamServiceName
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: SERVICE_VPC_ENDPOINT_ENABLED
+    Type: AWS::Config::ConfigRule
+  ServiceVpcEndpointEnabled2:
+    Properties:
+      ConfigRuleName: service-vpc-endpoint-enabled-2
+      InputParameters:
+        serviceName:
+          Fn::If:
+          - serviceVpcEndpointEnabled2ParamServiceName
+          - Ref: ServiceVpcEndpointEnabled2ParamServiceName
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: SERVICE_VPC_ENDPOINT_ENABLED
+    Type: AWS::Config::ConfigRule
 Conditions:
   dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
     Fn::Not:
@@ -175,3 +237,13 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
+  serviceVpcEndpointEnabled2ParamServiceName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ServiceVpcEndpointEnabled2ParamServiceName
+  serviceVpcEndpointEnabledParamServiceName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ServiceVpcEndpointEnabledParamServiceName

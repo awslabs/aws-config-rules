@@ -1,7 +1,7 @@
 ##################################################################################
 #
 #   Conformance Pack:
-#   Operational Best Practices for AWS Config rules based on Management and Governance Services                                  
+#   Operational Best Practices for AWS Config rules based on Management and Governance Services
 #
 #   This  pack contains AWS Config rules based on Management and Governance Services
 #   (https://aws.amazon.com/products/management-tools/). This Conformance Pack has
@@ -9,11 +9,30 @@
 #   setting of any Parameters. Additional managed rules that require parameters to be set
 #   for your environment and/or for your specific region can be found at
 #   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
-#   
-#   See Parameters section for names and descriptions of required parameters. 
-#  
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
 ##################################################################################
 
+Parameters:
+  CloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Default: 'true'
+    Type: String
+  CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Default: 'true'
+    Type: String
+  CloudwatchAlarmActionCheckParamOkActionRequired:
+    Default: 'false'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysHighSev:
+    Default: '1'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysLowSev:
+    Default: '30'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysMediumSev:
+    Default: '7'
+    Type: String
 Resources:
   AccountPartOfOrganizations:
     Properties:
@@ -68,9 +87,21 @@ Resources:
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
       InputParameters:
-        alarmActionRequired: 'TRUE'
-        insufficientDataActionRequired: 'TRUE'
-        okActionRequired: 'FALSE'
+        alarmActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: AWS::NoValue
+        insufficientDataActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: AWS::NoValue
+        okActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -103,6 +134,56 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_MANAGED_BY_SSM
     Type: AWS::Config::ConfigRule
+  Ec2ManagedinstanceAssociationComplianceStatusCheck:
+    Properties:
+      ConfigRuleName: ec2-managedinstance-association-compliance-status-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SSM::AssociationCompliance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_MANAGEDINSTANCE_ASSOCIATION_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2ManagedinstancePatchComplianceStatusCheck:
+    Properties:
+      ConfigRuleName: ec2-managedinstance-patch-compliance-status-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SSM::PatchCompliance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  GuarddutyEnabledCentralized:
+    Properties:
+      ConfigRuleName: guardduty-enabled-centralized
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+    Type: AWS::Config::ConfigRule
+  GuarddutyNonArchivedFindings:
+    Properties:
+      ConfigRuleName: guardduty-non-archived-findings
+      InputParameters:
+        daysHighSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysHighSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+          - Ref: AWS::NoValue
+        daysLowSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysLowSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+          - Ref: AWS::NoValue
+        daysMediumSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysMediumSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_NON_ARCHIVED_FINDINGS
+    Type: AWS::Config::ConfigRule
   MultiRegionCloudTrailEnabled:
     Properties:
       ConfigRuleName: multi-region-cloudtrail-enabled
@@ -110,3 +191,41 @@ Resources:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
+  SecurityhubEnabled:
+    Properties:
+      ConfigRuleName: securityhub-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+    Type: AWS::Config::ConfigRule
+Conditions:
+  cloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+  cloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+  cloudwatchAlarmActionCheckParamOkActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+  guarddutyNonArchivedFindingsParamDaysHighSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+  guarddutyNonArchivedFindingsParamDaysLowSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+  guarddutyNonArchivedFindingsParamDaysMediumSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev

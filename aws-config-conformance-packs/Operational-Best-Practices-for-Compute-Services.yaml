@@ -1,20 +1,26 @@
 ##################################################################################
 #
-#   Conformance Pack:                                                             
-#   Operational Best Practices based on Compute Services                               
-#                                                                                 
-#   This  pack contains AWS Config rules based on Compute Services
-#   (https://aws.amazon.com/products/compute/). This Conformance Pack has 
-#   been designed for compatibility with the majority of AWS regions and to not require 
-#   setting of any Parameters. Additional managed rules that require parameters to be set 
-#   for your environment and/or for your specific region can be found at 
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html                                                                                                          
+#   Conformance Pack:
+#   Operational Best Practices based on Compute Services
 #
-#   See Parameters section for names and descriptions of required parameters. 
+#   This  pack contains AWS Config rules based on Compute Services
+#   (https://aws.amazon.com/products/compute/). This Conformance Pack has
+#   been designed for compatibility with the majority of AWS regions and to not require
+#   setting of any Parameters. Additional managed rules that require parameters to be set
+#   for your environment and/or for your specific region can be found at
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+#   See Parameters section for names and descriptions of required parameters.
 #
 ##################################################################################
 
 Parameters:
+  CloudwatchAlarmResourceCheckParamMetricName:
+    Default: CPUUtilization
+    Type: String
+  CloudwatchAlarmResourceCheckParamResourceType:
+    Default: AWS::EC2::Instance
+    Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
     Default: 'TRUE'
     Type: String
@@ -23,6 +29,12 @@ Parameters:
     Type: String
   LambdaConcurrencyCheckParamConcurrencyLimitLow:
     Default: '500'
+    Type: String
+  ServiceVpcEndpointEnabledLambdaParamServiceName:
+    Default: lambda
+    Type: String
+  ServiceVpcEndpointEnabledParamServiceName:
+    Default: ec2
     Type: String
 Resources:
   AutoscalingGroupElbHealthcheckRequired:
@@ -34,6 +46,34 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
+    Type: AWS::Config::ConfigRule
+  AutoscalingLaunchConfigPublicIpDisabled:
+    Properties:
+      ConfigRuleName: autoscaling-launch-config-public-ip-disabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::LaunchConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_PUBLIC_IP_DISABLED
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmResourceCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-resource-check
+      InputParameters:
+        metricName:
+          Fn::If:
+          - cloudwatchAlarmResourceCheckParamMetricName
+          - Ref: CloudwatchAlarmResourceCheckParamMetricName
+          - Ref: AWS::NoValue
+        resourceType:
+          Fn::If:
+          - cloudwatchAlarmResourceCheckParamResourceType
+          - Ref: CloudwatchAlarmResourceCheckParamResourceType
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_RESOURCE_CHECK
     Type: AWS::Config::ConfigRule
   EbsInBackupPlan:
     Properties:
@@ -107,6 +147,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
     Type: AWS::Config::ConfigRule
+  Ec2InstanceProfileAttached:
+    Properties:
+      ConfigRuleName: ec2-instance-profile-attached
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
+    Type: AWS::Config::ConfigRule
   Ec2ManagedinstanceAssociationComplianceStatusCheck:
     Properties:
       ConfigRuleName: ec2-managedinstance-association-compliance-status-check
@@ -126,16 +176,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
-    Type: AWS::Config::ConfigRule
-  Ec2SecurityGroupAttachedToEni:
-    Properties:
-      ConfigRuleName: ec2-security-group-attached-to-eni
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI
     Type: AWS::Config::ConfigRule
   Ec2StoppedInstance:
     Properties:
@@ -251,7 +291,43 @@ Resources:
         Owner: AWS
         SourceIdentifier: LAMBDA_INSIDE_VPC
     Type: AWS::Config::ConfigRule
+  ServiceVpcEndpointEnabled:
+    Properties:
+      ConfigRuleName: service-vpc-endpoint-enabled
+      InputParameters:
+        serviceName:
+          Fn::If:
+          - serviceVpcEndpointEnabledParamServiceName
+          - Ref: ServiceVpcEndpointEnabledParamServiceName
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: SERVICE_VPC_ENDPOINT_ENABLED
+    Type: AWS::Config::ConfigRule
+  ServiceVpcEndpointEnabledLambda:
+    Properties:
+      ConfigRuleName: service-vpc-endpoint-enabled-lambda
+      InputParameters:
+        serviceName:
+          Fn::If:
+          - serviceVpcEndpointEnabledlambdaParamServiceName
+          - Ref: ServiceVpcEndpointEnabledLambdaParamServiceName
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: SERVICE_VPC_ENDPOINT_ENABLED
+    Type: AWS::Config::ConfigRule
 Conditions:
+  cloudwatchAlarmResourceCheckParamMetricName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmResourceCheckParamMetricName
+  cloudwatchAlarmResourceCheckParamResourceType:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmResourceCheckParamResourceType
   ec2VolumeInuseCheckParamDeleteOnTermination:
     Fn::Not:
     - Fn::Equals:
@@ -267,3 +343,13 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
+  serviceVpcEndpointEnabledlambdaParamServiceName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ServiceVpcEndpointEnabledLambdaParamServiceName
+  serviceVpcEndpointEnabledParamServiceName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ServiceVpcEndpointEnabledParamServiceName

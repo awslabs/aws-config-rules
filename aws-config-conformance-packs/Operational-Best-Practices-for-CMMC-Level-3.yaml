@@ -15,92 +15,196 @@
 ##################################################################################
 
 Parameters:
+  AccessKeysRotatedParamMaxAccessKeyAge:
+    Default: '90'
+    Description: Maximum number of days without rotation. Default 90.
+    Type: String
+  AcmCertificateExpirationCheckParamDaysToExpiration:
+    Default: '90'
+    Description: Specify the number of days before the rule flags the ACM Certificate
+      as noncompliant.
+    Type: String
+  BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit:
+    Default: days
+    Description: 'Unit of time for required backup frequency. Accepted values: ''hours'',
+      ''days''.'
+    Type: String
+  BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue:
+    Default: '1'
+    Description: Numerical value for required backup frequency. Maximum of 24 for
+      hours, 31 for days.
+    Type: String
+  BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays:
+    Default: '35'
+    Description: Required retention period in days.
+    Type: String
+  CwLoggroupRetentionPeriodCheckParamMinRetentionTime:
+    Default: '365'
+    Description: 'Specify the retention time. Valid values are: 1, 3, 5, 7, 14, 30,
+      60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653. The default retention
+      period is 365 days.'
+    Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
-    Default: 'TRUE'
+    Default: 'True'
+    Description: EBS volumes are marked for deletion when an instance is terminated.
     Type: String
   GuarddutyNonArchivedFindingsParamDaysHighSev:
     Default: '1'
+    Description: The number of days Amazon GuardDuty high severity findings are allowed
+      to stay non archived. The default is 1 day.
     Type: String
   GuarddutyNonArchivedFindingsParamDaysLowSev:
     Default: '30'
+    Description: The number of days Amazon GuardDuty low severity findings are allowed
+      to stay non archived. The default is 30 days.
     Type: String
   GuarddutyNonArchivedFindingsParamDaysMediumSev:
     Default: '7'
+    Description: The number of days Amazon GuardDuty medium severity findings are
+      allowed to stay non archived. The default is 7 days.
+    Type: String
+  IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:Decrypt,kms:ReEncryptFrom
+    Description: Comma-separated list of blocked KMS action patterns, for example,
+      kms:*, kms:Decrypt, kms:ReEncrypt*.
+    Type: String
+  IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:Decrypt,kms:ReEncryptFrom
+    Description: Comma-separated list of blocked KMS action patterns, for example,
+      kms:*, kms:Decrypt, kms:ReEncrypt*.
     Type: String
   IamPasswordPolicyParamMaxPasswordAge:
     Default: '90'
+    Description: Number of days before password expiration.
     Type: String
   IamPasswordPolicyParamMinimumPasswordLength:
     Default: '14'
+    Description: Password minimum length.
     Type: String
   IamPasswordPolicyParamPasswordReusePrevention:
     Default: '24'
+    Description: Number of passwords before allowing reuse.
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
     Default: 'true'
+    Description: Require at least one lowercase character in password.
     Type: String
   IamPasswordPolicyParamRequireNumbers:
     Default: 'true'
+    Description: Require at least one number in password.
     Type: String
   IamPasswordPolicyParamRequireSymbols:
     Default: 'true'
+    Description: Require at least one symbol in password.
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
     Default: 'true'
+    Description: Require at least one uppercase character in password.
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
+    Description: Maximum number of days a credential cannot be used. The default value
+      is 90 days.
+    Type: String
+  RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Default: 'true'
+    Description: Allow version upgrade is enabled.
+    Type: String
+  RedshiftClusterMaintenancesettingsCheckParamAutomatedSnapshotRetentionPeriod:
+    Default: '1'
+    Description: Number of days to retain automated snapshots.
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
+    Description: Blocked TCP port number.
     Type: String
   RestrictedIncomingTrafficParamBlockedPort2:
     Default: '21'
+    Description: Blocked TCP port number.
     Type: String
   RestrictedIncomingTrafficParamBlockedPort3:
     Default: '3389'
+    Description: Blocked TCP port number.
     Type: String
   RestrictedIncomingTrafficParamBlockedPort4:
     Default: '3306'
+    Description: Blocked TCP port number.
     Type: String
   RestrictedIncomingTrafficParamBlockedPort5:
     Default: '4333'
-    Type: String
-  S3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
-    Default: 'True'
-    Type: String
-  S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
-    Default: 'True'
-    Type: String
-  S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
-    Default: 'True'
-    Type: String
-  S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
-    Default: 'True'
+    Description: Blocked TCP port number.
     Type: String
   VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Default: '443'
+    Description: ' Comma-separated list of TCP ports authorized to be open to 0.0.0.0/0.
+      Ranges are defined by dash, for example, "443,1020-1025".'
     Type: String
 Resources:
+  AccessKeysRotated:
+    Controls:
+    - AC.1.001
+    Properties:
+      ConfigRuleName: access-keys-rotated
+      Description: Checks whether the active access keys are rotated within the number
+        of days specified in maxAccessKeyAge. The rule is non-compliant if the access
+        keys have not been rotated for more than maxAccessKeyAge number of days.
+      InputParameters:
+        maxAccessKeyAge:
+          Fn::If:
+          - accessKeysRotatedParamMaxAccessKeyAge
+          - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+    Type: AWS::Config::ConfigRule
   AccountPartOfOrganizations:
     Controls:
     - CM.2.064
     - SC.3.180
     Properties:
       ConfigRuleName: account-part-of-organizations
+      Description: Rule checks whether AWS account is part of AWS Organizations. The
+        rule is NON_COMPLIANT if the AWS account is not part of AWS Organizations
+        or AWS Organizations master account ID does not match rule parameter MasterAccountId.
       Source:
         Owner: AWS
         SourceIdentifier: ACCOUNT_PART_OF_ORGANIZATIONS
     Type: AWS::Config::ConfigRule
-  AlbHttpDropInvalidHeaderEnabled:
+  AcmCertificateExpirationCheck:
     Controls:
-    - SC.1.175
-    - IA.2.081
     - AC.3.014
     - SC.3.185
-    - SC.3.190
+    Properties:
+      ConfigRuleName: acm-certificate-expiration-check
+      Description: Checks whether ACM Certificates in your account are marked for
+        expiration within the specified number of days. Certificates provided by ACM
+        are automatically renewed. ACM does not automatically renew certificates that
+        you import.
+      InputParameters:
+        daysToExpiration:
+          Fn::If:
+          - acmCertificateExpirationCheckParamDaysToExpiration
+          - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ACM::Certificate
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACM_CERTIFICATE_EXPIRATION_CHECK
+    Type: AWS::Config::ConfigRule
+  AlbHttpDropInvalidHeaderEnabled:
+    Controls:
+    - IA.2.081
+    - SC.1.175
+    - SC.3.185
     Properties:
       ConfigRuleName: alb-http-drop-invalid-header-enabled
+      Description: Checks if rule evaluates AWS Application Load Balancers (ALB) to
+        ensure they are configured to drop http headers. The rule is NON_COMPLIANT
+        if the value of routing.http.drop_invalid_header_fields.enabled is set to
+        false.
       Scope:
         ComplianceResourceTypes:
         - AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -110,13 +214,18 @@ Resources:
     Type: AWS::Config::ConfigRule
   AlbHttpToHttpsRedirectionCheck:
     Controls:
-    - SC.1.175
-    - IA.2.081
     - AC.3.014
+    - IA.2.081
+    - SC.1.175
+    - SC.2.179
     - SC.3.185
     - SC.3.190
     Properties:
       ConfigRuleName: alb-http-to-https-redirection-check
+      Description: Checks whether HTTP to HTTPS redirection is configured on all HTTP
+        listeners of Application Load Balancers. The rule is NON_COMPLIANT if one
+        or more HTTP listeners of Application Load Balancer do not have HTTP to HTTPS
+        redirection configured.
       Source:
         Owner: AWS
         SourceIdentifier: ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK
@@ -124,10 +233,16 @@ Resources:
   AlbWafEnabled:
     Controls:
     - AC.1.003
-    - SI.2.216
+    - AC.2.016
+    - SC.1.175
     - SC.3.180
+    - SI.2.214
+    - SI.2.216
     Properties:
       ConfigRuleName: alb-waf-enabled
+      Description: 'Checks if Web Application Firewall (WAF) is enabled on Application
+        Load Balancers (ALBs). This rule is NON_COMPLIANT if key: waf.enabled is set
+        to false.'
       Scope:
         ComplianceResourceTypes:
         - AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -135,12 +250,34 @@ Resources:
         Owner: AWS
         SourceIdentifier: ALB_WAF_ENABLED
     Type: AWS::Config::ConfigRule
+  ApiGwAssociatedWithWaf:
+    Controls:
+    - AC.2.016
+    - SC.1.175
+    - SC.3.180
+    - SI.2.214
+    - SI.2.216
+    Properties:
+      ConfigRuleName: api-gw-associated-with-waf
+      Description: Checks if an Amazon API Gateway API stage is using an AWS WAF Web
+        ACL. This rule is NON_COMPLIANT if an AWS WAF Web ACL is not used or if a
+        used AWS Web ACL does not match what is listed in the rule parameter.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_ASSOCIATED_WITH_WAF
+    Type: AWS::Config::ConfigRule
   ApiGwCacheEnabledAndEncrypted:
     Controls:
     - IA.2.081
     - SC.3.191
     Properties:
       ConfigRuleName: api-gw-cache-enabled-and-encrypted
+      Description: Checks that all methods in Amazon API Gateway stages have cache
+        enabled and cache encrypted. The rule is NON_COMPLIANT if any method in Amazon
+        API Gateway stage is not configured to cache or the cache is not encrypted.
       Scope:
         ComplianceResourceTypes:
         - AWS::ApiGateway::Stage
@@ -150,10 +287,17 @@ Resources:
     Type: AWS::Config::ConfigRule
   ApiGwExecutionLoggingEnabled:
     Controls:
+    - AC.3.018
+    - AU.2.041
     - AU.2.042
+    - CM.2.065
+    - IA.1.076
     - SI.2.217
     Properties:
       ConfigRuleName: api-gw-execution-logging-enabled
+      Description: Checks that all methods in Amazon API Gateway stage has logging
+        enabled. The rule is NON_COMPLIANT if logging is not enabled. The rule is
+        NON_COMPLIANT if loggingLevel is neither ERROR nor INFO.
       Scope:
         ComplianceResourceTypes:
         - AWS::ApiGateway::Stage
@@ -162,31 +306,127 @@ Resources:
         Owner: AWS
         SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
+  ApiGwSslEnabled:
+    Controls:
+    - AC.3.014
+    - IA.2.081
+    - SC.2.179
+    - SC.3.185
+    - SC.3.190
+    Properties:
+      ConfigRuleName: api-gw-ssl-enabled
+      Description: Checks if a REST API stage uses an Secure Sockets Layer (SSL) certificate.
+        This rule is NON_COMPLIANT if the REST API stage does not have an associated
+        SSL certificate.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_SSL_ENABLED
+    Type: AWS::Config::ConfigRule
+  AutoscalingGroupElbHealthcheckRequired:
+    Controls:
+    - IR.2.093
+    Properties:
+      ConfigRuleName: autoscaling-group-elb-healthcheck-required
+      Description: Checks whether your Auto Scaling groups that are associated with
+        a load balancer are using Elastic Load Balancing health checks.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
+    Type: AWS::Config::ConfigRule
+  AutoscalingLaunchConfigPublicIpDisabled:
+    Controls:
+    - AC.1.003
+    - AC.2.016
+    - CM.2.062
+    - CM.3.068
+    - SC.3.180
+    Properties:
+      ConfigRuleName: autoscaling-launch-config-public-ip-disabled
+      Description: Checks if Amazon EC2 Auto Scaling groups have public IP addresses
+        enabled through Launch Configurations. This rule is NON_COMPLIANT if the Launch
+        Configuration for an Auto Scaling group has AssociatePublicIpAddress set to
+        'true'.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::LaunchConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_PUBLIC_IP_DISABLED
+    Type: AWS::Config::ConfigRule
+  BackupPlanMinFrequencyAndMinRetentionCheck:
+    Controls:
+    - RE.2.137
+    - RE.3.139
+    - SC.3.180
+    Properties:
+      ConfigRuleName: backup-plan-min-frequency-and-min-retention-check
+      Description: Checks if a backup plan has a backup rule that satisfies the required
+        frequency and retention period. The rule is NON_COMPLIANT if recovery points
+        are not created at least as often as the specified frequency or expire before
+        the specified period.
+      InputParameters:
+        requiredFrequencyUnit:
+          Fn::If:
+          - backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit
+          - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit
+          - Ref: AWS::NoValue
+        requiredFrequencyValue:
+          Fn::If:
+          - backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue
+          - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue
+          - Ref: AWS::NoValue
+        requiredRetentionDays:
+          Fn::If:
+          - backupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays
+          - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::BackupPlan
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_PLAN_MIN_FREQUENCY_AND_MIN_RETENTION_CHECK
+    Type: AWS::Config::ConfigRule
   CloudTrailCloudWatchLogsEnabled:
     Controls:
     - AC.2.013
+    - AC.3.018
     - AU.2.041
     - AU.2.042
+    - AU.3.046
+    - CM.2.065
+    - IA.1.076
     - SI.2.214
     - SI.2.216
     - SI.2.217
-    - AU.3.046
     Properties:
       ConfigRuleName: cloud-trail-cloud-watch-logs-enabled
+      Description: Checks whether AWS CloudTrail trails are configured to send logs
+        to Amazon CloudWatch logs. The trail is non-compliant if the CloudWatchLogsLogGroupArn
+        property of the trail is empty.
       Source:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
     Type: AWS::Config::ConfigRule
   CloudTrailEnabled:
     Controls:
-    - IA.1.076
+    - AC.3.018
     - AU.2.041
     - AU.2.042
     - CM.2.065
+    - IA.1.076
+    - SI.2.214
+    - SI.2.216
     - SI.2.217
-    - AC.3.018
     Properties:
       ConfigRuleName: cloudtrail-enabled
+      Description: Checks whether AWS CloudTrail is enabled in your AWS account.
       Source:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_ENABLED
@@ -197,28 +437,39 @@ Resources:
     - SC.3.191
     Properties:
       ConfigRuleName: cloud-trail-encryption-enabled
+      Description: Checks whether AWS CloudTrail is configured to use the server side
+        encryption (SSE) AWS Key Management Service (AWS KMS) customer master key
+        (CMK) encryption. The rule is compliant if the KmsKeyId is defined.
       Source:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
     Type: AWS::Config::ConfigRule
   CloudTrailLogFileValidationEnabled:
     Controls:
-    - CM.2.064
     - AU.3.049
+    - CM.2.064
     Properties:
       ConfigRuleName: cloud-trail-log-file-validation-enabled
+      Description: Checks whether AWS CloudTrail creates a signed digest file with
+        logs. AWS recommends that the file validation must be enabled on all trails.
+        The rule is noncompliant if the validation is not enabled.
       Source:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
     Type: AWS::Config::ConfigRule
   CloudtrailS3DataeventsEnabled:
     Controls:
+    - AC.3.018
     - AU.2.041
     - AU.2.042
+    - CM.2.065
+    - IA.1.076
     - SI.2.217
-    - AC.3.018
     Properties:
       ConfigRuleName: cloudtrail-s3-dataevents-enabled
+      Description: Checks whether at least one AWS CloudTrail trail is logging Amazon
+        S3 data events for all S3 buckets. The rule is NON_COMPLIANT if trails log
+        data events for S3 buckets is not configured.
       Source:
         Owner: AWS
         SourceIdentifier: CLOUDTRAIL_S3_DATAEVENTS_ENABLED
@@ -229,25 +480,31 @@ Resources:
     - SC.3.180
     Properties:
       ConfigRuleName: cloudtrail-security-trail-enabled
+      Description: Checks that there is at least one AWS CloudTrail trail defined
+        with security best practices.
       Source:
         Owner: AWS
         SourceIdentifier: CLOUDTRAIL_SECURITY_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
   CloudwatchAlarmActionCheck:
     Controls:
-    - SC.1.175
-    - SI.1.210
     - AC.2.013
+    - AU.3.046
+    - CA.3.161
     - IR.2.092
     - IR.2.093
+    - SC.1.175
+    - SI.1.210
     - SI.2.214
-    - AU.3.046
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
+      Description: Checks whether CloudWatch alarms have at least one alarm action,
+        one INSUFFICIENT_DATA action, or one OK action enabled. Optionally, checks
+        whether any of the actions matches one of the specified ARNs.
       InputParameters:
-        alarmActionRequired: 'TRUE'
-        insufficientDataActionRequired: 'TRUE'
-        okActionRequired: 'FALSE'
+        alarmActionRequired: 'true'
+        insufficientDataActionRequired: 'true'
+        okActionRequired: 'false'
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -261,6 +518,9 @@ Resources:
     - SC.3.191
     Properties:
       ConfigRuleName: cloudwatch-log-group-encrypted
+      Description: Checks whether a log group in Amazon CloudWatch Logs is encrypted.
+        The rule is NON_COMPLIANT if CloudWatch Logs has log group without encryption
+        enabled.
       Source:
         Owner: AWS
         SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
@@ -270,6 +530,9 @@ Resources:
     - SC.3.187
     Properties:
       ConfigRuleName: cmk-backing-key-rotation-enabled
+      Description: Checks that key rotation is enabled for each key and matches to
+        the key ID of the customer created customer master key (CMK). The rule is
+        compliant, if the key rotation is enabled for specific key object.
       Source:
         Owner: AWS
         SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
@@ -279,6 +542,9 @@ Resources:
     - SC.3.180
     Properties:
       ConfigRuleName: codebuild-project-envvar-awscred-check
+      Description: Checks whether the project contains environment variables AWS_ACCESS_KEY_ID
+        and AWS_SECRET_ACCESS_KEY. The rule is NON_COMPLIANT when the project environment
+        variables contains plaintext credentials.
       Scope:
         ComplianceResourceTypes:
         - AWS::CodeBuild::Project
@@ -291,6 +557,10 @@ Resources:
     - SC.3.180
     Properties:
       ConfigRuleName: codebuild-project-source-repo-url-check
+      Description: Checks whether the GitHub or Bitbucket source repository URL contains
+        either personal access tokens or user name and password. The rule is complaint
+        with the usage of OAuth to grant authorization for accessing GitHub or Bitbucket
+        repositories.
       Scope:
         ComplianceResourceTypes:
         - AWS::CodeBuild::Project
@@ -303,6 +573,15 @@ Resources:
     - AU.2.042
     Properties:
       ConfigRuleName: cw-loggroup-retention-period-check
+      Description: Checks whether Amazon CloudWatch LogGroup retention period is set
+        to specific number of days. The rule is NON_COMPLIANT if the retention period
+        is not set or is less than the configured retention period.
+      InputParameters:
+        MinRetentionTime:
+          Fn::If:
+          - cwLoggroupRetentionPeriodCheckParamMinRetentionTime
+          - Ref: CwLoggroupRetentionPeriodCheckParamMinRetentionTime
+          - Ref: AWS::NoValue
       Source:
         Owner: AWS
         SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK
@@ -311,8 +590,10 @@ Resources:
     Controls:
     - RE.2.137
     - RE.3.139
+    - SC.3.180
     Properties:
       ConfigRuleName: db-instance-backup-enabled
+      Description: Checks whether RDS DB instances have backups enabled.
       Scope:
         ComplianceResourceTypes:
         - AWS::RDS::DBInstance
@@ -323,14 +604,17 @@ Resources:
   DmsReplicationNotPublic:
     Controls:
     - AC.1.001
-    - AC.1.003
-    - SC.1.175
+    - AC.1.002
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: dms-replication-not-public
+      Description: Checks whether AWS Database Migration Service replication instances
+        are public. The rule is NON_COMPLIANT if PubliclyAccessible field is true.
       Scope:
         ComplianceResourceTypes: []
       Source:
@@ -342,6 +626,8 @@ Resources:
     - SC.3.180
     Properties:
       ConfigRuleName: dynamodb-autoscaling-enabled
+      Description: This rule checks whether Auto Scaling is enabled on your DynamoDB
+        tables. Optionally you can set the read and write capacity units for the table.
       Scope:
         ComplianceResourceTypes:
         - AWS::DynamoDB::Table
@@ -353,8 +639,12 @@ Resources:
     Controls:
     - RE.2.137
     - RE.3.139
+    - SC.3.180
     Properties:
       ConfigRuleName: dynamodb-in-backup-plan
+      Description: Checks whether Amazon DynamoDB table is present in AWS Backup Plans.
+        The rule is NON_COMPLIANT if Amazon DynamoDB tables are not present in any
+        AWS Backup plan.
       Source:
         Owner: AWS
         SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN
@@ -363,8 +653,11 @@ Resources:
     Controls:
     - RE.2.137
     - RE.3.139
+    - SC.3.180
     Properties:
       ConfigRuleName: dynamodb-pitr-enabled
+      Description: Check that point in time recovery is enabled for Amazon DynamoDB
+        tables.
       Scope:
         ComplianceResourceTypes:
         - AWS::DynamoDB::Table
@@ -376,8 +669,12 @@ Resources:
     Controls:
     - RE.2.137
     - RE.3.139
+    - SC.3.180
     Properties:
       ConfigRuleName: ebs-in-backup-plan
+      Description: Check if Amazon Elastic Block Store (Amazon EBS) volumes are added
+        in backup plans of AWS Backup. The rule is NON_COMPLIANT if Amazon EBS volumes
+        are not included in backup plans.
       Source:
         Owner: AWS
         SourceIdentifier: EBS_IN_BACKUP_PLAN
@@ -387,6 +684,8 @@ Resources:
     - SC.3.180
     Properties:
       ConfigRuleName: ebs-optimized-instance
+      Description: Checks whether EBS optimization is enabled for your EC2 instances
+        that can be EBS-optimized.
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::Instance
@@ -397,14 +696,19 @@ Resources:
   EbsSnapshotPublicRestorableCheck:
     Controls:
     - AC.1.001
-    - AC.1.003
-    - SC.1.175
+    - AC.1.002
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: ebs-snapshot-public-restorable-check
+      Description: Checks whether Amazon Elastic Block Store (Amazon EBS) snapshots
+        are not publicly restorable. The rule is NON_COMPLIANT if one or more snapshots
+        with RestorableByUserIds field are set to all, that is, Amazon EBS snapshots
+        are public.
       Source:
         Owner: AWS
         SourceIdentifier: EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK
@@ -415,6 +719,8 @@ Resources:
     - SC.3.191
     Properties:
       ConfigRuleName: ec2-ebs-encryption-by-default
+      Description: Check that Amazon Elastic Block Store (EBS) encryption is enabled
+        by default. The rule is NON_COMPLIANT if the encryption is not enabled.
       Source:
         Owner: AWS
         SourceIdentifier: EC2_EBS_ENCRYPTION_BY_DEFAULT
@@ -422,9 +728,13 @@ Resources:
   Ec2Imdsv2Check:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.2.007
     Properties:
       ConfigRuleName: ec2-imdsv2-check
+      Description: Checks whether your Amazon Elastic Compute Cloud (Amazon EC2) instance
+        metadata version is configured with Instance Metadata Service Version 2 (IMDSv2).
+        The rule is NON_COMPLIANT if the HttpTokens is set to optional.
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::Instance
@@ -441,6 +751,8 @@ Resources:
     - CM.2.065
     Properties:
       ConfigRuleName: ec2-instance-managed-by-systems-manager
+      Description: Checks whether the Amazon EC2 instances in your account are managed
+        by AWS Systems Manager.
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::Instance
@@ -452,20 +764,40 @@ Resources:
   Ec2InstanceNoPublicIp:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - CM.3.068
     - SC.3.180
     Properties:
       ConfigRuleName: ec2-instance-no-public-ip
+      Description: Checks whether Amazon Elastic Compute Cloud (Amazon EC2) instances
+        have a public IP association. The rule is NON_COMPLIANT if the publicIp field
+        is present in the Amazon EC2 instance configuration item. This rule applies
+        only to IPv4.
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::Instance
       Source:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceProfileAttached:
+    Controls:
+    - AC.1.001
+    Properties:
+      ConfigRuleName: ec2-instance-profile-attached
+      Description: Checks if an Amazon Elastic Compute Cloud (Amazon EC2) instance
+        has an Identity and Access Management (IAM) profile attached to it. This rule
+        is NON_COMPLIANT if no IAM profile is attached to the Amazon EC2 instance.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
     Type: AWS::Config::ConfigRule
   Ec2ManagedinstanceAssociationComplianceStatusCheck:
     Controls:
@@ -478,6 +810,9 @@ Resources:
     - SI.2.217
     Properties:
       ConfigRuleName: ec2-managedinstance-association-compliance-status-check
+      Description: Checks whether the compliance status of the AWS Systems Manager
+        association compliance is COMPLIANT or NON_COMPLIANT after the association
+        execution on the instance. The rule is compliant if the field status is COMPLIANT.
       Scope:
         ComplianceResourceTypes:
         - AWS::SSM::AssociationCompliance
@@ -488,10 +823,15 @@ Resources:
   Ec2ManagedinstancePatchComplianceStatusCheck:
     Controls:
     - CM.2.061
+    - CM.2.063
     - CM.2.064
+    - CM.2.065
     - RM.2.142
     Properties:
       ConfigRuleName: ec2-managedinstance-patch-compliance-status-check
+      Description: Checks whether the compliance status of the AWS Systems Manager
+        patch compliance is COMPLIANT or NON_COMPLIANT after the patch installation
+        on the instance. The rule is compliant if the field status is COMPLIANT.
       Scope:
         ComplianceResourceTypes:
         - AWS::SSM::PatchCompliance
@@ -499,23 +839,13 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
-  Ec2SecurityGroupAttachedToEni:
-    Controls:
-    - CM.2.061
-    Properties:
-      ConfigRuleName: ec2-security-group-attached-to-eni
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI
-    Type: AWS::Config::ConfigRule
   Ec2StoppedInstance:
     Controls:
     - CM.2.061
     Properties:
       ConfigRuleName: ec2-stopped-instance
+      Description: Checks whether there are instances stopped for more than the allowed
+        number of days.
       Source:
         Owner: AWS
         SourceIdentifier: EC2_STOPPED_INSTANCE
@@ -524,9 +854,9 @@ Resources:
     Controls:
     - CM.2.061
     - CM.2.062
-    - SC.3.182
     Properties:
       ConfigRuleName: ec2-volume-inuse-check
+      Description: Checks whether EBS volumes are attached to EC2 instances.
       InputParameters:
         deleteOnTermination:
           Fn::If:
@@ -546,6 +876,10 @@ Resources:
     - SC.3.191
     Properties:
       ConfigRuleName: efs-encrypted-check
+      Description: Checks whether Amazon EFS are configured to encrypt file data using
+        AWS KMS. The rule is NON_COMPLIANT if the Encrypted key is set to false on
+        DescribeFileSystems or, if specified, KmsKeyId key on DescribeFileSystems
+        is not matching KmsKeyId parameter.
       Source:
         Owner: AWS
         SourceIdentifier: EFS_ENCRYPTED_CHECK
@@ -554,8 +888,12 @@ Resources:
     Controls:
     - RE.2.137
     - RE.3.139
+    - SC.3.180
     Properties:
       ConfigRuleName: efs-in-backup-plan
+      Description: Checks whether Amazon Elastic File System (Amazon EFS) file systems
+        are added in the backup plans of AWS Backup. The rule is NON_COMPLIANT if
+        EFS file systems are not included in the backup plans.
       Source:
         Owner: AWS
         SourceIdentifier: EFS_IN_BACKUP_PLAN
@@ -565,6 +903,8 @@ Resources:
     - CM.2.061
     Properties:
       ConfigRuleName: eip-attached
+      Description: Checks whether all EIP addresses allocated to a VPC are attached
+        to EC2 instances or in-use ENIs.
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::EIP
@@ -572,12 +912,32 @@ Resources:
         Owner: AWS
         SourceIdentifier: EIP_ATTACHED
     Type: AWS::Config::ConfigRule
+  ElasticBeanstalkManagedUpdatesEnabled:
+    Controls:
+    - CM.2.064
+    Properties:
+      ConfigRuleName: elastic-beanstalk-managed-updates-enabled
+      Description: "Checks if managed platform updates in an AWS Elastic Beanstalk\
+        \ environment is enabled. The rule is NON_COMPLIANT if the value for \u2018\
+        ManagedActionsEnabled\u2019 is set to false or if a parameter is provided\
+        \ whose value does not match the existing configurations."
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticBeanstalk::Environment
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTIC_BEANSTALK_MANAGED_UPDATES_ENABLED
+    Type: AWS::Config::ConfigRule
   ElasticacheRedisClusterAutomaticBackupCheck:
     Controls:
     - RE.2.137
     - RE.3.139
+    - SC.3.180
     Properties:
       ConfigRuleName: elasticache-redis-cluster-automatic-backup-check
+      Description: The rule is NON_COMPLIANT if SnapshotRetentionLimit for Redis cluster
+        is less than the SnapshotRetentionPeriod parameter, i.e from 0 to 15 as the
+        default is 15.
       Source:
         Owner: AWS
         SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
@@ -588,6 +948,9 @@ Resources:
     - SC.3.191
     Properties:
       ConfigRuleName: elasticsearch-encrypted-at-rest
+      Description: Checks whether Amazon Elasticsearch Service (Amazon ES) domains
+        have encryption at rest configuration enabled. The rule is NON_COMPLIANT if
+        EncryptionAtRestOptions field is not enabled.
       Source:
         Owner: AWS
         SourceIdentifier: ELASTICSEARCH_ENCRYPTED_AT_REST
@@ -595,26 +958,32 @@ Resources:
   ElasticsearchInVpcOnly:
     Controls:
     - AC.1.001
-    - AC.1.003
-    - SC.1.175
+    - AC.1.002
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - SC.1.175
     - SC.3.180
     Properties:
       ConfigRuleName: elasticsearch-in-vpc-only
+      Description: Checks whether Amazon Elasticsearch Service domains are in Amazon
+        Virtual Private Cloud (VPC). The rule is NON_COMPLIANT if ElasticSearch Service
+        domain endpoint is public.
       Source:
         Owner: AWS
         SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
     Type: AWS::Config::ConfigRule
   ElasticsearchNodeToNodeEncryptionCheck:
     Controls:
-    - SC.1.175
-    - IA.2.081
     - AC.3.014
+    - IA.2.081
+    - SC.1.175
     - SC.3.185
     Properties:
       ConfigRuleName: elasticsearch-node-to-node-encryption-check
+      Description: Check that Amazon ElasticSearch Service nodes are encrypted end
+        to end. The rule is NON_COMPLIANT if the node-to-node encryption is disabled
+        on the domain.
       Scope:
         ComplianceResourceTypes:
         - AWS::Elasticsearch::Domain
@@ -624,12 +993,17 @@ Resources:
     Type: AWS::Config::ConfigRule
   ElbAcmCertificateRequired:
     Controls:
-    - SC.1.175
-    - IA.2.081
     - AC.3.014
+    - IA.2.081
+    - SC.1.175
+    - SC.2.179
     - SC.3.185
+    - SC.3.190
     Properties:
       ConfigRuleName: elb-acm-certificate-required
+      Description: This rule checks whether the Elastic Load Balancer(s) uses SSL
+        certificates provided by AWS Certificate Manager. You must use an SSL or HTTPS
+        listener with your Elastic Load Balancer to use this rule.
       Scope:
         ComplianceResourceTypes:
         - AWS::ElasticLoadBalancing::LoadBalancer
@@ -642,6 +1016,9 @@ Resources:
     - SC.3.180
     Properties:
       ConfigRuleName: elb-cross-zone-load-balancing-enabled
+      Description: Checks if cross-zone load balancing is enabled for the Classic
+        Load Balancers (CLBs). This rule is NON_COMPLIANT if cross-zone load balancing
+        is not enabled for a CLB.
       Scope:
         ComplianceResourceTypes:
         - AWS::ElasticLoadBalancing::LoadBalancer
@@ -654,6 +1031,8 @@ Resources:
     - SC.3.180
     Properties:
       ConfigRuleName: elb-deletion-protection-enabled
+      Description: Checks whether an Elastic Load Balancer has deletion protection
+        enabled. The rule is NON_COMPLIANT if deletion_protection.enabled is false.
       Scope:
         ComplianceResourceTypes:
         - AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -663,11 +1042,16 @@ Resources:
     Type: AWS::Config::ConfigRule
   ElbLoggingEnabled:
     Controls:
+    - AC.3.018
     - AU.2.041
     - AU.2.042
+    - CM.2.065
+    - IA.1.076
     - SI.2.217
     Properties:
       ConfigRuleName: elb-logging-enabled
+      Description: Checks whether the Application Load Balancers and the Classic Load
+        Balancers have logging enabled.
       Scope:
         ComplianceResourceTypes:
         - AWS::ElasticLoadBalancing::LoadBalancer
@@ -678,13 +1062,16 @@ Resources:
     Type: AWS::Config::ConfigRule
   ElbTlsHttpsListenersOnly:
     Controls:
-    - SC.1.175
-    - IA.2.081
     - AC.3.014
+    - IA.2.081
+    - SC.1.175
+    - SC.2.179
     - SC.3.185
     - SC.3.190
     Properties:
       ConfigRuleName: elb-tls-https-listeners-only
+      Description: Checks whether your Classic Load Balancer's listeners are configured
+        with SSL or HTTPS
       Scope:
         ComplianceResourceTypes:
         - AWS::ElasticLoadBalancing::LoadBalancer
@@ -692,17 +1079,38 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
     Type: AWS::Config::ConfigRule
+  Elbv2AcmCertificateRequired:
+    Controls:
+    - AC.3.014
+    - IA.2.081
+    - SC.2.179
+    - SC.3.185
+    - SC.3.190
+    Properties:
+      ConfigRuleName: elbv2-acm-certificate-required
+      Description: Checks if Application Load Balancers and Network Load Balancers
+        are configured to use certificates from Amazon Certificate Manager (ACM).
+        This rule is NON_COMPLIANT if at least 1 load balancer is configured without
+        a certificate from ACM.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELBV2_ACM_CERTIFICATE_REQUIRED
+    Type: AWS::Config::ConfigRule
   EmrKerberosEnabled:
     Controls:
     - AC.1.001
-    - IA.1.076
-    - IA.1.077
+    - AC.1.002
     - AC.2.007
     - AC.2.008
     - AC.3.017
     - AC.3.018
+    - IA.1.076
+    - IA.1.077
     Properties:
       ConfigRuleName: emr-kerberos-enabled
+      Description: The rule is NON_COMPLIANT if a security configuration is not attached
+        to the cluster or the security configuration does not satisfy the specified
+        rule parameters.
       Source:
         Owner: AWS
         SourceIdentifier: EMR_KERBEROS_ENABLED
@@ -710,14 +1118,18 @@ Resources:
   EmrMasterNoPublicIp:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - CM.3.068
     - SC.3.180
     Properties:
       ConfigRuleName: emr-master-no-public-ip
+      Description: Checks whether Amazon Elastic MapReduce (EMR) clusters' master
+        nodes have public IPs. The rule is NON_COMPLIANT if the master node has a
+        public IP.
       Scope:
         ComplianceResourceTypes: []
       Source:
@@ -730,6 +1142,7 @@ Resources:
     - SC.3.191
     Properties:
       ConfigRuleName: encrypted-volumes
+      Description: Checks whether EBS volumes that are in an attached state are encrypted.
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::Volume
@@ -739,20 +1152,24 @@ Resources:
     Type: AWS::Config::ConfigRule
   GuarddutyEnabledCentralized:
     Controls:
-    - SC.1.175
-    - SI.1.210
-    - SI.1.211
     - AC.2.013
-    - IR.2.092
-    - IR.2.093
-    - SI.2.214
-    - SI.2.216
-    - SI.2.217
     - AU.3.046
     - AU.3.051
     - CA.3.161
+    - CM.2.064
+    - IR.2.092
+    - IR.2.093
+    - RM.2.142
+    - SC.1.175
+    - SI.1.210
+    - SI.1.211
+    - SI.2.214
+    - SI.2.216
+    - SI.2.217
     Properties:
       ConfigRuleName: guardduty-enabled-centralized
+      Description: Checks whether GuardDuty is enabled. You can optionally verify
+        that the results are centralized in a specific AWS Account.
       Source:
         Owner: AWS
         SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
@@ -760,8 +1177,13 @@ Resources:
   GuarddutyNonArchivedFindings:
     Controls:
     - IR.2.092
+    - RM.2.142
     Properties:
       ConfigRuleName: guardduty-non-archived-findings
+      Description: Checks whether Amazon GuardDuty has findings that are non archived.
+        The rule is NON_COMPLIANT if Amazon GuardDuty has non archived low/medium/high
+        severity findings older than the specified number in the daysLowSev/daysMediumSev/daysHighSev
+        parameter.
       InputParameters:
         daysHighSev:
           Fn::If:
@@ -782,22 +1204,75 @@ Resources:
         Owner: AWS
         SourceIdentifier: GUARDDUTY_NON_ARCHIVED_FINDINGS
     Type: AWS::Config::ConfigRule
+  IamCustomerPolicyBlockedKmsActions:
+    Controls:
+    - AC.1.001
+    - AC.2.007
+    - AC.2.008
+    - AC.3.017
+    - AC.3.018
+    Properties:
+      ConfigRuleName: iam-customer-policy-blocked-kms-actions
+      Description: Checks that the managed AWS Identity and Access Management (IAM)
+        policies that you create do not allow blocked actions on all AWS KMS keys.
+        The rule is NON_COMPLIANT if any blocked action is allowed on all AWS KMS
+        keys by the managed IAM policy.
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_CUSTOMER_POLICY_BLOCKED_KMS_ACTIONS
+    Type: AWS::Config::ConfigRule
   IamGroupHasUsersCheck:
     Controls:
     - AC.1.001
-    - AC.1.002
     - AC.2.007
     - AC.2.008
     - AC.3.017
     - AC.3.018
     Properties:
       ConfigRuleName: iam-group-has-users-check
+      Description: Checks whether IAM groups have at least one IAM user.
       Scope:
         ComplianceResourceTypes:
         - AWS::IAM::Group
       Source:
         Owner: AWS
         SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
+    Type: AWS::Config::ConfigRule
+  IamInlinePolicyBlockedKmsActions:
+    Controls:
+    - AC.1.001
+    - AC.2.007
+    - AC.2.008
+    - AC.3.018
+    Properties:
+      ConfigRuleName: iam-inline-policy-blocked-kms-actions
+      Description: Checks that the inline policies attached to your IAM users, roles,
+        and groups do not allow blocked actions on all AWS Key Management Service
+        (KMS) keys. The rule is NON_COMPLIANT if any blocked action is allowed on
+        all KMS keys in an inline policy.
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
+        - AWS::IAM::Role
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_INLINE_POLICY_BLOCKED_KMS_ACTIONS
     Type: AWS::Config::ConfigRule
   IamNoInlinePolicyCheck:
     Controls:
@@ -809,6 +1284,9 @@ Resources:
     - AC.3.018
     Properties:
       ConfigRuleName: iam-no-inline-policy-check
+      Description: Checks that inline policy feature is not in use. The rule is NON_COMPLIANT
+        if an AWS Identity and Access Management (IAM) user, IAM role or IAM group
+        has any inline policy.
       Scope:
         ComplianceResourceTypes:
         - AWS::IAM::User
@@ -825,10 +1303,11 @@ Resources:
     - IA.1.077
     - IA.2.078
     - IA.2.079
-    - IA.3.085
     - IA.3.086
     Properties:
       ConfigRuleName: iam-password-policy
+      Description: Checks whether the account password policy for IAM users meets
+        the specified requirements.
       InputParameters:
         MaxPasswordAge:
           Fn::If:
@@ -879,12 +1358,35 @@ Resources:
     - AC.3.018
     Properties:
       ConfigRuleName: iam-policy-no-statements-with-admin-access
+      Description: 'Checks whether the default version of AWS Identity and Access
+        Management (IAM) policies do not have administrator access. If any statement
+        has "Effect": "Allow" with "Action": "*" over "Resource": "*", the rule is
+        non-compliant.'
       Scope:
         ComplianceResourceTypes:
         - AWS::IAM::Policy
       Source:
         Owner: AWS
         SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+    Type: AWS::Config::ConfigRule
+  IamPolicyNoStatementsWithFullAccess:
+    Controls:
+    - AC.1.001
+    - AC.2.007
+    - AC.2.008
+    - AC.3.017
+    - AC.3.018
+    Properties:
+      ConfigRuleName: iam-policy-no-statements-with-full-access
+      Description: Checks if AWS Identity and Access Management (IAM) policies grant
+        permissions to all actions on individual AWS resources. The rule is NON_COMPLIANT
+        if the managed IAM policy allows full access to at least 1 AWS service.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_FULL_ACCESS
     Type: AWS::Config::ConfigRule
   IamRootAccessKeyCheck:
     Controls:
@@ -896,6 +1398,8 @@ Resources:
     - AC.3.018
     Properties:
       ConfigRuleName: iam-root-access-key-check
+      Description: Checks whether the root user access key is available. The rule
+        is compliant if the user access key does not exist.
       Source:
         Owner: AWS
         SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
@@ -910,6 +1414,7 @@ Resources:
     - AC.3.018
     Properties:
       ConfigRuleName: iam-user-group-membership-check
+      Description: Checks whether IAM users are members of at least one IAM group.
       Scope:
         ComplianceResourceTypes:
         - AWS::IAM::User
@@ -922,10 +1427,12 @@ Resources:
     - AC.1.001
     - AC.1.002
     - IA.1.077
-    - MA.2.113
     - IA.3.083
+    - MA.2.113
     Properties:
       ConfigRuleName: iam-user-mfa-enabled
+      Description: Checks whether the AWS Identity and Access Management users have
+        multi-factor authentication (MFA) enabled.
       Source:
         Owner: AWS
         SourceIdentifier: IAM_USER_MFA_ENABLED
@@ -940,6 +1447,8 @@ Resources:
     - AC.3.018
     Properties:
       ConfigRuleName: iam-user-no-policies-check
+      Description: Checks that none of your IAM users have policies attached. IAM
+        users must inherit permissions from IAM groups or roles.
       Scope:
         ComplianceResourceTypes:
         - AWS::IAM::User
@@ -949,9 +1458,13 @@ Resources:
     Type: AWS::Config::ConfigRule
   IamUserUnusedCredentialsCheck:
     Controls:
+    - AC.1.001
     - IA.3.086
     Properties:
       ConfigRuleName: iam-user-unused-credentials-check
+      Description: Checks whether your AWS Identity and Access Management (IAM) users
+        have passwords or active access keys that have not been used within the specified
+        number of days you provided.
       InputParameters:
         maxCredentialUsageAge:
           Fn::If:
@@ -965,13 +1478,18 @@ Resources:
   IncomingSshDisabled:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.016
+    - CM.2.062
     - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: restricted-ssh
+      Description: Checks whether security groups that are in use disallow unrestricted
+        incoming SSH traffic.
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::SecurityGroup
@@ -982,12 +1500,14 @@ Resources:
   InstancesInVpc:
     Controls:
     - AC.1.001
-    - AC.1.003
-    - SC.1.175
+    - AC.1.002
     - AC.2.016
+    - SC.1.175
     - SC.3.180
     Properties:
       ConfigRuleName: ec2-instances-in-vpc
+      Description: Checks whether your EC2 instances belong to a virtual private cloud
+        (VPC).
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::Instance
@@ -998,15 +1518,20 @@ Resources:
   InternetGatewayAuthorizedVpcOnly:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
-    - SC.1.176
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: internet-gateway-authorized-vpc-only
+      Description: Checks that Internet gateways (IGWs) are only attached to an authorized
+        Amazon Virtual Private Cloud (VPCs). The rule is NON_COMPLIANT if IGWs are
+        not attached to an authorized VPC.
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::InternetGateway
@@ -1019,6 +1544,9 @@ Resources:
     - SC.3.187
     Properties:
       ConfigRuleName: kms-cmk-not-scheduled-for-deletion
+      Description: Checks whether customer master keys (CMKs) are not scheduled for
+        deletion in AWS Key Management Service (KMS). The rule is NON_COMPLAINT if
+        CMKs are scheduled for deletion.
       Scope:
         ComplianceResourceTypes:
         - AWS::KMS::Key
@@ -1032,6 +1560,9 @@ Resources:
     - IR.2.093
     Properties:
       ConfigRuleName: lambda-dlq-check
+      Description: Checks whether an AWS Lambda function is configured with a dead-letter
+        queue. The rule is NON_COMPLIANT if the Lambda function is not configured
+        with a dead-letter queue.
       Scope:
         ComplianceResourceTypes:
         - AWS::Lambda::Function
@@ -1042,14 +1573,18 @@ Resources:
   LambdaFunctionPublicAccessProhibited:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: lambda-function-public-access-prohibited
+      Description: Checks whether the Lambda function policy prohibits public access.
       Scope:
         ComplianceResourceTypes:
         - AWS::Lambda::Function
@@ -1060,12 +1595,14 @@ Resources:
   LambdaInsideVpc:
     Controls:
     - AC.1.001
-    - AC.1.003
-    - SC.1.175
+    - AC.1.002
     - AC.2.016
+    - SC.1.175
     - SC.3.180
     Properties:
       ConfigRuleName: lambda-inside-vpc
+      Description: Checks whether an AWS Lambda function is in an Amazon Virtual Private
+        Cloud. The rule is NON_COMPLIANT if the Lambda function is not in a VPC.
       Scope:
         ComplianceResourceTypes:
         - AWS::Lambda::Function
@@ -1078,34 +1615,82 @@ Resources:
     - AC.1.001
     - AC.1.002
     - IA.1.077
-    - MA.2.113
     - IA.3.083
+    - MA.2.113
     Properties:
       ConfigRuleName: mfa-enabled-for-iam-console-access
+      Description: Checks whether AWS Multi-Factor Authentication (MFA) is enabled
+        for all AWS Identity and Access Management (IAM) users that use a console
+        password. The rule is compliant if MFA is enabled.
       Source:
         Owner: AWS
         SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
     Type: AWS::Config::ConfigRule
   MultiRegionCloudTrailEnabled:
     Controls:
-    - IA.1.076
+    - AC.3.018
     - AU.2.041
     - AU.2.042
     - CM.2.065
+    - IA.1.076
+    - SI.2.214
+    - SI.2.216
     - SI.2.217
-    - AC.3.018
     Properties:
       ConfigRuleName: multi-region-cloudtrail-enabled
+      Description: Checks that there is at least one multi-region AWS CloudTrail.
+        The rule is non-compliant if the trails do not match input parameters
       Source:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  NoUnrestrictedRouteToIgw:
+    Controls:
+    - AC.1.003
+    - AC.2.016
+    - CM.2.062
+    - CM.3.068
+    - SC.1.175
+    - SC.3.180
+    - SC.3.182
+    Properties:
+      ConfigRuleName: no-unrestricted-route-to-igw
+      Description: Checks if there are public routes in the route table to an Internet
+        Gateway (IGW). The rule is NON_COMPLIANT if a route to an IGW has a destination
+        CIDR block of '0.0.0.0/0' or '::/0' or if a destination CIDR block does not
+        match the rule parameter.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::RouteTable
+      Source:
+        Owner: AWS
+        SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
+    Type: AWS::Config::ConfigRule
+  RdsAutomaticMinorVersionUpgradeEnabled:
+    Controls:
+    - CM.2.064
+    Properties:
+      ConfigRuleName: rds-automatic-minor-version-upgrade-enabled
+      Description: Checks if Amazon Relational Database Service (RDS) database instances
+        are configured for automatic minor version upgrades. The rule is NON_COMPLIANT
+        if the value of 'autoMinorVersionUpgrade' is false.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_AUTOMATIC_MINOR_VERSION_UPGRADE_ENABLED
     Type: AWS::Config::ConfigRule
   RdsInBackupPlan:
     Controls:
     - RE.2.137
     - RE.3.139
+    - SC.3.180
     Properties:
       ConfigRuleName: rds-in-backup-plan
+      Description: Checks whether Amazon RDS database is present in back plans of
+        AWS Backup. The rule is NON_COMPLIANT if Amazon RDS databases are not included
+        in any AWS Backup plan.
       Source:
         Owner: AWS
         SourceIdentifier: RDS_IN_BACKUP_PLAN
@@ -1115,6 +1700,10 @@ Resources:
     - SC.3.180
     Properties:
       ConfigRuleName: rds-instance-deletion-protection-enabled
+      Description: Checks if an Amazon Relational Database Service (Amazon RDS) instance
+        has deletion protection enabled. This rule is NON_COMPLIANT if an Amazon RDS
+        instance does not have deletion protection enabled i.e deletionProtection
+        is set to false.
       Scope:
         ComplianceResourceTypes:
         - AWS::RDS::DBInstance
@@ -1125,14 +1714,20 @@ Resources:
   RdsInstancePublicAccessCheck:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: rds-instance-public-access-check
+      Description: Checks whether the Amazon Relational Database Service (RDS) instances
+        are not publicly accessible. The rule is non-compliant if the publiclyAccessible
+        field is true in the instance configuration item.
       Scope:
         ComplianceResourceTypes:
         - AWS::RDS::DBInstance
@@ -1142,14 +1737,17 @@ Resources:
     Type: AWS::Config::ConfigRule
   RdsLoggingEnabled:
     Controls:
-    - IA.1.076
+    - AC.3.018
     - AU.2.041
     - AU.2.042
     - CM.2.065
+    - IA.1.076
     - SI.2.217
-    - AC.3.018
     Properties:
       ConfigRuleName: rds-logging-enabled
+      Description: Checks that respective logs of Amazon Relational Database Service
+        (Amazon RDS) are enabled. The rule is NON_COMPLIANT if any log types are not
+        enabled.
       Scope:
         ComplianceResourceTypes:
         - AWS::RDS::DBInstance
@@ -1162,6 +1760,7 @@ Resources:
     - SC.3.180
     Properties:
       ConfigRuleName: rds-multi-az-support
+      Description: Checks whether high availability is enabled for your RDS DB instances.
       Scope:
         ComplianceResourceTypes:
         - AWS::RDS::DBInstance
@@ -1175,6 +1774,9 @@ Resources:
     - SC.3.191
     Properties:
       ConfigRuleName: rds-snapshot-encrypted
+      Description: Checks whether Amazon Relational Database Service (Amazon RDS)
+        DB snapshots are encrypted. The rule is NON_COMPLIANT, if the Amazon RDS DB
+        snapshots are not encrypted.
       Scope:
         ComplianceResourceTypes:
         - AWS::RDS::DBSnapshot
@@ -1186,14 +1788,18 @@ Resources:
   RdsSnapshotsPublicProhibited:
     Controls:
     - AC.1.001
-    - AC.1.003
-    - SC.1.175
+    - AC.1.002
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: rds-snapshots-public-prohibited
+      Description: Checks if Amazon Relational Database Service (Amazon RDS) snapshots
+        are public. The rule is non-compliant if any existing and new Amazon RDS snapshots
+        are public.
       Scope:
         ComplianceResourceTypes:
         - AWS::RDS::DBSnapshot
@@ -1208,6 +1814,7 @@ Resources:
     - SC.3.191
     Properties:
       ConfigRuleName: rds-storage-encrypted
+      Description: Checks whether storage encryption is enabled for your RDS DB instances.
       Scope:
         ComplianceResourceTypes:
         - AWS::RDS::DBInstance
@@ -1215,36 +1822,82 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_STORAGE_ENCRYPTED
     Type: AWS::Config::ConfigRule
-  RedshiftClusterConfigurationCheck:
+  RedshiftBackupEnabled:
     Controls:
-    - IA.1.076
-    - CM.2.065
-    - IA.2.081
-    - SI.2.217
-    - SC.3.191
+    - RE.2.137
+    - RE.3.139
+    - SC.3.180
     Properties:
-      ConfigRuleName: redshift-cluster-configuration-check
-      InputParameters:
-        clusterDbEncrypted: 'TRUE'
-        loggingEnabled: 'TRUE'
+      ConfigRuleName: redshift-backup-enabled
+      Description: Check that Amazon Redshift automated snapshots are enabled for
+        clusters. The rule is NON_COMPLIANT, if the Amazon Redshift cluster not enabled
+        automated snapshots.
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster
       Source:
         Owner: AWS
-        SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
+        SourceIdentifier: REDSHIFT_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterKmsEnabled:
+    Controls:
+    - IA.2.081
+    - SC.3.190
+    - SC.3.191
+    Properties:
+      ConfigRuleName: redshift-cluster-kms-enabled
+      Description: Checks if Amazon RedShift clusters are using a specified AWS Key
+        Management Service key for encryption. The rule is NON_COMPLIANT if the cluster
+        is not encrypted or encrypted with another key.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_KMS_ENABLED
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterMaintenancesettingsCheck:
+    Controls:
+    - CM.2.064
+    Properties:
+      ConfigRuleName: redshift-cluster-maintenancesettings-check
+      Description: Checks whether Amazon Redshift clusters have the specified maintenance
+        settings.
+      InputParameters:
+        allowVersionUpgrade:
+          Fn::If:
+          - redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+          - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+          - Ref: AWS::NoValue
+        automatedSnapshotRetentionPeriod:
+          Fn::If:
+          - redshiftClusterMaintenancesettingsCheckParamAutomatedSnapshotRetentionPeriod
+          - Ref: RedshiftClusterMaintenancesettingsCheckParamAutomatedSnapshotRetentionPeriod
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_MAINTENANCESETTINGS_CHECK
     Type: AWS::Config::ConfigRule
   RedshiftClusterPublicAccessCheck:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: redshift-cluster-public-access-check
+      Description: Checks whether Amazon Redshift clusters are not publicly accessible.
+        The rule is NON_COMPLIANT if the publiclyAccessible field is true in the cluster
+        configuration item.
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster
@@ -1254,12 +1907,16 @@ Resources:
     Type: AWS::Config::ConfigRule
   RedshiftRequireTlsSsl:
     Controls:
-    - SC.1.175
-    - IA.2.081
     - AC.3.014
+    - IA.2.081
+    - SC.1.175
     - SC.3.185
+    - SC.3.190
     Properties:
       ConfigRuleName: redshift-require-tls-ssl
+      Description: Checks whether Amazon Redshift clusters require TLS/SSL encryption
+        to connect to SQL clients. The rule is NON_COMPLIANT if any Amazon Redshift
+        cluster has parameter require_SSL not set to true.
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster
@@ -1270,13 +1927,18 @@ Resources:
   RestrictedIncomingTraffic:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.016
+    - CM.2.062
     - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: restricted-common-ports
+      Description: Checks whether security groups that are in use disallow unrestricted
+        incoming TCP traffic to the specified ports.
       InputParameters:
         blockedPort1:
           Fn::If:
@@ -1318,6 +1980,8 @@ Resources:
     - IA.3.083
     Properties:
       ConfigRuleName: root-account-hardware-mfa-enabled
+      Description: Checks whether your AWS account is enabled to use multi-factor
+        authentication (MFA) hardware device to sign in with root credentials.
       Source:
         Owner: AWS
         SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
@@ -1330,55 +1994,41 @@ Resources:
     - IA.3.083
     Properties:
       ConfigRuleName: root-account-mfa-enabled
+      Description: Checks whether the root user of your AWS account requires multi-factor
+        authentication for console sign-in.
       Source:
         Owner: AWS
         SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
     Type: AWS::Config::ConfigRule
-  S3AccountLevelPublicAccessBlocks:
+  S3AccountLevelPublicAccessBlocksPeriodic:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.007
     - AC.2.016
-    - CM.2.062
     - AU.3.049
+    - CM.2.062
+    - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
-      ConfigRuleName: s3-account-level-public-access-blocks
-      InputParameters:
-        BlockPublicAcls:
-          Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamBlockPublicAcls
-          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
-          - Ref: AWS::NoValue
-        BlockPublicPolicy:
-          Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
-          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
-          - Ref: AWS::NoValue
-        IgnorePublicAcls:
-          Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
-          - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
-          - Ref: AWS::NoValue
-        RestrictPublicBuckets:
-          Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
-          - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
-          - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::S3::AccountPublicAccessBlock
+      ConfigRuleName: s3-account-level-public-access-blocks-periodic
+      Description: Check if the required public access block settings are configured
+        from account level
       Source:
         Owner: AWS
-        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
     Type: AWS::Config::ConfigRule
   S3BucketDefaultLockEnabled:
     Controls:
     - AU.3.049
+    - SC.3.180
     Properties:
       ConfigRuleName: s3-bucket-default-lock-enabled
+      Description: Checks whether Amazon S3 bucket has lock enabled, by default. The
+        rule is NON_COMPLIANT if the lock is not enabled.
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
@@ -1386,16 +2036,43 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
     Type: AWS::Config::ConfigRule
+  S3BucketLevelPublicAccessProhibited:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - AC.1.003
+    - AC.2.007
+    - AC.2.016
+    - AU.3.049
+    - CM.2.062
+    - CM.3.068
+    - SC.1.175
+    - SC.3.180
+    - SC.3.182
+    Properties:
+      ConfigRuleName: s3-bucket-level-public-access-prohibited
+      Description: Checks if Amazon Simple Storage Service (Amazon S3) buckets are
+        publicly accessible. This rule is NON_COMPLIANT if an Amazon S3 bucket is
+        not listed in the excludedPublicBuckets parameter and bucket level settings
+        are public.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LEVEL_PUBLIC_ACCESS_PROHIBITED
+    Type: AWS::Config::ConfigRule
   S3BucketLoggingEnabled:
     Controls:
-    - IA.1.076
+    - AC.3.018
     - AU.2.041
     - AU.2.042
     - CM.2.065
+    - IA.1.076
     - SI.2.217
-    - AC.3.018
     Properties:
       ConfigRuleName: s3-bucket-logging-enabled
+      Description: Checks whether logging is enabled for your S3 buckets.
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
@@ -1406,12 +2083,17 @@ Resources:
   S3BucketPolicyGranteeCheck:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.2.007
     - AC.3.017
     - AC.3.018
     - AU.3.049
     Properties:
       ConfigRuleName: s3-bucket-policy-grantee-check
+      Description: Checks that the access granted by the Amazon S3 bucket is restricted
+        to any of the AWS principals, federated users, service principals, IP addresses,
+        or VPCs that you provide. The rule is COMPLIANT if a bucket policy is not
+        present.
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
@@ -1422,15 +2104,21 @@ Resources:
   S3BucketPublicReadProhibited:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.007
     - AC.2.016
-    - CM.2.062
     - AU.3.049
+    - CM.2.062
+    - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: s3-bucket-public-read-prohibited
+      Description: Checks that your Amazon S3 buckets do not allow public read access.
+        The rule checks the Block Public Access settings, the bucket policy, and the
+        bucket access control list (ACL).
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
@@ -1441,15 +2129,21 @@ Resources:
   S3BucketPublicWriteProhibited:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.007
     - AC.2.016
-    - CM.2.062
     - AU.3.049
+    - CM.2.062
+    - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: s3-bucket-public-write-prohibited
+      Description: Checks that your Amazon S3 buckets do not allow public write access.
+        The rule checks the Block Public Access settings, the bucket policy, and the
+        bucket access control list (ACL).
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
@@ -1461,8 +2155,11 @@ Resources:
     Controls:
     - RE.2.137
     - RE.3.139
+    - SC.3.180
     Properties:
       ConfigRuleName: s3-bucket-replication-enabled
+      Description: Checks whether the Amazon S3 buckets have cross-region replication
+        enabled.
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
@@ -1472,11 +2169,14 @@ Resources:
     Type: AWS::Config::ConfigRule
   S3BucketServerSideEncryptionEnabled:
     Controls:
-    - IA.2.081
     - AU.3.049
+    - IA.2.081
     - SC.3.191
     Properties:
       ConfigRuleName: s3-bucket-server-side-encryption-enabled
+      Description: Checks that your Amazon S3 bucket either has S3 default encryption
+        enabled or that the S3 bucket policy explicitly denies put-object requests
+        without server side encryption.
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
@@ -1486,12 +2186,15 @@ Resources:
     Type: AWS::Config::ConfigRule
   S3BucketSslRequestsOnly:
     Controls:
-    - SC.1.175
-    - IA.2.081
     - AC.3.014
+    - AU.3.049
+    - IA.2.081
+    - SC.1.175
     - SC.3.185
     Properties:
       ConfigRuleName: s3-bucket-ssl-requests-only
+      Description: Checks whether S3 buckets have policies that require requests to
+        use Secure Socket Layer (SSL).
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
@@ -1501,10 +2204,13 @@ Resources:
     Type: AWS::Config::ConfigRule
   S3BucketVersioningEnabled:
     Controls:
-    - RE.2.137
     - AU.3.049
+    - RE.2.137
+    - RE.2.139
+    - SC.3.180
     Properties:
       ConfigRuleName: s3-bucket-versioning-enabled
+      Description: Checks whether versioning is enabled for your S3 buckets.
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
@@ -1512,12 +2218,32 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
     Type: AWS::Config::ConfigRule
+  S3DefaultEncryptionKms:
+    Controls:
+    - AU.3.049
+    - IA.2.081
+    - SC.3.191
+    Properties:
+      ConfigRuleName: s3-default-encryption-kms
+      Description: Checks whether the Amazon S3 buckets are encrypted with AWS Key
+        Management Service(AWS KMS). The rule is NON_COMPLIANT if the Amazon S3 bucket
+        is not encrypted with AWS KMS key.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_DEFAULT_ENCRYPTION_KMS
+    Type: AWS::Config::ConfigRule
   SagemakerEndpointConfigurationKmsKeyConfigured:
     Controls:
     - IA.2.081
     - SC.3.191
     Properties:
       ConfigRuleName: sagemaker-endpoint-configuration-kms-key-configured
+      Description: Checks whether AWS Key Management Service (KMS) key is configured
+        for an Amazon SageMaker endpoint configuration. The rule is NON_COMPLIANT
+        if 'KmsKeyId' is not specified for the Amazon SageMaker endpoint configuration.
       Source:
         Owner: AWS
         SourceIdentifier: SAGEMAKER_ENDPOINT_CONFIGURATION_KMS_KEY_CONFIGURED
@@ -1528,6 +2254,9 @@ Resources:
     - SC.3.191
     Properties:
       ConfigRuleName: sagemaker-notebook-instance-kms-key-configured
+      Description: Check whether an AWS Key Management Service (KMS) key is configured
+        for an Amazon SageMaker notebook instance. The rule is NON_COMPLIANT if 'KmsKeyId'
+        is not specified for the Amazon SageMaker notebook instance.
       Source:
         Owner: AWS
         SourceIdentifier: SAGEMAKER_NOTEBOOK_INSTANCE_KMS_KEY_CONFIGURED
@@ -1535,35 +2264,72 @@ Resources:
   SagemakerNotebookNoDirectInternetAccess:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.007
     - AC.2.016
     - CM.2.062
+    - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: sagemaker-notebook-no-direct-internet-access
+      Description: Checks whether direct internet access is disabled for an Amazon
+        SageMaker notebook instance. The rule is NON_COMPLIANT if Amazon SageMaker
+        notebook instances are internet-enabled.
       Source:
         Owner: AWS
         SourceIdentifier: SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS
     Type: AWS::Config::ConfigRule
+  SecretsmanagerRotationEnabledCheck:
+    Controls:
+    - AC.1.001
+    Properties:
+      ConfigRuleName: secretsmanager-rotation-enabled-check
+      Description: Checks whether AWS Secret Manager secret has rotation enabled.
+        If the maximumAllowedRotationFrequency parameter is specified, the rotation
+        frequency of the secret is compared with the maximum allowed frequency.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_ROTATION_ENABLED_CHECK
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerScheduledRotationSuccessCheck:
+    Controls:
+    - AC.1.001
+    Properties:
+      ConfigRuleName: secretsmanager-scheduled-rotation-success-check
+      Description: Checks and verifies whether AWS Secret Manager secret rotation
+        has rotated successfully as per the rotation schedule.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SCHEDULED_ROTATION_SUCCESS_CHECK
+    Type: AWS::Config::ConfigRule
   SecurityhubEnabled:
     Controls:
-    - SC.1.175
-    - SI.1.210
-    - SI.1.211
     - AC.2.013
-    - CM.2.064
-    - IR.2.092
-    - IR.2.093
-    - SI.2.214
-    - SI.2.216
-    - SI.2.217
     - AU.3.046
     - AU.3.051
     - CA.3.161
+    - CM.2.064
+    - IR.2.092
+    - IR.2.093
+    - RM.2.142
+    - SC.1.175
+    - SI.1.210
+    - SI.2.214
+    - SI.2.216
+    - SI.2.217
     Properties:
       ConfigRuleName: securityhub-enabled
+      Description: Checks that AWS Security Hub is enabled for an AWS Account. The
+        rule is NON_COMPLIANT if AWS Security Hub is not enabled.
       Source:
         Owner: AWS
         SourceIdentifier: SECURITYHUB_ENABLED
@@ -1574,6 +2340,9 @@ Resources:
     - SC.3.191
     Properties:
       ConfigRuleName: sns-encrypted-kms
+      Description: Checks whether Amazon SNS topic is encrypted with AWS Key Management
+        Service (AWS KMS). The rule is NON_COMPLIANT if the Amazon SNS topic is not
+        encrypted with AWS KMS.
       Scope:
         ComplianceResourceTypes:
         - AWS::SNS::Topic
@@ -1581,16 +2350,61 @@ Resources:
         Owner: AWS
         SourceIdentifier: SNS_ENCRYPTED_KMS
     Type: AWS::Config::ConfigRule
-  VpcDefaultSecurityGroupClosed:
+  SsmDocumentNotPublic:
     Controls:
     - AC.1.001
     - AC.1.003
-    - SC.1.175
+    - AC.2.007
     - AC.2.016
+    - CM.2.062
+    - CM.3.068
+    - SC.1.175
+    - SC.3.180
+    - SC.3.182
+    Properties:
+      ConfigRuleName: ssm-document-not-public
+      Description: Checks if AWS Systems Manager documents owned by the account are
+        public. This rule is NON_COMPLIANT if SSM documents with owner 'Self' are
+        public.
+      Source:
+        Owner: AWS
+        SourceIdentifier: SSM_DOCUMENT_NOT_PUBLIC
+    Type: AWS::Config::ConfigRule
+  SubnetAutoAssignPublicIpDisabled:
+    Controls:
+    - AC.1.003
+    - AC.2.016
+    - CM.2.062
     - CM.3.068
     - SC.3.180
     Properties:
+      ConfigRuleName: subnet-auto-assign-public-ip-disabled
+      Description: Checks if Amazon Virtual Private Cloud (Amazon VPC) subnets are
+        assigned a public IP address. This rule is NON_COMPLIANT if Amazon VPC has
+        subnets that are assigned a public IP address.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Subnet
+      Source:
+        Owner: AWS
+        SourceIdentifier: SUBNET_AUTO_ASSIGN_PUBLIC_IP_DISABLED
+    Type: AWS::Config::ConfigRule
+  VpcDefaultSecurityGroupClosed:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - AC.1.003
+    - AC.2.016
+    - CM.2.062
+    - CM.3.068
+    - SC.1.175
+    - SC.3.180
+    - SC.3.182
+    Properties:
       ConfigRuleName: vpc-default-security-group-closed
+      Description: Checks that the default security group of any Amazon Virtual Private
+        Cloud (VPC) does not allow inbound or outbound traffic. The rule is non-compliant
+        if the default security group has one or more inbound or outbound traffic.
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::SecurityGroup
@@ -1598,26 +2412,23 @@ Resources:
         Owner: AWS
         SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
     Type: AWS::Config::ConfigRule
-  VpcFlowLogsEnabled:
-    Controls:
-    - AU.2.042
-    - SI.2.217
-    Properties:
-      ConfigRuleName: vpc-flow-logs-enabled
-      Source:
-        Owner: AWS
-        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
-    Type: AWS::Config::ConfigRule
   VpcSgOpenOnlyToAuthorizedPorts:
     Controls:
     - AC.1.001
+    - AC.1.002
     - AC.1.003
-    - SC.1.175
     - AC.2.016
+    - CM.2.062
     - CM.3.068
+    - SC.1.175
     - SC.3.180
+    - SC.3.182
     Properties:
       ConfigRuleName: vpc-sg-open-only-to-authorized-ports
+      Description: Checks whether any security groups with inbound 0.0.0.0/0 have
+        TCP or UDP ports accessible. The rule is NON_COMPLIANT when a security group
+        with inbound 0.0.0.0/0 has a port accessible which is not specified in the
+        rule parameters.
       InputParameters:
         authorizedTcpPorts:
           Fn::If:
@@ -1636,6 +2447,9 @@ Resources:
     - SC.3.180
     Properties:
       ConfigRuleName: vpc-vpn-2-tunnels-up
+      Description: Checks that both VPN tunnels provided by AWS Site-to-Site VPN are
+        in UP status. The rule returns NON_COMPLIANT if one or both tunnels are in
+        DOWN status.
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::VPNConnection
@@ -1645,15 +2459,94 @@ Resources:
     Type: AWS::Config::ConfigRule
   Wafv2LoggingEnabled:
     Controls:
+    - AC.3.018
+    - AU.2.041
     - AU.2.042
+    - CM.2.065
+    - IA.1.076
+    - SI.2.216
     - SI.2.217
     Properties:
       ConfigRuleName: wafv2-logging-enabled
+      Description: Checks whether logging is enabled on AWS Web Application Firewall
+        (WAFV2) regional and global web access control list (ACLs). The rule is NON_COMPLIANT
+        if the logging is enabled but the logging destination does not match the value
+        of the parameter.
       Source:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
+  ResponsePlanExistsMaintained:
+    Controls:
+    - IR.2.092
+    Properties:
+      ConfigRuleName: response-plan-exists-maintained
+      Description: Ensure incident response plans are established, maintained, and distributed to responsible personnel.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  ResponsePlanTested:
+    Controls:
+    - IR.3.099
+    Properties:
+      ConfigRuleName: response-plan-tested
+      Description: Ensure Incident response and recovery plans are tested. This can assist in understanding if your plan will be effective during an incident and if any gaps or updates need to be addressed.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  VulnScansPerformed:
+    Controls:
+    - RM.2.142
+    Properties:
+      ConfigRuleName: vuln-scans-performed
+      Description: Ensure vulnerability scans are performed according to your compliannce requirements. The cadence of scanning, tools used, and use of results should be defined by your organization.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  VulnManagementPlanExists:
+    Controls:
+    - CA.2.159
+    Properties:
+      ConfigRuleName: vuln-management-plan-exists
+      Description: Ensure a vulnerability management plan is developed and implemented in order to have a formally defined processes to address vulnerabilities in your environment.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
 Conditions:
+  accessKeysRotatedParamMaxAccessKeyAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+  acmCertificateExpirationCheckParamDaysToExpiration:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
+  backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit
+  backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue
+  backupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays
+  cwLoggroupRetentionPeriodCheckParamMinRetentionTime:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CwLoggroupRetentionPeriodCheckParamMinRetentionTime
   ec2VolumeInuseCheckParamDeleteOnTermination:
     Fn::Not:
     - Fn::Equals:
@@ -1674,6 +2567,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+  iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+  iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
   iamPasswordPolicyParamMaxPasswordAge:
     Fn::Not:
     - Fn::Equals:
@@ -1714,6 +2617,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+  redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+  redshiftClusterMaintenancesettingsCheckParamAutomatedSnapshotRetentionPeriod:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RedshiftClusterMaintenancesettingsCheckParamAutomatedSnapshotRetentionPeriod
   restrictedIncomingTrafficParamBlockedPort1:
     Fn::Not:
     - Fn::Equals:
@@ -1739,26 +2652,6 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: RestrictedIncomingTrafficParamBlockedPort5
-  s3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
-  s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
-  s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
-  s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
   vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Fn::Not:
     - Fn::Equals:

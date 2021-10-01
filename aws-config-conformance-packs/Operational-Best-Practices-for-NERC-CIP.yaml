@@ -1,12 +1,12 @@
 ##################################################################################
-#                                                                                 
-#   Conformance Pack:                                                             
-#     Operational Best Practices for NERC                                   
-#                                                                                 
-#   This conformance pack helps verify compliance with NERC requirements.   
-#                                                                                 
-#   See Parameters section for names and descriptions of required parameters.  
-#                                                                                 
+#
+#   Conformance Pack:
+#     Operational Best Practices for NERC
+#
+#   This conformance pack helps verify compliance with NERC requirements.
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
 ##################################################################################
 
 Parameters:
@@ -15,6 +15,21 @@ Parameters:
     Type: String
   CwLoggroupRetentionPeriodCheckParamMinRetentionTime:
     Default: '90'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysHighSev:
+    Default: '1'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysLowSev:
+    Default: '30'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysMediumSev:
+    Default: '7'
+    Type: String
+  IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:ReEncryptFrom, kms:Decrypt
+    Type: String
+  IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:ReEncryptFrom, kms:Decrypt
     Type: String
   IamPasswordPolicyParamMaxPasswordAge:
     Default: '90'
@@ -26,19 +41,22 @@ Parameters:
     Default: '24'
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
+    Type: String
+  RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Default: 'TRUE'
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
@@ -55,29 +73,17 @@ Parameters:
   RestrictedIncomingTrafficParamBlockedPort5:
     Default: '4333'
     Type: String
-  S3AccountLevelPublicAccessBlocks2ParamBlockPublicAcls:
+  S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
     Default: 'TRUE'
     Type: String
-  S3AccountLevelPublicAccessBlocks2ParamBlockPublicPolicy:
-    Default: 'TRUE'
+  S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
+    Default: 'True'
     Type: String
-  S3AccountLevelPublicAccessBlocks2ParamIgnorePublicAcls:
-    Default: 'TRUE'
+  S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
+    Default: 'True'
     Type: String
-  S3AccountLevelPublicAccessBlocks2ParamRestrictPublicBuckets:
-    Default: 'TRUE'
-    Type: String
-  S3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
-    Default: 'TRUE'
-    Type: String
-  S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
-    Default: 'TRUE'
-    Type: String
-  S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
-    Default: 'TRUE'
-    Type: String
-  S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
-    Default: 'TRUE'
+  S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
+    Default: 'True'
     Type: String
   VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Default: '443'
@@ -146,6 +152,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  AutoscalingLaunchConfigPublicIpDisabled:
+    Properties:
+      ConfigRuleName: autoscaling-launch-config-public-ip-disabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::LaunchConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_PUBLIC_IP_DISABLED
     Type: AWS::Config::ConfigRule
   CloudTrailCloudWatchLogsEnabled:
     Properties:
@@ -290,6 +306,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
     Type: AWS::Config::ConfigRule
+  Ec2InstanceProfileAttached:
+    Properties:
+      ConfigRuleName: ec2-instance-profile-attached
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
+    Type: AWS::Config::ConfigRule
   Ec2ManagedinstanceAssociationComplianceStatusCheck:
     Properties:
       ConfigRuleName: ec2-managedinstance-association-compliance-status-check
@@ -310,22 +336,15 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
-  Ec2StoppedInstance:
+  EcsTaskDefinitionUserForHostModeCheck:
     Properties:
-      ConfigRuleName: ec2-stopped-instance
-      Source:
-        Owner: AWS
-        SourceIdentifier: EC2_STOPPED_INSTANCE
-    Type: AWS::Config::ConfigRule
-  Ec2VolumeInuseCheck:
-    Properties:
-      ConfigRuleName: ec2-volume-inuse-check
+      ConfigRuleName: ecs-task-definition-user-for-host-mode-check
       Scope:
         ComplianceResourceTypes:
-        - AWS::EC2::Volume
+        - AWS::ECS::TaskDefinition
       Source:
         Owner: AWS
-        SourceIdentifier: EC2_VOLUME_INUSE_CHECK
+        SourceIdentifier: ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK
     Type: AWS::Config::ConfigRule
   EfsEncryptedCheck:
     Properties:
@@ -340,6 +359,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EFS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  ElasticBeanstalkManagedUpdatesEnabled:
+    Properties:
+      ConfigRuleName: elastic-beanstalk-managed-updates-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticBeanstalk::Environment
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTIC_BEANSTALK_MANAGED_UPDATES_ENABLED
     Type: AWS::Config::ConfigRule
   ElasticacheRedisClusterAutomaticBackupCheck:
     Properties:
@@ -361,6 +390,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  ElasticsearchLogsToCloudwatch:
+    Properties:
+      ConfigRuleName: elasticsearch-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Elasticsearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICSEARCH_LOGS_TO_CLOUDWATCH
     Type: AWS::Config::ConfigRule
   ElasticsearchNodeToNodeEncryptionCheck:
     Properties:
@@ -439,9 +478,41 @@ Resources:
   GuarddutyNonArchivedFindings:
     Properties:
       ConfigRuleName: guardduty-non-archived-findings
+      InputParameters:
+        daysHighSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysHighSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+          - Ref: AWS::NoValue
+        daysLowSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysLowSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+          - Ref: AWS::NoValue
+        daysMediumSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysMediumSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+          - Ref: AWS::NoValue
       Source:
         Owner: AWS
         SourceIdentifier: GUARDDUTY_NON_ARCHIVED_FINDINGS
+    Type: AWS::Config::ConfigRule
+  IamCustomerPolicyBlockedKmsActions:
+    Properties:
+      ConfigRuleName: iam-customer-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_CUSTOMER_POLICY_BLOCKED_KMS_ACTIONS
     Type: AWS::Config::ConfigRule
   IamGroupHasUsersCheck:
     Properties:
@@ -452,6 +523,36 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
+    Type: AWS::Config::ConfigRule
+  IamInlinePolicyBlockedKmsActions:
+    Properties:
+      ConfigRuleName: iam-inline-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
+        - AWS::IAM::Role
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_INLINE_POLICY_BLOCKED_KMS_ACTIONS
+    Type: AWS::Config::ConfigRule
+  IamNoInlinePolicyCheck:
+    Properties:
+      ConfigRuleName: iam-no-inline-policy-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+        - AWS::IAM::Role
+        - AWS::IAM::Group
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_NO_INLINE_POLICY_CHECK
     Type: AWS::Config::ConfigRule
   IamPasswordPolicy:
     Properties:
@@ -505,6 +606,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+    Type: AWS::Config::ConfigRule
+  IamPolicyNoStatementsWithFullAccess:
+    Properties:
+      ConfigRuleName: iam-policy-no-statements-with-full-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_FULL_ACCESS
     Type: AWS::Config::ConfigRule
   IamRootAccessKeyCheck:
     Properties:
@@ -627,6 +738,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
+  NoUnrestrictedRouteToIgw:
+    Properties:
+      ConfigRuleName: no-unrestricted-route-to-igw
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::RouteTable
+      Source:
+        Owner: AWS
+        SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
+    Type: AWS::Config::ConfigRule
   RdsInBackupPlan:
     Properties:
       ConfigRuleName: rds-in-backup-plan
@@ -686,6 +807,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_STORAGE_ENCRYPTED
     Type: AWS::Config::ConfigRule
+  RedshiftBackupEnabled:
+    Properties:
+      ConfigRuleName: redshift-backup-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
   RedshiftClusterConfigurationCheck:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
@@ -698,6 +829,22 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterMaintenancesettingsCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-maintenancesettings-check
+      InputParameters:
+        allowVersionUpgrade:
+          Fn::If:
+          - redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+          - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_MAINTENANCESETTINGS_CHECK
     Type: AWS::Config::ConfigRule
   RedshiftClusterPublicAccessCheck:
     Properties:
@@ -755,77 +902,47 @@ Resources:
         Owner: AWS
         SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
     Type: AWS::Config::ConfigRule
-  RestrictedIncomingTraffic2:
+  RootAccountHardwareMfaEnabled:
     Properties:
-      ConfigRuleName: restricted-common-ports-2
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
+      ConfigRuleName: root-account-hardware-mfa-enabled
       Source:
         Owner: AWS
-        SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
+        SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
     Type: AWS::Config::ConfigRule
-  S3AccountLevelPublicAccessBlocks:
+  RootAccountMfaEnabled:
     Properties:
-      ConfigRuleName: s3-account-level-public-access-blocks
+      ConfigRuleName: root-account-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3AccountLevelPublicAccessBlocksPeriodic:
+    Properties:
+      ConfigRuleName: s3-account-level-public-access-blocks-periodic
       InputParameters:
         BlockPublicAcls:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamBlockPublicAcls
-          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+          - s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
           - Ref: AWS::NoValue
         BlockPublicPolicy:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
-          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+          - s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
           - Ref: AWS::NoValue
         IgnorePublicAcls:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
-          - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+          - s3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
           - Ref: AWS::NoValue
         RestrictPublicBuckets:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
-          - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+          - s3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
           - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::S3::AccountPublicAccessBlock
       Source:
         Owner: AWS
-        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
-    Type: AWS::Config::ConfigRule
-  S3AccountLevelPublicAccessBlocks2:
-    Properties:
-      ConfigRuleName: s3-account-level-public-access-blocks-2
-      InputParameters:
-        BlockPublicAcls:
-          Fn::If:
-          - s3AccountLevelPublicAccessBlocks2ParamBlockPublicAcls
-          - Ref: S3AccountLevelPublicAccessBlocks2ParamBlockPublicAcls
-          - Ref: AWS::NoValue
-        BlockPublicPolicy:
-          Fn::If:
-          - s3AccountLevelPublicAccessBlocks2ParamBlockPublicPolicy
-          - Ref: S3AccountLevelPublicAccessBlocks2ParamBlockPublicPolicy
-          - Ref: AWS::NoValue
-        IgnorePublicAcls:
-          Fn::If:
-          - s3AccountLevelPublicAccessBlocks2ParamIgnorePublicAcls
-          - Ref: S3AccountLevelPublicAccessBlocks2ParamIgnorePublicAcls
-          - Ref: AWS::NoValue
-        RestrictPublicBuckets:
-          Fn::If:
-          - s3AccountLevelPublicAccessBlocks2ParamRestrictPublicBuckets
-          - Ref: S3AccountLevelPublicAccessBlocks2ParamRestrictPublicBuckets
-          - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::S3::AccountPublicAccessBlock
-      Source:
-        Owner: AWS
-        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
     Type: AWS::Config::ConfigRule
   S3BucketDefaultLockEnabled:
     Properties:
@@ -836,6 +953,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketLevelPublicAccessProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-level-public-access-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LEVEL_PUBLIC_ACCESS_PROHIBITED
     Type: AWS::Config::ConfigRule
   S3BucketLoggingEnabled:
     Properties:
@@ -948,13 +1075,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS
     Type: AWS::Config::ConfigRule
-  SecurityhubEnabled:
-    Properties:
-      ConfigRuleName: securityhub-enabled
-      Source:
-        Owner: AWS
-        SourceIdentifier: SECURITYHUB_ENABLED
-    Type: AWS::Config::ConfigRule
   SnsEncryptedKms:
     Properties:
       ConfigRuleName: sns-encrypted-kms
@@ -964,6 +1084,23 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: SNS_ENCRYPTED_KMS
+    Type: AWS::Config::ConfigRule
+  SsmDocumentNotPublic:
+    Properties:
+      ConfigRuleName: ssm-document-not-public
+      Source:
+        Owner: AWS
+        SourceIdentifier: SSM_DOCUMENT_NOT_PUBLIC
+    Type: AWS::Config::ConfigRule
+  SubnetAutoAssignPublicIpDisabled:
+    Properties:
+      ConfigRuleName: subnet-auto-assign-public-ip-disabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Subnet
+      Source:
+        Owner: AWS
+        SourceIdentifier: SUBNET_AUTO_ASSIGN_PUBLIC_IP_DISABLED
     Type: AWS::Config::ConfigRule
   VpcDefaultSecurityGroupClosed:
     Properties:
@@ -1005,6 +1142,30 @@ Resources:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
+  ResponsePlanExistsMaintained:
+    Properties:
+      ConfigRuleName: response-plan-exists-maintained
+      Description: Ensure incident response plans are established, maintained, and distributed to responsible personnel.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  ResponsePlanTested:
+    Properties:
+      ConfigRuleName: response-plan-tested
+      Description: Ensure Incident response and recovery plans are tested. This can assist in understanding if your plan will be effective during an incident and if any gaps or updates need to be addressed.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  VulnManagementPlanExists:
+    Properties:
+      ConfigRuleName: vuln-management-plan-exists
+      Description: Ensure a vulnerability management plan is developed and implemented in order to have a formally defined processes to address vulnerabilities in your environment.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
 Conditions:
   acmCertificateExpirationCheckParamDaysToExpiration:
     Fn::Not:
@@ -1016,6 +1177,31 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: CwLoggroupRetentionPeriodCheckParamMinRetentionTime
+  guarddutyNonArchivedFindingsParamDaysHighSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+  guarddutyNonArchivedFindingsParamDaysLowSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+  guarddutyNonArchivedFindingsParamDaysMediumSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+  iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+  iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
   iamPasswordPolicyParamMaxPasswordAge:
     Fn::Not:
     - Fn::Equals:
@@ -1056,6 +1242,11 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+  redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
   restrictedIncomingTrafficParamBlockedPort1:
     Fn::Not:
     - Fn::Equals:
@@ -1081,46 +1272,26 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: RestrictedIncomingTrafficParamBlockedPort5
-  s3AccountLevelPublicAccessBlocks2ParamBlockPublicAcls:
+  s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocks2ParamBlockPublicAcls
-  s3AccountLevelPublicAccessBlocks2ParamBlockPublicPolicy:
+      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
+  s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocks2ParamBlockPublicPolicy
-  s3AccountLevelPublicAccessBlocks2ParamIgnorePublicAcls:
+      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
+  s3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocks2ParamIgnorePublicAcls
-  s3AccountLevelPublicAccessBlocks2ParamRestrictPublicBuckets:
+      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
+  s3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocks2ParamRestrictPublicBuckets
-  s3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
-  s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
-  s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
-  s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
   vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Fn::Not:
     - Fn::Equals:

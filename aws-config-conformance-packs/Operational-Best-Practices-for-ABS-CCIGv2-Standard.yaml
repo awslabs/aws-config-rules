@@ -8,7 +8,7 @@
 #
 #   This conformance pack helps verify compliance with CCIG requirements.
 #
-#   See Parameters section for names and descriptions of required parameters. 
+#   See Parameters section for names and descriptions of required parameters.
 #
 ##################################################################################
 
@@ -19,8 +19,20 @@ Parameters:
   AcmCertificateExpirationCheckParamDaysToExpiration:
     Default: '90'
     Type: String
+  DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Default: '80'
+    Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
     Default: 'TRUE'
+    Type: String
+  IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:Decrypt,kms:ReEncryptFrom
+    Type: String
+  IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:Decrypt,kms:ReEncryptFrom
     Type: String
   IamPasswordPolicyParamMaxPasswordAge:
     Default: '90'
@@ -32,19 +44,25 @@ Parameters:
     Default: '24'
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
+    Type: String
+  LambdaConcurrencyCheckParamConcurrencyLimitHigh:
+    Default: '1000'
+    Type: String
+  LambdaConcurrencyCheckParamConcurrencyLimitLow:
+    Default: '500'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Default: 'TRUE'
@@ -64,17 +82,20 @@ Parameters:
   RestrictedIncomingTrafficParamBlockedPort5:
     Default: '4333'
     Type: String
-  S3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
+  S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
     Default: 'True'
     Type: String
-  S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
+  S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
     Default: 'True'
     Type: String
-  S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
+  S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
     Default: 'True'
     Type: String
-  S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
+  S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
     Default: 'True'
+    Type: String
+  S3BucketVersioningEnabledParamIsMfaDeleteEnabled:
+    Default: 'TRUE'
     Type: String
   VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Default: '443'
@@ -143,6 +164,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: ALB_WAF_ENABLED
     Type: AWS::Config::ConfigRule
+  ApiGwAssociatedWithWaf:
+    Properties:
+      ConfigRuleName: api-gw-associated-with-waf
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_ASSOCIATED_WITH_WAF
+    Type: AWS::Config::ConfigRule
   ApiGwCacheEnabledAndEncrypted:
     Properties:
       ConfigRuleName: api-gw-cache-enabled-and-encrypted
@@ -164,6 +195,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
+  ApiGwSslEnabled:
+    Properties:
+      ConfigRuleName: api-gw-ssl-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_SSL_ENABLED
+    Type: AWS::Config::ConfigRule
   AutoscalingGroupElbHealthcheckRequired:
     Properties:
       ConfigRuleName: autoscaling-group-elb-healthcheck-required
@@ -173,6 +214,26 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
+    Type: AWS::Config::ConfigRule
+  AutoscalingLaunchConfigPublicIpDisabled:
+    Properties:
+      ConfigRuleName: autoscaling-launch-config-public-ip-disabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::LaunchConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_PUBLIC_IP_DISABLED
+    Type: AWS::Config::ConfigRule
+  BeanstalkEnhancedHealthReportingEnabled:
+    Properties:
+      ConfigRuleName: beanstalk-enhanced-health-reporting-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticBeanstalk::Environment
+      Source:
+        Owner: AWS
+        SourceIdentifier: BEANSTALK_ENHANCED_HEALTH_REPORTING_ENABLED
     Type: AWS::Config::ConfigRule
   CloudTrailCloudWatchLogsEnabled:
     Properties:
@@ -244,6 +305,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
     Type: AWS::Config::ConfigRule
+  CodebuildProjectEnvvarAwscredCheck:
+    Properties:
+      ConfigRuleName: codebuild-project-envvar-awscred-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ENVVAR_AWSCRED_CHECK
+    Type: AWS::Config::ConfigRule
   CodebuildProjectSourceRepoUrlCheck:
     Properties:
       ConfigRuleName: codebuild-project-source-repo-url-check
@@ -253,26 +324,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: CODEBUILD_PROJECT_SOURCE_REPO_URL_CHECK
-    Type: AWS::Config::ConfigRule
-  CodepipelineDeploymentCountCheck:
-    Properties:
-      ConfigRuleName: codepipeline-deployment-count-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CodePipeline::Pipeline
-      Source:
-        Owner: AWS
-        SourceIdentifier: CODEPIPELINE_DEPLOYMENT_COUNT_CHECK
-    Type: AWS::Config::ConfigRule
-  CodepipelineRegionFanoutCheck:
-    Properties:
-      ConfigRuleName: codepipeline-region-fanout-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CodePipeline::Pipeline
-      Source:
-        Owner: AWS
-        SourceIdentifier: CODEPIPELINE_REGION_FANOUT_CHECK
     Type: AWS::Config::ConfigRule
   CwLoggroupRetentionPeriodCheck:
     Properties:
@@ -309,6 +360,24 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS
+    Type: AWS::Config::ConfigRule
+  DynamodbThroughputLimitCheck:
+    Properties:
+      ConfigRuleName: dynamodb-throughput-limit-check
+      InputParameters:
+        accountRCUThresholdPercentage:
+          Fn::If:
+          - dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+          - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+          - Ref: AWS::NoValue
+        accountWCUThresholdPercentage:
+          Fn::If:
+          - dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+          - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_THROUGHPUT_LIMIT_CHECK
     Type: AWS::Config::ConfigRule
   EbsSnapshotPublicRestorableCheck:
     Properties:
@@ -355,6 +424,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
     Type: AWS::Config::ConfigRule
+  Ec2InstanceProfileAttached:
+    Properties:
+      ConfigRuleName: ec2-instance-profile-attached
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
+    Type: AWS::Config::ConfigRule
   Ec2ManagedinstanceAssociationComplianceStatusCheck:
     Properties:
       ConfigRuleName: ec2-managedinstance-association-compliance-status-check
@@ -375,15 +454,12 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
-  Ec2SecurityGroupAttachedToEni:
+  Ec2StoppedInstance:
     Properties:
-      ConfigRuleName: ec2-security-group-attached-to-eni
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
+      ConfigRuleName: ec2-stopped-instance
       Source:
         Owner: AWS
-        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI
+        SourceIdentifier: EC2_STOPPED_INSTANCE
     Type: AWS::Config::ConfigRule
   Ec2VolumeInuseCheck:
     Properties:
@@ -400,6 +476,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionUserForHostModeCheck:
+    Properties:
+      ConfigRuleName: ecs-task-definition-user-for-host-mode-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK
     Type: AWS::Config::ConfigRule
   EfsEncryptedCheck:
     Properties:
@@ -418,6 +504,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EIP_ATTACHED
     Type: AWS::Config::ConfigRule
+  ElasticBeanstalkManagedUpdatesEnabled:
+    Properties:
+      ConfigRuleName: elastic-beanstalk-managed-updates-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticBeanstalk::Environment
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTIC_BEANSTALK_MANAGED_UPDATES_ENABLED
+    Type: AWS::Config::ConfigRule
   ElasticsearchEncryptedAtRest:
     Properties:
       ConfigRuleName: elasticsearch-encrypted-at-rest
@@ -431,6 +527,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  ElasticsearchLogsToCloudwatch:
+    Properties:
+      ConfigRuleName: elasticsearch-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Elasticsearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICSEARCH_LOGS_TO_CLOUDWATCH
     Type: AWS::Config::ConfigRule
   ElasticsearchNodeToNodeEncryptionCheck:
     Properties:
@@ -462,6 +568,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELB_CROSS_ZONE_LOAD_BALANCING_ENABLED
     Type: AWS::Config::ConfigRule
+  ElbDeletionProtectionEnabled:
+    Properties:
+      ConfigRuleName: elb-deletion-protection-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_DELETION_PROTECTION_ENABLED
+    Type: AWS::Config::ConfigRule
   ElbLoggingEnabled:
     Properties:
       ConfigRuleName: elb-logging-enabled
@@ -482,6 +598,13 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
+    Type: AWS::Config::ConfigRule
+  Elbv2AcmCertificateRequired:
+    Properties:
+      ConfigRuleName: elbv2-acm-certificate-required
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELBV2_ACM_CERTIFICATE_REQUIRED
     Type: AWS::Config::ConfigRule
   EmrKerberosEnabled:
     Properties:
@@ -516,6 +639,19 @@ Resources:
         Owner: AWS
         SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
     Type: AWS::Config::ConfigRule
+  IamCustomerPolicyBlockedKmsActions:
+    Properties:
+      ConfigRuleName: iam-customer-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_CUSTOMER_POLICY_BLOCKED_KMS_ACTIONS
+    Type: AWS::Config::ConfigRule
   IamGroupHasUsersCheck:
     Properties:
       ConfigRuleName: iam-group-has-users-check
@@ -525,6 +661,21 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
+    Type: AWS::Config::ConfigRule
+  IamInlinePolicyBlockedKmsActions:
+    Properties:
+      ConfigRuleName: iam-inline-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
+        - AWS::IAM::Role
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_INLINE_POLICY_BLOCKED_KMS_ACTIONS
     Type: AWS::Config::ConfigRule
   IamNoInlinePolicyCheck:
     Properties:
@@ -590,6 +741,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+    Type: AWS::Config::ConfigRule
+  IamPolicyNoStatementsWithFullAccess:
+    Properties:
+      ConfigRuleName: iam-policy-no-statements-with-full-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_FULL_ACCESS
     Type: AWS::Config::ConfigRule
   IamRootAccessKeyCheck:
     Properties:
@@ -678,15 +839,36 @@ Resources:
         Owner: AWS
         SourceIdentifier: KMS_CMK_NOT_SCHEDULED_FOR_DELETION
     Type: AWS::Config::ConfigRule
-  LambdaDlqCheck:
+  LambdaConcurrencyCheck:
     Properties:
-      ConfigRuleName: lambda-dlq-check
+      ConfigRuleName: lambda-concurrency-check
+      InputParameters:
+        ConcurrencyLimitHigh:
+          Fn::If:
+          - lambdaConcurrencyCheckParamConcurrencyLimitHigh
+          - Ref: LambdaConcurrencyCheckParamConcurrencyLimitHigh
+          - Ref: AWS::NoValue
+        ConcurrencyLimitLow:
+          Fn::If:
+          - lambdaConcurrencyCheckParamConcurrencyLimitLow
+          - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::Lambda::Function
       Source:
         Owner: AWS
-        SourceIdentifier: LAMBDA_DLQ_CHECK
+        SourceIdentifier: LAMBDA_CONCURRENCY_CHECK
+    Type: AWS::Config::ConfigRule
+  LambdaFunctionPublicAccessProhibited:
+    Properties:
+      ConfigRuleName: lambda-function-public-access-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_FUNCTION_PUBLIC_ACCESS_PROHIBITED
     Type: AWS::Config::ConfigRule
   LambdaInsideVpc:
     Properties:
@@ -712,6 +894,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
+  NoUnrestrictedRouteToIgw:
+    Properties:
+      ConfigRuleName: no-unrestricted-route-to-igw
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::RouteTable
+      Source:
+        Owner: AWS
+        SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
+    Type: AWS::Config::ConfigRule
   RdsEnhancedMonitoringEnabled:
     Properties:
       ConfigRuleName: rds-enhanced-monitoring-enabled
@@ -721,16 +913,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: RDS_ENHANCED_MONITORING_ENABLED
-    Type: AWS::Config::ConfigRule
-  RdsInstanceIamAuthenticationEnabled:
-    Properties:
-      ConfigRuleName: rds-instance-iam-authentication-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::RDS::DBInstance
-      Source:
-        Owner: AWS
-        SourceIdentifier: RDS_INSTANCE_IAM_AUTHENTICATION_ENABLED
     Type: AWS::Config::ConfigRule
   RdsInstancePublicAccessCheck:
     Properties:
@@ -807,6 +989,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
     Type: AWS::Config::ConfigRule
+  RedshiftClusterKmsEnabled:
+    Properties:
+      ConfigRuleName: redshift-cluster-kms-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_KMS_ENABLED
+    Type: AWS::Config::ConfigRule
   RedshiftClusterMaintenancesettingsCheck:
     Properties:
       ConfigRuleName: redshift-cluster-maintenancesettings-check
@@ -832,6 +1024,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftEnhancedVpcRoutingEnabled:
+    Properties:
+      ConfigRuleName: redshift-enhanced-vpc-routing-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_ENHANCED_VPC_ROUTING_ENABLED
     Type: AWS::Config::ConfigRule
   RedshiftRequireTlsSsl:
     Properties:
@@ -893,36 +1095,33 @@ Resources:
         Owner: AWS
         SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
     Type: AWS::Config::ConfigRule
-  S3AccountLevelPublicAccessBlocks:
+  S3AccountLevelPublicAccessBlocksPeriodic:
     Properties:
-      ConfigRuleName: s3-account-level-public-access-blocks
+      ConfigRuleName: s3-account-level-public-access-blocks-periodic
       InputParameters:
         BlockPublicAcls:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamBlockPublicAcls
-          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+          - s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
           - Ref: AWS::NoValue
         BlockPublicPolicy:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
-          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+          - s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
           - Ref: AWS::NoValue
         IgnorePublicAcls:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
-          - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+          - s3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
           - Ref: AWS::NoValue
         RestrictPublicBuckets:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
-          - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+          - s3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
           - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::S3::AccountPublicAccessBlock
       Source:
         Owner: AWS
-        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
     Type: AWS::Config::ConfigRule
   S3BucketDefaultLockEnabled:
     Properties:
@@ -933,6 +1132,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketLevelPublicAccessProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-level-public-access-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LEVEL_PUBLIC_ACCESS_PROHIBITED
     Type: AWS::Config::ConfigRule
   S3BucketLoggingEnabled:
     Properties:
@@ -997,12 +1206,28 @@ Resources:
   S3BucketVersioningEnabled:
     Properties:
       ConfigRuleName: s3-bucket-versioning-enabled
+      InputParameters:
+        isMfaDeleteEnabled:
+          Fn::If:
+          - s3BucketVersioningEnabledParamIsMfaDeleteEnabled
+          - Ref: S3BucketVersioningEnabledParamIsMfaDeleteEnabled
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3DefaultEncryptionKms:
+    Properties:
+      ConfigRuleName: s3-default-encryption-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_DEFAULT_ENCRYPTION_KMS
     Type: AWS::Config::ConfigRule
   SagemakerEndpointConfigurationKmsKeyConfigured:
     Properties:
@@ -1042,6 +1267,23 @@ Resources:
         Owner: AWS
         SourceIdentifier: SNS_ENCRYPTED_KMS
     Type: AWS::Config::ConfigRule
+  SsmDocumentNotPublic:
+    Properties:
+      ConfigRuleName: ssm-document-not-public
+      Source:
+        Owner: AWS
+        SourceIdentifier: SSM_DOCUMENT_NOT_PUBLIC
+    Type: AWS::Config::ConfigRule
+  SubnetAutoAssignPublicIpDisabled:
+    Properties:
+      ConfigRuleName: subnet-auto-assign-public-ip-disabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Subnet
+      Source:
+        Owner: AWS
+        SourceIdentifier: SUBNET_AUTO_ASSIGN_PUBLIC_IP_DISABLED
+    Type: AWS::Config::ConfigRule
   VpcDefaultSecurityGroupClosed:
     Properties:
       ConfigRuleName: vpc-default-security-group-closed
@@ -1058,6 +1300,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: VPC_FLOW_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+  VpcNetworkAclUnusedCheck:
+    Properties:
+      ConfigRuleName: vpc-network-acl-unused-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::NetworkAcl
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_NETWORK_ACL_UNUSED_CHECK
     Type: AWS::Config::ConfigRule
   VpcSgOpenOnlyToAuthorizedPorts:
     Properties:
@@ -1092,6 +1344,14 @@ Resources:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
+  ResponsePlanExistsMaintained:
+    Properties:
+      ConfigRuleName: response-plan-exists-maintained
+      Description: Ensure incident response plans are established, maintained, and distributed to responsible personnel.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
 Conditions:
   accessKeysRotatedParamMaxAccessKeyAge:
     Fn::Not:
@@ -1103,6 +1363,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
+  dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+  dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
   ec2VolumeInuseCheckParamDeleteOnTermination:
     Fn::Not:
     - Fn::Equals:
@@ -1148,6 +1418,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+  lambdaConcurrencyCheckParamConcurrencyLimitHigh:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: LambdaConcurrencyCheckParamConcurrencyLimitHigh
+  lambdaConcurrencyCheckParamConcurrencyLimitLow:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
   redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Fn::Not:
     - Fn::Equals:
@@ -1178,26 +1458,31 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: RestrictedIncomingTrafficParamBlockedPort5
-  s3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
+  s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
-  s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
+      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
+  s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
-  s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
+      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
+  s3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
-  s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
+      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
+  s3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
+  s3BucketVersioningEnabledParamIsMfaDeleteEnabled:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3BucketVersioningEnabledParamIsMfaDeleteEnabled
   vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Fn::Not:
     - Fn::Equals:

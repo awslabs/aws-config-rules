@@ -1,23 +1,60 @@
 ##################################################################################
-#                                                                                 
-#   Conformance Pack:                                                             
-#     Operational Best Practices for EC2                                  
-#                                                                                                                                                                 
-#   This Conformance Pack has been designed for compatibility with the majority of 
-#   AWS regions and to not require setting of any Parameters. Additional managed rules 
-#   that require parameters to be set for your environment and/or for your specific 
+#
+#   Conformance Pack:
+#     Operational Best Practices for EC2
+#
+#   This Conformance Pack has been designed for compatibility with the majority of
+#   AWS regions and to not require setting of any Parameters. Additional managed rules
+#   that require parameters to be set for your environment and/or for your specific
 #   region can be found at:
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html  
-#                                                                                 
-#   See Parameters section for names and descriptions of required parameters.         
-#                                                                                 
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
 ##################################################################################
 
 Parameters:
+  CloudwatchAlarmResourceCheckParamMetricName:
+    Default: CPUUtilization
+    Type: String
+  CloudwatchAlarmResourceCheckParamResourceType:
+    Default: AWS::EC2::Instance
+    Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
     Default: 'TRUE'
     Type: String
+  ServiceVpcEndpointEnabledParamServiceName:
+    Default: ec2
+    Type: String
 Resources:
+  CloudwatchAlarmResourceCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-resource-check
+      InputParameters:
+        metricName:
+          Fn::If:
+          - cloudwatchAlarmResourceCheckParamMetricName
+          - Ref: CloudwatchAlarmResourceCheckParamMetricName
+          - Ref: AWS::NoValue
+        resourceType:
+          Fn::If:
+          - cloudwatchAlarmResourceCheckParamResourceType
+          - Ref: CloudwatchAlarmResourceCheckParamResourceType
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_RESOURCE_CHECK
+    Type: AWS::Config::ConfigRule
+  EbsOptimizedInstance:
+    Properties:
+      ConfigRuleName: ebs-optimized-instance
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_OPTIMIZED_INSTANCE
+    Type: AWS::Config::ConfigRule
   Ec2EbsEncryptionByDefault:
     Properties:
       ConfigRuleName: ec2-ebs-encryption-by-default
@@ -66,6 +103,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
     Type: AWS::Config::ConfigRule
+  Ec2InstanceProfileAttached:
+    Properties:
+      ConfigRuleName: ec2-instance-profile-attached
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
+    Type: AWS::Config::ConfigRule
   Ec2ManagedinstanceAssociationComplianceStatusCheck:
     Properties:
       ConfigRuleName: ec2-managedinstance-association-compliance-status-check
@@ -85,16 +132,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
-    Type: AWS::Config::ConfigRule
-  Ec2SecurityGroupAttachedToEni:
-    Properties:
-      ConfigRuleName: ec2-security-group-attached-to-eni
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI
     Type: AWS::Config::ConfigRule
   Ec2StoppedInstance:
     Properties:
@@ -119,6 +156,26 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
     Type: AWS::Config::ConfigRule
+  EipAttached:
+    Properties:
+      ConfigRuleName: eip-attached
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::EIP
+      Source:
+        Owner: AWS
+        SourceIdentifier: EIP_ATTACHED
+    Type: AWS::Config::ConfigRule
+  IncomingSshDisabled:
+    Properties:
+      ConfigRuleName: restricted-ssh
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: INCOMING_SSH_DISABLED
+    Type: AWS::Config::ConfigRule
   InstancesInVpc:
     Properties:
       ConfigRuleName: ec2-instances-in-vpc
@@ -129,9 +186,37 @@ Resources:
         Owner: AWS
         SourceIdentifier: INSTANCES_IN_VPC
     Type: AWS::Config::ConfigRule
+  ServiceVpcEndpointEnabled:
+    Properties:
+      ConfigRuleName: service-vpc-endpoint-enabled
+      InputParameters:
+        serviceName:
+          Fn::If:
+          - serviceVpcEndpointEnabledParamServiceName
+          - Ref: ServiceVpcEndpointEnabledParamServiceName
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: SERVICE_VPC_ENDPOINT_ENABLED
+    Type: AWS::Config::ConfigRule
 Conditions:
+  cloudwatchAlarmResourceCheckParamMetricName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmResourceCheckParamMetricName
+  cloudwatchAlarmResourceCheckParamResourceType:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmResourceCheckParamResourceType
   ec2VolumeInuseCheckParamDeleteOnTermination:
     Fn::Not:
     - Fn::Equals:
       - ''
       - Ref: Ec2VolumeInuseCheckParamDeleteOnTermination
+  serviceVpcEndpointEnabledParamServiceName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ServiceVpcEndpointEnabledParamServiceName
