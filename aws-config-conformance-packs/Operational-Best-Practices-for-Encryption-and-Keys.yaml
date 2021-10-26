@@ -1,16 +1,16 @@
 ##################################################################################
-#                                                                                 
-#   Conformance Pack:                                                             
-#     Operational Best Practices for Encryption and Key Management                                    
-#                                                                                 
-#   This Conformance Pack has been designed for compatibility with the majority of 
-#   AWS regions and to not require setting of any Parameters. Additional managed rules 
-#   that require parameters to be set for your environment and/or for your specific 
+#
+#   Conformance Pack:
+#     Operational Best Practices for Encryption and Key Management
+#
+#   This Conformance Pack has been designed for compatibility with the majority of
+#   AWS regions and to not require setting of any Parameters. Additional managed rules
+#   that require parameters to be set for your environment and/or for your specific
 #   region can be found at:
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html  
-#                                                                                 
-#   See Parameters section for names and descriptions of required parameters.    
-#                                                                                 
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
 ##################################################################################
 
 Parameters:
@@ -18,11 +18,11 @@ Parameters:
     Default: '90'
     Type: String
   IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
-    Type: String
     Default: kms:Decrypt,kms:ReEncryptFrom
+    Type: String
   IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
-    Type: String
     Default: kms:Decrypt,kms:ReEncryptFrom
+    Type: String
 Resources:
   AcmCertificateExpirationCheck:
     Properties:
@@ -56,6 +56,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: API_GW_CACHE_ENABLED_AND_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  ApiGwSslEnabled:
+    Properties:
+      ConfigRuleName: api-gw-ssl-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_SSL_ENABLED
     Type: AWS::Config::ConfigRule
   CloudTrailEncryptionEnabled:
     Properties:
@@ -139,6 +149,13 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
     Type: AWS::Config::ConfigRule
+  Elbv2AcmCertificateRequired:
+    Properties:
+      ConfigRuleName: elbv2-acm-certificate-required
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELBV2_ACM_CERTIFICATE_REQUIRED
+    Type: AWS::Config::ConfigRule
   EncryptedVolumes:
     Properties:
       ConfigRuleName: encrypted-volumes
@@ -218,14 +235,24 @@ Resources:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
       InputParameters:
-        clusterDbEncrypted: 'TRUE'
-        loggingEnabled: 'TRUE'
+        clusterDbEncrypted: 'true'
+        loggingEnabled: 'true'
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster
       Source:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterKmsEnabled:
+    Properties:
+      ConfigRuleName: redshift-cluster-kms-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_KMS_ENABLED
     Type: AWS::Config::ConfigRule
   RedshiftRequireTlsSsl:
     Properties:
@@ -257,6 +284,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
     Type: AWS::Config::ConfigRule
+  S3DefaultEncryptionKms:
+    Properties:
+      ConfigRuleName: s3-default-encryption-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_DEFAULT_ENCRYPTION_KMS
+    Type: AWS::Config::ConfigRule
   SagemakerEndpointConfigurationKmsKeyConfigured:
     Properties:
       ConfigRuleName: sagemaker-endpoint-configuration-kms-key-configured
@@ -270,6 +307,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: SAGEMAKER_NOTEBOOK_INSTANCE_KMS_KEY_CONFIGURED
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerUsingCmk:
+    Properties:
+      ConfigRuleName: secretsmanager-using-cmk
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_USING_CMK
     Type: AWS::Config::ConfigRule
   SnsEncryptedKms:
     Properties:

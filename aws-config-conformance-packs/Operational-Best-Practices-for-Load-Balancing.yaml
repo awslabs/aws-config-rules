@@ -1,18 +1,22 @@
 ##################################################################################
-#                                                                                 
-#   Conformance Pack:                                                             
-#     Operational Best Practices for Load Balancing                                    
-#                                                                                 
-#   This Conformance Pack has been designed for compatibility with the majority of 
-#   AWS regions and to not require setting of any Parameters. Additional managed rules 
-#   that require parameters to be set for your environment and/or for your specific 
+#
+#   Conformance Pack:
+#     Operational Best Practices for Load Balancing
+#
+#   This Conformance Pack has been designed for compatibility with the majority of
+#   AWS regions and to not require setting of any Parameters. Additional managed rules
+#   that require parameters to be set for your environment and/or for your specific
 #   region can be found at:
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html  
-#                                                                                 
-#   See Parameters section for names and descriptions of required parameters.   
-#                                                                                 
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
 ##################################################################################
 
+Parameters:
+  ElbCustomSecurityPolicySslCheckParamSslProtocolsAndCiphers:
+    Default: Protocol-TLSv1.2
+    Type: String
 Resources:
   AlbHttpDropInvalidHeaderEnabled:
     Properties:
@@ -71,6 +75,22 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELB_CROSS_ZONE_LOAD_BALANCING_ENABLED
     Type: AWS::Config::ConfigRule
+  ElbCustomSecurityPolicySslCheck:
+    Properties:
+      ConfigRuleName: elb-custom-security-policy-ssl-check
+      InputParameters:
+        sslProtocolsAndCiphers:
+          Fn::If:
+          - elbCustomSecurityPolicySslCheckParamSslProtocolsAndCiphers
+          - Ref: ElbCustomSecurityPolicySslCheckParamSslProtocolsAndCiphers
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_CUSTOM_SECURITY_POLICY_SSL_CHECK
+    Type: AWS::Config::ConfigRule
   ElbDeletionProtectionEnabled:
     Properties:
       ConfigRuleName: elb-deletion-protection-enabled
@@ -102,3 +122,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
     Type: AWS::Config::ConfigRule
+  Elbv2AcmCertificateRequired:
+    Properties:
+      ConfigRuleName: elbv2-acm-certificate-required
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELBV2_ACM_CERTIFICATE_REQUIRED
+    Type: AWS::Config::ConfigRule
+Conditions:
+  elbCustomSecurityPolicySslCheckParamSslProtocolsAndCiphers:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ElbCustomSecurityPolicySslCheckParamSslProtocolsAndCiphers

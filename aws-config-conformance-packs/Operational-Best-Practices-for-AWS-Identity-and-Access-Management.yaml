@@ -3,135 +3,298 @@
 #   Conformance Pack:
 #     Operational Best Practices for AWS Identity and Access Management
 #
-#   See Parameters section for names and descriptions of required parameters. 
+#   See Parameters section for names and descriptions of required parameters.
 #
 ################################################################################
 
 Parameters:
-  AccessKeysRotatedParameterMaxAccessKeyAge:
-    Description: Maximum number of days without rotation. Default 90.
+  AccessKeysRotatedParamMaxAccessKeyAge:
+    Default: '90'
     Type: String
-    Default: 90
-  IAMUserUnusedCredentialsCheckParameterMaxCredentialUsageAge:
-    Description: Maximum number of days a credential cannot be used. The default value
-      is 90 days.
+  IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:Decrypt,kms:ReEncryptFrom
     Type: String
-    Default: 90
+  IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:Decrypt,kms:ReEncryptFrom
+    Type: String
+  IamPasswordPolicyParamMaxPasswordAge:
+    Default: '90'
+    Type: String
+  IamPasswordPolicyParamMinimumPasswordLength:
+    Default: '14'
+    Type: String
+  IamPasswordPolicyParamPasswordReusePrevention:
+    Default: '24'
+    Type: String
+  IamPasswordPolicyParamRequireLowercaseCharacters:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireNumbers:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireSymbols:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireUppercaseCharacters:
+    Default: 'true'
+    Type: String
+  IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
+    Default: '90'
+    Type: String
 Resources:
   AccessKeysRotated:
     Properties:
-      ConfigRuleName: AccessKeysRotated
-      Description: Checks whether the active access keys are rotated within the number
-        of days specified in maxAccessKeyAge. The rule is non-compliant if the access
-        keys have not been rotated for more than maxAccessKeyAge number of days.
+      ConfigRuleName: access-keys-rotated
       InputParameters:
         maxAccessKeyAge:
-          Ref: AccessKeysRotatedParameterMaxAccessKeyAge
+          Fn::If:
+          - accessKeysRotatedParamMaxAccessKeyAge
+          - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+          - Ref: AWS::NoValue
       Source:
         Owner: AWS
         SourceIdentifier: ACCESS_KEYS_ROTATED
     Type: AWS::Config::ConfigRule
-  IAMGroupHasUsersCheck:
+  IamCustomerPolicyBlockedKmsActions:
     Properties:
-      ConfigRuleName: IAMGroupHasUsersCheck
-      Description: Checks whether IAM groups have at least one IAM user.
+      ConfigRuleName: iam-customer-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_CUSTOMER_POLICY_BLOCKED_KMS_ACTIONS
+    Type: AWS::Config::ConfigRule
+  IamGroupHasUsersCheck:
+    Properties:
+      ConfigRuleName: iam-group-has-users-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
       Source:
         Owner: AWS
         SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
     Type: AWS::Config::ConfigRule
-  IAMPasswordPolicy:
+  IamInlinePolicyBlockedKmsActions:
     Properties:
-      ConfigRuleName: IAMPasswordPolicy
-      Description: Checks whether the account password policy for IAM users meets
-        the specified requirements.
+      ConfigRuleName: iam-inline-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
+        - AWS::IAM::Role
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_INLINE_POLICY_BLOCKED_KMS_ACTIONS
+    Type: AWS::Config::ConfigRule
+  IamNoInlinePolicyCheck:
+    Properties:
+      ConfigRuleName: iam-no-inline-policy-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+        - AWS::IAM::Role
+        - AWS::IAM::Group
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_NO_INLINE_POLICY_CHECK
+    Type: AWS::Config::ConfigRule
+  IamPasswordPolicy:
+    Properties:
+      ConfigRuleName: iam-password-policy
+      InputParameters:
+        MaxPasswordAge:
+          Fn::If:
+          - iamPasswordPolicyParamMaxPasswordAge
+          - Ref: IamPasswordPolicyParamMaxPasswordAge
+          - Ref: AWS::NoValue
+        MinimumPasswordLength:
+          Fn::If:
+          - iamPasswordPolicyParamMinimumPasswordLength
+          - Ref: IamPasswordPolicyParamMinimumPasswordLength
+          - Ref: AWS::NoValue
+        PasswordReusePrevention:
+          Fn::If:
+          - iamPasswordPolicyParamPasswordReusePrevention
+          - Ref: IamPasswordPolicyParamPasswordReusePrevention
+          - Ref: AWS::NoValue
+        RequireLowercaseCharacters:
+          Fn::If:
+          - iamPasswordPolicyParamRequireLowercaseCharacters
+          - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+          - Ref: AWS::NoValue
+        RequireNumbers:
+          Fn::If:
+          - iamPasswordPolicyParamRequireNumbers
+          - Ref: IamPasswordPolicyParamRequireNumbers
+          - Ref: AWS::NoValue
+        RequireSymbols:
+          Fn::If:
+          - iamPasswordPolicyParamRequireSymbols
+          - Ref: IamPasswordPolicyParamRequireSymbols
+          - Ref: AWS::NoValue
+        RequireUppercaseCharacters:
+          Fn::If:
+          - iamPasswordPolicyParamRequireUppercaseCharacters
+          - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+          - Ref: AWS::NoValue
       Source:
         Owner: AWS
         SourceIdentifier: IAM_PASSWORD_POLICY
     Type: AWS::Config::ConfigRule
-  IAMPolicyNoStatementsWithAdminAccess:
+  IamPolicyNoStatementsWithAdminAccess:
     Properties:
-      ConfigRuleName: IAMPolicyNoStatementsWithAdminAccess
-      Description: 'Checks whether the default version of AWS Identity and Access
-        Management (IAM) policies do not have administrator access. If any statement
-        has "Effect": "Allow" with "Action": "*" over "Resource": "*", the rule is
-        non-compliant.'
+      ConfigRuleName: iam-policy-no-statements-with-admin-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
       Source:
         Owner: AWS
         SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
     Type: AWS::Config::ConfigRule
-  IAMRootAccessKeyCheck:
+  IamPolicyNoStatementsWithFullAccess:
     Properties:
-      ConfigRuleName: IAMRootAccessKeyCheck
-      Description: Checks whether the root user access key is available. The rule
-        is compliant if the user access key does not exist.
+      ConfigRuleName: iam-policy-no-statements-with-full-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_FULL_ACCESS
+    Type: AWS::Config::ConfigRule
+  IamRootAccessKeyCheck:
+    Properties:
+      ConfigRuleName: iam-root-access-key-check
       Source:
         Owner: AWS
         SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
     Type: AWS::Config::ConfigRule
-  IAMUserGroupMembershipCheck:
+  IamUserGroupMembershipCheck:
     Properties:
-      ConfigRuleName: IAMUserGroupMembershipCheck
-      Description: Checks whether IAM users are members of at least one IAM group.
+      ConfigRuleName: iam-user-group-membership-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
       Source:
         Owner: AWS
         SourceIdentifier: IAM_USER_GROUP_MEMBERSHIP_CHECK
     Type: AWS::Config::ConfigRule
-  IAMUserMFAEnabled:
+  IamUserMfaEnabled:
     Properties:
-      ConfigRuleName: IAMUserMFAEnabled
-      Description: Checks whether the AWS Identity and Access Management users have
-        multi-factor authentication (MFA) enabled.
+      ConfigRuleName: iam-user-mfa-enabled
       Source:
         Owner: AWS
         SourceIdentifier: IAM_USER_MFA_ENABLED
     Type: AWS::Config::ConfigRule
-  IAMUserNoPoliciesCheck:
+  IamUserNoPoliciesCheck:
     Properties:
-      ConfigRuleName: IAMUserNoPoliciesCheck
-      Description: Checks that none of your IAM users have policies attached. IAM
-        users must inherit permissions from IAM groups or roles.
+      ConfigRuleName: iam-user-no-policies-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
       Source:
         Owner: AWS
         SourceIdentifier: IAM_USER_NO_POLICIES_CHECK
     Type: AWS::Config::ConfigRule
-  IAMUserUnusedCredentialsCheck:
+  IamUserUnusedCredentialsCheck:
     Properties:
-      ConfigRuleName: IAMUserUnusedCredentialsCheck
-      Description: Checks whether your AWS Identity and Access Management (IAM) users
-        have passwords or active access keys that have not been used within the specified
-        number of days you provided.
+      ConfigRuleName: iam-user-unused-credentials-check
       InputParameters:
         maxCredentialUsageAge:
-          Ref: IAMUserUnusedCredentialsCheckParameterMaxCredentialUsageAge
+          Fn::If:
+          - iamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+          - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+          - Ref: AWS::NoValue
       Source:
         Owner: AWS
         SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
     Type: AWS::Config::ConfigRule
-  MFAEnabledForIAMConsoleAccess:
+  MfaEnabledForIamConsoleAccess:
     Properties:
-      ConfigRuleName: MFAEnabledForIAMConsoleAccess
-      Description: Checks whether AWS Multi-Factor Authentication (MFA) is enabled
-        for all AWS Identity and Access Management (IAM) users that use a console
-        password. The rule is compliant if MFA is enabled.
+      ConfigRuleName: mfa-enabled-for-iam-console-access
       Source:
         Owner: AWS
         SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
     Type: AWS::Config::ConfigRule
-  RootAccountHardwareMFAEnabled:
+  RootAccountHardwareMfaEnabled:
     Properties:
-      ConfigRuleName: RootAccountHardwareMFAEnabled
-      Description: Checks whether your AWS account is enabled to use multi-factor
-        authentication (MFA) hardware device to sign in with root credentials.
+      ConfigRuleName: root-account-hardware-mfa-enabled
       Source:
         Owner: AWS
         SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
     Type: AWS::Config::ConfigRule
-  RootAccountMFAEnabled:
+  RootAccountMfaEnabled:
     Properties:
-      ConfigRuleName: RootAccountMFAEnabled
-      Description: Checks whether the root user of your AWS account requires multi-factor
-        authentication for console sign-in.
+      ConfigRuleName: root-account-mfa-enabled
       Source:
         Owner: AWS
         SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
     Type: AWS::Config::ConfigRule
+Conditions:
+  accessKeysRotatedParamMaxAccessKeyAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+  iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+  iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+  iamPasswordPolicyParamMaxPasswordAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamMaxPasswordAge
+  iamPasswordPolicyParamMinimumPasswordLength:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamMinimumPasswordLength
+  iamPasswordPolicyParamPasswordReusePrevention:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamPasswordReusePrevention
+  iamPasswordPolicyParamRequireLowercaseCharacters:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+  iamPasswordPolicyParamRequireNumbers:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireNumbers
+  iamPasswordPolicyParamRequireSymbols:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireSymbols
+  iamPasswordPolicyParamRequireUppercaseCharacters:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+  iamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
