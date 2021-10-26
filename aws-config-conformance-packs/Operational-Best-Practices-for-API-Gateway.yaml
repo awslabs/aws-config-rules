@@ -1,0 +1,89 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for API ApiGateway                                
+#
+#   This conformance pack helps verify compliance with  requirements.
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  ApiGwEndpointTypeCheckParamEndpointConfigurationTypes:
+    Default: REGIONAL, PRIVATE, EDGE
+    Type: String
+Resources:
+  ApiGwAssociatedWithWaf:
+    Properties:
+      ConfigRuleName: api-gw-associated-with-waf
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_ASSOCIATED_WITH_WAF
+    Type: AWS::Config::ConfigRule
+  ApiGwCacheEnabledAndEncrypted:
+    Properties:
+      ConfigRuleName: api-gw-cache-enabled-and-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_CACHE_ENABLED_AND_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  ApiGwEndpointTypeCheck:
+    Properties:
+      ConfigRuleName: api-gw-endpoint-type-check
+      InputParameters:
+        endpointConfigurationTypes:
+          Fn::If:
+          - apiGwEndpointTypeCheckParamEndpointConfigurationTypes
+          - Ref: ApiGwEndpointTypeCheckParamEndpointConfigurationTypes
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::RestApi
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_ENDPOINT_TYPE_CHECK
+    Type: AWS::Config::ConfigRule
+  ApiGwExecutionLoggingEnabled:
+    Properties:
+      ConfigRuleName: api-gw-execution-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+        - AWS::ApiGatewayV2::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ApiGwSslEnabled:
+    Properties:
+      ConfigRuleName: api-gw-ssl-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_SSL_ENABLED
+    Type: AWS::Config::ConfigRule
+  ApiGwXrayEnabled:
+    Properties:
+      ConfigRuleName: api-gw-xray-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_XRAY_ENABLED
+    Type: AWS::Config::ConfigRule
+Conditions:
+  apiGwEndpointTypeCheckParamEndpointConfigurationTypes:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ApiGwEndpointTypeCheckParamEndpointConfigurationTypes

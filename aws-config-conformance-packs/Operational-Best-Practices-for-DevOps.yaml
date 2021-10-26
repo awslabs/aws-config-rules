@@ -1,0 +1,116 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for DevOps
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  CodepipelineRegionFanoutCheckParamRegionFanoutFactor:
+    Default: '3'
+    Type: String
+Resources:
+  ApiGwXrayEnabled:
+    Properties:
+      ConfigRuleName: api-gw-xray-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_XRAY_ENABLED
+    Type: AWS::Config::ConfigRule
+  BeanstalkEnhancedHealthReportingEnabled:
+    Properties:
+      ConfigRuleName: beanstalk-enhanced-health-reporting-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticBeanstalk::Environment
+      Source:
+        Owner: AWS
+        SourceIdentifier: BEANSTALK_ENHANCED_HEALTH_REPORTING_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudformationStackNotificationCheck:
+    Properties:
+      ConfigRuleName: cloudformation-stack-notification-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFormation::Stack
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFORMATION_STACK_NOTIFICATION_CHECK
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectEnvvarAwscredCheck:
+    Properties:
+      ConfigRuleName: codebuild-project-envvar-awscred-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ENVVAR_AWSCRED_CHECK
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectSourceRepoUrlCheck:
+    Properties:
+      ConfigRuleName: codebuild-project-source-repo-url-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_SOURCE_REPO_URL_CHECK
+    Type: AWS::Config::ConfigRule
+  CodepipelineDeploymentCountCheck:
+    Properties:
+      ConfigRuleName: codepipeline-deployment-count-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodePipeline::Pipeline
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEPIPELINE_DEPLOYMENT_COUNT_CHECK
+    Type: AWS::Config::ConfigRule
+  CodepipelineRegionFanoutCheck:
+    Properties:
+      ConfigRuleName: codepipeline-region-fanout-check
+      InputParameters:
+        regionFanoutFactor:
+          Fn::If:
+          - codepipelineRegionFanoutCheckParamRegionFanoutFactor
+          - Ref: CodepipelineRegionFanoutCheckParamRegionFanoutFactor
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodePipeline::Pipeline
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEPIPELINE_REGION_FANOUT_CHECK
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionUserForHostModeCheck:
+    Properties:
+      ConfigRuleName: ecs-task-definition-user-for-host-mode-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK
+    Type: AWS::Config::ConfigRule
+  ElasticBeanstalkManagedUpdatesEnabled:
+    Properties:
+      ConfigRuleName: elastic-beanstalk-managed-updates-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticBeanstalk::Environment
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTIC_BEANSTALK_MANAGED_UPDATES_ENABLED
+    Type: AWS::Config::ConfigRule
+Conditions:
+  codepipelineRegionFanoutCheckParamRegionFanoutFactor:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CodepipelineRegionFanoutCheckParamRegionFanoutFactor

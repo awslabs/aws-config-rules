@@ -1,0 +1,177 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for AWS Backup Service
+#
+#   This conformance pack helps verify compliance with Backup Service requirements.
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit:
+    Default: days
+    Type: String
+  BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue:
+    Default: '1'
+    Type: String
+  BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays:
+    Default: '35'
+    Type: String
+  BackupRecoveryPointMinimumRetentionCheckParamRequiredRetentionDays:
+    Default: '35'
+    Type: String
+Resources:
+  AuroraResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: aurora-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: AURORA_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  BackupPlanMinFrequencyAndMinRetentionCheck:
+    Properties:
+      ConfigRuleName: backup-plan-min-frequency-and-min-retention-check
+      InputParameters:
+        requiredFrequencyUnit:
+          Fn::If:
+          - backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit
+          - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit
+          - Ref: AWS::NoValue
+        requiredFrequencyValue:
+          Fn::If:
+          - backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue
+          - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue
+          - Ref: AWS::NoValue
+        requiredRetentionDays:
+          Fn::If:
+          - backupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays
+          - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::BackupPlan
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_PLAN_MIN_FREQUENCY_AND_MIN_RETENTION_CHECK
+    Type: AWS::Config::ConfigRule
+  BackupRecoveryPointEncrypted:
+    Properties:
+      ConfigRuleName: backup-recovery-point-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::RecoveryPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  BackupRecoveryPointManualDeletionDisabled:
+    Properties:
+      ConfigRuleName: backup-recovery-point-manual-deletion-disabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::BackupVault
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_MANUAL_DELETION_DISABLED
+    Type: AWS::Config::ConfigRule
+  BackupRecoveryPointMinimumRetentionCheck:
+    Properties:
+      ConfigRuleName: backup-recovery-point-minimum-retention-check
+      InputParameters:
+        requiredRetentionDays:
+          Fn::If:
+          - backupRecoveryPointMinimumRetentionCheckParamRequiredRetentionDays
+          - Ref: BackupRecoveryPointMinimumRetentionCheckParamRequiredRetentionDays
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::RecoveryPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_MINIMUM_RETENTION_CHECK
+    Type: AWS::Config::ConfigRule
+  DynamodbResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: dynamodb-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  EbsResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: ebs-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Volume
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  Ec2ResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: ec2-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  EfsResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: efs-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EFS::FileSystem
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  FsxResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: fsx-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes: []
+      Source:
+        Owner: AWS
+        SourceIdentifier: FSX_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  RdsResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: rds-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+Conditions:
+  backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit
+  backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue
+  backupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays
+  backupRecoveryPointMinimumRetentionCheckParamRequiredRetentionDays:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: BackupRecoveryPointMinimumRetentionCheckParamRequiredRetentionDays
