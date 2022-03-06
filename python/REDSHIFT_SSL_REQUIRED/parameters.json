@@ -1,0 +1,14 @@
+
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "REDSHIFT_SSL_REQUIRED",
+    "Description": "REDSHIFT_SSL_REQUIRED",
+    "SourceRuntime": "python3.8",
+    "CodeKey": "REDSHIFT_SSL_REQUIRED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}
