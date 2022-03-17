@@ -333,13 +333,13 @@ Resources:
     Type: AWS::Config::ConfigRule
   Ec2SecurityGroupAttachedToEni:
     Properties:
-      ConfigRuleName: ec2-security-group-attached-to-eni
+      ConfigRuleName: ec2-security-group-attached-to-eni-periodic
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::SecurityGroup
       Source:
         Owner: AWS
-        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI
+        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI_PERIODIC
     Type: AWS::Config::ConfigRule
   Ec2StoppedInstance:
     Properties:
