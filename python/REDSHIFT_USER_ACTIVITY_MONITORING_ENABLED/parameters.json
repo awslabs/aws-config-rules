@@ -1,0 +1,14 @@
+
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "REDSHIFT_USER_ACTIVITY_MONITORING_ENABLED",
+    "Description": "REDSHIFT_USER_ACTIVITY_MONITORING_ENABLED",
+    "SourceRuntime": "python3.8",
+    "CodeKey": "REDSHIFT_USER_ACTIVITY_MONITORING_ENABLED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}

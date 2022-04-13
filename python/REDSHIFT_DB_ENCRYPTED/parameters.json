@@ -1,0 +1,14 @@
+
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "REDSHIFT_DB_ENCRYPTED",
+    "Description": "REDSHIFT_DB_ENCRYPTED",
+    "SourceRuntime": "python3.8",
+    "CodeKey": "REDSHIFT_DB_ENCRYPTED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}
