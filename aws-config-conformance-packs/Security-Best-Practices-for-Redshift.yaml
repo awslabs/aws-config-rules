@@ -1,0 +1,145 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Security Best Practices for Amazon Redshift                             
+#
+#   This conformance pack helps verify compliance with  requirements.
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
+    Default: 'true'
+    Type: String
+  RedshiftClusterConfigurationCheckParamLoggingEnabled:
+    Default: 'true'
+    Type: String
+  RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Default: 'true'
+    Type: String
+Resources:
+  RedshiftBackupEnabled:
+    Properties:
+      ConfigRuleName: redshift-backup-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterConfigurationCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-configuration-check
+      InputParameters:
+        clusterDbEncrypted:
+          Fn::If:
+          - redshiftClusterConfigurationCheckParamClusterDbEncrypted
+          - Ref: RedshiftClusterConfigurationCheckParamClusterDbEncrypted
+          - Ref: AWS::NoValue
+        loggingEnabled:
+          Fn::If:
+          - redshiftClusterConfigurationCheckParamLoggingEnabled
+          - Ref: RedshiftClusterConfigurationCheckParamLoggingEnabled
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterKmsEnabled:
+    Properties:
+      ConfigRuleName: redshift-cluster-kms-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_KMS_ENABLED
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterMaintenancesettingsCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-maintenancesettings-check
+      InputParameters:
+        allowVersionUpgrade:
+          Fn::If:
+          - redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+          - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_MAINTENANCESETTINGS_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterPublicAccessCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-public-access-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftDefaultAdminCheck:
+    Properties:
+      ConfigRuleName: redshift-default-admin-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_DEFAULT_ADMIN_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftDefaultDbNameCheck:
+    Properties:
+      ConfigRuleName: redshift-default-db-name-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_DEFAULT_DB_NAME_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftEnhancedVpcRoutingEnabled:
+    Properties:
+      ConfigRuleName: redshift-enhanced-vpc-routing-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_ENHANCED_VPC_ROUTING_ENABLED
+    Type: AWS::Config::ConfigRule
+  RedshiftRequireTlsSsl:
+    Properties:
+      ConfigRuleName: redshift-require-tls-ssl
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_REQUIRE_TLS_SSL
+    Type: AWS::Config::ConfigRule
+Conditions:
+  redshiftClusterConfigurationCheckParamClusterDbEncrypted:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RedshiftClusterConfigurationCheckParamClusterDbEncrypted
+  redshiftClusterConfigurationCheckParamLoggingEnabled:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RedshiftClusterConfigurationCheckParamLoggingEnabled
+  redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade

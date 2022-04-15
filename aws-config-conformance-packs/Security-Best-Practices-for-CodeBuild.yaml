@@ -1,0 +1,70 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Security Best Practices for CodeBuild
+#
+#   This conformance pack helps verify compliance with  requirements.
+#
+##################################################################################
+
+Resources:
+  CodebuildProjectArtifactEncryption:
+    Properties:
+      ConfigRuleName: codebuild-project-artifact-encryption
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ARTIFACT_ENCRYPTION
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectEnvironmentPrivilegedCheck:
+    Properties:
+      ConfigRuleName: codebuild-project-environment-privileged-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ENVIRONMENT_PRIVILEGED_CHECK
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectEnvvarAwscredCheck:
+    Properties:
+      ConfigRuleName: codebuild-project-envvar-awscred-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ENVVAR_AWSCRED_CHECK
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectLoggingEnabled:
+    Properties:
+      ConfigRuleName: codebuild-project-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectS3LogsEncrypted:
+    Properties:
+      ConfigRuleName: codebuild-project-s3-logs-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_S3_LOGS_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectSourceRepoUrlCheck:
+    Properties:
+      ConfigRuleName: codebuild-project-source-repo-url-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_SOURCE_REPO_URL_CHECK
+    Type: AWS::Config::ConfigRule

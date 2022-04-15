@@ -1,0 +1,95 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Security Best Practices for Amazon OpenSearch Service
+#
+#   This Conformance Pack has been designed for compatibility with the majority of
+#   AWS regions and to not require setting of any Parameters. Additional managed rules
+#   that require parameters to be set for your environment and/or for your specific
+#   region can be found at:
+#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#
+#   See Parameters section for names and descriptions of required parameters.
+##################################################################################
+
+Resources:
+  OpensearchAccessControlEnabled:
+    Properties:
+      ConfigRuleName: opensearch-access-control-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ACCESS_CONTROL_ENABLED
+    Type: AWS::Config::ConfigRule
+  OpensearchAuditLoggingEnabled:
+    Properties:
+      ConfigRuleName: opensearch-audit-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_AUDIT_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  OpensearchDataNodeFaultTolerance:
+    Properties:
+      ConfigRuleName: opensearch-data-node-fault-tolerance
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_DATA_NODE_FAULT_TOLERANCE
+    Type: AWS::Config::ConfigRule
+  OpensearchEncryptedAtRest:
+    Properties:
+      ConfigRuleName: opensearch-encrypted-at-rest
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
+    Type: AWS::Config::ConfigRule
+  OpensearchHttpsRequired:
+    Properties:
+      ConfigRuleName: opensearch-https-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_HTTPS_REQUIRED
+    Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  OpensearchLogsToCloudwatch:
+    Properties:
+      ConfigRuleName: opensearch-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_LOGS_TO_CLOUDWATCH
+    Type: AWS::Config::ConfigRule
+  OpensearchNodeToNodeEncryptionCheck:
+    Properties:
+      ConfigRuleName: opensearch-node-to-node-encryption-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
+    Type: AWS::Config::ConfigRule

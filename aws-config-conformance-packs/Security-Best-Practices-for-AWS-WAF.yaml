@@ -1,0 +1,58 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Security Best Practices for AWS WAF
+#
+##################################################################################
+
+Resources:
+  AlbWafEnabled:
+    Properties:
+      ConfigRuleName: alb-waf-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_WAF_ENABLED
+    Type: AWS::Config::ConfigRule
+  ApiGwAssociatedWithWaf:
+    Properties:
+      ConfigRuleName: api-gw-associated-with-waf
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_ASSOCIATED_WITH_WAF
+    Type: AWS::Config::ConfigRule
+  WafRegionalRuleNotEmpty:
+    Properties:
+      ConfigRuleName: waf-regional-rule-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::WAFRegional::Rule
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAF_REGIONAL_RULE_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
+  WafRegionalRulegroupNotEmpty:
+    Properties:
+      ConfigRuleName: waf-regional-rulegroup-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::WAFRegional::RuleGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAF_REGIONAL_RULEGROUP_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
+  WafRegionalWebaclNotEmpty:
+    Properties:
+      ConfigRuleName: waf-regional-webacl-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::WAFRegional::WebACL
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAF_REGIONAL_WEBACL_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
