@@ -81,22 +81,32 @@ Resources:
         Owner: AWS
         SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
     Type: AWS::Config::ConfigRule
+  CodebuildProjectLoggingEnabled:
+    Properties:
+      ConfigRuleName: codebuild-project-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectS3LogsEncrypted:
+    Properties:
+      ConfigRuleName: codebuild-project-s3-logs-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_S3_LOGS_ENCRYPTED
+    Type: AWS::Config::ConfigRule
   CwLoggroupRetentionPeriodCheck:
     Properties:
       ConfigRuleName: cw-loggroup-retention-period-check
       Source:
         Owner: AWS
         SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK
-    Type: AWS::Config::ConfigRule
-  DbInstanceBackupEnabled:
-    Properties:
-      ConfigRuleName: db-instance-backup-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::RDS::DBInstance
-      Source:
-        Owner: AWS
-        SourceIdentifier: DB_INSTANCE_BACKUP_ENABLED
     Type: AWS::Config::ConfigRule
   ElasticsearchLogsToCloudwatch:
     Properties:
@@ -126,6 +136,26 @@ Resources:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
+  OpensearchAuditLoggingEnabled:
+    Properties:
+      ConfigRuleName: opensearch-audit-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_AUDIT_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  OpensearchLogsToCloudwatch:
+    Properties:
+      ConfigRuleName: opensearch-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_LOGS_TO_CLOUDWATCH
+    Type: AWS::Config::ConfigRule
   RdsLoggingEnabled:
     Properties:
       ConfigRuleName: rds-logging-enabled
@@ -135,6 +165,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: RDS_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  RedshiftAuditLoggingEnabled:
+    Properties:
+      ConfigRuleName: redshift-audit-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_AUDIT_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
   RedshiftClusterConfigurationCheck:
     Properties:

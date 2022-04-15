@@ -14,21 +14,6 @@
 ##################################################################################
 
 Parameters:
-  CloudwatchAlarmActionCheckParamAlarmActionRequired:
-    Default: 'TRUE'
-    Type: String
-  CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
-    Default: 'TRUE'
-    Type: String
-  CloudwatchAlarmActionCheckParamOkActionRequired:
-    Default: 'FALSE'
-    Type: String
-  CloudwatchAlarmResourceCheckParamMetricName:
-    Default: CPUUtilization
-    Type: String
-  CloudwatchAlarmResourceCheckParamResourceType:
-    Default: AWS::EC2::Instance
-    Type: String
   DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
     Default: '80'
     Type: String
@@ -51,6 +36,16 @@ Parameters:
     Default: '500'
     Type: String
 Resources:
+  ApiGwXrayEnabled:
+    Properties:
+      ConfigRuleName: api-gw-xray-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_XRAY_ENABLED
+    Type: AWS::Config::ConfigRule
   AutoscalingGroupElbHealthcheckRequired:
     Properties:
       ConfigRuleName: autoscaling-group-elb-healthcheck-required
@@ -82,21 +77,9 @@ Resources:
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
       InputParameters:
-        alarmActionRequired:
-          Fn::If:
-          - cloudwatchAlarmActionCheckParamAlarmActionRequired
-          - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
-          - Ref: AWS::NoValue
-        insufficientDataActionRequired:
-          Fn::If:
-          - cloudwatchAlarmActionCheckParamInsufficientDataActionRequired
-          - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
-          - Ref: AWS::NoValue
-        okActionRequired:
-          Fn::If:
-          - cloudwatchAlarmActionCheckParamOkActionRequired
-          - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
-          - Ref: AWS::NoValue
+        alarmActionRequired: 'TRUE'
+        insufficientDataActionRequired: 'TRUE'
+        okActionRequired: 'FALSE'
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -104,23 +87,35 @@ Resources:
         Owner: AWS
         SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
     Type: AWS::Config::ConfigRule
-  CloudwatchAlarmResourceCheck:
+  CloudwatchAlarmActionEnabledCheck:
     Properties:
-      ConfigRuleName: cloudwatch-alarm-resource-check
-      InputParameters:
-        metricName:
-          Fn::If:
-          - cloudwatchAlarmResourceCheckParamMetricName
-          - Ref: CloudwatchAlarmResourceCheckParamMetricName
-          - Ref: AWS::NoValue
-        resourceType:
-          Fn::If:
-          - cloudwatchAlarmResourceCheckParamResourceType
-          - Ref: CloudwatchAlarmResourceCheckParamResourceType
-          - Ref: AWS::NoValue
+      ConfigRuleName: cloudwatch-alarm-action-enabled-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
       Source:
         Owner: AWS
-        SourceIdentifier: CLOUDWATCH_ALARM_RESOURCE_CHECK
+        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_ENABLED_CHECK
+    Type: AWS::Config::ConfigRule
+  CodedeployAutoRollbackMonitorEnabled:
+    Properties:
+      ConfigRuleName: codedeploy-auto-rollback-monitor-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeDeploy::DeploymentGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEDEPLOY_AUTO_ROLLBACK_MONITOR_ENABLED
+    Type: AWS::Config::ConfigRule
+  CodedeployEc2MinimumHealthyHostsConfigured:
+    Properties:
+      ConfigRuleName: codedeploy-ec2-minimum-healthy-hosts-configured
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeDeploy::DeploymentGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEDEPLOY_EC2_MINIMUM_HEALTHY_HOSTS_CONFIGURED
     Type: AWS::Config::ConfigRule
   DynamodbThroughputLimitCheck:
     Properties:
@@ -149,6 +144,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_DETAILED_MONITORING_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcsContainerInsightsEnabled:
+    Properties:
+      ConfigRuleName: ecs-container-insights-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINER_INSIGHTS_ENABLED
     Type: AWS::Config::ConfigRule
   GuarddutyEnabledCentralized:
     Properties:
@@ -221,6 +226,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_ENHANCED_MONITORING_ENABLED
     Type: AWS::Config::ConfigRule
+  S3EventNotificationsEnabled:
+    Properties:
+      ConfigRuleName: s3-event-notifications-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_EVENT_NOTIFICATIONS_ENABLED
+    Type: AWS::Config::ConfigRule
   SecurityhubEnabled:
     Properties:
       ConfigRuleName: securityhub-enabled
@@ -228,39 +243,7 @@ Resources:
         Owner: AWS
         SourceIdentifier: SECURITYHUB_ENABLED
     Type: AWS::Config::ConfigRule
-  VpcFlowLogsEnabled:
-    Properties:
-      ConfigRuleName: vpc-flow-logs-enabled
-      Source:
-        Owner: AWS
-        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
-    Type: AWS::Config::ConfigRule
 Conditions:
-  cloudwatchAlarmActionCheckParamAlarmActionRequired:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
-  cloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
-  cloudwatchAlarmActionCheckParamOkActionRequired:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
-  cloudwatchAlarmResourceCheckParamMetricName:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: CloudwatchAlarmResourceCheckParamMetricName
-  cloudwatchAlarmResourceCheckParamResourceType:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: CloudwatchAlarmResourceCheckParamResourceType
   dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
     Fn::Not:
     - Fn::Equals:

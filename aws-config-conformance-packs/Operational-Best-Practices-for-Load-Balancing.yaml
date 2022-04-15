@@ -14,10 +14,35 @@
 ##################################################################################
 
 Parameters:
+  AlbDesyncModeCheckParamDesyncMode:
+    Default: defensive, strictest
+    Type: String
+  ClbDesyncModeCheckParamDesyncMode:
+    Default: defensive, strictest
+    Type: String
   ElbCustomSecurityPolicySslCheckParamSslProtocolsAndCiphers:
     Default: Protocol-TLSv1.2
     Type: String
+  ElbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName:
+    Default: ELBSecurityPolicy-TLS-1-2-2017-01
+    Type: String
 Resources:
+  AlbDesyncModeCheck:
+    Properties:
+      ConfigRuleName: alb-desync-mode-check
+      InputParameters:
+        desyncMode:
+          Fn::If:
+          - albDesyncModeCheckParamDesyncMode
+          - Ref: AlbDesyncModeCheckParamDesyncMode
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_DESYNC_MODE_CHECK
+    Type: AWS::Config::ConfigRule
   AlbHttpDropInvalidHeaderEnabled:
     Properties:
       ConfigRuleName: alb-http-drop-invalid-header-enabled
@@ -54,6 +79,32 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
+    Type: AWS::Config::ConfigRule
+  ClbDesyncModeCheck:
+    Properties:
+      ConfigRuleName: clb-desync-mode-check
+      InputParameters:
+        desyncMode:
+          Fn::If:
+          - clbDesyncModeCheckParamDesyncMode
+          - Ref: ClbDesyncModeCheckParamDesyncMode
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLB_DESYNC_MODE_CHECK
+    Type: AWS::Config::ConfigRule
+  ClbMultipleAz:
+    Properties:
+      ConfigRuleName: clb-multiple-az
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLB_MULTIPLE_AZ
     Type: AWS::Config::ConfigRule
   ElbAcmCertificateRequired:
     Properties:
@@ -112,6 +163,22 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELB_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
+  ElbPredefinedSecurityPolicySslCheck:
+    Properties:
+      ConfigRuleName: elb-predefined-security-policy-ssl-check
+      InputParameters:
+        predefinedPolicyName:
+          Fn::If:
+          - elbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName
+          - Ref: ElbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_PREDEFINED_SECURITY_POLICY_SSL_CHECK
+    Type: AWS::Config::ConfigRule
   ElbTlsHttpsListenersOnly:
     Properties:
       ConfigRuleName: elb-tls-https-listeners-only
@@ -129,9 +196,34 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELBV2_ACM_CERTIFICATE_REQUIRED
     Type: AWS::Config::ConfigRule
+  Elbv2MultipleAz:
+    Properties:
+      ConfigRuleName: elbv2-multiple-az
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELBV2_MULTIPLE_AZ
+    Type: AWS::Config::ConfigRule
 Conditions:
+  albDesyncModeCheckParamDesyncMode:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AlbDesyncModeCheckParamDesyncMode
+  clbDesyncModeCheckParamDesyncMode:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ClbDesyncModeCheckParamDesyncMode
   elbCustomSecurityPolicySslCheckParamSslProtocolsAndCiphers:
     Fn::Not:
     - Fn::Equals:
       - ''
       - Ref: ElbCustomSecurityPolicySslCheckParamSslProtocolsAndCiphers
+  elbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ElbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName

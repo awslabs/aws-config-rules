@@ -25,6 +25,16 @@ Parameters:
     Default: 'TRUE'
     Type: String
 Resources:
+  AuroraResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: aurora-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: AURORA_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
   DbInstanceBackupEnabled:
     Properties:
       ConfigRuleName: db-instance-backup-enabled
@@ -126,6 +136,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_IN_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
+  RdsInstanceDefaultAdminCheck:
+    Properties:
+      ConfigRuleName: rds-instance-default-admin-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_DEFAULT_ADMIN_CHECK
+    Type: AWS::Config::ConfigRule
   RdsInstanceDeletionProtectionEnabled:
     Properties:
       ConfigRuleName: rds-instance-deletion-protection-enabled
@@ -198,6 +218,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_STORAGE_ENCRYPTED
     Type: AWS::Config::ConfigRule
+  RedshiftAuditLoggingEnabled:
+    Properties:
+      ConfigRuleName: redshift-audit-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_AUDIT_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
   RedshiftBackupEnabled:
     Properties:
       ConfigRuleName: redshift-backup-enabled
@@ -256,6 +286,26 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftDefaultAdminCheck:
+    Properties:
+      ConfigRuleName: redshift-default-admin-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_DEFAULT_ADMIN_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftDefaultDbNameCheck:
+    Properties:
+      ConfigRuleName: redshift-default-db-name-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_DEFAULT_DB_NAME_CHECK
     Type: AWS::Config::ConfigRule
   RedshiftEnhancedVpcRoutingEnabled:
     Properties:

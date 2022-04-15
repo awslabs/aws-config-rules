@@ -154,6 +154,25 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_RESOURCES_PROTECTED_BY_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
+  S3ResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: s3-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  VirtualmachineResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: virtualmachine-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes: []
+      Source:
+        Owner: AWS
+        SourceIdentifier: VIRTUALMACHINE_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
 Conditions:
   backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit:
     Fn::Not:

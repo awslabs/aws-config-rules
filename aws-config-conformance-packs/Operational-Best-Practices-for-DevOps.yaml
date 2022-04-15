@@ -42,6 +42,26 @@ Resources:
         Owner: AWS
         SourceIdentifier: CLOUDFORMATION_STACK_NOTIFICATION_CHECK
     Type: AWS::Config::ConfigRule
+  CodebuildProjectArtifactEncryption:
+    Properties:
+      ConfigRuleName: codebuild-project-artifact-encryption
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ARTIFACT_ENCRYPTION
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectEnvironmentPrivilegedCheck:
+    Properties:
+      ConfigRuleName: codebuild-project-environment-privileged-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ENVIRONMENT_PRIVILEGED_CHECK
+    Type: AWS::Config::ConfigRule
   CodebuildProjectEnvvarAwscredCheck:
     Properties:
       ConfigRuleName: codebuild-project-envvar-awscred-check
@@ -52,6 +72,26 @@ Resources:
         Owner: AWS
         SourceIdentifier: CODEBUILD_PROJECT_ENVVAR_AWSCRED_CHECK
     Type: AWS::Config::ConfigRule
+  CodebuildProjectLoggingEnabled:
+    Properties:
+      ConfigRuleName: codebuild-project-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectS3LogsEncrypted:
+    Properties:
+      ConfigRuleName: codebuild-project-s3-logs-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_S3_LOGS_ENCRYPTED
+    Type: AWS::Config::ConfigRule
   CodebuildProjectSourceRepoUrlCheck:
     Properties:
       ConfigRuleName: codebuild-project-source-repo-url-check
@@ -61,6 +101,36 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: CODEBUILD_PROJECT_SOURCE_REPO_URL_CHECK
+    Type: AWS::Config::ConfigRule
+  CodedeployAutoRollbackMonitorEnabled:
+    Properties:
+      ConfigRuleName: codedeploy-auto-rollback-monitor-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeDeploy::DeploymentGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEDEPLOY_AUTO_ROLLBACK_MONITOR_ENABLED
+    Type: AWS::Config::ConfigRule
+  CodedeployEc2MinimumHealthyHostsConfigured:
+    Properties:
+      ConfigRuleName: codedeploy-ec2-minimum-healthy-hosts-configured
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeDeploy::DeploymentGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEDEPLOY_EC2_MINIMUM_HEALTHY_HOSTS_CONFIGURED
+    Type: AWS::Config::ConfigRule
+  CodedeployLambdaAllatonceTrafficShiftDisabled:
+    Properties:
+      ConfigRuleName: codedeploy-lambda-allatonce-traffic-shift-disabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeDeploy::DeploymentGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEDEPLOY_LAMBDA_ALLATONCE_TRAFFIC_SHIFT_DISABLED
     Type: AWS::Config::ConfigRule
   CodepipelineDeploymentCountCheck:
     Properties:
@@ -88,6 +158,106 @@ Resources:
         Owner: AWS
         SourceIdentifier: CODEPIPELINE_REGION_FANOUT_CHECK
     Type: AWS::Config::ConfigRule
+  EcrPrivateImageScanningEnabled:
+    Properties:
+      ConfigRuleName: ecr-private-image-scanning-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_IMAGE_SCANNING_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcrPrivateLifecyclePolicyConfigured:
+    Properties:
+      ConfigRuleName: ecr-private-lifecycle-policy-configured
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_LIFECYCLE_POLICY_CONFIGURED
+    Type: AWS::Config::ConfigRule
+  EcrPrivateTagImmutabilityEnabled:
+    Properties:
+      ConfigRuleName: ecr-private-tag-immutability-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_TAG_IMMUTABILITY_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcsContainerInsightsEnabled:
+    Properties:
+      ConfigRuleName: ecs-container-insights-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINER_INSIGHTS_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcsContainersNonprivileged:
+    Properties:
+      ConfigRuleName: ecs-containers-nonprivileged
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_NONPRIVILEGED
+    Type: AWS::Config::ConfigRule
+  EcsContainersReadonlyAccess:
+    Properties:
+      ConfigRuleName: ecs-containers-readonly-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_READONLY_ACCESS
+    Type: AWS::Config::ConfigRule
+  EcsFargateLatestPlatformVersion:
+    Properties:
+      ConfigRuleName: ecs-fargate-latest-platform-version
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Service
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_FARGATE_LATEST_PLATFORM_VERSION
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionMemoryHardLimit:
+    Properties:
+      ConfigRuleName: ecs-task-definition-memory-hard-limit
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_MEMORY_HARD_LIMIT
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionNonrootUser:
+    Properties:
+      ConfigRuleName: ecs-task-definition-nonroot-user
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_NONROOT_USER
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionPidModeCheck:
+    Properties:
+      ConfigRuleName: ecs-task-definition-pid-mode-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_PID_MODE_CHECK
+    Type: AWS::Config::ConfigRule
   EcsTaskDefinitionUserForHostModeCheck:
     Properties:
       ConfigRuleName: ecs-task-definition-user-for-host-mode-check
@@ -97,6 +267,20 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK
+    Type: AWS::Config::ConfigRule
+  EksEndpointNoPublicAccess:
+    Properties:
+      ConfigRuleName: eks-endpoint-no-public-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_ENDPOINT_NO_PUBLIC_ACCESS
+    Type: AWS::Config::ConfigRule
+  EksSecretsEncrypted:
+    Properties:
+      ConfigRuleName: eks-secrets-encrypted
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_SECRETS_ENCRYPTED
     Type: AWS::Config::ConfigRule
   ElasticBeanstalkManagedUpdatesEnabled:
     Properties:
