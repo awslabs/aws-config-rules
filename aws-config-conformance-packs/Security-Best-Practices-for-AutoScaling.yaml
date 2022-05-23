@@ -1,0 +1,80 @@
+##################################################################################
+#                                                                                 
+#   Conformance Pack:                                                             
+#     Operational Best Practices for                                    
+#                                                                                 
+#   This conformance pack helps verify compliance with  requirements.   
+#                                                                                 
+##################################################################################
+
+Resources:
+  AutoscalingCapacityRebalancing:
+    Properties:
+      ConfigRuleName: autoscaling-capacity-rebalancing
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_CAPACITY_REBALANCING
+    Type: AWS::Config::ConfigRule
+  AutoscalingGroupElbHealthcheckRequired:
+    Properties:
+      ConfigRuleName: autoscaling-group-elb-healthcheck-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
+    Type: AWS::Config::ConfigRule
+  AutoscalingLaunchConfigHopLimit:
+    Properties:
+      ConfigRuleName: autoscaling-launch-config-hop-limit
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::LaunchConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_HOP_LIMIT
+    Type: AWS::Config::ConfigRule
+  AutoscalingLaunchConfigPublicIpDisabled:
+    Properties:
+      ConfigRuleName: autoscaling-launch-config-public-ip-disabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::LaunchConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_PUBLIC_IP_DISABLED
+    Type: AWS::Config::ConfigRule
+  AutoscalingLaunchconfigRequiresImdsv2:
+    Properties:
+      ConfigRuleName: autoscaling-launchconfig-requires-imdsv2
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::LaunchConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCHCONFIG_REQUIRES_IMDSV2
+    Type: AWS::Config::ConfigRule
+  AutoscalingMultipleAz:
+    Properties:
+      ConfigRuleName: autoscaling-multiple-az
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_MULTIPLE_AZ
+    Type: AWS::Config::ConfigRule
+  AutoscalingMultipleInstanceTypes:
+    Properties:
+      ConfigRuleName: autoscaling-multiple-instance-types
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_MULTIPLE_INSTANCE_TYPES
+    Type: AWS::Config::ConfigRule

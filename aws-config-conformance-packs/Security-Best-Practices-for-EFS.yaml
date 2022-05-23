@@ -1,0 +1,43 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for EFS
+#                                                                                
+#
+##################################################################################
+
+Resources:
+  EfsAccessPointEnforceRootDirectory:
+    Properties:
+      ConfigRuleName: efs-access-point-enforce-root-directory
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EFS::AccessPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ACCESS_POINT_ENFORCE_ROOT_DIRECTORY
+    Type: AWS::Config::ConfigRule
+  EfsAccessPointEnforceUserIdentity:
+    Properties:
+      ConfigRuleName: efs-access-point-enforce-user-identity
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EFS::AccessPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ACCESS_POINT_ENFORCE_USER_IDENTITY
+    Type: AWS::Config::ConfigRule
+  EfsEncryptedCheck:
+    Properties:
+      ConfigRuleName: efs-encrypted-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ENCRYPTED_CHECK
+    Type: AWS::Config::ConfigRule
+  EfsInBackupPlan:
+    Properties:
+      ConfigRuleName: efs-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule

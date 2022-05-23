@@ -1,0 +1,129 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for ECS
+#
+#
+##################################################################################
+
+Parameters:
+  EcsNoEnvironmentSecretsParamSecretKeys:
+    Default: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ECS_ENGINE_AUTH_DATA
+    Type: String
+  EcsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions:
+    Default: 'true'
+    Type: String
+Resources:
+  EcsContainerInsightsEnabled:
+    Properties:
+      ConfigRuleName: ecs-container-insights-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINER_INSIGHTS_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcsContainersNonprivileged:
+    Properties:
+      ConfigRuleName: ecs-containers-nonprivileged
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_NONPRIVILEGED
+    Type: AWS::Config::ConfigRule
+  EcsContainersReadonlyAccess:
+    Properties:
+      ConfigRuleName: ecs-containers-readonly-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_READONLY_ACCESS
+    Type: AWS::Config::ConfigRule
+  EcsFargateLatestPlatformVersion:
+    Properties:
+      ConfigRuleName: ecs-fargate-latest-platform-version
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Service
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_FARGATE_LATEST_PLATFORM_VERSION
+    Type: AWS::Config::ConfigRule
+  EcsNoEnvironmentSecrets:
+    Properties:
+      ConfigRuleName: ecs-no-environment-secrets
+      InputParameters:
+        secretKeys:
+          Fn::If:
+          - ecsNoEnvironmentSecretsParamSecretKeys
+          - Ref: EcsNoEnvironmentSecretsParamSecretKeys
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_NO_ENVIRONMENT_SECRETS
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionMemoryHardLimit:
+    Properties:
+      ConfigRuleName: ecs-task-definition-memory-hard-limit
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_MEMORY_HARD_LIMIT
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionNonrootUser:
+    Properties:
+      ConfigRuleName: ecs-task-definition-nonroot-user
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_NONROOT_USER
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionPidModeCheck:
+    Properties:
+      ConfigRuleName: ecs-task-definition-pid-mode-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_PID_MODE_CHECK
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionUserForHostModeCheck:
+    Properties:
+      ConfigRuleName: ecs-task-definition-user-for-host-mode-check
+      InputParameters:
+        SkipInactiveTaskDefinitions:
+          Fn::If:
+          - ecsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions
+          - Ref: EcsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK
+    Type: AWS::Config::ConfigRule
+Conditions:
+  ecsNoEnvironmentSecretsParamSecretKeys:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: EcsNoEnvironmentSecretsParamSecretKeys
+  ecsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: EcsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions

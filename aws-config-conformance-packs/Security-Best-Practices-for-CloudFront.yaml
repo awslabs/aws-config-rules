@@ -1,0 +1,108 @@
+##################################################################################
+#
+#   Conformance Pack:                                                             
+#     Operational Best Practices for CloudFront
+#
+##################################################################################
+
+Resources:
+  CloudfrontAccesslogsEnabled:
+    Properties:
+      ConfigRuleName: cloudfront-accesslogs-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFront::Distribution
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFRONT_ACCESSLOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudfrontAssociatedWithWaf:
+    Properties:
+      ConfigRuleName: cloudfront-associated-with-waf
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFront::Distribution
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFRONT_ASSOCIATED_WITH_WAF
+    Type: AWS::Config::ConfigRule
+  CloudfrontCustomSslCertificate:
+    Properties:
+      ConfigRuleName: cloudfront-custom-ssl-certificate
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFront::Distribution
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFRONT_CUSTOM_SSL_CERTIFICATE
+    Type: AWS::Config::ConfigRule
+  CloudfrontDefaultRootObjectConfigured:
+    Properties:
+      ConfigRuleName: cloudfront-default-root-object-configured
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFront::Distribution
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFRONT_DEFAULT_ROOT_OBJECT_CONFIGURED
+    Type: AWS::Config::ConfigRule
+  CloudfrontNoDeprecatedSslProtocols:
+    Properties:
+      ConfigRuleName: cloudfront-no-deprecated-ssl-protocols
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFront::Distribution
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFRONT_NO_DEPRECATED_SSL_PROTOCOLS
+    Type: AWS::Config::ConfigRule
+  CloudfrontOriginAccessIdentityEnabled:
+    Properties:
+      ConfigRuleName: cloudfront-origin-access-identity-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFront::Distribution
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFRONT_ORIGIN_ACCESS_IDENTITY_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudfrontOriginFailoverEnabled:
+    Properties:
+      ConfigRuleName: cloudfront-origin-failover-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFront::Distribution
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFRONT_ORIGIN_FAILOVER_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudfrontSniEnabled:
+    Properties:
+      ConfigRuleName: cloudfront-sni-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFront::Distribution
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFRONT_SNI_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudfrontTrafficToOriginEncrypted:
+    Properties:
+      ConfigRuleName: cloudfront-traffic-to-origin-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFront::Distribution
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFRONT_TRAFFIC_TO_ORIGIN_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  CloudfrontViewerPolicyHttps:
+    Properties:
+      ConfigRuleName: cloudfront-viewer-policy-https
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudFront::Distribution
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDFRONT_VIEWER_POLICY_HTTPS
+    Type: AWS::Config::ConfigRule

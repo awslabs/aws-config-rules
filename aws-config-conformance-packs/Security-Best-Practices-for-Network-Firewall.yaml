@@ -1,0 +1,79 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for Network Firewall                                 
+#
+#
+##################################################################################
+
+Parameters:
+  NetfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions:
+    Default: aws:drop,aws:forward_to_sfe
+    Type: String
+  NetfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions:
+    Default: aws:drop,aws:forward_to_sfe
+    Type: String
+Resources:
+  NetfwPolicyDefaultActionFragmentPackets:
+    Properties:
+      ConfigRuleName: netfw-policy-default-action-fragment-packets
+      InputParameters:
+        statelessFragmentDefaultActions:
+          Fn::If:
+          - netfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions
+          - Ref: NetfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::FirewallPolicy
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_POLICY_DEFAULT_ACTION_FRAGMENT_PACKETS
+    Type: AWS::Config::ConfigRule
+  NetfwPolicyDefaultActionFullPackets:
+    Properties:
+      ConfigRuleName: netfw-policy-default-action-full-packets
+      InputParameters:
+        statelessDefaultActions:
+          Fn::If:
+          - netfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions
+          - Ref: NetfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::FirewallPolicy
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_POLICY_DEFAULT_ACTION_FULL_PACKETS
+    Type: AWS::Config::ConfigRule
+  NetfwPolicyRuleGroupAssociated:
+    Properties:
+      ConfigRuleName: netfw-policy-rule-group-associated
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::FirewallPolicy
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_POLICY_RULE_GROUP_ASSOCIATED
+    Type: AWS::Config::ConfigRule
+  NetfwStatelessRuleGroupNotEmpty:
+    Properties:
+      ConfigRuleName: netfw-stateless-rule-group-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::RuleGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_STATELESS_RULE_GROUP_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
+Conditions:
+  netfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: NetfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions
+  netfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: NetfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions
