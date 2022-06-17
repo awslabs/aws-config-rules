@@ -1,0 +1,68 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Security Best Practices for AWS Lambda
+#
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  LambdaFunctionSettingsCheckParamRuntime:
+    Default: nodejs16.x, nodejs14.x, nodejs12.x, python3.9, python3.8, python3.7,
+      python3.6, ruby2.7, java11, java8, java8.al2, go1.x, dotnetcore3.1, dotnet6
+    Type: String
+Resources:
+  LambdaDlqCheck:
+    Properties:
+      ConfigRuleName: lambda-dlq-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_DLQ_CHECK
+    Type: AWS::Config::ConfigRule
+  LambdaFunctionSettingsCheck:
+    Properties:
+      ConfigRuleName: lambda-function-settings-check
+      InputParameters:
+        runtime:
+          Fn::If:
+          - lambdaFunctionSettingsCheckParamRuntime
+          - Ref: LambdaFunctionSettingsCheckParamRuntime
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_FUNCTION_SETTINGS_CHECK
+    Type: AWS::Config::ConfigRule
+  LambdaInsideVpc:
+    Properties:
+      ConfigRuleName: lambda-inside-vpc
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_INSIDE_VPC
+    Type: AWS::Config::ConfigRule
+  LambdaVpcMultiAzCheck:
+    Properties:
+      ConfigRuleName: lambda-vpc-multi-az-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_VPC_MULTI_AZ_CHECK
+    Type: AWS::Config::ConfigRule
+Conditions:
+  lambdaFunctionSettingsCheckParamRuntime:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: LambdaFunctionSettingsCheckParamRuntime

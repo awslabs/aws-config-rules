@@ -1,0 +1,75 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Security Best Practices for EKS
+#                                                                                
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  EksClusterOldestSupportedVersionParamOldestVersionSupported:
+    Default: '1.2'
+    Type: String
+  EksClusterSupportedVersionParamOldestVersionSupported:
+    Default: '1.2'
+    Type: String
+Resources:
+  EksClusterOldestSupportedVersion:
+    Properties:
+      ConfigRuleName: eks-cluster-oldest-supported-version
+      InputParameters:
+        oldestVersionSupported:
+          Fn::If:
+          - eksClusterOldestSupportedVersionParamOldestVersionSupported
+          - Ref: EksClusterOldestSupportedVersionParamOldestVersionSupported
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EKS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_CLUSTER_OLDEST_SUPPORTED_VERSION
+    Type: AWS::Config::ConfigRule
+  EksClusterSupportedVersion:
+    Properties:
+      ConfigRuleName: eks-cluster-supported-version
+      InputParameters:
+        oldestVersionSupported:
+          Fn::If:
+          - eksClusterSupportedVersionParamOldestVersionSupported
+          - Ref: EksClusterSupportedVersionParamOldestVersionSupported
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EKS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_CLUSTER_SUPPORTED_VERSION
+    Type: AWS::Config::ConfigRule
+  EksEndpointNoPublicAccess:
+    Properties:
+      ConfigRuleName: eks-endpoint-no-public-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_ENDPOINT_NO_PUBLIC_ACCESS
+    Type: AWS::Config::ConfigRule
+  EksSecretsEncrypted:
+    Properties:
+      ConfigRuleName: eks-secrets-encrypted
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_SECRETS_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+Conditions:
+  eksClusterOldestSupportedVersionParamOldestVersionSupported:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: EksClusterOldestSupportedVersionParamOldestVersionSupported
+  eksClusterSupportedVersionParamOldestVersionSupported:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: EksClusterSupportedVersionParamOldestVersionSupported

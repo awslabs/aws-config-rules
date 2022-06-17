@@ -16,6 +16,13 @@ Parameters:
     Default: dynamodb
     Type: String
 Resources:
+  DaxEncryptionEnabled:
+    Properties:
+      ConfigRuleName: dax-encryption-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: DAX_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
   DynamodbAutoscalingEnabled:
     Properties:
       ConfigRuleName: dynamodb-autoscaling-enabled

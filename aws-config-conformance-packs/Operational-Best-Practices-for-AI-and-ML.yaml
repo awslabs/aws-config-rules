@@ -13,6 +13,19 @@
 #
 ##################################################################################
 
+Parameters:
+  EcsNoEnvironmentSecretsParamSecretKeys:
+    Default: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ECS_ENGINE_AUTH_DATA
+    Type: String
+  EcsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions:
+    Default: 'TRUE'
+    Type: String
+  EksClusterOldestSupportedVersionParamOldestVersionSupported:
+    Default: '1.2'
+    Type: String
+  EksClusterSupportedVersionParamOldestVersionSupported:
+    Default: '1.2'
+    Type: String
 Resources:
   CloudtrailS3DataeventsEnabled:
     Properties:
@@ -20,6 +33,188 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: CLOUDTRAIL_S3_DATAEVENTS_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcsContainerInsightsEnabled:
+    Properties:
+      ConfigRuleName: ecs-container-insights-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINER_INSIGHTS_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcsContainersNonprivileged:
+    Properties:
+      ConfigRuleName: ecs-containers-nonprivileged
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_NONPRIVILEGED
+    Type: AWS::Config::ConfigRule
+  EcsContainersReadonlyAccess:
+    Properties:
+      ConfigRuleName: ecs-containers-readonly-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_READONLY_ACCESS
+    Type: AWS::Config::ConfigRule
+  EcsFargateLatestPlatformVersion:
+    Properties:
+      ConfigRuleName: ecs-fargate-latest-platform-version
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Service
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_FARGATE_LATEST_PLATFORM_VERSION
+    Type: AWS::Config::ConfigRule
+  EcsNoEnvironmentSecrets:
+    Properties:
+      ConfigRuleName: ecs-no-environment-secrets
+      InputParameters:
+        secretKeys:
+          Fn::If:
+          - ecsNoEnvironmentSecretsParamSecretKeys
+          - Ref: EcsNoEnvironmentSecretsParamSecretKeys
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_NO_ENVIRONMENT_SECRETS
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionMemoryHardLimit:
+    Properties:
+      ConfigRuleName: ecs-task-definition-memory-hard-limit
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_MEMORY_HARD_LIMIT
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionNonrootUser:
+    Properties:
+      ConfigRuleName: ecs-task-definition-nonroot-user
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_NONROOT_USER
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionPidModeCheck:
+    Properties:
+      ConfigRuleName: ecs-task-definition-pid-mode-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_PID_MODE_CHECK
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionUserForHostModeCheck:
+    Properties:
+      ConfigRuleName: ecs-task-definition-user-for-host-mode-check
+      InputParameters:
+        SkipInactiveTaskDefinitions:
+          Fn::If:
+          - ecsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions
+          - Ref: EcsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK
+    Type: AWS::Config::ConfigRule
+  EfsAccessPointEnforceRootDirectory:
+    Properties:
+      ConfigRuleName: efs-access-point-enforce-root-directory
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EFS::AccessPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ACCESS_POINT_ENFORCE_ROOT_DIRECTORY
+    Type: AWS::Config::ConfigRule
+  EfsAccessPointEnforceUserIdentity:
+    Properties:
+      ConfigRuleName: efs-access-point-enforce-user-identity
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EFS::AccessPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ACCESS_POINT_ENFORCE_USER_IDENTITY
+    Type: AWS::Config::ConfigRule
+  EfsEncryptedCheck:
+    Properties:
+      ConfigRuleName: efs-encrypted-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ENCRYPTED_CHECK
+    Type: AWS::Config::ConfigRule
+  EfsInBackupPlan:
+    Properties:
+      ConfigRuleName: efs-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  EksClusterOldestSupportedVersion:
+    Properties:
+      ConfigRuleName: eks-cluster-oldest-supported-version
+      InputParameters:
+        oldestVersionSupported:
+          Fn::If:
+          - eksClusterOldestSupportedVersionParamOldestVersionSupported
+          - Ref: EksClusterOldestSupportedVersionParamOldestVersionSupported
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EKS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_CLUSTER_OLDEST_SUPPORTED_VERSION
+    Type: AWS::Config::ConfigRule
+  EksClusterSupportedVersion:
+    Properties:
+      ConfigRuleName: eks-cluster-supported-version
+      InputParameters:
+        oldestVersionSupported:
+          Fn::If:
+          - eksClusterSupportedVersionParamOldestVersionSupported
+          - Ref: EksClusterSupportedVersionParamOldestVersionSupported
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EKS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_CLUSTER_SUPPORTED_VERSION
+    Type: AWS::Config::ConfigRule
+  EksEndpointNoPublicAccess:
+    Properties:
+      ConfigRuleName: eks-endpoint-no-public-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_ENDPOINT_NO_PUBLIC_ACCESS
+    Type: AWS::Config::ConfigRule
+  EksSecretsEncrypted:
+    Properties:
+      ConfigRuleName: eks-secrets-encrypted
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_SECRETS_ENCRYPTED
     Type: AWS::Config::ConfigRule
   EmrKerberosEnabled:
     Properties:
@@ -43,6 +238,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
+    Type: AWS::Config::ConfigRule
+  S3BucketAclProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-acl-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_ACL_PROHIBITED
     Type: AWS::Config::ConfigRule
   S3BucketDefaultLockEnabled:
     Properties:
@@ -175,3 +380,24 @@ Resources:
         Owner: AWS
         SourceIdentifier: SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS
     Type: AWS::Config::ConfigRule
+Conditions:
+  ecsNoEnvironmentSecretsParamSecretKeys:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: EcsNoEnvironmentSecretsParamSecretKeys
+  ecsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: EcsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions
+  eksClusterOldestSupportedVersionParamOldestVersionSupported:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: EksClusterOldestSupportedVersionParamOldestVersionSupported
+  eksClusterSupportedVersionParamOldestVersionSupported:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: EksClusterSupportedVersionParamOldestVersionSupported
