@@ -16,13 +16,13 @@
 
 Parameters:
   CloudwatchAlarmActionCheckParamAlarmActionRequired:
-    Default: 'true'
+    Default: 'TRUE'
     Type: String
   CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
-    Default: 'true'
+    Default: 'TRUE'
     Type: String
   CloudwatchAlarmActionCheckParamOkActionRequired:
-    Default: 'false'
+    Default: 'FALSE'
     Type: String
   GuarddutyNonArchivedFindingsParamDaysHighSev:
     Default: '1'
@@ -108,6 +108,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmActionEnabledCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-action-enabled-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_ENABLED_CHECK
     Type: AWS::Config::ConfigRule
   CloudwatchLogGroupEncrypted:
     Properties:

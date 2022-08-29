@@ -122,6 +122,26 @@ Resources:
         Owner: AWS
         SourceIdentifier: ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK
     Type: AWS::Config::ConfigRule
+  AlbWafEnabled:
+    Properties:
+      ConfigRuleName: alb-waf-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_WAF_ENABLED
+    Type: AWS::Config::ConfigRule
+  ApiGwAssociatedWithWaf:
+    Properties:
+      ConfigRuleName: api-gw-associated-with-waf
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_ASSOCIATED_WITH_WAF
+    Type: AWS::Config::ConfigRule
   ApiGwExecutionLoggingEnabled:
     Properties:
       ConfigRuleName: api-gw-execution-logging-enabled
@@ -1400,6 +1420,14 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  AnnualRiskAssessmentPerformed:
+    Properties:
+      ConfigRuleName: annual-risk-assessment-performed
+      Description: Perform an annual risk assessment on your organization. Risk assessments can assist in determining the likelihood and impact of identified risks and/or vulnerabilities affecting an organization.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
   accessKeysRotatedParamMaxAccessKeyAge:
