@@ -1,0 +1,137 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for Amazon CloudWatch                           
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  CloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Default: 'true'
+    Type: String
+  CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Default: 'true'
+    Type: String
+  CloudwatchAlarmActionCheckParamOkActionRequired:
+    Default: 'false'
+    Type: String
+  CloudwatchAlarmResourceCheckParamMetricName:
+    Default: CPUUtilization
+    Type: String
+  CloudwatchAlarmResourceCheckParamResourceType:
+    Default: AWS::EC2::Instance
+    Type: String
+  CloudwatchAlarmSettingsCheckParamMetricName:
+    Default: CPUUtilization
+    Type: String
+Resources:
+  CloudwatchAlarmActionCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-action-check
+      InputParameters:
+        alarmActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: AWS::NoValue
+        insufficientDataActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: AWS::NoValue
+        okActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmActionEnabledCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-action-enabled-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_ENABLED_CHECK
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmResourceCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-resource-check
+      InputParameters:
+        metricName:
+          Fn::If:
+          - cloudwatchAlarmResourceCheckParamMetricName
+          - Ref: CloudwatchAlarmResourceCheckParamMetricName
+          - Ref: AWS::NoValue
+        resourceType:
+          Fn::If:
+          - cloudwatchAlarmResourceCheckParamResourceType
+          - Ref: CloudwatchAlarmResourceCheckParamResourceType
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_RESOURCE_CHECK
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmSettingsCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-settings-check
+      InputParameters:
+        metricName:
+          Fn::If:
+          - cloudwatchAlarmSettingsCheckParamMetricName
+          - Ref: CloudwatchAlarmSettingsCheckParamMetricName
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_SETTINGS_CHECK
+    Type: AWS::Config::ConfigRule
+  CloudwatchLogGroupEncrypted:
+    Properties:
+      ConfigRuleName: cloudwatch-log-group-encrypted
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+Conditions:
+  cloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+  cloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+  cloudwatchAlarmActionCheckParamOkActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+  cloudwatchAlarmResourceCheckParamMetricName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmResourceCheckParamMetricName
+  cloudwatchAlarmResourceCheckParamResourceType:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmResourceCheckParamResourceType
+  cloudwatchAlarmSettingsCheckParamMetricName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmSettingsCheckParamMetricName
