@@ -37,7 +37,7 @@ Parameters:
     Default: '80'
     Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   GuarddutyNonArchivedFindingsParamDaysHighSev:
     Default: '1'
@@ -131,16 +131,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ACM_CERTIFICATE_EXPIRATION_CHECK
-    Type: AWS::Config::ConfigRule
-  AlbHttpDropInvalidHeaderEnabled:
-    Properties:
-      ConfigRuleName: alb-http-drop-invalid-header-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ElasticLoadBalancingV2::LoadBalancer
-      Source:
-        Owner: AWS
-        SourceIdentifier: ALB_HTTP_DROP_INVALID_HEADER_ENABLED
     Type: AWS::Config::ConfigRule
   AlbHttpToHttpsRedirectionCheck:
     Properties:
@@ -284,10 +274,20 @@ Resources:
   CloudwatchAlarmActionCheck:
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmActionCheck2:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-action-check-2
       InputParameters:
-        alarmActionRequired: 'true'
-        insufficientDataActionRequired: 'true'
-        okActionRequired: 'false'
+        alarmActionRequired: 'TRUE'
+        insufficientDataActionRequired: 'TRUE'
+        okActionRequired: 'FALSE'
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -318,6 +318,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: CODEBUILD_PROJECT_ENVVAR_AWSCRED_CHECK
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectLoggingEnabled:
+    Properties:
+      ConfigRuleName: codebuild-project-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
   CodebuildProjectSourceRepoUrlCheck:
     Properties:
@@ -534,6 +544,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
     Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionMemoryHardLimit:
+    Properties:
+      ConfigRuleName: ecs-task-definition-memory-hard-limit
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_MEMORY_HARD_LIMIT
+    Type: AWS::Config::ConfigRule
   EcsTaskDefinitionUserForHostModeCheck:
     Properties:
       ConfigRuleName: ecs-task-definition-user-for-host-mode-check
@@ -554,6 +574,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EFS_RESOURCES_PROTECTED_BY_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
+  ElasticBeanstalkManagedUpdatesEnabled:
+    Properties:
+      ConfigRuleName: elastic-beanstalk-managed-updates-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticBeanstalk::Environment
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTIC_BEANSTALK_MANAGED_UPDATES_ENABLED
+    Type: AWS::Config::ConfigRule
   ElasticacheRedisClusterAutomaticBackupCheck:
     Properties:
       ConfigRuleName: elasticache-redis-cluster-automatic-backup-check
@@ -567,36 +597,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
-    Type: AWS::Config::ConfigRule
-  ElasticsearchLogsToCloudwatch:
-    Properties:
-      ConfigRuleName: elasticsearch-logs-to-cloudwatch
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::Elasticsearch::Domain
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELASTICSEARCH_LOGS_TO_CLOUDWATCH
-    Type: AWS::Config::ConfigRule
-  ElasticsearchNodeToNodeEncryptionCheck:
-    Properties:
-      ConfigRuleName: elasticsearch-node-to-node-encryption-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::Elasticsearch::Domain
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELASTICSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
-    Type: AWS::Config::ConfigRule
-  ElbAcmCertificateRequired:
-    Properties:
-      ConfigRuleName: elb-acm-certificate-required
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ElasticLoadBalancing::LoadBalancer
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELB_ACM_CERTIFICATE_REQUIRED
     Type: AWS::Config::ConfigRule
   ElbCrossZoneLoadBalancingEnabled:
     Properties:
@@ -958,6 +958,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
     Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
   RdsEnhancedMonitoringEnabled:
     Properties:
       ConfigRuleName: rds-enhanced-monitoring-enabled
@@ -1043,8 +1053,8 @@ Resources:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
       InputParameters:
-        clusterDbEncrypted: 'true'
-        loggingEnabled: 'true'
+        clusterDbEncrypted: 'TRUE'
+        loggingEnabled: 'TRUE'
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster
@@ -1317,40 +1327,22 @@ Resources:
         Owner: AWS
         SourceIdentifier: VPC_VPN_2_TUNNELS_UP
     Type: AWS::Config::ConfigRule
+  WafRegionalWebaclNotEmpty:
+    Properties:
+      ConfigRuleName: waf-regional-webacl-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::WAFRegional::WebACL
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAF_REGIONAL_WEBACL_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
   Wafv2LoggingEnabled:
     Properties:
       ConfigRuleName: wafv2-logging-enabled
       Source:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
-    Type: AWS::Config::ConfigRule
-  ResponsePlanExistsMaintained:
-    Properties:
-      ConfigRuleName: response-plan-exists-maintained
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  ResponsePlanTested:
-    Properties:
-      ConfigRuleName: response-plan-tested
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  SecurityAwarenessProgramExists:
-    Properties:
-      ConfigRuleName: security-awareness-program-exists
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  AnnualRiskAssessmentPerformed:
-    Properties:
-      ConfigRuleName: annual-risk-assessment-performed
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
   accessKeysRotatedParamMaxAccessKeyAge:

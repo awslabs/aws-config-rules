@@ -18,6 +18,12 @@ Parameters:
   AccessKeysRotatedParamMaxAccessKeyAge:
     Default: '90'
     Type: String
+  IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:*, kms:Decrypt, kms:ReEncrypt*
+    Type: String
+  IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:*, kms:Decrypt, kms:ReEncrypt*
+    Type: String
   IamPasswordPolicyParamMaxPasswordAge:
     Default: '90'
     Type: String
@@ -42,6 +48,12 @@ Parameters:
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
     Type: String
+  NetfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions:
+    Default: aws:drop,aws:forward_to_sfe
+    Type: String
+  NetfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions:
+    Default: aws:drop,aws:forward_to_sfe
+    Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Default: 'TRUE'
     Type: String
@@ -61,16 +73,16 @@ Parameters:
     Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Default: '443'
@@ -173,6 +185,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
     Type: AWS::Config::ConfigRule
+  Ec2InstanceProfileAttached:
+    Properties:
+      ConfigRuleName: ec2-instance-profile-attached
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
+    Type: AWS::Config::ConfigRule
   Ec2ManagedinstanceAssociationComplianceStatusCheck:
     Properties:
       ConfigRuleName: ec2-managedinstance-association-compliance-status-check
@@ -193,7 +215,7 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
-  Ec2SecurityGroupAttachedToEni:
+  Ec2SecurityGroupAttachedToEniPeriodic:
     Properties:
       ConfigRuleName: ec2-security-group-attached-to-eni-periodic
       Scope:
@@ -202,6 +224,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI_PERIODIC
+    Type: AWS::Config::ConfigRule
+  EcrPrivateImageScanningEnabled:
+    Properties:
+      ConfigRuleName: ecr-private-image-scanning-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_IMAGE_SCANNING_ENABLED
     Type: AWS::Config::ConfigRule
   ElasticBeanstalkManagedUpdatesEnabled:
     Properties:
@@ -243,6 +275,22 @@ Resources:
         Owner: AWS
         SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
     Type: AWS::Config::ConfigRule
+  IamCustomerPolicyBlockedKmsActions:
+    Properties:
+      ConfigRuleName: iam-customer-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_CUSTOMER_POLICY_BLOCKED_KMS_ACTIONS
+    Type: AWS::Config::ConfigRule
   IamGroupHasUsersCheck:
     Properties:
       ConfigRuleName: iam-group-has-users-check
@@ -252,6 +300,24 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
+    Type: AWS::Config::ConfigRule
+  IamInlinePolicyBlockedKmsActions:
+    Properties:
+      ConfigRuleName: iam-inline-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
+        - AWS::IAM::Role
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_INLINE_POLICY_BLOCKED_KMS_ACTIONS
     Type: AWS::Config::ConfigRule
   IamNoInlinePolicyCheck:
     Properties:
@@ -432,6 +498,58 @@ Resources:
         Owner: AWS
         SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
     Type: AWS::Config::ConfigRule
+  NetfwPolicyDefaultActionFragmentPackets:
+    Properties:
+      ConfigRuleName: netfw-policy-default-action-fragment-packets
+      InputParameters:
+        statelessFragmentDefaultActions:
+          Fn::If:
+          - netfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions
+          - Ref: NetfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::FirewallPolicy
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_POLICY_DEFAULT_ACTION_FRAGMENT_PACKETS
+    Type: AWS::Config::ConfigRule
+  NetfwPolicyDefaultActionFullPackets:
+    Properties:
+      ConfigRuleName: netfw-policy-default-action-full-packets
+      InputParameters:
+        statelessDefaultActions:
+          Fn::If:
+          - netfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions
+          - Ref: NetfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::FirewallPolicy
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_POLICY_DEFAULT_ACTION_FULL_PACKETS
+    Type: AWS::Config::ConfigRule
+  NetfwPolicyRuleGroupAssociated:
+    Properties:
+      ConfigRuleName: netfw-policy-rule-group-associated
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::FirewallPolicy
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_POLICY_RULE_GROUP_ASSOCIATED
+    Type: AWS::Config::ConfigRule
+  NetfwStatelessRuleGroupNotEmpty:
+    Properties:
+      ConfigRuleName: netfw-stateless-rule-group-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::RuleGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_STATELESS_RULE_GROUP_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
   NoUnrestrictedRouteToIgw:
     Properties:
       ConfigRuleName: no-unrestricted-route-to-igw
@@ -441,6 +559,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
+    Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
     Type: AWS::Config::ConfigRule
   RdsAutomaticMinorVersionUpgradeEnabled:
     Properties:
@@ -644,6 +772,13 @@ Resources:
         Owner: AWS
         SourceIdentifier: SECRETSMANAGER_SCHEDULED_ROTATION_SUCCESS_CHECK
     Type: AWS::Config::ConfigRule
+  SecurityhubEnabled:
+    Properties:
+      ConfigRuleName: securityhub-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+    Type: AWS::Config::ConfigRule
   SsmDocumentNotPublic:
     Properties:
       ConfigRuleName: ssm-document-not-public
@@ -687,13 +822,35 @@ Resources:
         Owner: AWS
         SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
     Type: AWS::Config::ConfigRule
-  VulnManagementPlanExists:
+  WafRegionalRuleNotEmpty:
     Properties:
-      ConfigRuleName: vuln-management-plan-exists
-      Description: Ensure a vulnerability management plan is developed and implemented in order to have a formally defined processes to address vulnerabilities in your environment.
+      ConfigRuleName: waf-regional-rule-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::WAFRegional::Rule
       Source:
         Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+        SourceIdentifier: WAF_REGIONAL_RULE_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
+  WafRegionalRulegroupNotEmpty:
+    Properties:
+      ConfigRuleName: waf-regional-rulegroup-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::WAFRegional::RuleGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAF_REGIONAL_RULEGROUP_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
+  WafRegionalWebaclNotEmpty:
+    Properties:
+      ConfigRuleName: waf-regional-webacl-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::WAFRegional::WebACL
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAF_REGIONAL_WEBACL_NOT_EMPTY
     Type: AWS::Config::ConfigRule
 Conditions:
   accessKeysRotatedParamMaxAccessKeyAge:
@@ -701,6 +858,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+  iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+  iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
   iamPasswordPolicyParamMaxPasswordAge:
     Fn::Not:
     - Fn::Equals:
@@ -741,6 +908,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+  netfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: NetfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions
+  netfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: NetfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions
   redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Fn::Not:
     - Fn::Equals:

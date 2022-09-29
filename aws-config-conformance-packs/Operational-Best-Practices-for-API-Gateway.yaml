@@ -1,7 +1,7 @@
 ##################################################################################
 #
 #   Conformance Pack:
-#     Operational Best Practices for API ApiGateway                                
+#     Operational Best Practices for API ApiGateway
 #
 #   This conformance pack helps verify compliance with  requirements.
 #
@@ -80,6 +80,20 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: API_GW_XRAY_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailCloudWatchLogsEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-cloud-watch-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
 Conditions:
   apiGwEndpointTypeCheckParamEndpointConfigurationTypes:

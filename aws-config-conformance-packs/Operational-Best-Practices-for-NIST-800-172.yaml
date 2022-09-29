@@ -10,6 +10,12 @@
 ##################################################################################
 
 Parameters:
+  AlbDesyncModeCheckParamDesyncMode:
+    Default: defensive, strictest
+    Type: String
+  ClbDesyncModeCheckParamDesyncMode:
+    Default: defensive, strictest
+    Type: String
   IamPasswordPolicyParamMaxPasswordAge:
     Default: '90'
     Type: String
@@ -50,21 +56,37 @@ Parameters:
     Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Default: '443'
     Type: String
 Resources:
+  AlbDesyncModeCheck:
+    Properties:
+      ConfigRuleName: alb-desync-mode-check
+      InputParameters:
+        desyncMode:
+          Fn::If:
+          - albDesyncModeCheckParamDesyncMode
+          - Ref: AlbDesyncModeCheckParamDesyncMode
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_DESYNC_MODE_CHECK
+    Type: AWS::Config::ConfigRule
   AlbHttpDropInvalidHeaderEnabled:
     Properties:
       ConfigRuleName: alb-http-drop-invalid-header-enabled
@@ -101,6 +123,22 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_PUBLIC_IP_DISABLED
+    Type: AWS::Config::ConfigRule
+  ClbDesyncModeCheck:
+    Properties:
+      ConfigRuleName: clb-desync-mode-check
+      InputParameters:
+        desyncMode:
+          Fn::If:
+          - clbDesyncModeCheckParamDesyncMode
+          - Ref: ClbDesyncModeCheckParamDesyncMode
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLB_DESYNC_MODE_CHECK
     Type: AWS::Config::ConfigRule
   CloudTrailCloudWatchLogsEnabled:
     Properties:
@@ -204,6 +242,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_STOPPED_INSTANCE
     Type: AWS::Config::ConfigRule
+  Ec2TokenHopLimitCheck:
+    Properties:
+      ConfigRuleName: ec2-token-hop-limit-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_TOKEN_HOP_LIMIT_CHECK
+    Type: AWS::Config::ConfigRule
   Ec2VolumeInuseCheck:
     Properties:
       ConfigRuleName: ec2-volume-inuse-check
@@ -213,6 +261,26 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
+    Type: AWS::Config::ConfigRule
+  EcrPrivateImageScanningEnabled:
+    Properties:
+      ConfigRuleName: ecr-private-image-scanning-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_IMAGE_SCANNING_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcsFargateLatestPlatformVersion:
+    Properties:
+      ConfigRuleName: ecs-fargate-latest-platform-version
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Service
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_FARGATE_LATEST_PLATFORM_VERSION
     Type: AWS::Config::ConfigRule
   EipAttached:
     Properties:
@@ -377,6 +445,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: LAMBDA_INSIDE_VPC
     Type: AWS::Config::ConfigRule
+  NaclNoUnrestrictedSshRdp:
+    Properties:
+      ConfigRuleName: nacl-no-unrestricted-ssh-rdp
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::NetworkAcl
+      Source:
+        Owner: AWS
+        SourceIdentifier: NACL_NO_UNRESTRICTED_SSH_RDP
+    Type: AWS::Config::ConfigRule
   NoUnrestrictedRouteToIgw:
     Properties:
       ConfigRuleName: no-unrestricted-route-to-igw
@@ -386,6 +464,36 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
+    Type: AWS::Config::ConfigRule
+  OpensearchHttpsRequired:
+    Properties:
+      ConfigRuleName: opensearch-https-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_HTTPS_REQUIRED
+    Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  OpensearchNodeToNodeEncryptionCheck:
+    Properties:
+      ConfigRuleName: opensearch-node-to-node-encryption-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
     Type: AWS::Config::ConfigRule
   RdsAutomaticMinorVersionUpgradeEnabled:
     Properties:
@@ -672,23 +780,17 @@ Resources:
         Owner: AWS
         SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
     Type: AWS::Config::ConfigRule
-  AnnualRiskAssessmentPerformed:
-    Properties:
-      ConfigRuleName: annual-risk-assessment-performed
-      Description: Perform an annual risk assessment on your organization. Risk assessments can assist in determining the likelihood and impact of identified risks and/or vulnerabilities affecting an organization.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  SecurityAwarenessProgramExists:
-    Properties:
-      ConfigRuleName: security-awareness-program-exists
-      Description: Establish and maintain a security awareness program for your organization. Security awareness programs educate employees on how to protect their organization from various security breaches or incidents.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
 Conditions:
+  albDesyncModeCheckParamDesyncMode:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AlbDesyncModeCheckParamDesyncMode
+  clbDesyncModeCheckParamDesyncMode:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ClbDesyncModeCheckParamDesyncMode
   iamPasswordPolicyParamMaxPasswordAge:
     Fn::Not:
     - Fn::Equals:

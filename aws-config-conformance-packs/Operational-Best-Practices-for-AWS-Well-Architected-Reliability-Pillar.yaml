@@ -17,6 +17,15 @@
 ##################################################################################
 
 Parameters:
+  CloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Default: 'TRUE'
+    Type: String
+  CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Default: 'TRUE'
+    Type: String
+  CloudwatchAlarmActionCheckParamOkActionRequired:
+    Default: 'FALSE'
+    Type: String
   DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
     Default: '80'
     Type: String
@@ -33,6 +42,37 @@ Parameters:
     Default: 'TRUE'
     Type: String
 Resources:
+  ApiGwExecutionLoggingEnabled:
+    Properties:
+      ConfigRuleName: api-gw-execution-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+        - AWS::ApiGatewayV2::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ApiGwXrayEnabled:
+    Properties:
+      ConfigRuleName: api-gw-xray-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_XRAY_ENABLED
+    Type: AWS::Config::ConfigRule
+  AuroraResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: aurora-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: AURORA_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
   AutoscalingGroupElbHealthcheckRequired:
     Properties:
       ConfigRuleName: autoscaling-group-elb-healthcheck-required
@@ -43,15 +83,35 @@ Resources:
         Owner: AWS
         SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
     Type: AWS::Config::ConfigRule
-  AutoscalingLaunchConfigPublicIpDisabled:
+  BackupPlanMinFrequencyAndMinRetentionCheck:
     Properties:
-      ConfigRuleName: autoscaling-launch-config-public-ip-disabled
+      ConfigRuleName: backup-plan-min-frequency-and-min-retention-check
       Scope:
         ComplianceResourceTypes:
-        - AWS::AutoScaling::LaunchConfiguration
+        - AWS::Backup::BackupPlan
       Source:
         Owner: AWS
-        SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_PUBLIC_IP_DISABLED
+        SourceIdentifier: BACKUP_PLAN_MIN_FREQUENCY_AND_MIN_RETENTION_CHECK
+    Type: AWS::Config::ConfigRule
+  BackupRecoveryPointEncrypted:
+    Properties:
+      ConfigRuleName: backup-recovery-point-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::RecoveryPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  BackupRecoveryPointMinimumRetentionCheck:
+    Properties:
+      ConfigRuleName: backup-recovery-point-minimum-retention-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::RecoveryPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_MINIMUM_RETENTION_CHECK
     Type: AWS::Config::ConfigRule
   BeanstalkEnhancedHealthReportingEnabled:
     Properties:
@@ -63,13 +123,56 @@ Resources:
         Owner: AWS
         SourceIdentifier: BEANSTALK_ENHANCED_HEALTH_REPORTING_ENABLED
     Type: AWS::Config::ConfigRule
+  ClbMultipleAz:
+    Properties:
+      ConfigRuleName: clb-multiple-az
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLB_MULTIPLE_AZ
+    Type: AWS::Config::ConfigRule
+  CloudTrailCloudWatchLogsEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-cloud-watch-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudtrailS3DataeventsEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-s3-dataevents-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDTRAIL_S3_DATAEVENTS_ENABLED
+    Type: AWS::Config::ConfigRule
   CloudwatchAlarmActionCheck:
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
       InputParameters:
-        alarmActionRequired: 'TRUE'
-        insufficientDataActionRequired: 'TRUE'
-        okActionRequired: 'FALSE'
+        alarmActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: AWS::NoValue
+        insufficientDataActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: AWS::NoValue
+        okActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -114,6 +217,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: DYNAMODB_PITR_ENABLED
     Type: AWS::Config::ConfigRule
+  DynamodbTableEncryptedKms:
+    Properties:
+      ConfigRuleName: dynamodb-table-encrypted-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS
+    Type: AWS::Config::ConfigRule
   DynamodbThroughputLimitCheck:
     Properties:
       ConfigRuleName: dynamodb-throughput-limit-check
@@ -149,6 +262,13 @@ Resources:
         Owner: AWS
         SourceIdentifier: EBS_OPTIMIZED_INSTANCE
     Type: AWS::Config::ConfigRule
+  Ec2EbsEncryptionByDefault:
+    Properties:
+      ConfigRuleName: ec2-ebs-encryption-by-default
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_EBS_ENCRYPTION_BY_DEFAULT
+    Type: AWS::Config::ConfigRule
   Ec2InstanceDetailedMonitoringEnabled:
     Properties:
       ConfigRuleName: ec2-instance-detailed-monitoring-enabled
@@ -159,6 +279,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_DETAILED_MONITORING_ENABLED
     Type: AWS::Config::ConfigRule
+  Ec2ManagedinstanceAssociationComplianceStatusCheck:
+    Properties:
+      ConfigRuleName: ec2-managedinstance-association-compliance-status-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SSM::AssociationCompliance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_MANAGEDINSTANCE_ASSOCIATION_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
   Ec2ManagedinstancePatchComplianceStatusCheck:
     Properties:
       ConfigRuleName: ec2-managedinstance-patch-compliance-status-check
@@ -168,6 +298,43 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2ResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: ec2-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  EcsContainerInsightsEnabled:
+    Properties:
+      ConfigRuleName: ecs-container-insights-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINER_INSIGHTS_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionMemoryHardLimit:
+    Properties:
+      ConfigRuleName: ecs-task-definition-memory-hard-limit
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_MEMORY_HARD_LIMIT
+    Type: AWS::Config::ConfigRule
+  EfsEncryptedCheck:
+    Properties:
+      ConfigRuleName: efs-encrypted-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ENCRYPTED_CHECK
     Type: AWS::Config::ConfigRule
   EfsInBackupPlan:
     Properties:
@@ -183,12 +350,15 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
     Type: AWS::Config::ConfigRule
-  ElasticsearchInVpcOnly:
+  ElasticsearchLogsToCloudwatch:
     Properties:
-      ConfigRuleName: elasticsearch-in-vpc-only
+      ConfigRuleName: elasticsearch-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Elasticsearch::Domain
       Source:
         Owner: AWS
-        SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
+        SourceIdentifier: ELASTICSEARCH_LOGS_TO_CLOUDWATCH
     Type: AWS::Config::ConfigRule
   ElbCrossZoneLoadBalancingEnabled:
     Properties:
@@ -209,6 +379,46 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ELB_DELETION_PROTECTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  ElbLoggingEnabled:
+    Properties:
+      ConfigRuleName: elb-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  Elbv2MultipleAz:
+    Properties:
+      ConfigRuleName: elbv2-multiple-az
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELBV2_MULTIPLE_AZ
+    Type: AWS::Config::ConfigRule
+  EncryptedVolumes:
+    Properties:
+      ConfigRuleName: encrypted-volumes
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Volume
+      Source:
+        Owner: AWS
+        SourceIdentifier: ENCRYPTED_VOLUMES
+    Type: AWS::Config::ConfigRule
+  FsxResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: fsx-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes: []
+      Source:
+        Owner: AWS
+        SourceIdentifier: FSX_RESOURCES_PROTECTED_BY_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
   GuarddutyEnabledCentralized:
     Properties:
@@ -258,15 +468,42 @@ Resources:
         Owner: AWS
         SourceIdentifier: LAMBDA_DLQ_CHECK
     Type: AWS::Config::ConfigRule
-  LambdaInsideVpc:
+  LambdaVpcMultiAzCheck:
     Properties:
-      ConfigRuleName: lambda-inside-vpc
+      ConfigRuleName: lambda-vpc-multi-az-check
       Scope:
         ComplianceResourceTypes:
         - AWS::Lambda::Function
       Source:
         Owner: AWS
-        SourceIdentifier: LAMBDA_INSIDE_VPC
+        SourceIdentifier: LAMBDA_VPC_MULTI_AZ_CHECK
+    Type: AWS::Config::ConfigRule
+  MultiRegionCloudTrailEnabled:
+    Properties:
+      ConfigRuleName: multi-region-cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  OpensearchDataNodeFaultTolerance:
+    Properties:
+      ConfigRuleName: opensearch-data-node-fault-tolerance
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_DATA_NODE_FAULT_TOLERANCE
+    Type: AWS::Config::ConfigRule
+  OpensearchLogsToCloudwatch:
+    Properties:
+      ConfigRuleName: opensearch-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_LOGS_TO_CLOUDWATCH
     Type: AWS::Config::ConfigRule
   RdsAutomaticMinorVersionUpgradeEnabled:
     Properties:
@@ -305,6 +542,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_INSTANCE_DELETION_PROTECTION_ENABLED
     Type: AWS::Config::ConfigRule
+  RdsLoggingEnabled:
+    Properties:
+      ConfigRuleName: rds-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
   RdsMultiAzSupport:
     Properties:
       ConfigRuleName: rds-multi-az-support
@@ -315,6 +562,27 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_MULTI_AZ_SUPPORT
     Type: AWS::Config::ConfigRule
+  RdsSnapshotEncrypted:
+    Properties:
+      ConfigRuleName: rds-snapshot-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBSnapshot
+        - AWS::RDS::DBClusterSnapshot
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_SNAPSHOT_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  RdsStorageEncrypted:
+    Properties:
+      ConfigRuleName: rds-storage-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_STORAGE_ENCRYPTED
+    Type: AWS::Config::ConfigRule
   RedshiftBackupEnabled:
     Properties:
       ConfigRuleName: redshift-backup-enabled
@@ -324,6 +592,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: REDSHIFT_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterKmsEnabled:
+    Properties:
+      ConfigRuleName: redshift-cluster-kms-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_KMS_ENABLED
     Type: AWS::Config::ConfigRule
   RedshiftClusterMaintenancesettingsCheck:
     Properties:
@@ -341,6 +619,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_MAINTENANCESETTINGS_CHECK
     Type: AWS::Config::ConfigRule
+  RedshiftEnhancedVpcRoutingEnabled:
+    Properties:
+      ConfigRuleName: redshift-enhanced-vpc-routing-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_ENHANCED_VPC_ROUTING_ENABLED
+    Type: AWS::Config::ConfigRule
   S3BucketDefaultLockEnabled:
     Properties:
       ConfigRuleName: s3-bucket-default-lock-enabled
@@ -350,6 +638,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketLoggingEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
   S3BucketReplicationEnabled:
     Properties:
@@ -361,6 +659,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_REPLICATION_ENABLED
     Type: AWS::Config::ConfigRule
+  S3BucketServerSideEncryptionEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-server-side-encryption-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
   S3BucketVersioningEnabled:
     Properties:
       ConfigRuleName: s3-bucket-versioning-enabled
@@ -371,12 +679,29 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
     Type: AWS::Config::ConfigRule
+  S3DefaultEncryptionKms:
+    Properties:
+      ConfigRuleName: s3-default-encryption-kms
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_DEFAULT_ENCRYPTION_KMS
+    Type: AWS::Config::ConfigRule
   SecurityhubEnabled:
     Properties:
       ConfigRuleName: securityhub-enabled
       Source:
         Owner: AWS
         SourceIdentifier: SECURITYHUB_ENABLED
+    Type: AWS::Config::ConfigRule
+  VpcFlowLogsEnabled:
+    Properties:
+      ConfigRuleName: vpc-flow-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
     Type: AWS::Config::ConfigRule
   VpcVpn2TunnelsUp:
     Properties:
@@ -388,7 +713,29 @@ Resources:
         Owner: AWS
         SourceIdentifier: VPC_VPN_2_TUNNELS_UP
     Type: AWS::Config::ConfigRule
+  Wafv2LoggingEnabled:
+    Properties:
+      ConfigRuleName: wafv2-logging-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAFV2_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
 Conditions:
+  cloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+  cloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+  cloudwatchAlarmActionCheckParamOkActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
   dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
     Fn::Not:
     - Fn::Equals:

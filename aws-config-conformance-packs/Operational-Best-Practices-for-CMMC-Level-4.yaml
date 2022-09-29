@@ -34,7 +34,7 @@ Parameters:
     Default: '365'
     Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   GuarddutyNonArchivedFindingsParamDaysHighSev:
     Default: '1'
@@ -76,7 +76,7 @@ Parameters:
     Default: '90'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
-    Default: 'true'
+    Default: 'TRUE'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAutomatedSnapshotRetentionPeriod:
     Default: '1'
@@ -296,9 +296,9 @@ Resources:
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
       InputParameters:
-        alarmActionRequired: 'true'
-        insufficientDataActionRequired: 'true'
-        okActionRequired: 'false'
+        alarmActionRequired: 'TRUE'
+        insufficientDataActionRequired: 'TRUE'
+        okActionRequired: 'FALSE'
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -513,6 +513,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
+    Type: AWS::Config::ConfigRule
+  EcrPrivateImageScanningEnabled:
+    Properties:
+      ConfigRuleName: ecr-private-image-scanning-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_IMAGE_SCANNING_ENABLED
     Type: AWS::Config::ConfigRule
   EfsEncryptedCheck:
     Properties:
@@ -953,6 +963,36 @@ Resources:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
     Type: AWS::Config::ConfigRule
+  OpensearchEncryptedAtRest:
+    Properties:
+      ConfigRuleName: opensearch-encrypted-at-rest
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
+    Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  OpensearchNodeToNodeEncryptionCheck:
+    Properties:
+      ConfigRuleName: opensearch-node-to-node-encryption-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
+    Type: AWS::Config::ConfigRule
   RdsAutomaticMinorVersionUpgradeEnabled:
     Properties:
       ConfigRuleName: rds-automatic-minor-version-upgrade-enabled
@@ -1387,46 +1427,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
-    Type: AWS::Config::ConfigRule
-  ResponsePlanExistsMaintained:
-    Properties:
-      ConfigRuleName: response-plan-exists-maintained
-      Description: Ensure incident response plans are established, maintained, and distributed to responsible personnel.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  ResponsePlanTested:
-    Properties:
-      ConfigRuleName: response-plan-tested
-      Description: Ensure Incident response and recovery plans are tested. This can assist in understanding if your plan will be effective during an incident and if any gaps or updates need to be addressed.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  VulnScansPerformed:
-    Properties:
-      ConfigRuleName: vuln-scans-performed
-      Description: Ensure vulnerability scans are performed according to your compliannce requirements. The cadence of scanning, tools used, and use of results should be defined by your organization.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  VulnManagementPlanExists:
-    Properties:
-      ConfigRuleName: vuln-management-plan-exists
-      Description: Ensure a vulnerability management plan is developed and implemented in order to have a formally defined processes to address vulnerabilities in your environment.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  SecurityAwarenessProgramExists:
-    Properties:
-      ConfigRuleName: security-awareness-program-exists
-      Description: Establish and maintain a security awareness program for your organization. Security awareness programs educate employees on how to protect their organization from various security breaches or incidents.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
   accessKeysRotatedParamMaxAccessKeyAge:

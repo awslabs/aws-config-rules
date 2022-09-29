@@ -45,7 +45,7 @@ Parameters:
       period is 365 days.'
     Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
-    Default: 'True'
+    Default: 'TRUE'
     Description: EBS volumes are marked for deletion when an instance is terminated.
     Type: String
   GuarddutyNonArchivedFindingsParamDaysHighSev:
@@ -86,19 +86,19 @@ Parameters:
     Description: Number of passwords before allowing reuse.
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'true'
+    Default: 'TRUE'
     Description: Require at least one lowercase character in password.
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'true'
+    Default: 'TRUE'
     Description: Require at least one number in password.
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'true'
+    Default: 'TRUE'
     Description: Require at least one symbol in password.
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'true'
+    Default: 'TRUE'
     Description: Require at least one uppercase character in password.
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
@@ -107,7 +107,7 @@ Parameters:
       is 90 days.
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
-    Default: 'true'
+    Default: 'TRUE'
     Description: Allow version upgrade is enabled.
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAutomatedSnapshotRetentionPeriod:
@@ -492,7 +492,6 @@ Resources:
     - AU.3.046
     - CA.3.161
     - IR.2.092
-    - IR.2.093
     - SC.1.175
     - SI.1.210
     - SI.2.214
@@ -502,9 +501,9 @@ Resources:
         one INSUFFICIENT_DATA action, or one OK action enabled. Optionally, checks
         whether any of the actions matches one of the specified ARNs.
       InputParameters:
-        alarmActionRequired: 'true'
-        insufficientDataActionRequired: 'true'
-        okActionRequired: 'false'
+        alarmActionRequired: 'TRUE'
+        insufficientDataActionRequired: 'TRUE'
+        okActionRequired: 'FALSE'
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -614,7 +613,7 @@ Resources:
     Properties:
       ConfigRuleName: dms-replication-not-public
       Description: Checks whether AWS Database Migration Service replication instances
-        are public. The rule is NON_COMPLIANT if PubliclyAccessible field is true.
+        are public. The rule is NON_COMPLIANT if PubliclyAccessible field is True.
       Scope:
         ComplianceResourceTypes: []
       Source:
@@ -870,6 +869,21 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
     Type: AWS::Config::ConfigRule
+  EcrPrivateImageScanningEnabled:
+    Controls:
+    - SI.1.213
+    Properties:
+      ConfigRuleName: ecr-private-image-scanning-enabled
+      Description: Checks if a private Amazon Elastic Container Registry (ECR) repository
+        has image scanning enabled. The rule is NON_COMPLIANT if image scanning is
+        not enabled for the private ECR repository.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_IMAGE_SCANNING_ENABLED
+    Type: AWS::Config::ConfigRule
   EfsEncryptedCheck:
     Controls:
     - IA.2.081
@@ -877,7 +891,7 @@ Resources:
     Properties:
       ConfigRuleName: efs-encrypted-check
       Description: Checks whether Amazon EFS are configured to encrypt file data using
-        AWS KMS. The rule is NON_COMPLIANT if the Encrypted key is set to false on
+        AWS KMS. The rule is NON_COMPLIANT if the Encrypted key is set to False on
         DescribeFileSystems or, if specified, KmsKeyId key on DescribeFileSystems
         is not matching KmsKeyId parameter.
       Source:
@@ -1666,6 +1680,61 @@ Resources:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
     Type: AWS::Config::ConfigRule
+  OpensearchEncryptedAtRest:
+    Controls:
+    - IA.2.081
+    - SC.3.191
+    Properties:
+      ConfigRuleName: opensearch-encrypted-at-rest
+      Description: Checks if Amazon OpenSearch Service domains have encryption at
+        rest configuration enabled. The rule is NON_COMPLIANT if EncryptionAtRestOptions
+        field is not enabled.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
+    Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Controls:
+    - AC.1.001
+    - AC.1.002
+    - AC.2.007
+    - AC.2.016
+    - CM.2.062
+    - SC.1.175
+    - SC.3.180
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Description: Checks if Amazon OpenSearch Service domains are in an Amazon Virtual
+        Private Cloud (VPC). The rule is NON_COMPLIANT if an OpenSearch Service domain
+        endpoint is public.
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  OpensearchNodeToNodeEncryptionCheck:
+    Controls:
+    - AC.3.014
+    - IA.2.081
+    - SC.1.175
+    - SC.3.185
+    Properties:
+      ConfigRuleName: opensearch-node-to-node-encryption-check
+      Description: Check that Amazon OpenSearch Service nodes are encrypted end to
+        end. The rule is NON_COMPLIANT if the node-to-node encryption is not enabled
+        on the domain
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
+    Type: AWS::Config::ConfigRule
   RdsAutomaticMinorVersionUpgradeEnabled:
     Controls:
     - CM.2.064
@@ -1842,7 +1911,6 @@ Resources:
   RedshiftClusterKmsEnabled:
     Controls:
     - IA.2.081
-    - SC.3.190
     - SC.3.191
     Properties:
       ConfigRuleName: redshift-cluster-kms-enabled
@@ -2015,8 +2083,8 @@ Resources:
     - SC.3.182
     Properties:
       ConfigRuleName: s3-account-level-public-access-blocks-periodic
-      Description: Check if the required public access block settings are configured
-        from account level
+      Description: Checks if the required public access block settings are configured
+        from account level.
       Source:
         Owner: AWS
         SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
@@ -2475,46 +2543,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
-    Type: AWS::Config::ConfigRule
-  ResponsePlanExistsMaintained:
-    Controls:
-    - IR.2.092
-    Properties:
-      ConfigRuleName: response-plan-exists-maintained
-      Description: Ensure incident response plans are established, maintained, and distributed to responsible personnel.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  ResponsePlanTested:
-    Controls:
-    - IR.3.099
-    Properties:
-      ConfigRuleName: response-plan-tested
-      Description: Ensure Incident response and recovery plans are tested. This can assist in understanding if your plan will be effective during an incident and if any gaps or updates need to be addressed.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  VulnScansPerformed:
-    Controls:
-    - RM.2.142
-    Properties:
-      ConfigRuleName: vuln-scans-performed
-      Description: Ensure vulnerability scans are performed according to your compliannce requirements. The cadence of scanning, tools used, and use of results should be defined by your organization.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  VulnManagementPlanExists:
-    Controls:
-    - CA.2.159
-    Properties:
-      ConfigRuleName: vuln-management-plan-exists
-      Description: Ensure a vulnerability management plan is developed and implemented in order to have a formally defined processes to address vulnerabilities in your environment.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
   accessKeysRotatedParamMaxAccessKeyAge:
