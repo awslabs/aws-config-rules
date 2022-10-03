@@ -103,7 +103,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   AccountPartOfOrganizations:
     Controls:
-    - '1.1'
+    - '2.3'
     Properties:
       ConfigRuleName: account-part-of-organizations
       Description: Rule checks whether AWS account is part of AWS Organizations. The
@@ -159,18 +159,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
     Type: AWS::Config::ConfigRule
-  CloudtrailS3DataeventsEnabled:
-    Controls:
-    - '6.4'
-    Properties:
-      ConfigRuleName: cloudtrail-s3-dataevents-enabled
-      Description: Checks whether at least one AWS CloudTrail trail is logging Amazon
-        S3 data events for all S3 buckets. The rule is NON_COMPLIANT if trails log
-        data events for S3 buckets is not configured.
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDTRAIL_S3_DATAEVENTS_ENABLED
-    Type: AWS::Config::ConfigRule
   CloudwatchLogGroupEncrypted:
     Controls:
     - '6.4'
@@ -208,7 +196,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   Ec2Imdsv2Check:
     Controls:
-    - '1.1'
+    - '2.3'
     Properties:
       ConfigRuleName: ec2-imdsv2-check
       Description: Checks whether your Amazon Elastic Compute Cloud (Amazon EC2) instance
@@ -223,7 +211,6 @@ Resources:
     Type: AWS::Config::ConfigRule
   Ec2InstanceDetailedMonitoringEnabled:
     Controls:
-    - '1.1'
     - '6.4'
     Properties:
       ConfigRuleName: ec2-instance-detailed-monitoring-enabled
@@ -252,7 +239,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   Ec2InstanceMultipleEniCheck:
     Controls:
-    - '1.1'
+    - '2.3'
     Properties:
       ConfigRuleName: ec2-instance-multiple-eni-check
       Description: Checks if Amazon Elastic Compute Cloud (Amazon EC2) uses multiple
@@ -283,7 +270,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   Ec2InstanceProfileAttached:
     Controls:
-    - '1.1'
+    - '5.1'
     Properties:
       ConfigRuleName: ec2-instance-profile-attached
       Description: Checks if an Amazon Elastic Compute Cloud (Amazon EC2) instance
@@ -311,24 +298,9 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_NO_AMAZON_KEY_PAIR
     Type: AWS::Config::ConfigRule
-  Ec2SecurityGroupAttachedToEniPeriodic:
-    Controls:
-    - '1.1'
-    Properties:
-      ConfigRuleName: ec2-security-group-attached-to-eni-periodic
-      Description: Checks if non-default security groups are attached to Elastic network
-        interfaces (ENIs). The rule is NON_COMPLIANT if the security group is not
-        associated with an elastic network interface (ENI).
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI_PERIODIC
-    Type: AWS::Config::ConfigRule
   Ec2StoppedInstance:
     Controls:
-    - '1.1'
+    - '6.4'
     Properties:
       ConfigRuleName: ec2-stopped-instance
       Description: Checks whether there are instances stopped for more than the allowed
@@ -339,7 +311,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   Ec2TokenHopLimitCheck:
     Controls:
-    - '1.1'
+    - '2.3'
     Properties:
       ConfigRuleName: ec2-token-hop-limit-check
       Description: Checks if an Amazon Elastic Compute Cloud (EC2) instance metadata
@@ -355,7 +327,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   Ec2VolumeInuseCheck:
     Controls:
-    - '1.1'
+    - '2.3'
     Properties:
       ConfigRuleName: ec2-volume-inuse-check
       Description: Checks whether EBS volumes are attached to EC2 instances.
@@ -368,7 +340,6 @@ Resources:
     Type: AWS::Config::ConfigRule
   EfsEncryptedCheck:
     Controls:
-    - '1.1'
     - 2.5A
     Properties:
       ConfigRuleName: efs-encrypted-check
@@ -495,7 +466,6 @@ Resources:
   IamPasswordPolicy:
     Controls:
     - '4.1'
-    - '6.4'
     Properties:
       ConfigRuleName: iam-password-policy
       Description: Checks whether the account password policy for IAM users meets
@@ -539,22 +509,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: IAM_PASSWORD_POLICY
-    Type: AWS::Config::ConfigRule
-  IamPolicyNoStatementsWithAdminAccess:
-    Controls:
-    - '5.1'
-    Properties:
-      ConfigRuleName: iam-policy-no-statements-with-admin-access
-      Description: 'Checks whether the default version of AWS Identity and Access
-        Management (IAM) policies do not have administrator access. If any statement
-        has "Effect": "Allow" with "Action": "*" over "Resource": "*", the rule is
-        non-compliant.'
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::IAM::Policy
-      Source:
-        Owner: AWS
-        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
     Type: AWS::Config::ConfigRule
   IamPolicyNoStatementsWithFullAccess:
     Controls:
@@ -622,7 +576,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   IamUserUnusedCredentialsCheck:
     Controls:
-    - '1.2'
+    - '5.1'
     Properties:
       ConfigRuleName: iam-user-unused-credentials-check
       Description: Checks whether your AWS Identity and Access Management (IAM) users
@@ -698,7 +652,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   KmsCmkNotScheduledForDeletion:
     Controls:
-    - '1.2'
+    - '2.3'
     Properties:
       ConfigRuleName: kms-cmk-not-scheduled-for-deletion
       Description: Checks whether customer master keys (CMKs) are not scheduled for
@@ -726,7 +680,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   LambdaInsideVpc:
     Controls:
-    - '1.1'
+    - '2.3'
     Properties:
       ConfigRuleName: lambda-inside-vpc
       Description: Checks whether an AWS Lambda function is in an Amazon Virtual Private
@@ -749,17 +703,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
-    Type: AWS::Config::ConfigRule
-  MultiRegionCloudTrailEnabled:
-    Controls:
-    - '6.4'
-    Properties:
-      ConfigRuleName: multi-region-cloudtrail-enabled
-      Description: Checks that there is at least one multi-region AWS CloudTrail.
-        The rule is non-compliant if the trails do not match input parameters
-      Source:
-        Owner: AWS
-        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
   NaclNoUnrestrictedSshRdp:
     Controls:
@@ -957,7 +900,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   S3BucketVersioningEnabled:
     Controls:
-    - 2.5A
+    - '2.3'
     Properties:
       ConfigRuleName: s3-bucket-versioning-enabled
       Description: Checks whether versioning is enabled for your S3 buckets.
@@ -1026,7 +969,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   SecretsmanagerSecretUnused:
     Controls:
-    - '5.4'
+    - '2.3'
     Properties:
       ConfigRuleName: secretsmanager-secret-unused
       Description: Checks if AWS Secrets Manager secrets have been accessed in the
@@ -1053,7 +996,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   SecurityhubEnabled:
     Controls:
-    - '2.7'
+    - 6.5A
     Properties:
       ConfigRuleName: securityhub-enabled
       Description: Checks that AWS Security Hub is enabled for an AWS Account. The
@@ -1122,7 +1065,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   VpcFlowLogsEnabled:
     Controls:
-    - '1.1'
+    - '6.4'
     Properties:
       ConfigRuleName: vpc-flow-logs-enabled
       Description: Checks whether Amazon Virtual Private Cloud flow logs are found
