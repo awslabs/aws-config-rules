@@ -1,0 +1,11 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "CLOUDWATCH_LOG_GROUP_RETENTION_NEVER_EXPIRE_CHECK",
+    "SourceRuntime": "python3.8",
+    "CodeKey": "CLOUDWATCH_LOG_GROUP_RETENTION_NEVER_EXPIRE_CHECK.zip",
+    "InputParameters": "{\"CentralLoggingBucket\": \"cloudfront-logs-bucket-here\"}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::CloudFront::Distribution"
+  }
+}
