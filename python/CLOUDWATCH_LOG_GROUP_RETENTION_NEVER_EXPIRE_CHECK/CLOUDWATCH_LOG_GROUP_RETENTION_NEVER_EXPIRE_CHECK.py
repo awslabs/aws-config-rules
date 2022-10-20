@@ -64,6 +64,7 @@ CONFIG_ROLE_TIMEOUT_SECONDS = 900
 # Main Code #
 #############
 
+
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     logs_client = get_client('logs', event)
     evaluations = []
@@ -77,16 +78,20 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     for each_loggroup in all_log_groups:
         # NON_COMPLIANT if retentionInDays name/value pair does not exist.
         if "retentionInDays" not in each_loggroup:
-            evaluations.append(build_evaluation(each_loggroup['logGroupName'], 'NON_COMPLIANT', event, annotation='This CloudWatch Log Group has a retention period set to Never Expire'))
+            evaluations.append(build_evaluation(each_loggroup['logGroupName'], 'NON_COMPLIANT', event,
+                               annotation='This CloudWatch Log Group has a retention period set to Never Expire'))
             continue
 
         # if no parameter is configure then return COMPLIANT
         if not valid_rule_parameters:
-            annotation='This CloudWatch Log Group has a retention period set to ' + str(each_loggroup['retentionInDays']) + ' days'
-            evaluations.append(build_evaluation(each_loggroup['logGroupName'], 'COMPLIANT', event, annotation=annotation ))
+            annotation = 'This CloudWatch Log Group has a retention period set to ' + \
+                str(each_loggroup['retentionInDays']) + ' days'
+            evaluations.append(build_evaluation(
+                each_loggroup['logGroupName'], 'COMPLIANT', event, annotation=annotation))
             continue
 
     return evaluations
+
 
 def get_all_log_groups(logs_client):
     all_log_groups = []
@@ -97,12 +102,14 @@ def get_all_log_groups(logs_client):
     # make describe_log_groups call again if the nextToken is present.
     while True:
         if "nextToken" in log_groups:
-            log_groups = logs_client.describe_log_groups(nextToken=log_groups['nextToken'])
+            log_groups = logs_client.describe_log_groups(
+                nextToken=log_groups['nextToken'])
             all_log_groups += log_groups['logGroups']
         else:
             break
 
     return all_log_groups
+
 
 def evaluate_parameters(rule_parameters):
     if 'retentionInDays' not in rule_parameters:
@@ -115,18 +122,22 @@ def evaluate_parameters(rule_parameters):
 ####################
 
 # Build an error to be displayed in the logs when the parameter is invalid.
+
+
 def build_parameters_value_error_response(ex):
     """Return an error dictionary when the evaluate_parameters() raises a ValueError.
     Keyword arguments:
     ex -- Exception text
     """
-    return  build_error_response(internal_error_message="Parameter value is invalid",
-                                 internal_error_details="An ValueError was raised during the validation of the Parameter value",
-                                 customer_error_code="InvalidParameterValueException",
-                                 customer_error_message=str(ex))
+    return build_error_response(internal_error_message="Parameter value is invalid",
+                                internal_error_details="An ValueError was raised during the validation of the Parameter value",
+                                customer_error_code="InvalidParameterValueException",
+                                customer_error_message=str(ex))
 
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
+
+
 def get_client(service, event):
     """Return the service boto client. It should be used instead of directly calling the client.
     Keyword arguments:
@@ -139,9 +150,11 @@ def get_client(service, event):
     return boto3.client(service, aws_access_key_id=credentials['AccessKeyId'],
                         aws_secret_access_key=credentials['SecretAccessKey'],
                         aws_session_token=credentials['SessionToken']
-                       )
+                        )
 
 # This generate an evaluation for config
+
+
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
     """Form an evaluation as a dictionary. Usually suited to report on scheduled rules.
     Keyword arguments:
@@ -157,8 +170,10 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     eval_cc['ComplianceResourceType'] = resource_type
     eval_cc['ComplianceResourceId'] = resource_id
     eval_cc['ComplianceType'] = compliance_type
-    eval_cc['OrderingTimestamp'] = str(json.loads(event['invokingEvent'])['notificationCreationTime'])
+    eval_cc['OrderingTimestamp'] = str(json.loads(event['invokingEvent'])[
+                                       'notificationCreationTime'])
     return eval_cc
+
 
 def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
     """Form an evaluation as a dictionary. Usually suited to report on configuration change rules.
@@ -181,23 +196,31 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
 ####################
 
 # Helper function used to validate input
+
+
 def check_defined(reference, reference_name):
     if not reference:
         raise Exception('Error: ', reference_name, 'is not defined')
     return reference
 
 # Check whether the message is OversizedConfigurationItemChangeNotification or not
+
+
 def is_oversized_changed_notification(message_type):
     check_defined(message_type, 'messageType')
     return message_type == 'OversizedConfigurationItemChangeNotification'
 
 # Check whether the message is a ScheduledNotification or not.
+
+
 def is_scheduled_notification(message_type):
     check_defined(message_type, 'messageType')
     return message_type == 'ScheduledNotification'
 
 # Get configurationItem using getResourceConfigHistory API
 # in case of OversizedConfigurationItemChangeNotification
+
+
 def get_configuration(resource_type, resource_id, configuration_capture_time):
     result = AWS_CONFIG_CLIENT.get_resource_config_history(
         resourceType=resource_type,
@@ -208,6 +231,8 @@ def get_configuration(resource_type, resource_id, configuration_capture_time):
     return convert_api_configuration(configuration_item)
 
 # Convert from the API model to the original invocation model
+
+
 def convert_api_configuration(configuration_item):
     for k, v in configuration_item.items():
         if isinstance(v, datetime.datetime):
@@ -216,7 +241,8 @@ def convert_api_configuration(configuration_item):
     configuration_item['ARN'] = configuration_item['arn']
     configuration_item['configurationStateMd5Hash'] = configuration_item['configurationItemMD5Hash']
     configuration_item['configurationItemVersion'] = configuration_item['version']
-    configuration_item['configuration'] = json.loads(configuration_item['configuration'])
+    configuration_item['configuration'] = json.loads(
+        configuration_item['configuration'])
     if 'relationships' in configuration_item:
         for i in range(len(configuration_item['relationships'])):
             configuration_item['relationships'][i]['name'] = configuration_item['relationships'][i]['relationshipName']
@@ -225,16 +251,21 @@ def convert_api_configuration(configuration_item):
 # Based on the type of message get the configuration item
 # either from configurationItem in the invoking event
 # or using the getResourceConfigHistiry API in getConfiguration function.
+
+
 def get_configuration_item(invoking_event):
     check_defined(invoking_event, 'invokingEvent')
     if is_oversized_changed_notification(invoking_event['messageType']):
-        configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
+        configuration_item_summary = check_defined(
+            invoking_event['configuration_item_summary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
     if is_scheduled_notification(invoking_event['messageType']):
         return None
     return check_defined(invoking_event['configurationItem'], 'configurationItem')
 
 # Check whether the resource has been deleted. If it has, then the evaluation is unnecessary.
+
+
 def is_applicable(configuration_item, event):
     try:
         check_defined(configuration_item, 'configurationItem')
@@ -246,6 +277,7 @@ def is_applicable(configuration_item, event):
     if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
     return status in ('OK', 'ResourceDiscovered') and not event_left_scope
+
 
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')
@@ -267,6 +299,8 @@ def get_assume_role_credentials(role_arn):
         raise ex
 
 # This removes older evaluation (usually useful for periodic rule not reporting on AWS::::Account).
+
+
 def clean_up_old_evaluations(latest_evaluations, event):
 
     cleaned_evaluations = []
@@ -298,9 +332,11 @@ def clean_up_old_evaluations(latest_evaluations, event):
             if old_resource_id == latest_eval['ComplianceResourceId']:
                 newer_founded = True
         if not newer_founded:
-            cleaned_evaluations.append(build_evaluation(old_resource_id, "NOT_APPLICABLE", event))
+            cleaned_evaluations.append(build_evaluation(
+                old_resource_id, "NOT_APPLICABLE", event))
 
     return cleaned_evaluations + latest_evaluations
+
 
 def lambda_handler(event, context):
     if 'liblogging' in sys.modules:
@@ -308,7 +344,7 @@ def lambda_handler(event, context):
 
     global AWS_CONFIG_CLIENT
 
-    #print(event)
+    # print(event)
     check_defined(event, 'event')
     invoking_event = json.loads(event['invokingEvent'])
     rule_parameters = {}
@@ -325,7 +361,8 @@ def lambda_handler(event, context):
         if invoking_event['messageType'] in ['ConfigurationItemChangeNotification', 'ScheduledNotification', 'OversizedConfigurationItemChangeNotification']:
             configuration_item = get_configuration_item(invoking_event)
             if is_applicable(configuration_item, event):
-                compliance_result = evaluate_compliance(event, configuration_item, valid_rule_parameters)
+                compliance_result = evaluate_compliance(
+                    event, configuration_item, valid_rule_parameters)
             else:
                 compliance_result = "NOT_APPLICABLE"
         else:
@@ -341,13 +378,16 @@ def lambda_handler(event, context):
     latest_evaluations = []
 
     if not compliance_result:
-        latest_evaluations.append(build_evaluation(event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::::Account'))
+        latest_evaluations.append(build_evaluation(
+            event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::::Account'))
         evaluations = clean_up_old_evaluations(latest_evaluations, event)
     elif isinstance(compliance_result, str):
         if configuration_item:
-            evaluations.append(build_evaluation_from_config_item(configuration_item, compliance_result))
+            evaluations.append(build_evaluation_from_config_item(
+                configuration_item, compliance_result))
         else:
-            evaluations.append(build_evaluation(event['accountId'], compliance_result, event, resource_type=DEFAULT_RESOURCE_TYPE))
+            evaluations.append(build_evaluation(
+                event['accountId'], compliance_result, event, resource_type=DEFAULT_RESOURCE_TYPE))
     elif isinstance(compliance_result, list):
         for evaluation in compliance_result:
             missing_fields = False
@@ -368,7 +408,8 @@ def lambda_handler(event, context):
         if not missing_fields:
             evaluations.append(compliance_result)
     else:
-        evaluations.append(build_evaluation_from_config_item(configuration_item, 'NOT_APPLICABLE'))
+        evaluations.append(build_evaluation_from_config_item(
+            configuration_item, 'NOT_APPLICABLE'))
 
     # Put together the request that reports the evaluation status
     result_token = event['resultToken']
@@ -381,18 +422,22 @@ def lambda_handler(event, context):
     evaluation_copy = []
     evaluation_copy = evaluations[:]
     while evaluation_copy:
-        AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluation_copy[:100], ResultToken=result_token, TestMode=test_mode)
+        AWS_CONFIG_CLIENT.put_evaluations(
+            Evaluations=evaluation_copy[:100], ResultToken=result_token, TestMode=test_mode)
         del evaluation_copy[:100]
 
     # Used solely for RDK test to be able to test Lambda function
     return evaluations
 
+
 def is_internal_error(exception):
     return ((not isinstance(exception, botocore.exceptions.ClientError)) or exception.response['Error']['Code'].startswith('5')
             or 'InternalError' in exception.response['Error']['Code'] or 'ServiceError' in exception.response['Error']['Code'])
 
+
 def build_internal_error_response(internal_error_message, internal_error_details=None):
     return build_error_response(internal_error_message, internal_error_details, 'InternalError', 'InternalError')
+
 
 def build_error_response(internal_error_message, internal_error_details=None, customer_error_code=None, customer_error_message=None):
     error_response = {
