@@ -1,0 +1,40 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Security Best Practices for Amazon ECR
+#
+#   
+#
+##################################################################################
+
+Resources:
+  EcrPrivateImageScanningEnabled:
+    Properties:
+      ConfigRuleName: ecr-private-image-scanning-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_IMAGE_SCANNING_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcrPrivateLifecyclePolicyConfigured:
+    Properties:
+      ConfigRuleName: ecr-private-lifecycle-policy-configured
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_LIFECYCLE_POLICY_CONFIGURED
+    Type: AWS::Config::ConfigRule
+  EcrPrivateTagImmutabilityEnabled:
+    Properties:
+      ConfigRuleName: ecr-private-tag-immutability-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_TAG_IMMUTABILITY_ENABLED
+    Type: AWS::Config::ConfigRule

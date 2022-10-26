@@ -1,9 +1,9 @@
 ##################################################################################
 #
 #   Conformance Pack:
-#     Operational Best Practices for NCSC
+#     Operational Best Practices for NCSC Cloud Security Principles
 #
-#   This conformance pack helps verify compliance with NCSC requirements.
+#   This conformance pack helps verify compliance with NCSC Cloud Security Principles requirements.
 #
 #   See Parameters section for names and descriptions of required parameters.
 #
@@ -11,6 +11,9 @@
 
 Parameters:
   AccessKeysRotatedParamMaxAccessKeyAge:
+    Default: '90'
+    Type: String
+  AcmCertificateExpirationCheckParamDaysToExpiration:
     Default: '90'
     Type: String
   CloudwatchAlarmActionCheckParamAlarmActionRequired:
@@ -21,6 +24,9 @@ Parameters:
     Type: String
   CloudwatchAlarmActionCheckParamOkActionRequired:
     Default: 'FALSE'
+    Type: String
+  CwLoggroupRetentionPeriodCheckParamMinRetentionTime:
+    Default: '365'
     Type: String
   GuarddutyNonArchivedFindingsParamDaysHighSev:
     Default: '1'
@@ -86,16 +92,19 @@ Parameters:
     Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
-    Default: 'True'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
-    Default: 'True'
+    Default: 'TRUE'
+    Type: String
+  VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
+    Default: '443'
     Type: String
 Resources:
   AccessKeysRotated:
@@ -121,22 +130,18 @@ Resources:
   AcmCertificateExpirationCheck:
     Properties:
       ConfigRuleName: acm-certificate-expiration-check
+      InputParameters:
+        daysToExpiration:
+          Fn::If:
+          - acmCertificateExpirationCheckParamDaysToExpiration
+          - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::ACM::Certificate
       Source:
         Owner: AWS
         SourceIdentifier: ACM_CERTIFICATE_EXPIRATION_CHECK
-    Type: AWS::Config::ConfigRule
-  AlbHttpDropInvalidHeaderEnabled:
-    Properties:
-      ConfigRuleName: alb-http-drop-invalid-header-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ElasticLoadBalancingV2::LoadBalancer
-      Source:
-        Owner: AWS
-        SourceIdentifier: ALB_HTTP_DROP_INVALID_HEADER_ENABLED
     Type: AWS::Config::ConfigRule
   AlbHttpToHttpsRedirectionCheck:
     Properties:
@@ -154,16 +159,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ALB_WAF_ENABLED
-    Type: AWS::Config::ConfigRule
-  ApiGwAssociatedWithWaf:
-    Properties:
-      ConfigRuleName: api-gw-associated-with-waf
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ApiGateway::Stage
-      Source:
-        Owner: AWS
-        SourceIdentifier: API_GW_ASSOCIATED_WITH_WAF
     Type: AWS::Config::ConfigRule
   ApiGwCacheEnabledAndEncrypted:
     Properties:
@@ -196,15 +191,25 @@ Resources:
         Owner: AWS
         SourceIdentifier: API_GW_SSL_ENABLED
     Type: AWS::Config::ConfigRule
-  AutoscalingLaunchConfigPublicIpDisabled:
+  BackupRecoveryPointEncrypted:
     Properties:
-      ConfigRuleName: autoscaling-launch-config-public-ip-disabled
+      ConfigRuleName: backup-recovery-point-encrypted
       Scope:
         ComplianceResourceTypes:
-        - AWS::AutoScaling::LaunchConfiguration
+        - AWS::Backup::RecoveryPoint
       Source:
         Owner: AWS
-        SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_PUBLIC_IP_DISABLED
+        SourceIdentifier: BACKUP_RECOVERY_POINT_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  BackupRecoveryPointMinimumRetentionCheck:
+    Properties:
+      ConfigRuleName: backup-recovery-point-minimum-retention-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::RecoveryPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_MINIMUM_RETENTION_CHECK
     Type: AWS::Config::ConfigRule
   CloudTrailCloudWatchLogsEnabled:
     Properties:
@@ -281,6 +286,26 @@ Resources:
         Owner: AWS
         SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
     Type: AWS::Config::ConfigRule
+  CodebuildProjectArtifactEncryption:
+    Properties:
+      ConfigRuleName: codebuild-project-artifact-encryption
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ARTIFACT_ENCRYPTION
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectEnvironmentPrivilegedCheck:
+    Properties:
+      ConfigRuleName: codebuild-project-environment-privileged-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ENVIRONMENT_PRIVILEGED_CHECK
+    Type: AWS::Config::ConfigRule
   CodebuildProjectEnvvarAwscredCheck:
     Properties:
       ConfigRuleName: codebuild-project-envvar-awscred-check
@@ -304,6 +329,12 @@ Resources:
   CwLoggroupRetentionPeriodCheck:
     Properties:
       ConfigRuleName: cw-loggroup-retention-period-check
+      InputParameters:
+        MinRetentionTime:
+          Fn::If:
+          - cwLoggroupRetentionPeriodCheckParamMinRetentionTime
+          - Ref: CwLoggroupRetentionPeriodCheckParamMinRetentionTime
+          - Ref: AWS::NoValue
       Source:
         Owner: AWS
         SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK
@@ -385,6 +416,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_IMDSV2_CHECK
     Type: AWS::Config::ConfigRule
+  Ec2InstanceDetailedMonitoringEnabled:
+    Properties:
+      ConfigRuleName: ec2-instance-detailed-monitoring-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_DETAILED_MONITORING_ENABLED
+    Type: AWS::Config::ConfigRule
   Ec2InstanceManagedBySsm:
     Properties:
       ConfigRuleName: ec2-instance-managed-by-systems-manager
@@ -425,6 +466,36 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  EcsContainerInsightsEnabled:
+    Properties:
+      ConfigRuleName: ecs-container-insights-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINER_INSIGHTS_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcsContainersNonprivileged:
+    Properties:
+      ConfigRuleName: ecs-containers-nonprivileged
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_NONPRIVILEGED
+    Type: AWS::Config::ConfigRule
+  EcsContainersReadonlyAccess:
+    Properties:
+      ConfigRuleName: ecs-containers-readonly-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_READONLY_ACCESS
     Type: AWS::Config::ConfigRule
   EcsTaskDefinitionUserForHostModeCheck:
     Properties:
@@ -801,6 +872,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
     Type: AWS::Config::ConfigRule
+  KinesisStreamEncrypted:
+    Properties:
+      ConfigRuleName: kinesis-stream-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Kinesis::Stream
+      Source:
+        Owner: AWS
+        SourceIdentifier: KINESIS_STREAM_ENCRYPTED
+    Type: AWS::Config::ConfigRule
   KmsCmkNotScheduledForDeletion:
     Properties:
       ConfigRuleName: kms-cmk-not-scheduled-for-deletion
@@ -865,6 +946,56 @@ Resources:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
     Type: AWS::Config::ConfigRule
+  OpensearchEncryptedAtRest:
+    Properties:
+      ConfigRuleName: opensearch-encrypted-at-rest
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
+    Type: AWS::Config::ConfigRule
+  OpensearchHttpsRequired:
+    Properties:
+      ConfigRuleName: opensearch-https-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_HTTPS_REQUIRED
+    Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  OpensearchLogsToCloudwatch:
+    Properties:
+      ConfigRuleName: opensearch-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_LOGS_TO_CLOUDWATCH
+    Type: AWS::Config::ConfigRule
+  OpensearchNodeToNodeEncryptionCheck:
+    Properties:
+      ConfigRuleName: opensearch-node-to-node-encryption-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
+    Type: AWS::Config::ConfigRule
   RdsEnhancedMonitoringEnabled:
     Properties:
       ConfigRuleName: rds-enhanced-monitoring-enabled
@@ -881,6 +1012,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: RDS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  RdsInstanceIamAuthenticationEnabled:
+    Properties:
+      ConfigRuleName: rds-instance-iam-authentication-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_IAM_AUTHENTICATION_ENABLED
     Type: AWS::Config::ConfigRule
   RdsInstancePublicAccessCheck:
     Properties:
@@ -1010,16 +1151,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  RedshiftEnhancedVpcRoutingEnabled:
-    Properties:
-      ConfigRuleName: redshift-enhanced-vpc-routing-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::Redshift::Cluster
-      Source:
-        Owner: AWS
-        SourceIdentifier: REDSHIFT_ENHANCED_VPC_ROUTING_ENABLED
     Type: AWS::Config::ConfigRule
   RedshiftRequireTlsSsl:
     Properties:
@@ -1220,25 +1351,15 @@ Resources:
         Owner: AWS
         SourceIdentifier: SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS
     Type: AWS::Config::ConfigRule
-  SecretsmanagerRotationEnabledCheck:
+  SecretsmanagerUsingCmk:
     Properties:
-      ConfigRuleName: secretsmanager-rotation-enabled-check
+      ConfigRuleName: secretsmanager-using-cmk
       Scope:
         ComplianceResourceTypes:
         - AWS::SecretsManager::Secret
       Source:
         Owner: AWS
-        SourceIdentifier: SECRETSMANAGER_ROTATION_ENABLED_CHECK
-    Type: AWS::Config::ConfigRule
-  SecretsmanagerScheduledRotationSuccessCheck:
-    Properties:
-      ConfigRuleName: secretsmanager-scheduled-rotation-success-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::SecretsManager::Secret
-      Source:
-        Owner: AWS
-        SourceIdentifier: SECRETSMANAGER_SCHEDULED_ROTATION_SUCCESS_CHECK
+        SourceIdentifier: SECRETSMANAGER_USING_CMK
     Type: AWS::Config::ConfigRule
   SecurityhubEnabled:
     Properties:
@@ -1264,16 +1385,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: SSM_DOCUMENT_NOT_PUBLIC
     Type: AWS::Config::ConfigRule
-  SubnetAutoAssignPublicIpDisabled:
-    Properties:
-      ConfigRuleName: subnet-auto-assign-public-ip-disabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::Subnet
-      Source:
-        Owner: AWS
-        SourceIdentifier: SUBNET_AUTO_ASSIGN_PUBLIC_IP_DISABLED
-    Type: AWS::Config::ConfigRule
   VpcDefaultSecurityGroupClosed:
     Properties:
       ConfigRuleName: vpc-default-security-group-closed
@@ -1294,6 +1405,12 @@ Resources:
   VpcSgOpenOnlyToAuthorizedPorts:
     Properties:
       ConfigRuleName: vpc-sg-open-only-to-authorized-ports
+      InputParameters:
+        authorizedTcpPorts:
+          Fn::If:
+          - vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+          - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::SecurityGroup
@@ -1308,20 +1425,17 @@ Resources:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
-  SecurityAwarenessProgramExists:
-    Properties:
-      ConfigRuleName: security-awareness-program-exists
-      Description: Establish and maintain a security awareness program for your organization. Security awareness programs educate employees on how to protect their organization from various security breaches or incidents.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
 Conditions:
   accessKeysRotatedParamMaxAccessKeyAge:
     Fn::Not:
     - Fn::Equals:
       - ''
       - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+  acmCertificateExpirationCheckParamDaysToExpiration:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
   cloudwatchAlarmActionCheckParamAlarmActionRequired:
     Fn::Not:
     - Fn::Equals:
@@ -1337,6 +1451,11 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+  cwLoggroupRetentionPeriodCheckParamMinRetentionTime:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CwLoggroupRetentionPeriodCheckParamMinRetentionTime
   guarddutyNonArchivedFindingsParamDaysHighSev:
     Fn::Not:
     - Fn::Equals:
@@ -1462,3 +1581,8 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
+  vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
