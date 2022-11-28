@@ -30,6 +30,9 @@ Parameters:
   BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays:
     Default: '35'
     Type: String
+  CloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Default: 'TRUE'
+    Type: String
   DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
     Default: '80'
     Type: String
@@ -274,18 +277,12 @@ Resources:
   CloudwatchAlarmActionCheck:
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CloudWatch::Alarm
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
-    Type: AWS::Config::ConfigRule
-  CloudwatchAlarmActionCheck2:
-    Properties:
-      ConfigRuleName: cloudwatch-alarm-action-check-2
       InputParameters:
-        alarmActionRequired: 'TRUE'
+        alarmActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: AWS::NoValue
         insufficientDataActionRequired: 'TRUE'
         okActionRequired: 'FALSE'
       Scope:
@@ -1370,6 +1367,11 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays
+  cloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
   dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
     Fn::Not:
     - Fn::Equals:
