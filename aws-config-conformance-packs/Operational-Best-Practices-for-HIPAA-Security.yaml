@@ -55,6 +55,12 @@ Parameters:
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
     Type: String
+  InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Default: ''
+    Type: String
+  NoUnrestrictedRouteToIgwParamRouteTableIds:
+    Default: ''
+    Type: String
   RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
     Default: 'TRUE'
     Type: String
@@ -817,6 +823,12 @@ Resources:
   InternetGatewayAuthorizedVpcOnly:
     Properties:
       ConfigRuleName: internet-gateway-authorized-vpc-only
+      InputParameters:
+        AuthorizedVpcIds:
+          Fn::If:
+          - internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+          - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::InternetGateway
@@ -871,6 +883,12 @@ Resources:
   NoUnrestrictedRouteToIgw:
     Properties:
       ConfigRuleName: no-unrestricted-route-to-igw
+      InputParameters:
+        routeTableIds:
+          Fn::If:
+          - noUnrestrictedRouteToIgwParamRouteTableIds
+          - Ref: NoUnrestrictedRouteToIgwParamRouteTableIds
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::RouteTable
@@ -1505,6 +1523,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+  internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+  noUnrestrictedRouteToIgwParamRouteTableIds:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: NoUnrestrictedRouteToIgwParamRouteTableIds
   redshiftClusterConfigurationCheckParamClusterDbEncrypted:
     Fn::Not:
     - Fn::Equals:
