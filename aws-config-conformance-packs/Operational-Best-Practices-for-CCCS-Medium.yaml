@@ -14,16 +14,16 @@ Parameters:
     Default: '90'
     Type: String
   CloudwatchAlarmActionCheckParamAlarmActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   CloudwatchAlarmActionCheckParamOkActionRequired:
-    Default: 'FALSE'
+    Default: 'false'
     Type: String
   ElbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName:
-    Default: ELBSecurityPolicy-TLS-1-2-2017-01
+    Default: TLS-1-2-2017-01
     Type: String
   IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
     Default: kms:*, kms:Decrypt, kms:ReEncrypt*
@@ -55,14 +55,17 @@ Parameters:
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
     Type: String
+  InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Default: here add Comma-separated list of the authorized VPC IDs
+    Type: String
   RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterConfigurationCheckParamLoggingEnabled:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
@@ -867,6 +870,12 @@ Resources:
   InternetGatewayAuthorizedVpcOnly:
     Properties:
       ConfigRuleName: internet-gateway-authorized-vpc-only
+      InputParameters:
+        AuthorizedVpcIds:
+          Fn::If:
+          - internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+          - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::InternetGateway
@@ -1491,6 +1500,11 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+  internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
   redshiftClusterConfigurationCheckParamClusterDbEncrypted:
     Fn::Not:
     - Fn::Equals:
