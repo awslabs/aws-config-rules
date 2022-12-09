@@ -31,7 +31,13 @@ Parameters:
     Default: '35'
     Type: String
   CloudwatchAlarmActionCheckParamAlarmActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
+    Type: String
+  CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Default: 'true'
+    Type: String
+  CloudwatchAlarmActionCheckParamOkActionRequired:
+    Default: 'false'
     Type: String
   DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
     Default: '80'
@@ -40,7 +46,7 @@ Parameters:
     Default: '80'
     Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   GuarddutyNonArchivedFindingsParamDaysHighSev:
     Default: '1'
@@ -86,6 +92,9 @@ Parameters:
     Type: String
   LambdaConcurrencyCheckParamConcurrencyLimitLow:
     Default: '500'
+    Type: String
+  NoUnrestrictedRouteToIgwParamRouteTableIds:
+    Default: here add Comma-separated list of the route table IDs
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
@@ -283,8 +292,16 @@ Resources:
           - cloudwatchAlarmActionCheckParamAlarmActionRequired
           - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
           - Ref: AWS::NoValue
-        insufficientDataActionRequired: 'TRUE'
-        okActionRequired: 'FALSE'
+        insufficientDataActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: AWS::NoValue
+        okActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -948,6 +965,12 @@ Resources:
   NoUnrestrictedRouteToIgw:
     Properties:
       ConfigRuleName: no-unrestricted-route-to-igw
+      InputParameters:
+        routeTableIds:
+          Fn::If:
+          - noUnrestrictedRouteToIgwParamRouteTableIds
+          - Ref: NoUnrestrictedRouteToIgwParamRouteTableIds
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::RouteTable
@@ -1372,6 +1395,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+  cloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+  cloudwatchAlarmActionCheckParamOkActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
   dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
     Fn::Not:
     - Fn::Equals:
@@ -1462,6 +1495,11 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
+  noUnrestrictedRouteToIgwParamRouteTableIds:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: NoUnrestrictedRouteToIgwParamRouteTableIds
   restrictedIncomingTrafficParamBlockedPort1:
     Fn::Not:
     - Fn::Equals:
