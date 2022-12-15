@@ -16,11 +16,11 @@ Parameters:
   AcmCertificateExpirationCheckParamDaysToExpiration:
     Default: '90'
     Type: String
-  CwLoggroupRetentionPeriodCheckParamMinRetentionTime:
-    Default: '365'
+  AlbDesyncModeCheckParamDesyncMode:
+    Default: defensive', 'strictest'
     Type: String
-  ElbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName:
-    Default: ELBSecurityPolicy-TLS-1-2-2017-01
+  EcsNoEnvironmentSecretsParamSecretKeys:
+    Default: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ECS_ENGINE_AUTH_DATA
     Type: String
   IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
     Default: kms:ReEncryptFrom, kms:Decrypt
@@ -53,13 +53,13 @@ Parameters:
     Default: '90'
     Type: String
   RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterConfigurationCheckParamLoggingEnabled:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
@@ -77,16 +77,16 @@ Parameters:
     Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
-    Default: 'True'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
-    Default: 'True'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
-    Default: 'True'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
-    Default: 'True'
+    Default: 'true'
     Type: String
 Resources:
   AccessKeysRotated:
@@ -125,6 +125,22 @@ Resources:
         Owner: AWS
         SourceIdentifier: ACM_CERTIFICATE_EXPIRATION_CHECK
     Type: AWS::Config::ConfigRule
+  AlbDesyncModeCheck:
+    Properties:
+      ConfigRuleName: alb-desync-mode-check
+      InputParameters:
+        desyncMode:
+          Fn::If:
+          - albDesyncModeCheckParamDesyncMode
+          - Ref: AlbDesyncModeCheckParamDesyncMode
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_DESYNC_MODE_CHECK
+    Type: AWS::Config::ConfigRule
   AlbHttpDropInvalidHeaderEnabled:
     Properties:
       ConfigRuleName: alb-http-drop-invalid-header-enabled
@@ -162,16 +178,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: API_GW_ASSOCIATED_WITH_WAF
     Type: AWS::Config::ConfigRule
-  ApiGwCacheEnabledAndEncrypted:
-    Properties:
-      ConfigRuleName: api-gw-cache-enabled-and-encrypted
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ApiGateway::Stage
-      Source:
-        Owner: AWS
-        SourceIdentifier: API_GW_CACHE_ENABLED_AND_ENCRYPTED
-    Type: AWS::Config::ConfigRule
   ApiGwExecutionLoggingEnabled:
     Properties:
       ConfigRuleName: api-gw-execution-logging-enabled
@@ -193,16 +199,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: API_GW_SSL_ENABLED
     Type: AWS::Config::ConfigRule
-  AutoscalingGroupElbHealthcheckRequired:
-    Properties:
-      ConfigRuleName: autoscaling-group-elb-healthcheck-required
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::AutoScaling::AutoScalingGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
-    Type: AWS::Config::ConfigRule
   AutoscalingLaunchConfigPublicIpDisabled:
     Properties:
       ConfigRuleName: autoscaling-launch-config-public-ip-disabled
@@ -212,6 +208,36 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_PUBLIC_IP_DISABLED
+    Type: AWS::Config::ConfigRule
+  BackupPlanMinFrequencyAndMinRetentionCheck:
+    Properties:
+      ConfigRuleName: backup-plan-min-frequency-and-min-retention-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::BackupPlan
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_PLAN_MIN_FREQUENCY_AND_MIN_RETENTION_CHECK
+    Type: AWS::Config::ConfigRule
+  BackupRecoveryPointEncrypted:
+    Properties:
+      ConfigRuleName: backup-recovery-point-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::RecoveryPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  BackupRecoveryPointMinimumRetentionCheck:
+    Properties:
+      ConfigRuleName: backup-recovery-point-minimum-retention-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::RecoveryPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_MINIMUM_RETENTION_CHECK
     Type: AWS::Config::ConfigRule
   CloudTrailCloudWatchLogsEnabled:
     Properties:
@@ -262,38 +288,25 @@ Resources:
         Owner: AWS
         SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
     Type: AWS::Config::ConfigRule
-  CodebuildProjectEnvvarAwscredCheck:
+  CodebuildProjectEnvironmentPrivilegedCheck:
     Properties:
-      ConfigRuleName: codebuild-project-envvar-awscred-check
+      ConfigRuleName: codebuild-project-environment-privileged-check
       Scope:
         ComplianceResourceTypes:
         - AWS::CodeBuild::Project
       Source:
         Owner: AWS
-        SourceIdentifier: CODEBUILD_PROJECT_ENVVAR_AWSCRED_CHECK
+        SourceIdentifier: CODEBUILD_PROJECT_ENVIRONMENT_PRIVILEGED_CHECK
     Type: AWS::Config::ConfigRule
-  CodebuildProjectSourceRepoUrlCheck:
+  CodebuildProjectLoggingEnabled:
     Properties:
-      ConfigRuleName: codebuild-project-source-repo-url-check
+      ConfigRuleName: codebuild-project-logging-enabled
       Scope:
         ComplianceResourceTypes:
         - AWS::CodeBuild::Project
       Source:
         Owner: AWS
-        SourceIdentifier: CODEBUILD_PROJECT_SOURCE_REPO_URL_CHECK
-    Type: AWS::Config::ConfigRule
-  CwLoggroupRetentionPeriodCheck:
-    Properties:
-      ConfigRuleName: cw-loggroup-retention-period-check
-      InputParameters:
-        MinRetentionTime:
-          Fn::If:
-          - cwLoggroupRetentionPeriodCheckParamMinRetentionTime
-          - Ref: CwLoggroupRetentionPeriodCheckParamMinRetentionTime
-          - Ref: AWS::NoValue
-      Source:
-        Owner: AWS
-        SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK
+        SourceIdentifier: CODEBUILD_PROJECT_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
   DmsReplicationNotPublic:
     Properties:
@@ -303,16 +316,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: DMS_REPLICATION_NOT_PUBLIC
-    Type: AWS::Config::ConfigRule
-  DynamodbTableEncryptedKms:
-    Properties:
-      ConfigRuleName: dynamodb-table-encrypted-kms
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::DynamoDB::Table
-      Source:
-        Owner: AWS
-        SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS
     Type: AWS::Config::ConfigRule
   EbsSnapshotPublicRestorableCheck:
     Properties:
@@ -339,6 +342,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_MANAGED_BY_SSM
     Type: AWS::Config::ConfigRule
+  Ec2InstanceMultipleEniCheck:
+    Properties:
+      ConfigRuleName: ec2-instance-multiple-eni-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_MULTIPLE_ENI_CHECK
+    Type: AWS::Config::ConfigRule
   Ec2InstanceNoPublicIp:
     Properties:
       ConfigRuleName: ec2-instance-no-public-ip
@@ -348,16 +361,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
-    Type: AWS::Config::ConfigRule
-  Ec2InstanceProfileAttached:
-    Properties:
-      ConfigRuleName: ec2-instance-profile-attached
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::Instance
-      Source:
-        Owner: AWS
-        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
     Type: AWS::Config::ConfigRule
   Ec2ManagedinstanceAssociationComplianceStatusCheck:
     Properties:
@@ -379,15 +382,101 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
-  EcsTaskDefinitionUserForHostModeCheck:
+  Ec2SecurityGroupAttachedToEniPeriodic:
     Properties:
-      ConfigRuleName: ecs-task-definition-user-for-host-mode-check
+      ConfigRuleName: ec2-security-group-attached-to-eni-periodic
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI_PERIODIC
+    Type: AWS::Config::ConfigRule
+  EcrPrivateImageScanningEnabled:
+    Properties:
+      ConfigRuleName: ecr-private-image-scanning-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_IMAGE_SCANNING_ENABLED
+    Type: AWS::Config::ConfigRule
+  EcsContainersNonprivileged:
+    Properties:
+      ConfigRuleName: ecs-containers-nonprivileged
       Scope:
         ComplianceResourceTypes:
         - AWS::ECS::TaskDefinition
       Source:
         Owner: AWS
-        SourceIdentifier: ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK
+        SourceIdentifier: ECS_CONTAINERS_NONPRIVILEGED
+    Type: AWS::Config::ConfigRule
+  EcsContainersReadonlyAccess:
+    Properties:
+      ConfigRuleName: ecs-containers-readonly-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_READONLY_ACCESS
+    Type: AWS::Config::ConfigRule
+  EcsFargateLatestPlatformVersion:
+    Properties:
+      ConfigRuleName: ecs-fargate-latest-platform-version
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::Service
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_FARGATE_LATEST_PLATFORM_VERSION
+    Type: AWS::Config::ConfigRule
+  EcsNoEnvironmentSecrets:
+    Properties:
+      ConfigRuleName: ecs-no-environment-secrets
+      InputParameters:
+        secretKeys:
+          Fn::If:
+          - ecsNoEnvironmentSecretsParamSecretKeys
+          - Ref: EcsNoEnvironmentSecretsParamSecretKeys
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_NO_ENVIRONMENT_SECRETS
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionNonrootUser:
+    Properties:
+      ConfigRuleName: ecs-task-definition-nonroot-user
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_NONROOT_USER
+    Type: AWS::Config::ConfigRule
+  EfsAccessPointEnforceRootDirectory:
+    Properties:
+      ConfigRuleName: efs-access-point-enforce-root-directory
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EFS::AccessPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ACCESS_POINT_ENFORCE_ROOT_DIRECTORY
+    Type: AWS::Config::ConfigRule
+  EfsAccessPointEnforceUserIdentity:
+    Properties:
+      ConfigRuleName: efs-access-point-enforce-user-identity
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EFS::AccessPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ACCESS_POINT_ENFORCE_USER_IDENTITY
     Type: AWS::Config::ConfigRule
   EfsEncryptedCheck:
     Properties:
@@ -395,6 +484,33 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EFS_ENCRYPTED_CHECK
+    Type: AWS::Config::ConfigRule
+  EipAttached:
+    Properties:
+      ConfigRuleName: eip-attached
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::EIP
+      Source:
+        Owner: AWS
+        SourceIdentifier: EIP_ATTACHED
+    Type: AWS::Config::ConfigRule
+  ElasticBeanstalkManagedUpdatesEnabled:
+    Properties:
+      ConfigRuleName: elastic-beanstalk-managed-updates-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticBeanstalk::Environment
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTIC_BEANSTALK_MANAGED_UPDATES_ENABLED
+    Type: AWS::Config::ConfigRule
+  ElasticacheRedisClusterAutomaticBackupCheck:
+    Properties:
+      ConfigRuleName: elasticache-redis-cluster-automatic-backup-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
     Type: AWS::Config::ConfigRule
   ElasticsearchEncryptedAtRest:
     Properties:
@@ -430,16 +546,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: ELASTICSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
     Type: AWS::Config::ConfigRule
-  ElbAcmCertificateRequired:
-    Properties:
-      ConfigRuleName: elb-acm-certificate-required
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ElasticLoadBalancing::LoadBalancer
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELB_ACM_CERTIFICATE_REQUIRED
-    Type: AWS::Config::ConfigRule
   ElbLoggingEnabled:
     Properties:
       ConfigRuleName: elb-logging-enabled
@@ -450,22 +556,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ELB_LOGGING_ENABLED
-    Type: AWS::Config::ConfigRule
-  ElbPredefinedSecurityPolicySslCheck:
-    Properties:
-      ConfigRuleName: elb-predefined-security-policy-ssl-check
-      InputParameters:
-        predefinedPolicyName:
-          Fn::If:
-          - elbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName
-          - Ref: ElbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName
-          - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ElasticLoadBalancing::LoadBalancer
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELB_PREDEFINED_SECURITY_POLICY_SSL_CHECK
     Type: AWS::Config::ConfigRule
   ElbTlsHttpsListenersOnly:
     Properties:
@@ -747,6 +837,26 @@ Resources:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
+  NetfwPolicyRuleGroupAssociated:
+    Properties:
+      ConfigRuleName: netfw-policy-rule-group-associated
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::FirewallPolicy
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_POLICY_RULE_GROUP_ASSOCIATED
+    Type: AWS::Config::ConfigRule
+  NetfwStatelessRuleGroupNotEmpty:
+    Properties:
+      ConfigRuleName: netfw-stateless-rule-group-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::RuleGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_STATELESS_RULE_GROUP_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
   NoUnrestrictedRouteToIgw:
     Properties:
       ConfigRuleName: no-unrestricted-route-to-igw
@@ -757,6 +867,76 @@ Resources:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
     Type: AWS::Config::ConfigRule
+  OpensearchAccessControlEnabled:
+    Properties:
+      ConfigRuleName: opensearch-access-control-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ACCESS_CONTROL_ENABLED
+    Type: AWS::Config::ConfigRule
+  OpensearchAuditLoggingEnabled:
+    Properties:
+      ConfigRuleName: opensearch-audit-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_AUDIT_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  OpensearchEncryptedAtRest:
+    Properties:
+      ConfigRuleName: opensearch-encrypted-at-rest
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
+    Type: AWS::Config::ConfigRule
+  OpensearchHttpsRequired:
+    Properties:
+      ConfigRuleName: opensearch-https-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_HTTPS_REQUIRED
+    Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  OpensearchLogsToCloudwatch:
+    Properties:
+      ConfigRuleName: opensearch-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_LOGS_TO_CLOUDWATCH
+    Type: AWS::Config::ConfigRule
+  OpensearchNodeToNodeEncryptionCheck:
+    Properties:
+      ConfigRuleName: opensearch-node-to-node-encryption-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
+    Type: AWS::Config::ConfigRule
   RdsAutomaticMinorVersionUpgradeEnabled:
     Properties:
       ConfigRuleName: rds-automatic-minor-version-upgrade-enabled
@@ -766,6 +946,26 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: RDS_AUTOMATIC_MINOR_VERSION_UPGRADE_ENABLED
+    Type: AWS::Config::ConfigRule
+  RdsClusterDefaultAdminCheck:
+    Properties:
+      ConfigRuleName: rds-cluster-default-admin-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_CLUSTER_DEFAULT_ADMIN_CHECK
+    Type: AWS::Config::ConfigRule
+  RdsInstanceDefaultAdminCheck:
+    Properties:
+      ConfigRuleName: rds-instance-default-admin-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_DEFAULT_ADMIN_CHECK
     Type: AWS::Config::ConfigRule
   RdsInstancePublicAccessCheck:
     Properties:
@@ -840,16 +1040,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_CONFIGURATION_CHECK
     Type: AWS::Config::ConfigRule
-  RedshiftClusterKmsEnabled:
-    Properties:
-      ConfigRuleName: redshift-cluster-kms-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::Redshift::Cluster
-      Source:
-        Owner: AWS
-        SourceIdentifier: REDSHIFT_CLUSTER_KMS_ENABLED
-    Type: AWS::Config::ConfigRule
   RedshiftClusterMaintenancesettingsCheck:
     Properties:
       ConfigRuleName: redshift-cluster-maintenancesettings-check
@@ -876,15 +1066,25 @@ Resources:
         Owner: AWS
         SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
     Type: AWS::Config::ConfigRule
-  RedshiftEnhancedVpcRoutingEnabled:
+  RedshiftDefaultAdminCheck:
     Properties:
-      ConfigRuleName: redshift-enhanced-vpc-routing-enabled
+      ConfigRuleName: redshift-default-admin-check
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster
       Source:
         Owner: AWS
-        SourceIdentifier: REDSHIFT_ENHANCED_VPC_ROUTING_ENABLED
+        SourceIdentifier: REDSHIFT_DEFAULT_ADMIN_CHECK
+    Type: AWS::Config::ConfigRule
+  RedshiftDefaultDbNameCheck:
+    Properties:
+      ConfigRuleName: redshift-default-db-name-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_DEFAULT_DB_NAME_CHECK
     Type: AWS::Config::ConfigRule
   RedshiftRequireTlsSsl:
     Properties:
@@ -974,6 +1174,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
     Type: AWS::Config::ConfigRule
+  S3BucketAclProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-acl-prohibited
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_ACL_PROHIBITED
+    Type: AWS::Config::ConfigRule
   S3BucketLevelPublicAccessProhibited:
     Properties:
       ConfigRuleName: s3-bucket-level-public-access-prohibited
@@ -993,16 +1203,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
-    Type: AWS::Config::ConfigRule
-  S3BucketPolicyGranteeCheck:
-    Properties:
-      ConfigRuleName: s3-bucket-policy-grantee-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::S3::Bucket
-      Source:
-        Owner: AWS
-        SourceIdentifier: S3_BUCKET_POLICY_GRANTEE_CHECK
     Type: AWS::Config::ConfigRule
   S3BucketPublicReadProhibited:
     Properties:
@@ -1074,6 +1274,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_DEFAULT_ENCRYPTION_KMS
     Type: AWS::Config::ConfigRule
+  S3LifecyclePolicyCheck:
+    Properties:
+      ConfigRuleName: s3-lifecycle-policy-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_LIFECYCLE_POLICY_CHECK
+    Type: AWS::Config::ConfigRule
   SagemakerEndpointConfigurationKmsKeyConfigured:
     Properties:
       ConfigRuleName: sagemaker-endpoint-configuration-kms-key-configured
@@ -1095,6 +1305,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS
     Type: AWS::Config::ConfigRule
+  SecretsmanagerRotationEnabledCheck:
+    Properties:
+      ConfigRuleName: secretsmanager-rotation-enabled-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_ROTATION_ENABLED_CHECK
+    Type: AWS::Config::ConfigRule
   SecretsmanagerUsingCmk:
     Properties:
       ConfigRuleName: secretsmanager-using-cmk
@@ -1104,6 +1324,13 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: SECRETSMANAGER_USING_CMK
+    Type: AWS::Config::ConfigRule
+  SecurityhubEnabled:
+    Properties:
+      ConfigRuleName: securityhub-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
     Type: AWS::Config::ConfigRule
   SnsEncryptedKms:
     Properties:
@@ -1149,6 +1376,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: VPC_FLOW_LOGS_ENABLED
     Type: AWS::Config::ConfigRule
+  VpcNetworkAclUnusedCheck:
+    Properties:
+      ConfigRuleName: vpc-network-acl-unused-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::NetworkAcl
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_NETWORK_ACL_UNUSED_CHECK
+    Type: AWS::Config::ConfigRule
   VpcSgOpenOnlyToAuthorizedPorts:
     Properties:
       ConfigRuleName: vpc-sg-open-only-to-authorized-ports
@@ -1159,44 +1396,42 @@ Resources:
         Owner: AWS
         SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
     Type: AWS::Config::ConfigRule
+  WafRegionalRuleNotEmpty:
+    Properties:
+      ConfigRuleName: waf-regional-rule-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::WAFRegional::Rule
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAF_REGIONAL_RULE_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
+  WafRegionalRulegroupNotEmpty:
+    Properties:
+      ConfigRuleName: waf-regional-rulegroup-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::WAFRegional::RuleGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAF_REGIONAL_RULEGROUP_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
+  WafRegionalWebaclNotEmpty:
+    Properties:
+      ConfigRuleName: waf-regional-webacl-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::WAFRegional::WebACL
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAF_REGIONAL_WEBACL_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
   Wafv2LoggingEnabled:
     Properties:
       ConfigRuleName: wafv2-logging-enabled
       Source:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
-    Type: AWS::Config::ConfigRule
-  ResponsePlanExistsMaintained:
-    Properties:
-      ConfigRuleName: response-plan-exists-maintained
-      Description: Ensure incident response plans are established, maintained, and distrubuted to responsible personel.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  AuditLogPolicyExists:
-    Properties:
-      ConfigRuleName: audit-log-policy-exists
-      Description: Establish and maintain an audit log management policy that defines your organization's logging requirements. This includes, but is not limited to, review and retention of audit logs.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  AnnualRiskAssessmentPerformed:
-    Properties:
-      ConfigRuleName: annual-risk-assessment-performed
-      Description: Perform an annual risk assessment on your organization. Risk assessments can assist in determining the likelihood and impact of identified risks and/or vulnerabilities affecting an organization.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
-  SecurityAwarenessProgramExists:
-    Properties:
-      ConfigRuleName: security-awareness-program-exists
-      Description: Establish and maintain a security awareness program for your organization. Security awareness programs educate employees on how to protect their organization from various security breaches or incidents.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
   accessKeysRotatedParamMaxAccessKeyAge:
@@ -1209,16 +1444,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
-  cwLoggroupRetentionPeriodCheckParamMinRetentionTime:
+  albDesyncModeCheckParamDesyncMode:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: CwLoggroupRetentionPeriodCheckParamMinRetentionTime
-  elbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName:
+      - Ref: AlbDesyncModeCheckParamDesyncMode
+  ecsNoEnvironmentSecretsParamSecretKeys:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: ElbPredefinedSecurityPolicySslCheckParamPredefinedPolicyName
+      - Ref: EcsNoEnvironmentSecretsParamSecretKeys
   iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
     Fn::Not:
     - Fn::Equals:
