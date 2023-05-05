@@ -31,6 +31,12 @@ Parameters:
   IamPasswordPolicyParamRequireUppercaseCharacters:
     Default: 'true'
     Type: String
+  RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
+    Default: 'true'
+    Type: String
+  RedshiftClusterConfigurationCheckParamLoggingEnabled:
+    Default: 'true'
+    Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
     Type: String
@@ -806,8 +812,16 @@ Resources:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
       InputParameters:
-        clusterDbEncrypted: 'TRUE'
-        loggingEnabled: 'TRUE'
+        clusterDbEncrypted:
+          Fn::If:
+          - redshiftClusterConfigurationCheckParamClusterDbEncrypted
+          - Ref: RedshiftClusterConfigurationCheckParamClusterDbEncrypted
+          - Ref: AWS::NoValue
+        loggingEnabled:
+          Fn::If:
+          - redshiftClusterConfigurationCheckParamLoggingEnabled
+          - Ref: RedshiftClusterConfigurationCheckParamLoggingEnabled
+          - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster
@@ -1228,6 +1242,16 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+  redshiftClusterConfigurationCheckParamClusterDbEncrypted:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RedshiftClusterConfigurationCheckParamClusterDbEncrypted
+  redshiftClusterConfigurationCheckParamLoggingEnabled:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RedshiftClusterConfigurationCheckParamLoggingEnabled
   restrictedIncomingTrafficParamBlockedPort1:
     Fn::Not:
     - Fn::Equals:
