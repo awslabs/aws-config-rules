@@ -10,6 +10,12 @@
 ##################################################################################
 
 Parameters:
+  InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Default: ''
+    Type: String
+  NoUnrestrictedRouteToIgwParamRouteTableIds:
+    Default: ''
+    Type: String
   AccessKeysRotatedParamMaxAccessKeyAge:
     Default: '90'
     Type: String
@@ -871,6 +877,8 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
+      InputParameters:
+        AuthorizedVpcIds: !Ref InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
     Type: AWS::Config::ConfigRule
   KinesisStreamEncrypted:
     Properties:
@@ -945,6 +953,8 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
+      InputParameters:
+        routeTableIds: !Ref NoUnrestrictedRouteToIgwParamRouteTableIds
     Type: AWS::Config::ConfigRule
   OpensearchEncryptedAtRest:
     Properties:
