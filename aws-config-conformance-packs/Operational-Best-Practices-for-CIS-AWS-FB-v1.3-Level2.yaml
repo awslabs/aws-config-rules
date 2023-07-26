@@ -195,7 +195,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   MultiRegionCloudTrailEnabled:
     Properties:
-      ConfigRuleName: multi-region-cloudtrail-enabled
+      ConfigRuleName: multi-region-cloud-trail-enabled
       Source:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
