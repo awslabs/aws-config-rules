@@ -18,6 +18,9 @@ Parameters:
   S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
     Default: 'True'
     Type: String
+  S3BucketBlacklistedActionsProhibitedParamBlacklistedActionPattern:
+    Default: s3:DeleteBucketPolicy, s3:PutBucketAcl, s3:PutBucketPolicy, s3:PutEncryptionConfiguration, s3:PutObjectAcl
+    Type: String
 Resources:
   S3AccountLevelPublicAccessBlocksPeriodic:
     Properties:
@@ -117,15 +120,18 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_REPLICATION_ENABLED
     Type: AWS::Config::ConfigRule
-  S3BucketServerSideEncryptionEnabled:
+  S3BucketBlacklistedActionsProhibited:
     Properties:
-      ConfigRuleName: s3-bucket-server-side-encryption-enabled
+      ConfigRuleName: s3-bucket-blacklisted-actions-prohibited
+      InputParameters:
+        blacklistedActionPattern:
+          Ref: S3BucketBlacklistedActionsProhibitedParamBlacklistedActionPattern
       Scope:
         ComplianceResourceTypes:
         - AWS::S3::Bucket
       Source:
         Owner: AWS
-        SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+        SourceIdentifier: S3_BUCKET_BLACKLISTED_ACTIONS_PROHIBITED
     Type: AWS::Config::ConfigRule
   S3BucketSslRequestsOnly:
     Properties:
