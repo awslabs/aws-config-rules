@@ -68,7 +68,7 @@ Parameters:
     Default: '500'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
@@ -264,9 +264,9 @@ Resources:
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
       InputParameters:
-        alarmActionRequired: 'TRUE'
-        insufficientDataActionRequired: 'TRUE'
-        okActionRequired: 'FALSE'
+        alarmActionRequired: 'true'
+        insufficientDataActionRequired: 'true'
+        okActionRequired: 'false'
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -1037,8 +1037,8 @@ Resources:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
       InputParameters:
-        clusterDbEncrypted: 'TRUE'
-        loggingEnabled: 'TRUE'
+        clusterDbEncrypted: 'true'
+        loggingEnabled: 'true'
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster

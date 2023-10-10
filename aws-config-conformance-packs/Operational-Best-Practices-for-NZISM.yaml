@@ -888,8 +888,8 @@ Resources:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
       InputParameters:
-        clusterDbEncrypted: 'TRUE'
-        loggingEnabled: 'TRUE'
+        clusterDbEncrypted: 'true'
+        loggingEnabled: 'true'
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster
@@ -903,7 +903,7 @@ Resources:
     Properties:
       ConfigRuleName: redshift-cluster-maintenancesettings-check
       InputParameters:
-        allowVersionUpgrade: 'TRUE'
+        allowVersionUpgrade: 'true'
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster

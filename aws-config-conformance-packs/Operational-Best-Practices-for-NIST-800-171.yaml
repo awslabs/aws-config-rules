@@ -232,7 +232,7 @@ Resources:
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
       InputParameters:
-        alarmActionRequired: 'TRUE'
+        alarmActionRequired: 'true'
         insufficientDataActionRequired:
           Fn::If:
           - cloudwatchAlarmActionCheckParamInsufficientDataActionRequired
@@ -1077,8 +1077,8 @@ Resources:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
       InputParameters:
-        clusterDbEncrypted: 'TRUE'
-        loggingEnabled: 'TRUE'
+        clusterDbEncrypted: 'true'
+        loggingEnabled: 'true'
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster

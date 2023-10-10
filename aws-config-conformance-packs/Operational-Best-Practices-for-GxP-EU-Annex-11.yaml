@@ -17,10 +17,10 @@ Parameters:
     Default: kms:*, kms:Decrypt, kms:ReEncrypt*
     Type: String
   RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterConfigurationCheckParamLoggingEnabled:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
 Resources:
   ApiGwCacheEnabledAndEncrypted:

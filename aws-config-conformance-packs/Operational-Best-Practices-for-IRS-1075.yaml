@@ -14,13 +14,13 @@ Parameters:
     Default: '90'
     Type: String
   CloudwatchAlarmActionCheckParamAlarmActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   CloudwatchAlarmActionCheckParamOkActionRequired:
-    Default: 'FALSE'
+    Default: 'false'
     Type: String
   GuarddutyNonArchivedFindingsParamDaysHighSev:
     Default: '1'
@@ -38,10 +38,10 @@ Parameters:
     Default: '90'
     Type: String
   RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterConfigurationCheckParamLoggingEnabled:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
 Resources:
   AccessKeysRotated:

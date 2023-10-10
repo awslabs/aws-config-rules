@@ -40,22 +40,22 @@ Parameters:
     Default: '24'
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
@@ -73,16 +73,16 @@ Parameters:
     Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
 Resources:
   AccessKeysRotated:
@@ -181,9 +181,9 @@ Resources:
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-check
       InputParameters:
-        alarmActionRequired: 'TRUE'
-        insufficientDataActionRequired: 'TRUE'
-        okActionRequired: 'FALSE'
+        alarmActionRequired: 'true'
+        insufficientDataActionRequired: 'true'
+        okActionRequired: 'false'
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
@@ -664,8 +664,8 @@ Resources:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
       InputParameters:
-        clusterDbEncrypted: 'TRUE'
-        loggingEnabled: 'TRUE'
+        clusterDbEncrypted: 'true'
+        loggingEnabled: 'true'
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster

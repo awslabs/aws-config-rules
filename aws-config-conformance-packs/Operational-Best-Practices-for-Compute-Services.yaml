@@ -22,7 +22,7 @@ Parameters:
     Default: AWS::EC2::Instance
     Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   LambdaConcurrencyCheckParamConcurrencyLimitHigh:
     Default: '1000'

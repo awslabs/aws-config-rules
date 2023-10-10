@@ -59,7 +59,7 @@ Parameters:
     Default: 'true'
     Type: String
   RedshiftClusterConfigurationCheckParamLoggingEnabled:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Default: 'true'

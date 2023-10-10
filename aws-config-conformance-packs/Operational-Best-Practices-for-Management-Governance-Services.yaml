@@ -16,13 +16,13 @@
 
 Parameters:
   CloudwatchAlarmActionCheckParamAlarmActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   CloudwatchAlarmActionCheckParamOkActionRequired:
-    Default: 'FALSE'
+    Default: 'false'
     Type: String
   GuarddutyNonArchivedFindingsParamDaysHighSev:
     Default: '1'

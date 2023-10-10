@@ -18,7 +18,7 @@ Parameters:
     Default: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ECS_ENGINE_AUTH_DATA
     Type: String
   EcsTaskDefinitionUserForHostModeCheckParamSkipInactiveTaskDefinitions:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   EksClusterOldestSupportedVersionParamOldestVersionSupported:
     Default: '1.2'

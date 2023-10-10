@@ -29,16 +29,16 @@ Parameters:
     Default: '3389'
     Type: String
   S3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
 Resources:
   AccessKeysRotated:

@@ -61,13 +61,13 @@ Parameters:
     Default: '90'
     Type: String
   RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterConfigurationCheckParamLoggingEnabled:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'

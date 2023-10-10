@@ -56,7 +56,7 @@ Parameters:
     Default: 'True'
     Type: String
   S3BucketVersioningEnabledParamIsMfaDeleteEnabled:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
 Resources:
   AccessKeysRotated:

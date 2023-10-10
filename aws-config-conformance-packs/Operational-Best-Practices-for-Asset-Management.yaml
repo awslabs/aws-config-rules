@@ -11,7 +11,7 @@
 
 Parameters:
   Ec2VolumeInuseCheckParamDeleteOnTermination:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Default: '90'

@@ -24,13 +24,13 @@ Parameters:
     Default: '90'
     Type: String
   CloudwatchAlarmActionCheckParamAlarmActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   CloudwatchAlarmActionCheckParamOkActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
     Default: kms:Decrypt,kms:ReEncryptFrom
@@ -45,7 +45,7 @@ Parameters:
     Default: '24'
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   IamPasswordPolicyParamRequireNumbers:
     Default: 'true'
@@ -60,13 +60,13 @@ Parameters:
     Default: '90'
     Type: String
   RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterConfigurationCheckParamLoggingEnabled:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
@@ -84,16 +84,16 @@ Parameters:
     Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   SecretsmanagerSecretPeriodicRotationParamMaxDaysSinceRotation:
     Default: '90'

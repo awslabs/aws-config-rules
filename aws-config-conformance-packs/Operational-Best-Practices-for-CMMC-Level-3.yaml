@@ -45,7 +45,7 @@ Parameters:
       period is 365 days.'
     Type: String
   Ec2VolumeInuseCheckParamDeleteOnTermination:
-    Default: 'TRUE'
+    Default: 'true'
     Description: EBS volumes are marked for deletion when an instance is terminated.
     Type: String
   GuarddutyNonArchivedFindingsParamDaysHighSev:
@@ -86,19 +86,19 @@ Parameters:
     Description: Number of passwords before allowing reuse.
     Type: String
   IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Description: Require at least one lowercase character in password.
     Type: String
   IamPasswordPolicyParamRequireNumbers:
-    Default: 'TRUE'
+    Default: 'true'
     Description: Require at least one number in password.
     Type: String
   IamPasswordPolicyParamRequireSymbols:
-    Default: 'TRUE'
+    Default: 'true'
     Description: Require at least one symbol in password.
     Type: String
   IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'TRUE'
+    Default: 'true'
     Description: Require at least one uppercase character in password.
     Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
@@ -107,7 +107,7 @@ Parameters:
       is 90 days.
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
-    Default: 'TRUE'
+    Default: 'true'
     Description: Allow version upgrade is enabled.
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAutomatedSnapshotRetentionPeriod:
@@ -501,9 +501,9 @@ Resources:
         one INSUFFICIENT_DATA action, or one OK action enabled. Optionally, checks
         whether any of the actions matches one of the specified ARNs.
       InputParameters:
-        alarmActionRequired: 'TRUE'
-        insufficientDataActionRequired: 'TRUE'
-        okActionRequired: 'FALSE'
+        alarmActionRequired: 'true'
+        insufficientDataActionRequired: 'true'
+        okActionRequired: 'false'
       Scope:
         ComplianceResourceTypes:
         - AWS::CloudWatch::Alarm
