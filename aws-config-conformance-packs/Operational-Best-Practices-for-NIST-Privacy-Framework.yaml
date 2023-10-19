@@ -252,7 +252,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   CloudTrailEnabled:
     Properties:
-      ConfigRuleName: cloudtrail-enabled
+      ConfigRuleName: cloud-trail-enabled
       Source:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_ENABLED

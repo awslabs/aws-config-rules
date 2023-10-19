@@ -160,7 +160,7 @@ Resources:
     Controls:
     - '6.4'
     Properties:
-      ConfigRuleName: cloudtrail-enabled
+      ConfigRuleName: cloud-trail-enabled
       Description: Checks whether AWS CloudTrail is enabled in your AWS account.
       Source:
         Owner: AWS

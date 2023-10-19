@@ -154,7 +154,7 @@ Resources:
     Controls: ['1998', '2013', '6860', '7496']
     Type: AWS::Config::ConfigRule
     Properties:
-      ConfigRuleName: cloudtrail-enabled
+      ConfigRuleName: cloud-trail-enabled
       Source:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_ENABLED

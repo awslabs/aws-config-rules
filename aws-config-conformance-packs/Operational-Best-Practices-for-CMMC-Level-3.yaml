@@ -425,7 +425,7 @@ Resources:
     - SI.2.216
     - SI.2.217
     Properties:
-      ConfigRuleName: cloudtrail-enabled
+      ConfigRuleName: cloud-trail-enabled
       Description: Checks whether AWS CloudTrail is enabled in your AWS account.
       Source:
         Owner: AWS
@@ -1651,7 +1651,7 @@ Resources:
     - SI.2.216
     - SI.2.217
     Properties:
-      ConfigRuleName: multi-region-cloudtrail-enabled
+      ConfigRuleName: multi-region-cloud-trail-enabled
       Description: Checks that there is at least one multi-region AWS CloudTrail.
         The rule is non-compliant if the trails do not match input parameters
       Source:
