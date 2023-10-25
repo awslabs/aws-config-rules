@@ -38,9 +38,6 @@ Parameters:
   IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
     Default: kms:ReEncryptFrom, kms:Decrypt
     Type: String
-  IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
-    Default: kms:ReEncryptFrom, kms:Decrypt
-    Type: String
   IamPasswordPolicyParamMaxPasswordAge:
     Default: '90'
     Type: String
@@ -73,21 +70,6 @@ Parameters:
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Default: 'true'
-    Type: String
-  RestrictedIncomingTrafficParamBlockedPort1:
-    Default: '20'
-    Type: String
-  RestrictedIncomingTrafficParamBlockedPort2:
-    Default: '21'
-    Type: String
-  RestrictedIncomingTrafficParamBlockedPort3:
-    Default: '3389'
-    Type: String
-  RestrictedIncomingTrafficParamBlockedPort4:
-    Default: '3306'
-    Type: String
-  RestrictedIncomingTrafficParamBlockedPort5:
-    Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
     Default: 'True'
@@ -140,16 +122,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ACM_CERTIFICATE_EXPIRATION_CHECK
-    Type: AWS::Config::ConfigRule
-  AlbHttpDropInvalidHeaderEnabled:
-    Properties:
-      ConfigRuleName: alb-http-drop-invalid-header-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ElasticLoadBalancingV2::LoadBalancer
-      Source:
-        Owner: AWS
-        SourceIdentifier: ALB_HTTP_DROP_INVALID_HEADER_ENABLED
     Type: AWS::Config::ConfigRule
   AlbHttpToHttpsRedirectionCheck:
     Properties:
@@ -243,13 +215,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
-  CloudTrailEncryptionEnabled:
-    Properties:
-      ConfigRuleName: cloud-trail-encryption-enabled
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
-    Type: AWS::Config::ConfigRule
   CloudtrailS3DataeventsEnabled:
     Properties:
       ConfigRuleName: cloudtrail-s3-dataevents-enabled
@@ -337,13 +302,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
     Type: AWS::Config::ConfigRule
-  DynamodbInBackupPlan:
-    Properties:
-      ConfigRuleName: dynamodb-in-backup-plan
-      Source:
-        Owner: AWS
-        SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN
-    Type: AWS::Config::ConfigRule
   DynamodbPitrEnabled:
     Properties:
       ConfigRuleName: dynamodb-pitr-enabled
@@ -381,13 +339,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: DYNAMODB_THROUGHPUT_LIMIT_CHECK
-    Type: AWS::Config::ConfigRule
-  EbsInBackupPlan:
-    Properties:
-      ConfigRuleName: ebs-in-backup-plan
-      Source:
-        Owner: AWS
-        SourceIdentifier: EBS_IN_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
   EbsOptimizedInstance:
     Properties:
@@ -488,13 +439,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: EFS_ENCRYPTED_CHECK
     Type: AWS::Config::ConfigRule
-  EfsInBackupPlan:
-    Properties:
-      ConfigRuleName: efs-in-backup-plan
-      Source:
-        Owner: AWS
-        SourceIdentifier: EFS_IN_BACKUP_PLAN
-    Type: AWS::Config::ConfigRule
   ElasticBeanstalkManagedUpdatesEnabled:
     Properties:
       ConfigRuleName: elastic-beanstalk-managed-updates-enabled
@@ -511,60 +455,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
-    Type: AWS::Config::ConfigRule
-  ElasticsearchEncryptedAtRest:
-    Properties:
-      ConfigRuleName: elasticsearch-encrypted-at-rest
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELASTICSEARCH_ENCRYPTED_AT_REST
-    Type: AWS::Config::ConfigRule
-  ElasticsearchInVpcOnly:
-    Properties:
-      ConfigRuleName: elasticsearch-in-vpc-only
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELASTICSEARCH_IN_VPC_ONLY
-    Type: AWS::Config::ConfigRule
-  ElasticsearchLogsToCloudwatch:
-    Properties:
-      ConfigRuleName: elasticsearch-logs-to-cloudwatch
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::Elasticsearch::Domain
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELASTICSEARCH_LOGS_TO_CLOUDWATCH
-    Type: AWS::Config::ConfigRule
-  ElasticsearchNodeToNodeEncryptionCheck:
-    Properties:
-      ConfigRuleName: elasticsearch-node-to-node-encryption-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::Elasticsearch::Domain
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELASTICSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
-    Type: AWS::Config::ConfigRule
-  ElbAcmCertificateRequired:
-    Properties:
-      ConfigRuleName: elb-acm-certificate-required
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ElasticLoadBalancing::LoadBalancer
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELB_ACM_CERTIFICATE_REQUIRED
-    Type: AWS::Config::ConfigRule
-  ElbCrossZoneLoadBalancingEnabled:
-    Properties:
-      ConfigRuleName: elb-cross-zone-load-balancing-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ElasticLoadBalancing::LoadBalancer
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELB_CROSS_ZONE_LOAD_BALANCING_ENABLED
     Type: AWS::Config::ConfigRule
   ElbDeletionProtectionEnabled:
     Properties:
@@ -586,16 +476,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ELB_LOGGING_ENABLED
-    Type: AWS::Config::ConfigRule
-  ElbTlsHttpsListenersOnly:
-    Properties:
-      ConfigRuleName: elb-tls-https-listeners-only
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ElasticLoadBalancing::LoadBalancer
-      Source:
-        Owner: AWS
-        SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
     Type: AWS::Config::ConfigRule
   Elbv2AcmCertificateRequired:
     Properties:
@@ -676,34 +556,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: IAM_CUSTOMER_POLICY_BLOCKED_KMS_ACTIONS
     Type: AWS::Config::ConfigRule
-  IamGroupHasUsersCheck:
-    Properties:
-      ConfigRuleName: iam-group-has-users-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::IAM::Group
-      Source:
-        Owner: AWS
-        SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
-    Type: AWS::Config::ConfigRule
-  IamInlinePolicyBlockedKmsActions:
-    Properties:
-      ConfigRuleName: iam-inline-policy-blocked-kms-actions
-      InputParameters:
-        blockedActionsPatterns:
-          Fn::If:
-          - iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
-          - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
-          - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::IAM::Group
-        - AWS::IAM::Role
-        - AWS::IAM::User
-      Source:
-        Owner: AWS
-        SourceIdentifier: IAM_INLINE_POLICY_BLOCKED_KMS_ACTIONS
-    Type: AWS::Config::ConfigRule
   IamNoInlinePolicyCheck:
     Properties:
       ConfigRuleName: iam-no-inline-policy-check
@@ -769,16 +621,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
     Type: AWS::Config::ConfigRule
-  IamPolicyNoStatementsWithFullAccess:
-    Properties:
-      ConfigRuleName: iam-policy-no-statements-with-full-access
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::IAM::Policy
-      Source:
-        Owner: AWS
-        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_FULL_ACCESS
-    Type: AWS::Config::ConfigRule
   IamRootAccessKeyCheck:
     Properties:
       ConfigRuleName: iam-root-access-key-check
@@ -826,26 +668,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
     Type: AWS::Config::ConfigRule
-  IncomingSshDisabled:
-    Properties:
-      ConfigRuleName: restricted-ssh
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: INCOMING_SSH_DISABLED
-    Type: AWS::Config::ConfigRule
-  InstancesInVpc:
-    Properties:
-      ConfigRuleName: ec2-instances-in-vpc
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::Instance
-      Source:
-        Owner: AWS
-        SourceIdentifier: INSTANCES_IN_VPC
-    Type: AWS::Config::ConfigRule
   InternetGatewayAuthorizedVpcOnly:
     Properties:
       ConfigRuleName: internet-gateway-authorized-vpc-only
@@ -887,16 +709,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: LAMBDA_CONCURRENCY_CHECK
     Type: AWS::Config::ConfigRule
-  LambdaDlqCheck:
-    Properties:
-      ConfigRuleName: lambda-dlq-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::Lambda::Function
-      Source:
-        Owner: AWS
-        SourceIdentifier: LAMBDA_DLQ_CHECK
-    Type: AWS::Config::ConfigRule
   LambdaFunctionPublicAccessProhibited:
     Properties:
       ConfigRuleName: lambda-function-public-access-prohibited
@@ -917,20 +729,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: LAMBDA_INSIDE_VPC
     Type: AWS::Config::ConfigRule
-  MfaEnabledForIamConsoleAccess:
-    Properties:
-      ConfigRuleName: mfa-enabled-for-iam-console-access
-      Source:
-        Owner: AWS
-        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
-    Type: AWS::Config::ConfigRule
-  MultiRegionCloudTrailEnabled:
-    Properties:
-      ConfigRuleName: multi-region-cloudtrail-enabled
-      Source:
-        Owner: AWS
-        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
-    Type: AWS::Config::ConfigRule
   NoUnrestrictedRouteToIgw:
     Properties:
       ConfigRuleName: no-unrestricted-route-to-igw
@@ -950,13 +748,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: RDS_ENHANCED_MONITORING_ENABLED
-    Type: AWS::Config::ConfigRule
-  RdsInBackupPlan:
-    Properties:
-      ConfigRuleName: rds-in-backup-plan
-      Source:
-        Owner: AWS
-        SourceIdentifier: RDS_IN_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
   RdsInstanceDeletionProtectionEnabled:
     Properties:
@@ -1109,42 +900,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: REDSHIFT_REQUIRE_TLS_SSL
     Type: AWS::Config::ConfigRule
-  RestrictedIncomingTraffic:
-    Properties:
-      ConfigRuleName: restricted-common-ports
-      InputParameters:
-        blockedPort1:
-          Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort1
-          - Ref: RestrictedIncomingTrafficParamBlockedPort1
-          - Ref: AWS::NoValue
-        blockedPort2:
-          Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort2
-          - Ref: RestrictedIncomingTrafficParamBlockedPort2
-          - Ref: AWS::NoValue
-        blockedPort3:
-          Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort3
-          - Ref: RestrictedIncomingTrafficParamBlockedPort3
-          - Ref: AWS::NoValue
-        blockedPort4:
-          Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort4
-          - Ref: RestrictedIncomingTrafficParamBlockedPort4
-          - Ref: AWS::NoValue
-        blockedPort5:
-          Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort5
-          - Ref: RestrictedIncomingTrafficParamBlockedPort5
-          - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
-    Type: AWS::Config::ConfigRule
   RootAccountHardwareMfaEnabled:
     Properties:
       ConfigRuleName: root-account-hardware-mfa-enabled
@@ -1187,16 +942,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
     Type: AWS::Config::ConfigRule
-  S3BucketLevelPublicAccessProhibited:
-    Properties:
-      ConfigRuleName: s3-bucket-level-public-access-prohibited
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::S3::Bucket
-      Source:
-        Owner: AWS
-        SourceIdentifier: S3_BUCKET_LEVEL_PUBLIC_ACCESS_PROHIBITED
-    Type: AWS::Config::ConfigRule
   S3BucketLoggingEnabled:
     Properties:
       ConfigRuleName: s3-bucket-logging-enabled
@@ -1226,16 +971,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
-    Type: AWS::Config::ConfigRule
-  S3BucketReplicationEnabled:
-    Properties:
-      ConfigRuleName: s3-bucket-replication-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::S3::Bucket
-      Source:
-        Owner: AWS
-        SourceIdentifier: S3_BUCKET_REPLICATION_ENABLED
     Type: AWS::Config::ConfigRule
   S3BucketServerSideEncryptionEnabled:
     Properties:
@@ -1459,11 +1194,6 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
-  iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
   iamPasswordPolicyParamMaxPasswordAge:
     Fn::Not:
     - Fn::Equals:
@@ -1519,31 +1249,6 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
-  restrictedIncomingTrafficParamBlockedPort1:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: RestrictedIncomingTrafficParamBlockedPort1
-  restrictedIncomingTrafficParamBlockedPort2:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: RestrictedIncomingTrafficParamBlockedPort2
-  restrictedIncomingTrafficParamBlockedPort3:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: RestrictedIncomingTrafficParamBlockedPort3
-  restrictedIncomingTrafficParamBlockedPort4:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: RestrictedIncomingTrafficParamBlockedPort4
-  restrictedIncomingTrafficParamBlockedPort5:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: RestrictedIncomingTrafficParamBlockedPort5
   s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
     Fn::Not:
     - Fn::Equals:
