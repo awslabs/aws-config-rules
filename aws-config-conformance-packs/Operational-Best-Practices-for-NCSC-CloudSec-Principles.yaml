@@ -23,13 +23,13 @@ Parameters:
     Default: '90'
     Type: String
   CloudwatchAlarmActionCheckParamAlarmActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   CloudwatchAlarmActionCheckParamOkActionRequired:
-    Default: 'FALSE'
+    Default: 'false'
     Type: String
   CwLoggroupRetentionPeriodCheckParamMinRetentionTime:
     Default: '365'
@@ -74,13 +74,13 @@ Parameters:
     Default: '90'
     Type: String
   RedshiftClusterConfigurationCheckParamClusterDbEncrypted:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterConfigurationCheckParamLoggingEnabled:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
@@ -98,16 +98,16 @@ Parameters:
     Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
-    Default: 'TRUE'
+    Default: 'true'
     Type: String
   VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
     Default: '443'
@@ -878,7 +878,11 @@ Resources:
         Owner: AWS
         SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
       InputParameters:
-        AuthorizedVpcIds: !Ref InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+        AuthorizedVpcIds:
+          Fn::If:
+          - internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+          - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+          - Ref: AWS::NoValue
     Type: AWS::Config::ConfigRule
   KinesisStreamEncrypted:
     Properties:
@@ -954,7 +958,11 @@ Resources:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
       InputParameters:
-        routeTableIds: !Ref NoUnrestrictedRouteToIgwParamRouteTableIds
+        routeTableIds:
+          Fn::If:
+          - noUnrestrictedRouteToIgwParamRouteTableIds
+          - Ref: NoUnrestrictedRouteToIgwParamRouteTableIds
+          - Ref: AWS::NoValue
     Type: AWS::Config::ConfigRule
   OpensearchEncryptedAtRest:
     Properties:
@@ -1596,3 +1604,13 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+  internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+  noUnrestrictedRouteToIgwParamRouteTableIds:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: NoUnrestrictedRouteToIgwParamRouteTableIds
