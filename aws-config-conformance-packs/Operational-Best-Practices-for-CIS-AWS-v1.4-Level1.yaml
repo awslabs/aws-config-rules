@@ -382,14 +382,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
-  AccountSecurityQuestionsConfigured:
-    Properties:
-      ConfigRuleName: account-security-questions-configured
-      Description: Ensure the security questions that can be used to authenticate individuals calling AWS customer service for support are configured. Within the My Account section of the AWS Management Console ensure three security challenge questions are configured.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
-    Type: AWS::Config::ConfigRule
   RootAccountRegularUse:
     Properties:
       ConfigRuleName: root-account-regular-use
