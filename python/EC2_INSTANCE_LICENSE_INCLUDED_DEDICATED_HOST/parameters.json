@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_INSTANCE_LICENSE_INCLUDED_DEDICATED_HOST",
+    "Description": "EC2_INSTANCE_LICENSE_INCLUDED_DEDICATED_HOST",
+    "SourceRuntime": "python3.9",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::EC2::Instance"
+  },
+  "Tags": "[]"
+}
