@@ -60,7 +60,7 @@ REQUIRED_PERMISSIONS = [
     "FromPort" : 80,
     "ToPort" : 80,
     "UserIdGroupPairs" : [],
-    "IpRanges" : [{"CidrIp" : "0.0.0.0/0"}],
+    "IpRanges" : [{"CidrIp" : "0.0.0.0/0", "Description": ""}],
     "PrefixListIds" : [],
     "Ipv6Ranges" : []
 },
@@ -69,7 +69,7 @@ REQUIRED_PERMISSIONS = [
     "FromPort" : 443,
     "ToPort" : 443,
     "UserIdGroupPairs" : [],
-    "IpRanges" : [{"CidrIp" : "0.0.0.0/0"}],
+    "IpRanges" : [{"CidrIp" : "0.0.0.0/0", "Description": ""}],
     "PrefixListIds" : [],
     "Ipv6Ranges" : []
 }]
