@@ -26,8 +26,8 @@ def evaluate_compliance(config_item, rule_parameters):
     if (config_item['resourceType'] != 'AWS::EC2::Instance'):
         return 'NOT_APPLICABLE'
 
-    elif (config_item['configuration']['instanceType'] ==
-            rule_parameters['desiredInstanceType']):
+    elif (config_item['configuration']['instanceType'] in
+            rule_parameters['desiredInstanceType'].split(','):
         return 'COMPLIANT'
     else:
         return 'NON_COMPLIANT'
