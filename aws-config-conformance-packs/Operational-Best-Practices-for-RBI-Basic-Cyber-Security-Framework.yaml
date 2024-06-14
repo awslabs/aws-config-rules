@@ -52,6 +52,9 @@ Parameters:
   IamPasswordPolicyParamRequireUppercaseCharacters:
     Default: 'true'
     Type: String
+  InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Default: ''
+    Type: String
   RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Default: 'true'
     Type: String
@@ -696,6 +699,12 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
+      InputParameters:
+        AuthorizedVpcIds:
+          Fn::If:
+          - internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+          - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+          - Ref: AWS::NoValue
     Type: AWS::Config::ConfigRule
   KmsCmkNotScheduledForDeletion:
     Properties:
@@ -1308,6 +1317,11 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+  internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
   redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Fn::Not:
     - Fn::Equals:
