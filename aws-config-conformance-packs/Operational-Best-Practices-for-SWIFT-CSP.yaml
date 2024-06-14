@@ -57,6 +57,9 @@ Parameters:
     Description: Maximum number of days a credential cannot be used. The default value
       is 90 days.
     Type: String
+  InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Default: ''
+    Type: String
   RestrictedIncomingTrafficParamBlockedPort1:
     Default: '20'
     Description: Blocked TCP port number.
@@ -737,6 +740,12 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
+      InputParameters:
+        AuthorizedVpcIds:
+          Fn::If:
+          - internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+          - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
+          - Ref: AWS::NoValue
     Type: AWS::Config::ConfigRule
   KinesisStreamEncrypted:
     Controls:
@@ -1353,6 +1362,11 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+  internetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
   restrictedIncomingTrafficParamBlockedPort1:
     Fn::Not:
     - Fn::Equals:
