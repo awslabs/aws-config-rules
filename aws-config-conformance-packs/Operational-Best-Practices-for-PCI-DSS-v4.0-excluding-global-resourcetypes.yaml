@@ -74,26 +74,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: ACCESS_KEYS_ROTATED
     Type: AWS::Config::ConfigRule
-  CloudFrontSecurityPolicyCheck:
-    Properties:
-      ConfigRuleName: cloudfront-security-policy-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CloudFront::Distribution
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFRONT_SECURITY_POLICY_CHECK
-    Type: AWS::Config::ConfigRule
-  CloudfrontSniEnabled:
-    Properties:
-      ConfigRuleName: cloudfront-sni-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CloudFront::Distribution
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFRONT_SNI_ENABLED
-    Type: AWS::Config::ConfigRule
   TransferFamilyServerNoFTP:
     Properties:
       ConfigRuleName: transfer-family-server-no-ftp
@@ -174,16 +154,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_RESOURCES_PROTECTED_BY_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
-  EFSinBackupPlan:
-    Properties:
-      ConfigRuleName: efs-in-backup-plan
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EFS::FileSystem
-      Source:
-        Owner: AWS
-        SourceIdentifier: EFS_IN_BACKUP_PLAN
-    Type: AWS::Config::ConfigRule
   EFSResourcesProtectedbyBackupPlan:
     Properties:
       ConfigRuleName: efs-resources-protected-by-backup-plan
@@ -235,16 +205,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_IN_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
-  RDSResourcesProtectedbyBackupPlan:
-    Properties:
-      ConfigRuleName: rds-resources-protected-by-backup-plan
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::RDS::DBInstance
-      Source:
-        Owner: AWS
-        SourceIdentifier: RDS_RESOURCES_PROTECTED_BY_BACKUP_PLAN
-    Type: AWS::Config::ConfigRule
   RedshiftBackupEnabled:
     Properties:
       ConfigRuleName: redshift-backup-enabled
@@ -264,26 +224,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_RESOURCES_PROTECTED_BY_BACKUP_PLAN
-    Type: AWS::Config::ConfigRule
-  CloudfrontOriginAccessIdentityEnabled:
-    Properties:
-      ConfigRuleName: cloudfront-origin-access-identity-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CloudFront::Distribution
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFRONT_ORIGIN_ACCESS_IDENTITY_ENABLED
-    Type: AWS::Config::ConfigRule
-  CloudfrontS3OriginAccessControlEnabled:
-    Properties:
-      ConfigRuleName: cloudfront-s3-origin-access-control-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CloudFront::Distribution
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFRONT_S3_ORIGIN_ACCESS_CONTROL_ENABLED
     Type: AWS::Config::ConfigRule
   S3BucketDefaultLockEnabled:
     Properties:
@@ -385,46 +325,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: ATHENA_WORKGROUP_ENCRYPTED_AT_REST
     Type: AWS::Config::ConfigRule
-  CloudformationStackNotificationCheck:
-    Properties:
-      ConfigRuleName: cloudformation-stack-notification-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CloudFormation::Stack
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFORMATION_STACK_NOTIFICATION_CHECK
-    Type: AWS::Config::ConfigRule
-  CloudfrontAccesslogsEnabled:
-    Properties:
-      ConfigRuleName: cloudfront-accesslogs-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CloudFront::Distribution
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFRONT_ACCESSLOGS_ENABLED
-    Type: AWS::Config::ConfigRule
-  CloudfrontAssociatedWithWaf:
-    Properties:
-      ConfigRuleName: cloudfront-associated-with-waf
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CloudFront::Distribution
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFRONT_ASSOCIATED_WITH_WAF
-    Type: AWS::Config::ConfigRule
-  CloudfrontCustomSslCertificate:
-    Properties:
-      ConfigRuleName: cloudfront-custom-ssl-certificate
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::CloudFront::Distribution
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFRONT_CUSTOM_SSL_CERTIFICATE
-    Type: AWS::Config::ConfigRule
   CloudtrailSecurityTrailEnabled:
     Properties:
       ConfigRuleName: cloudtrail-security-trail-enabled
@@ -460,13 +360,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_POLICY_NOT_MORE_PERMISSIVE
-    Type: AWS::Config::ConfigRule
-  ShieldDrtAccess:
-    Properties:
-      ConfigRuleName: shield-drt-access
-      Source:
-        Owner: AWS
-        SourceIdentifier: SHIELD_DRT_ACCESS
     Type: AWS::Config::ConfigRule
   IamPolicyInUse:
     Properties:
@@ -571,23 +464,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: NETFW_POLICY_DEFAULT_ACTION_FULL_PACKETS
     Type: AWS::Config::ConfigRule
-  RdsClusterIamAuthenticationEnabled:
-    Properties:
-      ConfigRuleName: rds-cluster-iam-authentication-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::RDS::DBCluster
-      Source:
-        Owner: AWS
-        SourceIdentifier: RDS_CLUSTER_IAM_AUTHENTICATION_ENABLED
-    Type: AWS::Config::ConfigRule
-  RDSDBSecurityGroupNotAllowed:
-    Properties:
-      ConfigRuleName: rds-db-security-group-not-allowed
-      Source:
-        Owner: AWS
-        SourceIdentifier: RDS_DB_SECURITY_GROUP_NOT_ALLOWED
-    Type: AWS::Config::ConfigRule
   RedshiftClusterKmsEnabled:
     Properties:
       ConfigRuleName: redshift-cluster-kms-enabled
@@ -647,13 +523,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_NO_AMAZON_KEY_PAIR
-    Type: AWS::Config::ConfigRule
-  EC2TransitGatewayAutoVPCAttachDisabled:
-    Properties:
-      ConfigRuleName: ec2-transit-gateway-auto-vpc-attach-disabled
-      Source:
-        Owner: AWS
-        SourceIdentifier: EC2_TRANSIT_GATEWAY_AUTO_VPC_ATTACH_DISABLED
     Type: AWS::Config::ConfigRule
   Ec2VolumeInuseCheck:
     Properties:
@@ -808,16 +677,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
-  DAXEncryptionEnabled:
-    Properties:
-      ConfigRuleName: dax-encryption-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::DAX::Cluster
-      Source:
-        Owner: AWS
-        SourceIdentifier: DAX_ENCRYPTION_ENABLED
-    Type: AWS::Config::ConfigRule
   DMSRedisTLSEnabled:
     Properties:
       ConfigRuleName: dms-redis-tls-enabled
@@ -857,16 +716,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: APPSYNC_LOGGING_ENABLED
-    Type: AWS::Config::ConfigRule
-  WAFClassicLoggingEnabled:
-    Properties:
-      ConfigRuleName: waf-classic-logging-enabled
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::WAF::WebACL
-      Source:
-        Owner: AWS
-        SourceIdentifier: WAF_CLASSIC_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
   DynamoSBPITREnabled:
     Properties:
@@ -938,26 +787,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: MQ_CLOUDWATCH_AUDIT_LOG_ENABLED
     Type: AWS::Config::ConfigRule
-  DocDBClusterEncrypted:
-    Properties:
-      ConfigRuleName: docdb-cluster-encrypted
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::RDS::DBCluster
-      Source:
-        Owner: AWS
-        SourceIdentifier: DOCDB_CLUSTER_ENCRYPTED
-    Type: AWS::Config::ConfigRule
-  DocDBClusterSnapshotPublicProhibited:
-    Properties:
-      ConfigRuleName: docdb-cluster-snapshot-public-prohibited
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::RDS::DBClusterSnapshot
-      Source:
-        Owner: AWS
-        SourceIdentifier: DOCDB_CLUSTER_SNAPSHOT_PUBLIC_PROHIBITED
-    Type: AWS::Config::ConfigRule
   DynamodbTableEncryptedKMS:
     Properties:
       ConfigRuleName: dynamodb-table-encrypted-kms
@@ -968,16 +797,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS
     Type: AWS::Config::ConfigRule
-  DynamodbTableEncryptionEnabled:
-    Properties:
-      ConfigRuleName: dynamodb-table-encryption-enabled
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::DynamoDB::Table
-      Source:
-        Owner: AWS
-        SourceIdentifier: DYNAMODB_TABLE_ENCRYPTION_ENABLED
-    Type: AWS::Config::ConfigRule
   BackupRecoveryPointManualDeletionDisabled:
     Properties:
       ConfigRuleName: backup-recovery-point-manual-deletion-disabled
@@ -987,36 +806,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: BACKUP_RECOVERY_POINT_MANUAL_DELETION_DISABLED
-    Type: AWS::Config::ConfigRule
-  CloudfrontNoDeprecatedSSLProtocols:
-    Properties:
-      ConfigRuleName: cloudfront-no-deprecated-ssl-protocols
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::CloudFront::Distribution
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFRONT_NO_DEPRECATED_SSL_PROTOCOLS
-    Type: AWS::Config::ConfigRule
-  CloudfrontTraffictoOriginEncrypted:
-    Properties:
-      ConfigRuleName: cloudfront-traffic-to-origin-encrypted
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::CloudFront::Distribution
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFRONT_TRAFFIC_TO_ORIGIN_ENCRYPTED
-    Type: AWS::Config::ConfigRule
-  CloudfrontViewwePolicyHTTPS:
-    Properties:
-      ConfigRuleName: cloudfront-viewer-policy-https
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::CloudFront::Distribution
-      Source:
-        Owner: AWS
-        SourceIdentifier: CLOUDFRONT_VIEWER_POLICY_HTTPS
     Type: AWS::Config::ConfigRule
   CodebuildProjectEnvvarAWScredCheck:
     Properties:
@@ -1048,16 +837,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: CODEDEPLOY_LAMBDA_ALLATONCE_TRAFFIC_SHIFT_DISABLED
     Type: AWS::Config::ConfigRule
-  CodepipelineDeploymentCountCheck:
-    Properties:
-      ConfigRuleName: codepipeline-deployment-count-check
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::CodePipeline::Pipeline
-      Source:
-        Owner: AWS
-        SourceIdentifier: CODEPIPELINE_DEPLOYMENT_COUNT_CHECK
-    Type: AWS::Config::ConfigRule
   ELBACMCertificateRequired:
     Properties:
       ConfigRuleName: elb-acm-certificate-required
@@ -1078,16 +857,6 @@ Resources:
         Owner: AWS
         SourceIdentifier:  EMR_BLOCK_PUBLIC_ACCESS
     Type: AWS::Config::ConfigRule
-  RDSInstanceIAMAuthenticationEnabled:
-    Properties:
-      ConfigRuleName: rds-instance-iam-authentication-enabled
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::RDS::DBInstance
-      Source:
-        Owner: AWS
-        SourceIdentifier:  RDS_INSTANCE_IAM_AUTHENTICATION_ENABLED
-    Type: AWS::Config::ConfigRule
   NACLnoUnrestrictedsshrdp:
     Properties:
       ConfigRuleName: nacl-no-unrestricted-ssh-rdp
@@ -1097,16 +866,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier:  NACL_NO_UNRESTRICTED_SSH_RDP
-    Type: AWS::Config::ConfigRule
-  DaxTLSEndpointEncryption:
-    Properties:
-      ConfigRuleName: dax-tls-endpoint-encryption
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::DAX::Cluster
-      Source:
-        Owner: AWS
-        SourceIdentifier:  DAX_TLS_ENDPOINT_ENCRYPTION
     Type: AWS::Config::ConfigRule
   EKSClusterLoggingEnabled:
     Properties:
@@ -1167,36 +926,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier:  WAFV2_RULEGROUP_LOGGING_ENABLED
-    Type: AWS::Config::ConfigRule
-  WAFGlobalWebaclnotEmpty:
-    Properties:
-      ConfigRuleName: waf-global-webacl-not-empty
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::WAF::WebACL
-      Source:
-        Owner: AWS
-        SourceIdentifier:  WAF_GLOBAL_WEBACL_NOT_EMPTY
-    Type: AWS::Config::ConfigRule
-  WAFGlobalRulegroupnotEmpty:
-    Properties:
-      ConfigRuleName: waf-global-rulegroup-not-empty
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::WAF::RuleGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier:  WAF_GLOBAL_RULEGROUP_NOT_EMPTY
-    Type: AWS::Config::ConfigRule 
-  WAFGlobalRulenotEmpty:
-    Properties:
-      ConfigRuleName: waf-global-rule-not-empty
-      Scope:
-        ComplianceResourceTypes:
-        -  AWS::WAF::Rule
-      Source:
-        Owner: AWS
-        SourceIdentifier:  WAF_GLOBAL_RULE_NOT_EMPTY
     Type: AWS::Config::ConfigRule
   SecretsmanagerScheduledRotationSuccessCheck:
     Properties:
