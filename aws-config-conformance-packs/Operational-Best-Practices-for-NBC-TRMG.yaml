@@ -1027,6 +1027,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: RDS_MULTI_AZ_SUPPORT
     Type: AWS::Config::ConfigRule
+  RdsClusterMultiAzEnabled:
+    Properties:
+      ConfigRuleName: rds-cluster-multi-az-enabled
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_CLUSTER_MULTI_AZ_ENABLED
+    Type: AWS::Config::ConfigRule
   RdsSnapshotEncrypted:
     Properties:
       ConfigRuleName: rds-snapshot-encrypted
