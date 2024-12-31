@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "BUDGETS_CONFIGURED_CHECK",
+    "Description": "BUDGETS_CONFIGURED_CHECK",
+    "SourceRuntime": "python3.9-lib",
+    "CodeKey": "BUDGETS_CONFIGURED_CHECKeu-central-1.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
