@@ -1214,16 +1214,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
     Type: AWS::Config::ConfigRule
-  S3BucketLevelPublicAccessProhibited:
-    Properties:
-      ConfigRuleName: s3-bucket-level-public-access-prohibited
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::S3::Bucket
-      Source:
-        Owner: AWS
-        SourceIdentifier: S3_BUCKET_LEVEL_PUBLIC_ACCESS_PROHIBITED
-    Type: AWS::Config::ConfigRule
   S3BucketLoggingEnabled:
     Properties:
       ConfigRuleName: s3-bucket-logging-enabled
