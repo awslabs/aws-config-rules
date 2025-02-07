@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_INFRASTRUCTURE_TAG_MATCHING",
+    "Description": "Compares the tags of the EC2 instance and the related resources (VPC, SecurityGroups, ENIs, Subnet and Volumes). The rule parameters define which tag will be compared (TagName) and which infrastracture resources will be evaluated.",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "EC2_INFRASTRUCTURE_TAG_MATCHING.zip",
+    "InputParameters": "{\"TagName\": \"SecurityProfile\", \"VPC\": \"True\"}",
+    "OptionalParameters": "{\"SecurityGroups\": \"False\", \"ENIs\": \"False\", \"Subnet\": \"False\", \"Volumes\": \"False\"}",
+    "SourceEvents": "AWS::EC2::Instance"
+  },
+  "Tags": "[]"
+}
