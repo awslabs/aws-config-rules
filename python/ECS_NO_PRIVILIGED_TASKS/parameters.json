@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "ECS_NO_PRIVILEGED_TASKS",
+    "SourceRuntime": "python3.8",
+    "CodeKey": "ECS_NO_PRIVILEGED_TASKS.zip",
+    "InputParameters": "{\"TaskDefinition\": \"test-compliance, test-not-compliance\"}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "Three_Hours"
+  },
+  "Tags": "[]"
+}
