@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_ENCRYPTED_VOLUMES",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "EC2_ENCRYPTED_VOLUMES.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"SubnetExceptionList\": \"\",\"KmsIdList\": \"\"}",
+    "SourceEvents": "AWS::EC2::Instance"
+  },
+  "Tags": "[]"
+}
