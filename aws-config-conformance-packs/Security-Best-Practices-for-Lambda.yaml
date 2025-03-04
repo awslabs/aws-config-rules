@@ -14,16 +14,6 @@ Parameters:
       python3.6, ruby2.7, java11, java8, java8.al2, go1.x, dotnetcore3.1, dotnet6
     Type: String
 Resources:
-  LambdaDlqCheck:
-    Properties:
-      ConfigRuleName: lambda-dlq-check
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::Lambda::Function
-      Source:
-        Owner: AWS
-        SourceIdentifier: LAMBDA_DLQ_CHECK
-    Type: AWS::Config::ConfigRule
   LambdaFunctionSettingsCheck:
     Properties:
       ConfigRuleName: lambda-function-settings-check
