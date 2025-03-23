@@ -18,8 +18,8 @@ import boto3
 APPLICABLE_RESOURCES = ["AWS::EC2::Instance"]
 
 
-# Iterate through required tags ensureing each required tag is present, 
-# and value is one of the given valid values
+# Iterate through the required tags, ensuring each required tag is present
+# and that the value is one of the given valid values
 def find_violation(current_tags, required_tags):
     violation = ""
     for rtag,rvalues in required_tags.iteritems():
