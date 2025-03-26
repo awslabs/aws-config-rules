@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "CLOUDWATCH_LOG_GROUP_DATA_PROTECTION",
+    "Description": "Check for DataProtection policy on CloudWatch Log Groups",
+    "SourceRuntime": "python3.9",
+    "CodeKey": "CLOUDWATCH_LOG_GROUP_DATA_PROTECTION.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
