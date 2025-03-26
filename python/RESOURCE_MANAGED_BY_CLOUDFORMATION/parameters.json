@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "CloudFormationManagementRule.zip", 
+    "SourceRuntime": "python3.7", 
+    "SourcePeriodic": "TwentyFour_Hours", 
+    "RuleName": "CloudFormationManagementRule", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}
