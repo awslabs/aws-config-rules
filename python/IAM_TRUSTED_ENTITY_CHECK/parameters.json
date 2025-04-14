@@ -1,0 +1,13 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "IAM_TRUSTED_ENTITY_CHECK",
+    "Description": "Rule to detect trusted entities which trusts whole of another AWS Account",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "IAM_TRUSTED_ENTITY_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::IAM::Role"
+  },
+  "Tags": "[]"
+}
