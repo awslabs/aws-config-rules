@@ -273,6 +273,13 @@ Resources:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
+  NaclNoUnrestrictedSshRdp:
+    Properties:
+      ConfigRuleName: nacl-no-unrestricted-ssh-rdp
+      Source:
+        Owner: AWS
+        SourceIdentifier: NACL_NO_UNRESTRICTED_SSH_RDP
+    Type: AWS::Config::ConfigRule
   RdsSnapshotEncrypted:
     Properties:
       ConfigRuleName: rds-snapshot-encrypted
