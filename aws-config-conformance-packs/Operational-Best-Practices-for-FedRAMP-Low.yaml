@@ -1,9 +1,9 @@
 ##################################################################################
 #
 #   Conformance Pack:
-#     Operational Best Practices for FedRAMP(Low)
+#     Operational Best Practices for FedRAMP (Low)
 #
-#   This conformance pack helps verify compliance with FedRAMP(Low) requirements.
+#   This conformance pack helps verify compliance with FedRAMP (Low) requirements.
 #
 #   This Conformance Pack has been designed for compatibility with the majority of AWS
 #   regions and to not require setting of any Parameters. Additional managed rules that
