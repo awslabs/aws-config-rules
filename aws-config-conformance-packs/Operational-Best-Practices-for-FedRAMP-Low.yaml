@@ -1364,15 +1364,15 @@ Resources:
         Owner: AWS
         SourceIdentifier: VPC_VPN_2_TUNNELS_UP
     Type: AWS::Config::ConfigRule
-  WafRegionalWebaclNotEmpty:
-    Properties:
-      ConfigRuleName: waf-regional-webacl-not-empty
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::WAFRegional::WebACL
-      Source:
-        Owner: AWS
-        SourceIdentifier: WAF_REGIONAL_WEBACL_NOT_EMPTY
+  # WafRegionalWebaclNotEmpty:
+  #   Properties:
+  #     ConfigRuleName: waf-regional-webacl-not-empty
+  #     Scope:
+  #       ComplianceResourceTypes:
+  #       - AWS::WAFRegional::WebACL
+  #     Source:
+  #       Owner: AWS
+  #       SourceIdentifier: WAF_REGIONAL_WEBACL_NOT_EMPTY
     Type: AWS::Config::ConfigRule
   Wafv2LoggingEnabled:
     Properties:
