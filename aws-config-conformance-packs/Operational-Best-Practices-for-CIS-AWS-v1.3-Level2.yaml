@@ -1,19 +1,16 @@
 ##################################################################################
-#
-#   Conformance Pack:
-#     Operational Best Practices for CIS AWS Foundations Benchmark Level 2
-#
-#   This conformance pack helps verify compliance with CIS AWS Foundations Benchmark Level 2 requirements.
-#
-#   See Parameters section for names and descriptions of required parameters.
-#
+#                                                                                 
+#   Conformance Pack:                                                             
+#     Operational Best Practices for CIS AWS Foundations Benchmark Level 2                                   
+#                                                                                 
+#   This conformance pack helps verify compliance with CIS AWS Foundations Benchmark Level 2 requirements.   
+#                                                                                 
+#   See Parameters section for names and descriptions of required parameters.     
+#                                                                                 
 ##################################################################################
 
 Parameters:
   AccessKeysRotatedParamMaxAccessKeyAge:
-    Default: '90'
-    Type: String
-  IamPasswordPolicyParamMaxPasswordAge:
     Default: '90'
     Type: String
   IamPasswordPolicyParamMinimumPasswordLength:
@@ -22,40 +19,25 @@ Parameters:
   IamPasswordPolicyParamPasswordReusePrevention:
     Default: '24'
     Type: String
-  IamPasswordPolicyParamRequireLowercaseCharacters:
-    Default: 'true'
-    Type: String
-  IamPasswordPolicyParamRequireNumbers:
-    Default: 'true'
-    Type: String
-  IamPasswordPolicyParamRequireSymbols:
-    Default: 'true'
-    Type: String
-  IamPasswordPolicyParamRequireUppercaseCharacters:
-    Default: 'true'
-    Type: String
-  IamPolicyInUseParamPolicyARN:
-    Default: arn:aws:iam::aws:policy/AWSSupportAccess
-    Type: String
   IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
-    Default: '45'
+    Default: '90'
     Type: String
-  RestrictedIncomingTrafficParamBlockedPort3:
+  RestrictedIncomingTrafficParamBlockedPort1:
+    Default: '22'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort2:
     Default: '3389'
     Type: String
-  S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
-    Default: 'True'
+  S3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
+    Default: 'true'
     Type: String
-  S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
-    Default: 'True'
+  S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
+    Default: 'true'
     Type: String
-  S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
-    Default: 'True'
+  S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
+    Default: 'true'
     Type: String
-  S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
-    Default: 'True'
-    Type: String
-  S3BucketVersioningEnabledParamIsMfaDeleteEnabled:
+  S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
     Default: 'true'
     Type: String
 Resources:
@@ -71,13 +53,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: ACCESS_KEYS_ROTATED
-    Type: AWS::Config::ConfigRule
-  AccountPartOfOrganizations:
-    Properties:
-      ConfigRuleName: account-part-of-organizations
-      Source:
-        Owner: AWS
-        SourceIdentifier: ACCOUNT_PART_OF_ORGANIZATIONS
     Type: AWS::Config::ConfigRule
   CloudTrailCloudWatchLogsEnabled:
     Properties:
@@ -147,11 +122,6 @@ Resources:
     Properties:
       ConfigRuleName: iam-password-policy
       InputParameters:
-        MaxPasswordAge:
-          Fn::If:
-          - iamPasswordPolicyParamMaxPasswordAge
-          - Ref: IamPasswordPolicyParamMaxPasswordAge
-          - Ref: AWS::NoValue
         MinimumPasswordLength:
           Fn::If:
           - iamPasswordPolicyParamMinimumPasswordLength
@@ -162,42 +132,9 @@ Resources:
           - iamPasswordPolicyParamPasswordReusePrevention
           - Ref: IamPasswordPolicyParamPasswordReusePrevention
           - Ref: AWS::NoValue
-        RequireLowercaseCharacters:
-          Fn::If:
-          - iamPasswordPolicyParamRequireLowercaseCharacters
-          - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
-          - Ref: AWS::NoValue
-        RequireNumbers:
-          Fn::If:
-          - iamPasswordPolicyParamRequireNumbers
-          - Ref: IamPasswordPolicyParamRequireNumbers
-          - Ref: AWS::NoValue
-        RequireSymbols:
-          Fn::If:
-          - iamPasswordPolicyParamRequireSymbols
-          - Ref: IamPasswordPolicyParamRequireSymbols
-          - Ref: AWS::NoValue
-        RequireUppercaseCharacters:
-          Fn::If:
-          - iamPasswordPolicyParamRequireUppercaseCharacters
-          - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
-          - Ref: AWS::NoValue
       Source:
         Owner: AWS
         SourceIdentifier: IAM_PASSWORD_POLICY
-    Type: AWS::Config::ConfigRule
-  IamPolicyInUse:
-    Properties:
-      ConfigRuleName: iam-policy-in-use
-      InputParameters:
-        policyARN:
-          Fn::If:
-          - iamPolicyInUseParamPolicyARN
-          - Ref: IamPolicyInUseParamPolicyARN
-          - Ref: AWS::NoValue
-      Source:
-        Owner: AWS
-        SourceIdentifier: IAM_POLICY_IN_USE
     Type: AWS::Config::ConfigRule
   IamPolicyNoStatementsWithAdminAccess:
     Properties:
@@ -249,16 +186,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
     Type: AWS::Config::ConfigRule
-  IncomingSshDisabled:
-    Properties:
-      ConfigRuleName: restricted-ssh
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: INCOMING_SSH_DISABLED
-    Type: AWS::Config::ConfigRule
   MfaEnabledForIamConsoleAccess:
     Properties:
       ConfigRuleName: mfa-enabled-for-iam-console-access
@@ -273,43 +200,19 @@ Resources:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
-  NaclNoUnrestrictedSshRdp:
-    Properties:
-      ConfigRuleName: nacl-no-unrestricted-ssh-rdp
-      Source:
-        Owner: AWS
-        SourceIdentifier: NACL_NO_UNRESTRICTED_SSH_RDP
-    Type:
-      AWS::Config::ConfigRule
-  RdsSnapshotEncrypted:
-    Properties:
-      ConfigRuleName: rds-snapshot-encrypted
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::RDS::DBSnapshot
-        - AWS::RDS::DBClusterSnapshot
-      Source:
-        Owner: AWS
-        SourceIdentifier: RDS_SNAPSHOT_ENCRYPTED
-    Type: AWS::Config::ConfigRule
-  RdsStorageEncrypted:
-    Properties:
-      ConfigRuleName: rds-storage-encrypted
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::RDS::DBInstance
-      Source:
-        Owner: AWS
-        SourceIdentifier: RDS_STORAGE_ENCRYPTED
-    Type: AWS::Config::ConfigRule
   RestrictedIncomingTraffic:
     Properties:
       ConfigRuleName: restricted-common-ports
       InputParameters:
-        blockedPort3:
+        blockedPort1:
           Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort3
-          - Ref: RestrictedIncomingTrafficParamBlockedPort3
+          - restrictedIncomingTrafficParamBlockedPort1
+          - Ref: RestrictedIncomingTrafficParamBlockedPort1
+          - Ref: AWS::NoValue
+        blockedPort2:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort2
+          - Ref: RestrictedIncomingTrafficParamBlockedPort2
           - Ref: AWS::NoValue
       Scope:
         ComplianceResourceTypes:
@@ -332,43 +235,36 @@ Resources:
         Owner: AWS
         SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
     Type: AWS::Config::ConfigRule
-  S3AccountLevelPublicAccessBlocksPeriodic:
+  S3AccountLevelPublicAccessBlocks:
     Properties:
-      ConfigRuleName: s3-account-level-public-access-blocks-periodic
+      ConfigRuleName: s3-account-level-public-access-blocks
       InputParameters:
         BlockPublicAcls:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
-          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
+          - s3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
           - Ref: AWS::NoValue
         BlockPublicPolicy:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
-          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
+          - s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+          - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
           - Ref: AWS::NoValue
         IgnorePublicAcls:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
-          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
+          - s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+          - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
           - Ref: AWS::NoValue
         RestrictPublicBuckets:
           Fn::If:
-          - s3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
-          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
+          - s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
+          - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets
           - Ref: AWS::NoValue
-      Source:
-        Owner: AWS
-        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
-    Type: AWS::Config::ConfigRule
-  S3BucketLevelPublicAccessProhibited:
-    Properties:
-      ConfigRuleName: s3-bucket-level-public-access-prohibited
       Scope:
         ComplianceResourceTypes:
-        - AWS::S3::Bucket
+        - AWS::S3::AccountPublicAccessBlock
       Source:
         Owner: AWS
-        SourceIdentifier: S3_BUCKET_LEVEL_PUBLIC_ACCESS_PROHIBITED
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
     Type: AWS::Config::ConfigRule
   S3BucketLoggingEnabled:
     Properties:
@@ -379,6 +275,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketPolicyGranteeCheck:
+    Properties:
+      ConfigRuleName: s3-bucket-policy-grantee-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_POLICY_GRANTEE_CHECK
     Type: AWS::Config::ConfigRule
   S3BucketPublicReadProhibited:
     Properties:
@@ -419,22 +325,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
-    Type: AWS::Config::ConfigRule
-  S3BucketVersioningEnabled:
-    Properties:
-      ConfigRuleName: s3-bucket-versioning-enabled
-      InputParameters:
-        isMfaDeleteEnabled:
-          Fn::If:
-          - s3BucketVersioningEnabledParamIsMfaDeleteEnabled
-          - Ref: S3BucketVersioningEnabledParamIsMfaDeleteEnabled
-          - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::S3::Bucket
-      Source:
-        Owner: AWS
-        SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
     Type: AWS::Config::ConfigRule
   VpcDefaultSecurityGroupClosed:
     Properties:
@@ -497,6 +387,14 @@ Resources:
     Properties:
       ConfigRuleName: iam-user-single-access-key
       Description: Ensure there is only one active access key available for any single IAM user. For all IAM users check that there is only one active key used within the Security Credentials tab for each user within IAM.
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  IAMSupportRoleCreated:
+    Properties:
+      ConfigRuleName: iam-support-role-created
+      Description: Ensure a support role has been created to manage incidents with AWS Support. Check that the AWSSupportAccess policy is attached to an IAM role.
       Source:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
@@ -605,20 +503,34 @@ Resources:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
-  Ec2InstanceProfileAttached:
+  VPCNetworkACLOpenAdminPorts:
     Properties:
-      ConfigRuleName: ec2-instance-profile-attached
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::Instance
+      ConfigRuleName: vpc-networkacl-open-admin-ports
+      Description: Ensure no network ACLs allow public ingress to the remote server administration ports. Within the VPC section of the console, ensure there are network ACLs with a source of '0.0.0.0/0' with allowing ports or port ranges including remote server admin ports.
       Source:
         Owner: AWS
-        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceRoleAssigned:
+    Properties:
+      ConfigRuleName: ec2-instance-role-assigned
+      Description: For instances that are known to perform AWS actions, ensure that they belong to an instance role that has the necessary permissions. Within the EC2 section of the AWS Management Console select the instance and check that the IAM role field is populated. 
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  IamCentralUserManagement:
+    Properties:
+      ConfigRuleName: iam-central-user-management
+      Description: Ensure IAM users are managed centrally via the identity federation or AWS Organizations for multi-account environments. Within the IAM section of the AWS Management Console, confirm that no IAM users representing individuals are present. 
+      Source:
+        Owner: AWS
+        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmConsoleAuthFailures:
     Properties:
       ConfigRuleName: alarm-console-auth-failures
-      Description: Ensure a log metric filter and an alarm exists for AWS Management Console authentication failures.
+      Description: Ensure a log metric filter and an alarm exists for AWS Management Console authentication failures. 
       Source:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
@@ -626,7 +538,7 @@ Resources:
   AlarmKmsDisableOrDeleteCmk:
     Properties:
       ConfigRuleName: alarm-kms-disable-or-delete-cmk
-      Description: Ensure a log metric filter and an alarm exists for disabling or scheduled deletion of customer created CMKs.
+      Description: Ensure a log metric filter and an alarm exists for disabling or scheduled deletion of customer created CMKs. 
       Source:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
@@ -634,7 +546,7 @@ Resources:
   AlarmAwsConfigChange:
     Properties:
       ConfigRuleName: alarm-aws-config-change
-      Description: Ensure a log metric filter and an alarm exists for AWS Config configuration changes.
+      Description: Ensure a log metric filter and an alarm exists for AWS Config configuration changes. 
       Source:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
@@ -642,7 +554,7 @@ Resources:
   AlarmVpcSecrityGroupChange:
     Properties:
       ConfigRuleName: alarm-vpc-secrity-group-change
-      Description: Ensure a log metric filter and an alarm exists for security group changes.
+      Description: Ensure a log metric filter and an alarm exists for security group changes. 
       Source:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
@@ -650,7 +562,7 @@ Resources:
   AlarmVpcNaclChange:
     Properties:
       ConfigRuleName: alarm-vpc-nacl-change
-      Description: Ensure a log metric filter and an alarm exists for changes to Network Access Control Lists (NACL).
+      Description: Ensure a log metric filter and an alarm exists for changes to Network Access Control Lists (NACL). 
       Source:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
@@ -658,7 +570,7 @@ Resources:
   VpcPeeringLeastAccess:
     Properties:
       ConfigRuleName: vpc-peering-least-access
-      Description: Ensure the routing tables for Amazon VPC peering are "least access". Within the VPC section of the console, examine the route table entries to ensure that the least number of subnets or hosts are required to accomplish the purpose for peering are routable.
+      Description: Ensure the routing tables for Amazon VPC peering are "least access". Within the VPC section of the console, examine the route table entries to ensure that the least number of subnets or hosts are required to accomplish the purpose for peering are routable. 
       Source:
         Owner: AWS
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
@@ -669,11 +581,6 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: AccessKeysRotatedParamMaxAccessKeyAge
-  iamPasswordPolicyParamMaxPasswordAge:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamPasswordPolicyParamMaxPasswordAge
   iamPasswordPolicyParamMinimumPasswordLength:
     Fn::Not:
     - Fn::Equals:
@@ -684,63 +591,38 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: IamPasswordPolicyParamPasswordReusePrevention
-  iamPasswordPolicyParamRequireLowercaseCharacters:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
-  iamPasswordPolicyParamRequireNumbers:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamPasswordPolicyParamRequireNumbers
-  iamPasswordPolicyParamRequireSymbols:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamPasswordPolicyParamRequireSymbols
-  iamPasswordPolicyParamRequireUppercaseCharacters:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
-  iamPolicyInUseParamPolicyARN:
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: IamPolicyInUseParamPolicyARN
   iamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
     Fn::Not:
     - Fn::Equals:
       - ''
       - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
-  restrictedIncomingTrafficParamBlockedPort3:
+  restrictedIncomingTrafficParamBlockedPort1:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: RestrictedIncomingTrafficParamBlockedPort3
-  s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
+      - Ref: RestrictedIncomingTrafficParamBlockedPort1
+  restrictedIncomingTrafficParamBlockedPort2:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
-  s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
+      - Ref: RestrictedIncomingTrafficParamBlockedPort2
+  s3AccountLevelPublicAccessBlocksParamBlockPublicAcls:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
-  s3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
+      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicAcls
+  s3AccountLevelPublicAccessBlocksParamBlockPublicPolicy:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
-  s3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
+      - Ref: S3AccountLevelPublicAccessBlocksParamBlockPublicPolicy
+  s3AccountLevelPublicAccessBlocksParamIgnorePublicAcls:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
-  s3BucketVersioningEnabledParamIsMfaDeleteEnabled:
+      - Ref: S3AccountLevelPublicAccessBlocksParamIgnorePublicAcls
+  s3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: S3BucketVersioningEnabledParamIsMfaDeleteEnabled
+      - Ref: S3AccountLevelPublicAccessBlocksParamRestrictPublicBuckets

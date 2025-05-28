@@ -1,14 +1,9 @@
 ##################################################################################
 #
 #   Conformance Pack:
-#   Operational Best Practices based on Compute Services
+#     Operational Best Practices for Compute Services
 #
-#   This  pack contains AWS Config rules based on Compute Services
-#   (https://aws.amazon.com/products/compute/). This Conformance Pack has
-#   been designed for compatibility with the majority of AWS regions and to not require
-#   setting of any Parameters. Additional managed rules that require parameters to be set
-#   for your environment and/or for your specific region can be found at
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#   This conformance pack helps verify compliance with Compute Services requirements.
 #
 #   See Parameters section for names and descriptions of required parameters.
 #
@@ -30,13 +25,23 @@ Parameters:
   LambdaConcurrencyCheckParamConcurrencyLimitLow:
     Default: '500'
     Type: String
-  ServiceVpcEndpointEnabledLambdaParamServiceName:
+  ServiceVpcEndpointEnabled2ParamServiceName:
     Default: lambda
     Type: String
   ServiceVpcEndpointEnabledParamServiceName:
     Default: ec2
     Type: String
 Resources:
+  AutoscalingCapacityRebalancing:
+    Properties:
+      ConfigRuleName: autoscaling-capacity-rebalancing
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_CAPACITY_REBALANCING
+    Type: AWS::Config::ConfigRule
   AutoscalingGroupElbHealthcheckRequired:
     Properties:
       ConfigRuleName: autoscaling-group-elb-healthcheck-required
@@ -47,6 +52,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
     Type: AWS::Config::ConfigRule
+  AutoscalingLaunchConfigHopLimit:
+    Properties:
+      ConfigRuleName: autoscaling-launch-config-hop-limit
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::LaunchConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_HOP_LIMIT
+    Type: AWS::Config::ConfigRule
   AutoscalingLaunchConfigPublicIpDisabled:
     Properties:
       ConfigRuleName: autoscaling-launch-config-public-ip-disabled
@@ -56,6 +71,36 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: AUTOSCALING_LAUNCH_CONFIG_PUBLIC_IP_DISABLED
+    Type: AWS::Config::ConfigRule
+  AutoscalingLaunchconfigRequiresImdsv2:
+    Properties:
+      ConfigRuleName: autoscaling-launchconfig-requires-imdsv2
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::LaunchConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCHCONFIG_REQUIRES_IMDSV2
+    Type: AWS::Config::ConfigRule
+  AutoscalingMultipleAz:
+    Properties:
+      ConfigRuleName: autoscaling-multiple-az
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_MULTIPLE_AZ
+    Type: AWS::Config::ConfigRule
+  AutoscalingMultipleInstanceTypes:
+    Properties:
+      ConfigRuleName: autoscaling-multiple-instance-types
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_MULTIPLE_INSTANCE_TYPES
     Type: AWS::Config::ConfigRule
   CloudwatchAlarmResourceCheck:
     Properties:
@@ -137,6 +182,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_MANAGED_BY_SSM
     Type: AWS::Config::ConfigRule
+  Ec2InstanceMultipleEniCheck:
+    Properties:
+      ConfigRuleName: ec2-instance-multiple-eni-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_MULTIPLE_ENI_CHECK
+    Type: AWS::Config::ConfigRule
   Ec2InstanceNoPublicIp:
     Properties:
       ConfigRuleName: ec2-instance-no-public-ip
@@ -177,12 +232,42 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
+  Ec2NoAmazonKeyPair:
+    Properties:
+      ConfigRuleName: ec2-no-amazon-key-pair
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_NO_AMAZON_KEY_PAIR
+    Type: AWS::Config::ConfigRule
+  Ec2SecurityGroupAttachedToEniPeriodic:
+    Properties:
+      ConfigRuleName: ec2-security-group-attached-to-eni-periodic
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI_PERIODIC
+    Type: AWS::Config::ConfigRule
   Ec2StoppedInstance:
     Properties:
       ConfigRuleName: ec2-stopped-instance
       Source:
         Owner: AWS
         SourceIdentifier: EC2_STOPPED_INSTANCE
+    Type: AWS::Config::ConfigRule
+  Ec2TokenHopLimitCheck:
+    Properties:
+      ConfigRuleName: ec2-token-hop-limit-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_TOKEN_HOP_LIMIT_CHECK
     Type: AWS::Config::ConfigRule
   Ec2VolumeInuseCheck:
     Properties:
@@ -291,6 +376,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: LAMBDA_INSIDE_VPC
     Type: AWS::Config::ConfigRule
+  LambdaVpcMultiAzCheck:
+    Properties:
+      ConfigRuleName: lambda-vpc-multi-az-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_VPC_MULTI_AZ_CHECK
+    Type: AWS::Config::ConfigRule
   ServiceVpcEndpointEnabled:
     Properties:
       ConfigRuleName: service-vpc-endpoint-enabled
@@ -304,14 +399,14 @@ Resources:
         Owner: AWS
         SourceIdentifier: SERVICE_VPC_ENDPOINT_ENABLED
     Type: AWS::Config::ConfigRule
-  ServiceVpcEndpointEnabledLambda:
+  ServiceVpcEndpointEnabled2:
     Properties:
-      ConfigRuleName: service-vpc-endpoint-enabled-lambda
+      ConfigRuleName: service-vpc-endpoint-enabled-2
       InputParameters:
         serviceName:
           Fn::If:
-          - serviceVpcEndpointEnabledlambdaParamServiceName
-          - Ref: ServiceVpcEndpointEnabledLambdaParamServiceName
+          - serviceVpcEndpointEnabled2ParamServiceName
+          - Ref: ServiceVpcEndpointEnabled2ParamServiceName
           - Ref: AWS::NoValue
       Source:
         Owner: AWS
@@ -343,11 +438,11 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
-  serviceVpcEndpointEnabledlambdaParamServiceName:
+  serviceVpcEndpointEnabled2ParamServiceName:
     Fn::Not:
     - Fn::Equals:
       - ''
-      - Ref: ServiceVpcEndpointEnabledLambdaParamServiceName
+      - Ref: ServiceVpcEndpointEnabled2ParamServiceName
   serviceVpcEndpointEnabledParamServiceName:
     Fn::Not:
     - Fn::Equals:

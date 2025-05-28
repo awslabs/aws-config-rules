@@ -3,11 +3,7 @@
 #   Conformance Pack:
 #     Operational Best Practices for BCP and DR
 #
-#   This Conformance Pack has been designed for compatibility with the majority of
-#   AWS regions and to not require setting of any Parameters. Additional managed rules
-#   that require parameters to be set for your environment and/or for your specific
-#   region can be found at:
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#   This conformance pack helps verify compliance with BCP and DR requirements.
 #
 #   See Parameters section for names and descriptions of required parameters.
 #
@@ -49,6 +45,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: AURORA_RESOURCES_PROTECTED_BY_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
+  AutoscalingCapacityRebalancing:
+    Properties:
+      ConfigRuleName: autoscaling-capacity-rebalancing
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_CAPACITY_REBALANCING
+    Type: AWS::Config::ConfigRule
   AutoscalingGroupElbHealthcheckRequired:
     Properties:
       ConfigRuleName: autoscaling-group-elb-healthcheck-required
@@ -58,6 +64,26 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
+    Type: AWS::Config::ConfigRule
+  AutoscalingMultipleAz:
+    Properties:
+      ConfigRuleName: autoscaling-multiple-az
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_MULTIPLE_AZ
+    Type: AWS::Config::ConfigRule
+  AutoscalingMultipleInstanceTypes:
+    Properties:
+      ConfigRuleName: autoscaling-multiple-instance-types
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AutoScaling::AutoScalingGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_MULTIPLE_INSTANCE_TYPES
     Type: AWS::Config::ConfigRule
   BackupPlanMinFrequencyAndMinRetentionCheck:
     Properties:
@@ -120,6 +146,26 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: BACKUP_RECOVERY_POINT_MINIMUM_RETENTION_CHECK
+    Type: AWS::Config::ConfigRule
+  BeanstalkEnhancedHealthReportingEnabled:
+    Properties:
+      ConfigRuleName: beanstalk-enhanced-health-reporting-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticBeanstalk::Environment
+      Source:
+        Owner: AWS
+        SourceIdentifier: BEANSTALK_ENHANCED_HEALTH_REPORTING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ClbMultipleAz:
+    Properties:
+      ConfigRuleName: clb-multiple-az
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLB_MULTIPLE_AZ
     Type: AWS::Config::ConfigRule
   DbInstanceBackupEnabled:
     Properties:
@@ -203,6 +249,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_RESOURCES_PROTECTED_BY_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
+  EcrPrivateLifecyclePolicyConfigured:
+    Properties:
+      ConfigRuleName: ecr-private-lifecycle-policy-configured
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_LIFECYCLE_POLICY_CONFIGURED
+    Type: AWS::Config::ConfigRule
   EfsInBackupPlan:
     Properties:
       ConfigRuleName: efs-in-backup-plan
@@ -266,6 +322,26 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: LAMBDA_CONCURRENCY_CHECK
+    Type: AWS::Config::ConfigRule
+  LambdaVpcMultiAzCheck:
+    Properties:
+      ConfigRuleName: lambda-vpc-multi-az-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_VPC_MULTI_AZ_CHECK
+    Type: AWS::Config::ConfigRule
+  OpensearchDataNodeFaultTolerance:
+    Properties:
+      ConfigRuleName: opensearch-data-node-fault-tolerance
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_DATA_NODE_FAULT_TOLERANCE
     Type: AWS::Config::ConfigRule
   RdsInBackupPlan:
     Properties:
@@ -343,6 +419,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3VersionLifecyclePolicyCheck:
+    Properties:
+      ConfigRuleName: s3-version-lifecycle-policy-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_VERSION_LIFECYCLE_POLICY_CHECK
     Type: AWS::Config::ConfigRule
   VpcVpn2TunnelsUp:
     Properties:

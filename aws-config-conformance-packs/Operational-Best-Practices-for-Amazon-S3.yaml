@@ -1,9 +1,11 @@
-################################################################################
+##################################################################################
 #
 #   Conformance Pack:
-#     Operational Best Practices for Amazon S3.
+#     Operational Best Practices for S3
 #
-################################################################################
+#   This conformance pack helps verify compliance with S3 requirements.
+#
+##################################################################################
 
 Parameters:
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:

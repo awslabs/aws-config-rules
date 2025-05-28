@@ -391,16 +391,6 @@ Resources:
         Owner: AWS
         SourceIdentifier: DYNAMODB_PITR_ENABLED
     Type: AWS::Config::ConfigRule
-  DynamodbResourcesProtectedByBackupPlan:
-    Properties:
-      ConfigRuleName: dynamodb-resources-protected-by-backup-plan
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::DynamoDB::Table
-      Source:
-        Owner: AWS
-        SourceIdentifier: DYNAMODB_RESOURCES_PROTECTED_BY_BACKUP_PLAN
-    Type: AWS::Config::ConfigRule
   DynamodbThroughputLimitCheck:
     Properties:
       ConfigRuleName: dynamodb-throughput-limit-check
@@ -971,6 +961,36 @@ Resources:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
     Type: AWS::Config::ConfigRule
+  OpensearchEncryptedAtRest:
+    Properties:
+      ConfigRuleName: opensearch-encrypted-at-rest
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
+    Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  OpensearchNodeToNodeEncryptionCheck:
+    Properties:
+      ConfigRuleName: opensearch-node-to-node-encryption-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
+    Type: AWS::Config::ConfigRule
   RdsAutomaticMinorVersionUpgradeEnabled:
     Properties:
       ConfigRuleName: rds-automatic-minor-version-upgrade-enabled
@@ -1400,14 +1420,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: WAFV2_LOGGING_ENABLED
-    Type: AWS::Config::ConfigRule
-  ResponsePlanExistsMaintained:
-    Properties:
-      ConfigRuleName: response-plan-exists-maintained
-      Description: Ensure incident response plans are established, maintained, and distributed to responsible personnel.
-      Source:
-        Owner: AWS
-        SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AnnualRiskAssessmentPerformed:
     Properties:

@@ -1,14 +1,9 @@
 ##################################################################################
 #
 #   Conformance Pack:
-#   Operational Best Practices for AWS Config rules based on Management and Governance Services
+#     Operational Best Practices for Management and Governance Services
 #
-#   This  pack contains AWS Config rules based on Management and Governance Services
-#   (https://aws.amazon.com/products/management-tools/). This Conformance Pack has
-#   been designed for compatibility with the majority of AWS regions and to not require
-#   setting of any Parameters. Additional managed rules that require parameters to be set
-#   for your environment and/or for your specific region can be found at
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#   This conformance pack helps verify compliance with Management and Governance Services requirements.
 #
 #   See Parameters section for names and descriptions of required parameters.
 #

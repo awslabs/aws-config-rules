@@ -1,0 +1,378 @@
+#############################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for the ABS CCIG 2.0 Material Workloads (Part 1)
+#
+#   This conformance pack helps verify compliance with the Association of Banks in
+#   Singapore Cloud Computing Implementation Guide 2.0 requirements for Material Workloads,
+#   this pack is inclusive of the config rules for Standard Workloads.
+#
+#   See Parameters section for names and descriptions of required parameters.
+
+Parameters:
+  AccessKeysRotatedParamMaxAccessKeyAge:
+    Default: '90'
+    Type: String
+  AcmCertificateExpirationCheckParamDaysToExpiration:
+    Default: '90'
+    Type: String
+  DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Default: '80'
+    Type: String
+  Ec2VolumeInuseCheckParamDeleteOnTermination:
+    Default: 'true'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysHighSev:
+    Default: '1'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysLowSev:
+    Default: '30'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysMediumSev:
+    Default: '7'
+    Type: String
+  IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:Decrypt,kms:ReEncryptFrom
+    Type: String
+  IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:Decrypt,kms:ReEncryptFrom
+    Type: String
+  IamPasswordPolicyParamMaxPasswordAge:
+    Default: '90'
+    Type: String
+  IamPasswordPolicyParamMinimumPasswordLength:
+    Default: '14'
+    Type: String
+  IamPasswordPolicyParamPasswordReusePrevention:
+    Default: '24'
+    Type: String
+  IamPasswordPolicyParamRequireLowercaseCharacters:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireNumbers:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireSymbols:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireUppercaseCharacters:
+    Default: 'true'
+    Type: String
+  LambdaConcurrencyCheckParamConcurrencyLimitHigh:
+    Default: '1000'
+    Type: String
+  LambdaConcurrencyCheckParamConcurrencyLimitLow:
+    Default: '500'
+    Type: String
+
+Resources:
+  AccessKeysRotated:
+    Properties:
+      ConfigRuleName: access-keys-rotated
+      InputParameters:
+        maxAccessKeyAge:
+          Fn::If:
+            - accessKeysRotatedParamMaxAccessKeyAge
+            - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+            - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+    Type: AWS::Config::ConfigRule
+
+  AccountPartOfOrganizations:
+    Properties:
+      ConfigRuleName: account-part-of-organizations
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCOUNT_PART_OF_ORGANIZATIONS
+    Type: AWS::Config::ConfigRule
+
+  AcmCertificateExpirationCheck:
+    Properties:
+      ConfigRuleName: acm-certificate-expiration-check
+      InputParameters:
+        daysToExpiration:
+          Fn::If:
+            - acmCertificateExpirationCheckParamDaysToExpiration
+            - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
+            - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::ACM::Certificate
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACM_CERTIFICATE_EXPIRATION_CHECK
+    Type: AWS::Config::ConfigRule
+
+  CloudTrailCloudWatchLogsEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-cloud-watch-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  CloudTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  CloudTrailEncryptionEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-encryption-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  DynamodbAutoscalingEnabled:
+    Properties:
+      ConfigRuleName: dynamodb-autoscaling-enabled
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  DynamodbThroughputLimitCheck:
+    Properties:
+      ConfigRuleName: dynamodb-throughput-limit-check
+      InputParameters:
+        accountRCUThresholdPercentage:
+          Fn::If:
+            - dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+            - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+            - Ref: AWS::NoValue
+        accountWCUThresholdPercentage:
+          Fn::If:
+            - dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+            - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+            - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_THROUGHPUT_LIMIT_CHECK
+    Type: AWS::Config::ConfigRule
+
+  Ec2InstanceDetailedMonitoringEnabled:
+    Properties:
+      ConfigRuleName: ec2-instance-detailed-monitoring-enabled
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_DETAILED_MONITORING_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  GuarddutyEnabledCentralized:
+    Properties:
+      ConfigRuleName: guardduty-enabled-centralized
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+    Type: AWS::Config::ConfigRule
+
+  GuarddutyNonArchivedFindings:
+    Properties:
+      ConfigRuleName: guardduty-non-archived-findings
+      InputParameters:
+        daysHighSev:
+          Fn::If:
+            - guarddutyNonArchivedFindingsParamDaysHighSev
+            - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+            - Ref: AWS::NoValue
+        daysLowSev:
+          Fn::If:
+            - guarddutyNonArchivedFindingsParamDaysLowSev
+            - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+            - Ref: AWS::NoValue
+        daysMediumSev:
+          Fn::If:
+            - guarddutyNonArchivedFindingsParamDaysMediumSev
+            - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+            - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_NON_ARCHIVED_FINDINGS
+    Type: AWS::Config::ConfigRule
+
+  IamPasswordPolicy:
+    Properties:
+      ConfigRuleName: iam-password-policy
+      InputParameters:
+        MaxPasswordAge:
+          Fn::If:
+            - iamPasswordPolicyParamMaxPasswordAge
+            - Ref: IamPasswordPolicyParamMaxPasswordAge
+            - Ref: AWS::NoValue
+        MinimumPasswordLength:
+          Fn::If:
+            - iamPasswordPolicyParamMinimumPasswordLength
+            - Ref: IamPasswordPolicyParamMinimumPasswordLength
+            - Ref: AWS::NoValue
+        PasswordReusePrevention:
+          Fn::If:
+            - iamPasswordPolicyParamPasswordReusePrevention
+            - Ref: IamPasswordPolicyParamPasswordReusePrevention
+            - Ref: AWS::NoValue
+        RequireLowercaseCharacters:
+          Fn::If:
+            - iamPasswordPolicyParamRequireLowercaseCharacters
+            - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+            - Ref: AWS::NoValue
+        RequireNumbers:
+          Fn::If:
+            - iamPasswordPolicyParamRequireNumbers
+            - Ref: IamPasswordPolicyParamRequireNumbers
+            - Ref: AWS::NoValue
+        RequireSymbols:
+          Fn::If:
+            - iamPasswordPolicyParamRequireSymbols
+            - Ref: IamPasswordPolicyParamRequireSymbols
+            - Ref: AWS::NoValue
+        RequireUppercaseCharacters:
+          Fn::If:
+            - iamPasswordPolicyParamRequireUppercaseCharacters
+            - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+            - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_PASSWORD_POLICY
+    Type: AWS::Config::ConfigRule
+
+  LambdaConcurrencyCheck:
+    Properties:
+      ConfigRuleName: lambda-concurrency-check
+      InputParameters:
+        ConcurrencyLimitHigh:
+          Fn::If:
+            - lambdaConcurrencyCheckParamConcurrencyLimitHigh
+            - Ref: LambdaConcurrencyCheckParamConcurrencyLimitHigh
+            - Ref: AWS::NoValue
+        ConcurrencyLimitLow:
+          Fn::If:
+            - lambdaConcurrencyCheckParamConcurrencyLimitLow
+            - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
+            - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_CONCURRENCY_CHECK
+    Type: AWS::Config::ConfigRule
+
+  LambdaFunctionPublicAccessProhibited:
+    Properties:
+      ConfigRuleName: lambda-function-public-access-prohibited
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_FUNCTION_PUBLIC_ACCESS_PROHIBITED
+    Type: AWS::Config::ConfigRule
+
+  LambdaInsideVpc:
+    Properties:
+      ConfigRuleName: lambda-inside-vpc
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_INSIDE_VPC
+    Type: AWS::Config::ConfigRule
+
+Conditions:
+  accessKeysRotatedParamMaxAccessKeyAge:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+  acmCertificateExpirationCheckParamDaysToExpiration:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
+  dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: DynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage
+  dynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: DynamodbThroughputLimitCheckParamAccountWCUThresholdPercentage
+  guarddutyNonArchivedFindingsParamDaysHighSev:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+  guarddutyNonArchivedFindingsParamDaysLowSev:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+  guarddutyNonArchivedFindingsParamDaysMediumSev:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+  iamPasswordPolicyParamMaxPasswordAge:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: IamPasswordPolicyParamMaxPasswordAge
+  iamPasswordPolicyParamMinimumPasswordLength:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: IamPasswordPolicyParamMinimumPasswordLength
+  iamPasswordPolicyParamPasswordReusePrevention:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: IamPasswordPolicyParamPasswordReusePrevention
+  iamPasswordPolicyParamRequireLowercaseCharacters:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+  iamPasswordPolicyParamRequireNumbers:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: IamPasswordPolicyParamRequireNumbers
+  iamPasswordPolicyParamRequireSymbols:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: IamPasswordPolicyParamRequireSymbols
+  iamPasswordPolicyParamRequireUppercaseCharacters:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+  lambdaConcurrencyCheckParamConcurrencyLimitHigh:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: LambdaConcurrencyCheckParamConcurrencyLimitHigh
+  lambdaConcurrencyCheckParamConcurrencyLimitLow:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: LambdaConcurrencyCheckParamConcurrencyLimitLow
+
+

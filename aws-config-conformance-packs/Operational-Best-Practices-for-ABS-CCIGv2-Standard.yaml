@@ -86,16 +86,16 @@ Parameters:
     Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
-    Default: 'True'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
-    Default: 'True'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
-    Default: 'True'
+    Default: 'true'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
-    Default: 'True'
+    Default: 'true'
     Type: String
   S3BucketVersioningEnabledParamIsMfaDeleteEnabled:
     Default: 'true'
@@ -480,6 +480,26 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
     Type: AWS::Config::ConfigRule
+  EcsContainersNonprivileged:
+    Properties:
+      ConfigRuleName: ecs-containers-nonprivileged
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_NONPRIVILEGED
+    Type: AWS::Config::ConfigRule
+  EcsContainersReadonlyAccess:
+    Properties:
+      ConfigRuleName: ecs-containers-readonly-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_READONLY_ACCESS
+    Type: AWS::Config::ConfigRule
   EcsTaskDefinitionUserForHostModeCheck:
     Properties:
       ConfigRuleName: ecs-task-definition-user-for-host-mode-check
@@ -838,6 +858,16 @@ Resources:
           - Ref: InternetGatewayAuthorizedVpcOnlyParamAuthorizedVpcIds
           - Ref: AWS::NoValue
     Type: AWS::Config::ConfigRule
+  KinesisStreamEncrypted:
+    Properties:
+      ConfigRuleName: kinesis-stream-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Kinesis::Stream
+      Source:
+        Owner: AWS
+        SourceIdentifier: KINESIS_STREAM_ENCRYPTED
+    Type: AWS::Config::ConfigRule
   KmsCmkNotScheduledForDeletion:
     Properties:
       ConfigRuleName: kms-cmk-not-scheduled-for-deletion
@@ -912,6 +942,66 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
+    Type: AWS::Config::ConfigRule
+  OpensearchAccessControlEnabled:
+    Properties:
+      ConfigRuleName: opensearch-access-control-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ACCESS_CONTROL_ENABLED
+    Type: AWS::Config::ConfigRule
+  OpensearchAuditLoggingEnabled:
+    Properties:
+      ConfigRuleName: opensearch-audit-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_AUDIT_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  OpensearchEncryptedAtRest:
+    Properties:
+      ConfigRuleName: opensearch-encrypted-at-rest
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
+    Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  OpensearchLogsToCloudwatch:
+    Properties:
+      ConfigRuleName: opensearch-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_LOGS_TO_CLOUDWATCH
+    Type: AWS::Config::ConfigRule
+  OpensearchNodeToNodeEncryptionCheck:
+    Properties:
+      ConfigRuleName: opensearch-node-to-node-encryption-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
     Type: AWS::Config::ConfigRule
   RdsEnhancedMonitoringEnabled:
     Properties:

@@ -3,11 +3,7 @@
 #   Conformance Pack:
 #     Operational Best Practices for Data Resiliency
 #
-#   This Conformance Pack has been designed for compatibility with the majority of
-#   AWS regions and to not require setting of any Parameters. Additional managed rules
-#   that require parameters to be set for your environment and/or for your specific
-#   region can be found at:
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#   This conformance pack helps verify compliance with Data Resiliency requirements.
 #
 #   See Parameters section for names and descriptions of required parameters.
 #
@@ -192,6 +188,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: KMS_CMK_NOT_SCHEDULED_FOR_DELETION
     Type: AWS::Config::ConfigRule
+  OpensearchDataNodeFaultTolerance:
+    Properties:
+      ConfigRuleName: opensearch-data-node-fault-tolerance
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_DATA_NODE_FAULT_TOLERANCE
+    Type: AWS::Config::ConfigRule
   RdsInstanceDeletionProtectionEnabled:
     Properties:
       ConfigRuleName: rds-instance-deletion-protection-enabled
@@ -251,6 +257,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3VersionLifecyclePolicyCheck:
+    Properties:
+      ConfigRuleName: s3-version-lifecycle-policy-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_VERSION_LIFECYCLE_POLICY_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
   backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit:

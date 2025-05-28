@@ -111,6 +111,26 @@ Resources:
         Owner: AWS
         SourceIdentifier: LAMBDA_INSIDE_VPC
     Type: AWS::Config::ConfigRule
+  NoUnrestrictedRouteToIgw:
+    Properties:
+      ConfigRuleName: no-unrestricted-route-to-igw
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::RouteTable
+      Source:
+        Owner: AWS
+        SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
+    Type: AWS::Config::ConfigRule
+  OpensearchInVpcOnly:
+    Properties:
+      ConfigRuleName: opensearch-in-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+    Type: AWS::Config::ConfigRule
   RdsInstancePublicAccessCheck:
     Properties:
       ConfigRuleName: rds-instance-public-access-check

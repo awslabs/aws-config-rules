@@ -3,11 +3,7 @@
 #   Conformance Pack:
 #     Operational Best Practices for Encryption and Key Management
 #
-#   This Conformance Pack has been designed for compatibility with the majority of
-#   AWS regions and to not require setting of any Parameters. Additional managed rules
-#   that require parameters to be set for your environment and/or for your specific
-#   region can be found at:
-#   https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html
+#   This conformance pack helps verify compliance with Encryption and Key Management requirements.
 #
 #   See Parameters section for names and descriptions of required parameters.
 #
@@ -67,6 +63,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: API_GW_SSL_ENABLED
     Type: AWS::Config::ConfigRule
+  BackupRecoveryPointEncrypted:
+    Properties:
+      ConfigRuleName: backup-recovery-point-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Backup::RecoveryPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_ENCRYPTED
+    Type: AWS::Config::ConfigRule
   CloudTrailEncryptionEnabled:
     Properties:
       ConfigRuleName: cloud-trail-encryption-enabled
@@ -87,6 +93,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectArtifactEncryption:
+    Properties:
+      ConfigRuleName: codebuild-project-artifact-encryption
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ARTIFACT_ENCRYPTION
     Type: AWS::Config::ConfigRule
   DynamodbTableEncryptedKms:
     Properties:
@@ -200,6 +216,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: IAM_INLINE_POLICY_BLOCKED_KMS_ACTIONS
     Type: AWS::Config::ConfigRule
+  KinesisStreamEncrypted:
+    Properties:
+      ConfigRuleName: kinesis-stream-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Kinesis::Stream
+      Source:
+        Owner: AWS
+        SourceIdentifier: KINESIS_STREAM_ENCRYPTED
+    Type: AWS::Config::ConfigRule
   KmsCmkNotScheduledForDeletion:
     Properties:
       ConfigRuleName: kms-cmk-not-scheduled-for-deletion
@@ -209,6 +235,36 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: KMS_CMK_NOT_SCHEDULED_FOR_DELETION
+    Type: AWS::Config::ConfigRule
+  OpensearchEncryptedAtRest:
+    Properties:
+      ConfigRuleName: opensearch-encrypted-at-rest
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
+    Type: AWS::Config::ConfigRule
+  OpensearchHttpsRequired:
+    Properties:
+      ConfigRuleName: opensearch-https-required
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_HTTPS_REQUIRED
+    Type: AWS::Config::ConfigRule
+  OpensearchNodeToNodeEncryptionCheck:
+    Properties:
+      ConfigRuleName: opensearch-node-to-node-encryption-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_NODE_TO_NODE_ENCRYPTION_CHECK
     Type: AWS::Config::ConfigRule
   RdsSnapshotEncrypted:
     Properties:
