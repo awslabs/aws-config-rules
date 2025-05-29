@@ -1,11 +1,13 @@
-################################################################################
+##################################################################################
 #
 #   Conformance Pack:
-#     Operational Best Practices for AWS Identity and Access Management
+#     Operational Best Practices for Identity And Access Management
+#
+#   This conformance pack helps verify compliance with Identity And Access Management requirements.
 #
 #   See Parameters section for names and descriptions of required parameters.
 #
-################################################################################
+##################################################################################
 
 Parameters:
   AccessKeysRotatedParamMaxAccessKeyAge:

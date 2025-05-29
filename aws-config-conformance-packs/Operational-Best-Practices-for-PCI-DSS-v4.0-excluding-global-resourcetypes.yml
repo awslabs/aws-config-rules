@@ -1,0 +1,1175 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for PCI DSS V4.0
+#
+#   This conformance pack helps verify compliance with PCI DSS V4.0 requirements.
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+#   Use it in parallel with PCI DSS v3.2.1 conformance pack to have a holistic view.
+#
+##################################################################################
+
+Parameters:
+  AccessKeysRotatedParamMaxAccessKeyAge:
+    Default: '90'
+    Type: String
+  ApiGwEndpointTypeCheckParamEndpointConfigurationTypes:
+    Default: REGIONAL, PRIVATE, EDGE
+    Type: String
+  S3BucketBlacklistedActionsProhibitedParamBlacklistedActionPattern:
+    Default: s3:DeleteBucketPolicy, s3:PutBucketAcl, s3:PutBucketPolicy, s3:PutEncryptionConfiguration, s3:PutObjectAcl
+    Type: String
+  S3BucketPolicyNotMorePermissivecontrolPolicy:
+    Default: '1024'
+    Type: String
+  IamPolicyInUseParamPolicyARN:
+    Default: arn:aws:iam::aws:policy/AWSSupportAccess
+    Type: String
+  LambdaFunctionSettingsCheckParamRuntime:
+    Default: python3.9, java11, java8.al2, nodejs20.x,nodejs18.x,python3.12, python3.11,python3.10,java21,java17,dotnet8,ruby3.3,ruby3.2
+    Type: String
+  NetfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions:
+    Default: aws:drop,aws:forward_to_sfe
+    Type: String
+  NetfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions:
+    Default: aws:drop,aws:forward_to_sfe
+    Type: String
+  Ec2VolumeInuseCheckParamDeleteOnTermination:
+    Default: 'true'
+    Type: String
+  EksClusterOldestSupportedVersionParamOldestVersionSupported:
+    Default: '1.2'
+    Type: String
+  CloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Default: 'true'
+    Type: String
+  CloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Default: 'true'
+    Type: String
+  CloudwatchAlarmActionCheckParamOkActionRequired:
+    Default: 'false'
+    Type: String
+  CloudwatchAlarmResourceCheckParamMetricName:
+    Default: CPUUtilization
+    Type: String
+  CloudwatchAlarmResourceCheckParamResourceType:
+    Default: AWS::EC2::Instance
+    Type: String
+  CloudwatchAlarmSettingsCheckParamMetricName:
+    Default: CPUUtilization
+    Type: String
+Resources:
+  AccessKeysRotated:
+    Properties:
+      ConfigRuleName: access-keys-rotated
+      InputParameters:
+        maxAccessKeyAge:
+          Fn::If:
+          - accessKeysRotatedParamMaxAccessKeyAge
+          - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+    Type: AWS::Config::ConfigRule
+  TransferFamilyServerNoFTP:
+    Properties:
+      ConfigRuleName: transfer-family-server-no-ftp
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Transfer::Server
+      Source:
+        Owner: AWS
+        SourceIdentifier: TRANSFER_FAMILY_SERVER_NO_FTP
+    Type: AWS::Config::ConfigRule
+  AuroraResourcesProtectedByBackupPlan:
+    Properties:
+      ConfigRuleName: aurora-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: AURORA_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  DBInstanceBackupEnabled:
+    Properties:
+      ConfigRuleName: db-instance-backup-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: DB_INSTANCE_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamoDBinBackupPlan:
+    Properties:
+      ConfigRuleName: dynamodb-in-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  DynamodbResourcesProtectedbyBackupPlan:
+    Properties:
+      ConfigRuleName: dynamodb-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  EBSinBackupPlan:
+    Properties:
+      ConfigRuleName: ebs-in-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Volume
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  EBSResourcesProtectedbyBackupPlan:
+    Properties:
+      ConfigRuleName: ebs-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Volume
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  EC2ResourcesProtectedbyBackupPlan:
+    Properties:
+      ConfigRuleName: ec2-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  EFSResourcesProtectedbyBackupPlan:
+    Properties:
+      ConfigRuleName: efs-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EFS::FileSystem
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  ElasticacheRedisClusterAutomaticBackupCheck:
+    Properties:
+      ConfigRuleName: elasticache-redis-cluster-automatic-backup-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElastiCache::CacheCluster
+        - AWS::ElastiCache::ReplicationGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
+    Type: AWS::Config::ConfigRule
+  FSXResourcesProtectedbyBackupPlan:
+    Properties:
+      ConfigRuleName: fsx-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::FSx::FileSystem
+      Source:
+        Owner: AWS
+        SourceIdentifier: FSX_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  NeptuneClusterBackupRetentionCheck:
+    Properties:
+      ConfigRuleName: neptune-cluster-backup-retention-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: NEPTUNE_CLUSTER_BACKUP_RETENTION_CHECK
+    Type: AWS::Config::ConfigRule
+  RDSinBackupPlan:
+    Properties:
+      ConfigRuleName: rds-in-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  RedshiftBackupEnabled:
+    Properties:
+      ConfigRuleName: redshift-backup-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3ResourcesProtectedbyBackupPlan:
+    Properties:
+      ConfigRuleName: s3-resources-protected-by-backup-plan
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  S3BucketDefaultLockEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-default-lock-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketVersioningEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-versioning-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+    Type: AWS::Config::ConfigRule
+  ServiceCatalogSharedWithinOrganization:
+    Properties:
+      ConfigRuleName: service-catalog-shared-within-organization
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ServiceCatalog::Portfolio
+      Source:
+        Owner: AWS
+        SourceIdentifier: SERVICE_CATALOG_SHARED_WITHIN_ORGANIZATION
+    Type: AWS::Config::ConfigRule
+  SecurityAccountInformationProvided:
+    Properties:
+      ConfigRuleName: security-account-information-provided
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::::Account
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITY_ACCOUNT_INFORMATION_PROVIDED
+    Type: AWS::Config::ConfigRule
+  ACMCertificateRSACheck:
+    Properties:
+      ConfigRuleName: acm-certificate-rsa-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ACM::Certificate
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACM_CERTIFICATE_RSA_CHECK
+    Type: AWS::Config::ConfigRule
+  ACMPCARootCADisabled:
+    Properties:
+      ConfigRuleName: acm-pca-root-ca-disabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ACMPCA::CertificateAuthority
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACM_PCA_ROOT_CA_DISABLED
+    Type: AWS::Config::ConfigRule
+  APIGWV2AcessLogsEnables:
+    Properties:
+      ConfigRuleName: api-gwv2-access-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GWV2_ACCESS_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+  ApiGwEndpointTypeCheck:
+    Properties:
+      ConfigRuleName: api-gw-endpoint-type-check
+      InputParameters:
+        endpointConfigurationTypes:
+          Fn::If:
+          - apiGwEndpointTypeCheckParamEndpointConfigurationTypes
+          - Ref: ApiGwEndpointTypeCheckParamEndpointConfigurationTypes
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::RestApi
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_ENDPOINT_TYPE_CHECK
+    Type: AWS::Config::ConfigRule
+  ApiGwXrayEnabled:
+    Properties:
+      ConfigRuleName: api-gw-xray-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_XRAY_ENABLED
+    Type: AWS::Config::ConfigRule
+  AthenaWorkgroupEncryptedatRest:
+    Properties:
+      ConfigRuleName: athena-workgroup-encrypted-at-rest
+      Source:
+        Owner: AWS
+        SourceIdentifier: ATHENA_WORKGROUP_ENCRYPTED_AT_REST
+    Type: AWS::Config::ConfigRule
+  CloudtrailSecurityTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-security-trail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDTRAIL_SECURITY_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3BucketBlacklistedActionsProhibited:
+    Properties:
+      ConfigRuleName: s3-bucket-blacklisted-actions-prohibited
+      InputParameters:
+        blacklistedActionPattern:
+          Ref: S3BucketBlacklistedActionsProhibitedParamBlacklistedActionPattern
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_BLACKLISTED_ACTIONS_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  S3NotMorePermission:
+    Properties:
+      ConfigRuleName: s3-bucket-policy-not-more-permissive
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      InputParameters:
+        controlPolicy:
+          Fn::If:
+          - s3BucketPolicyNotMorePermissivecontrolPolicy
+          - Ref: S3BucketPolicyNotMorePermissivecontrolPolicy
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_POLICY_NOT_MORE_PERMISSIVE
+    Type: AWS::Config::ConfigRule
+  IamPolicyInUse:
+    Properties:
+      ConfigRuleName: iam-policy-in-use
+      InputParameters:
+        policyARN:
+          Fn::If:
+          - iamPolicyInUseParamPolicyARN
+          - Ref: IamPolicyInUseParamPolicyARN
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_IN_USE
+    Type: AWS::Config::ConfigRule
+  LambdaFunctionSettingsCheck:
+    Properties:
+      ConfigRuleName: lambda-function-settings-check
+      InputParameters:
+        runtime:
+          Fn::If:
+          - lambdaFunctionSettingsCheckParamRuntime
+          - Ref: LambdaFunctionSettingsCheckParamRuntime
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Lambda::Function
+      Source:
+        Owner: AWS
+        SourceIdentifier: LAMBDA_FUNCTION_SETTINGS_CHECK
+    Type: AWS::Config::ConfigRule
+  MacieAutoSensitiveDataDiscoveryCheck:
+    Properties:
+      ConfigRuleName: macie-auto-sensitive-data-discovery-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: MACIE_AUTO_SENSITIVE_DATA_DISCOVERY_CHECK
+    Type: AWS::Config::ConfigRule
+  MacieStatusCheck:
+    Properties:
+      ConfigRuleName: macie-status-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: MACIE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  NeptuneCluserCloudwatchLogExportEnabled:
+    Properties:
+      ConfigRuleName: neptune-cluster-cloudwatch-log-export-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: NEPTUNE_CLUSTER_CLOUDWATCH_LOG_EXPORT_ENABLED
+    Type: AWS::Config::ConfigRule
+  NeptuneCluserIAMDatabaseAuthentication:
+    Properties:
+      ConfigRuleName: neptune-cluster-iam-database-authentication
+      Source:
+        Owner: AWS
+        SourceIdentifier: NEPTUNE_CLUSTER_IAM_DATABASE_AUTHENTICATION
+    Type: AWS::Config::ConfigRule
+  NeptuneCluserSnapshotEncrypted:
+    Properties:
+      ConfigRuleName: neptune-cluster-snapshot-encrypted
+      Source:
+        Owner: AWS
+        SourceIdentifier: NEPTUNE_CLUSTER_SNAPSHOT_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  NeptuneCluserSnapshotPublicEncrypted:
+    Properties:
+      ConfigRuleName: neptune-cluster-snapshot-public-encrypted
+      Source:
+        Owner: AWS
+        SourceIdentifier: NEPTUNE_CLUSTER_SNAPSHOT_PUBLIC_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  NetfwPolicyDefaultActionFragmentPackets:
+    Properties:
+      ConfigRuleName: netfw-policy-default-action-fragment-packets
+      InputParameters:
+        statelessFragmentDefaultActions:
+          Fn::If:
+          - netfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions
+          - Ref: NetfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::FirewallPolicy
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_POLICY_DEFAULT_ACTION_FRAGMENT_PACKETS
+    Type: AWS::Config::ConfigRule
+  NetfwPolicyDefaultActionFullPackets:
+    Properties:
+      ConfigRuleName: netfw-policy-default-action-full-packets
+      InputParameters:
+        statelessDefaultActions:
+          Fn::If:
+          - netfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions
+          - Ref: NetfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::FirewallPolicy
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_POLICY_DEFAULT_ACTION_FULL_PACKETS
+    Type: AWS::Config::ConfigRule
+  RedshiftClusterKmsEnabled:
+    Properties:
+      ConfigRuleName: redshift-cluster-kms-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_KMS_ENABLED
+    Type: AWS::Config::ConfigRule
+  RedshiftEnhancedVpcRoutingEnabled:
+    Properties:
+      ConfigRuleName: redshift-enhanced-vpc-routing-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_ENHANCED_VPC_ROUTING_ENABLED
+    Type: AWS::Config::ConfigRule
+  Ec2Imdsv2Check:
+    Properties:
+      ConfigRuleName: ec2-imdsv2-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_IMDSV2_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceDetailedMonitoringEnabled:
+    Properties:
+      ConfigRuleName: ec2-instance-detailed-monitoring-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_DETAILED_MONITORING_ENABLED
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceProfileAttached:
+    Properties:
+      ConfigRuleName: ec2-instance-profile-attached
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
+    Type: AWS::Config::ConfigRule
+  Ec2NoAmazonKeyPair:
+    Properties:
+      ConfigRuleName: ec2-no-amazon-key-pair
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_NO_AMAZON_KEY_PAIR
+    Type: AWS::Config::ConfigRule
+  Ec2VolumeInuseCheck:
+    Properties:
+      ConfigRuleName: ec2-volume-inuse-check
+      InputParameters:
+        deleteOnTermination:
+          Fn::If:
+          - ec2VolumeInuseCheckParamDeleteOnTermination
+          - Ref: Ec2VolumeInuseCheckParamDeleteOnTermination
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Volume
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_VOLUME_INUSE_CHECK
+    Type: AWS::Config::ConfigRule
+  EcrPrivateLifecyclePolicyConfigured:
+    Properties:
+      ConfigRuleName: ecr-private-lifecycle-policy-configured
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_LIFECYCLE_POLICY_CONFIGURED
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionLogConfiguration:
+    Properties:
+      ConfigRuleName: ecs-task-definition-log-configuration
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_LOG_CONFIGURATION
+    Type: AWS::Config::ConfigRule
+  EcsTaskDefinitionPidModeCheck:
+    Properties:
+      ConfigRuleName: ecs-task-definition-pid-mode-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECS::TaskDefinition
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_PID_MODE_CHECK
+    Type: AWS::Config::ConfigRule
+  EksClusterOldestSupportedVersion:
+    Properties:
+      ConfigRuleName: eks-cluster-oldest-supported-version
+      InputParameters:
+        oldestVersionSupported:
+          Fn::If:
+          - eksClusterOldestSupportedVersionParamOldestVersionSupported
+          - Ref: EksClusterOldestSupportedVersionParamOldestVersionSupported
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EKS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_CLUSTER_OLDEST_SUPPORTED_VERSION
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmActionCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-action-check
+      InputParameters:
+        alarmActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+          - Ref: AWS::NoValue
+        insufficientDataActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+          - Ref: AWS::NoValue
+        okActionRequired:
+          Fn::If:
+          - cloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmResourceCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-resource-check
+      InputParameters:
+        metricName:
+          Fn::If:
+          - cloudwatchAlarmResourceCheckParamMetricName
+          - Ref: CloudwatchAlarmResourceCheckParamMetricName
+          - Ref: AWS::NoValue
+        resourceType:
+          Fn::If:
+          - cloudwatchAlarmResourceCheckParamResourceType
+          - Ref: CloudwatchAlarmResourceCheckParamResourceType
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_RESOURCE_CHECK
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmSettingsCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-settings-check
+      InputParameters:
+        metricName:
+          Fn::If:
+          - cloudwatchAlarmSettingsCheckParamMetricName
+          - Ref: CloudwatchAlarmSettingsCheckParamMetricName
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_SETTINGS_CHECK
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectArtifactEncryption:
+    Properties:
+      ConfigRuleName: codebuild-project-artifact-encryption
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ARTIFACT_ENCRYPTION
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectS3LogsEncrypted:
+    Properties:
+      ConfigRuleName: codebuild-project-s3-logs-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_S3_LOGS_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  MultiRegionCloudTrailEnabled:
+    Properties:
+      ConfigRuleName: multi-region-cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  DMSRedisTLSEnabled:
+    Properties:
+      ConfigRuleName: dms-redis-tls-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DMS::Endpoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: DMS_REDIS_TLS_ENABLED
+    Type: AWS::Config::ConfigRule
+  EKSSecretsEncrypted:
+    Properties:
+      ConfigRuleName: eks-secrets-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EKS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_SECRETS_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  EKSEndpointNoPublicAccess:
+    Properties:
+      ConfigRuleName: eks-endpoint-no-public-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EKS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_ENDPOINT_NO_PUBLIC_ACCESS
+    Type: AWS::Config::ConfigRule
+  AppsyncLoggingEnabled:
+    Properties:
+      ConfigRuleName: appsync-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::AppSync::GraphQLApi
+      Source:
+        Owner: AWS
+        SourceIdentifier: APPSYNC_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamoSBPITREnabled:
+    Properties:
+      ConfigRuleName: dynamodb-pitr-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_PITR_ENABLED
+    Type: AWS::Config::ConfigRule
+  IncomingSSHDisabled:
+    Properties:
+      ConfigRuleName: restricted-ssh
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: INCOMING_SSH_DISABLED
+    Type: AWS::Config::ConfigRule
+  APIGWCacheEnabledandEncrypted:
+    Properties:
+      ConfigRuleName: api-gw-cache-enabled-and-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_CACHE_ENABLED_AND_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  AppsyncAssociatedwithWAF:
+    Properties:
+      ConfigRuleName: appsync-associated-with-waf
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::AppSync::GraphQLApi
+      Source:
+        Owner: AWS
+        SourceIdentifier: APPSYNC_ASSOCIATED_WITH_WAF
+    Type: AWS::Config::ConfigRule
+  AutoscalinglanunchConfigRequiresIMDSV2:
+    Properties:
+      ConfigRuleName: autoscaling-launchconfig-requires-imdsv2
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::AutoScaling::LaunchConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCHCONFIG_REQUIRES_IMDSV2
+    Type: AWS::Config::ConfigRule
+  MQCloudwatchAuditLoggingEnabled:
+    Properties:
+      ConfigRuleName: mq-cloudwatch-audit-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::AmazonMQ::Broker
+      Source:
+        Owner: AWS
+        SourceIdentifier:  MQ_CLOUDWATCH_AUDIT_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  MQCloudwatchAuditLogEnabled:
+    Properties:
+      ConfigRuleName: mq-cloudwatch-audit-log-enabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::AmazonMQ::Broker
+      Source:
+        Owner: AWS
+        SourceIdentifier: MQ_CLOUDWATCH_AUDIT_LOG_ENABLED
+    Type: AWS::Config::ConfigRule
+  DynamodbTableEncryptedKMS:
+    Properties:
+      ConfigRuleName: dynamodb-table-encrypted-kms
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::DynamoDB::Table
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS
+    Type: AWS::Config::ConfigRule
+  BackupRecoveryPointManualDeletionDisabled:
+    Properties:
+      ConfigRuleName: backup-recovery-point-manual-deletion-disabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::Backup::BackupVault
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_MANUAL_DELETION_DISABLED
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectEnvvarAWScredCheck:
+    Properties:
+      ConfigRuleName: codebuild-project-envvar-awscred-check
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_ENVVAR_AWSCRED_CHECK
+    Type: AWS::Config::ConfigRule
+  CodebuildProjectSourceRepoURLCheck:
+    Properties:
+      ConfigRuleName: codebuild-project-source-repo-url-check
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::CodeBuild::Project
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEBUILD_PROJECT_SOURCE_REPO_URL_CHECK
+    Type: AWS::Config::ConfigRule
+  CodedeployLambdaAllatonceTrafficShiftDisabled:
+    Properties:
+      ConfigRuleName: codedeploy-lambda-allatonce-traffic-shift-disabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::CodeDeploy::DeploymentGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: CODEDEPLOY_LAMBDA_ALLATONCE_TRAFFIC_SHIFT_DISABLED
+    Type: AWS::Config::ConfigRule
+  ELBACMCertificateRequired:
+    Properties:
+      ConfigRuleName: elb-acm-certificate-required
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::ElasticLoadBalancing::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_ACM_CERTIFICATE_REQUIRED
+    Type: AWS::Config::ConfigRule
+  EMRBlockPublicAcces:
+    Properties:
+      ConfigRuleName: emr-block-public-access
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::::Account
+      Source:
+        Owner: AWS
+        SourceIdentifier:  EMR_BLOCK_PUBLIC_ACCESS
+    Type: AWS::Config::ConfigRule
+  NACLnoUnrestrictedsshrdp:
+    Properties:
+      ConfigRuleName: nacl-no-unrestricted-ssh-rdp
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::EC2::NetworkAcl
+      Source:
+        Owner: AWS
+        SourceIdentifier:  NACL_NO_UNRESTRICTED_SSH_RDP
+    Type: AWS::Config::ConfigRule
+  EKSClusterLoggingEnabled:
+    Properties:
+      ConfigRuleName: eks-cluster-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::EKS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier:  EKS_CLUSTER_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  EKSClusterSecretsEnabled:
+    Properties:
+      ConfigRuleName: eks-cluster-secrets-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::EKS::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier:  EKS_CLUSTER_SECRETS_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  ElasticBeanstalkLogstoCloudwatch:
+    Properties:
+      ConfigRuleName: elastic-beanstalk-logs-to-cloudwatch
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::ElasticBeanstalk::Environment
+      Source:
+        Owner: AWS
+        SourceIdentifier:  ELASTIC_BEANSTALK_LOGS_TO_CLOUDWATCH
+    Type: AWS::Config::ConfigRule
+  WAFv2WebaclnotEmpty:
+    Properties:
+      ConfigRuleName: wafv2-webacl-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::WAFv2::WebACL
+      Source:
+        Owner: AWS
+        SourceIdentifier:  WAFV2_WEBACL_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
+  WAFv2RulegroupnotEmpty:
+    Properties:
+      ConfigRuleName: wafv2-rulegroup-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::WAFv2::RuleGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier:  WAFV2_RULEGROUP_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
+  WAFv2RulegroupLoggingEnabled:
+    Properties:
+      ConfigRuleName: wafv2-rulegroup-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::WAFv2::RuleGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier:  WAFV2_RULEGROUP_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerScheduledRotationSuccessCheck:
+    Properties:
+      ConfigRuleName: secretsmanager-scheduled-rotation-success-check
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SCHEDULED_ROTATION_SUCCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerSecretPeriodicRotation:
+    Properties:
+      ConfigRuleName: secretsmanager-secret-periodic-rotation
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SECRET_PERIODIC_ROTATION
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerSecretUnused:
+    Properties:
+      ConfigRuleName: secretsmanager-secret-unused
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SECRET_UNUSED
+    Type: AWS::Config::ConfigRule
+  SNSTopicMessageDeliveryNotificationEnabled:
+    Properties:
+      ConfigRuleName: sns-topic-message-delivery-notification-enabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::SNS::Topic
+      Source:
+        Owner: AWS
+        SourceIdentifier: SNS_TOPIC_MESSAGE_DELIVERY_NOTIFICATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  StepFunctionsStateMachineLoggingEnabled:
+    Properties:
+      ConfigRuleName: step-functions-state-machine-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::StepFunctions::StateMachine
+      Source:
+        Owner: AWS
+        SourceIdentifier: STEP_FUNCTIONS_STATE_MACHINE_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  EC2ClientVPNnotAuthorizeAll:
+    Properties:
+      ConfigRuleName: ec2-client-vpn-not-authorize-all
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::EC2::ClientVpnEndpoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_CLIENT_VPN_NOT_AUTHORIZE_ALL
+    Type: AWS::Config::ConfigRule 
+  EC2LaunchTemplatePublicIPDisabled:
+    Properties:
+      ConfigRuleName: ec2-launch-template-public-ip-disabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::EC2::LaunchTemplate
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_LAUNCH_TEMPLATE_PUBLIC_IP_DISABLED
+    Type: AWS::Config::ConfigRule
+  InternetGatewayAuthorizedVPCOnly:
+    Properties:
+      ConfigRuleName: internet-gateway-authorized-vpc-only
+      Scope:
+        ComplianceResourceTypes:
+        -   AWS::EC2::InternetGateway
+      Source:
+        Owner: AWS
+        SourceIdentifier: INTERNET_GATEWAY_AUTHORIZED_VPC_ONLY
+    Type: AWS::Config::ConfigRule
+  KinesisStreamEncrypted:
+    Properties:
+      ConfigRuleName: kinesis-stream-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        -    AWS::Kinesis::Stream
+      Source:
+        Owner: AWS
+        SourceIdentifier: KINESIS_STREAM_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  MSKinClusterNodeRequireTLS:
+    Properties:
+      ConfigRuleName: msk-in-cluster-node-require-tls
+      Scope:
+        ComplianceResourceTypes:
+        -    AWS::MSK::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: MSK_IN_CLUSTER_NODE_REQUIRE_TLS
+    Type: AWS::Config::ConfigRule
+  NeptuneClusterEncrypted:
+    Properties:
+      ConfigRuleName: neptune-cluster-encrypted
+      Scope:
+        ComplianceResourceTypes:
+        -     AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier:  NEPTUNE_CLUSTER_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  NetfwLoggingEnabled:
+    Properties:
+      ConfigRuleName: netfw-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::NetworkFirewall::LoggingConfiguration
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  DMSEndpointSSLConfigured:
+    Properties:
+      ConfigRuleName: dms-endpoint-ssl-configured
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::DMS::Endpoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: DMS_ENDPOINT_SSL_CONFIGURED
+    Type: AWS::Config::ConfigRule
+  CWLoggroupRetentionPeriodCheck:
+    Properties:
+      ConfigRuleName: cw-loggroup-retention-period-check
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::Logs::LogGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK
+    Type: AWS::Config::ConfigRule
+  S3AccessPointPublicAccessBlocks:
+    Properties:
+      ConfigRuleName: s3-access-point-public-access-blocks
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::S3::AccessPoint
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCESS_POINT_PUBLIC_ACCESS_BLOCKS
+    Type: AWS::Config::ConfigRule
+  S3AccountLevelPublicAccessBlocks:
+    Properties:
+      ConfigRuleName: s3-account-level-public-access-blocks
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::S3::AccountPublicAccessBlock
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS
+    Type: AWS::Config::ConfigRule
+  S3BucketMFADeleteEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-mfa-delete-enabled
+      Scope:
+        ComplianceResourceTypes:
+        -  AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_MFA_DELETE_ENABLED
+    Type: AWS::Config::ConfigRule 
+Conditions:
+  accessKeysRotatedParamMaxAccessKeyAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+  apiGwEndpointTypeCheckParamEndpointConfigurationTypes:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ApiGwEndpointTypeCheckParamEndpointConfigurationTypes
+  s3BucketPolicyNotMorePermissivecontrolPolicy:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3BucketPolicyNotMorePermissivecontrolPolicy
+  iamPolicyInUseParamPolicyARN:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPolicyInUseParamPolicyARN
+  lambdaFunctionSettingsCheckParamRuntime:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: LambdaFunctionSettingsCheckParamRuntime
+  netfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: NetfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions
+  netfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: NetfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions
+  ec2VolumeInuseCheckParamDeleteOnTermination:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: Ec2VolumeInuseCheckParamDeleteOnTermination
+  eksClusterOldestSupportedVersionParamOldestVersionSupported:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: EksClusterOldestSupportedVersionParamOldestVersionSupported
+  cloudwatchAlarmActionCheckParamAlarmActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamAlarmActionRequired
+  cloudwatchAlarmActionCheckParamInsufficientDataActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamInsufficientDataActionRequired
+  cloudwatchAlarmActionCheckParamOkActionRequired:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmActionCheckParamOkActionRequired
+  cloudwatchAlarmResourceCheckParamMetricName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmResourceCheckParamMetricName
+  cloudwatchAlarmResourceCheckParamResourceType:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmResourceCheckParamResourceType
+  cloudwatchAlarmSettingsCheckParamMetricName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: CloudwatchAlarmSettingsCheckParamMetricName

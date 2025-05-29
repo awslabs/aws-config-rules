@@ -35,6 +35,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_INSTANCE_MANAGED_BY_SSM
     Type: AWS::Config::ConfigRule
+  Ec2InstanceMultipleEniCheck:
+    Properties:
+      ConfigRuleName: ec2-instance-multiple-eni-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_MULTIPLE_ENI_CHECK
+    Type: AWS::Config::ConfigRule
   Ec2ManagedinstanceAssociationComplianceStatusCheck:
     Properties:
       ConfigRuleName: ec2-managedinstance-association-compliance-status-check
@@ -54,6 +64,16 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  Ec2SecurityGroupAttachedToEniPeriodic:
+    Properties:
+      ConfigRuleName: ec2-security-group-attached-to-eni-periodic
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_SECURITY_GROUP_ATTACHED_TO_ENI_PERIODIC
     Type: AWS::Config::ConfigRule
   Ec2StoppedInstance:
     Properties:
@@ -78,6 +98,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
     Type: AWS::Config::ConfigRule
+  EcrPrivateTagImmutabilityEnabled:
+    Properties:
+      ConfigRuleName: ecr-private-tag-immutability-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ECR::Repository
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECR_PRIVATE_TAG_IMMUTABILITY_ENABLED
+    Type: AWS::Config::ConfigRule
   EipAttached:
     Properties:
       ConfigRuleName: eip-attached
@@ -100,6 +130,13 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerSecretUnused:
+    Properties:
+      ConfigRuleName: secretsmanager-secret-unused
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SECRET_UNUSED
     Type: AWS::Config::ConfigRule
   VpcNetworkAclUnusedCheck:
     Properties:

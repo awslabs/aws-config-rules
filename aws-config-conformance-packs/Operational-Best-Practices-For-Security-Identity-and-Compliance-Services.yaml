@@ -1,0 +1,717 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for Security, Identity, and Compliance Services
+#
+#   This conformance pack helps verify compliance with Security, Identity, and Compliance Services requirements.
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  AccessKeysRotatedParamMaxAccessKeyAge:
+    Default: '90'
+    Type: String
+  AcmCertificateExpirationCheckParamDaysToExpiration:
+    Default: '90'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysHighSev:
+    Default: '1'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysLowSev:
+    Default: '30'
+    Type: String
+  GuarddutyNonArchivedFindingsParamDaysMediumSev:
+    Default: '7'
+    Type: String
+  IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:Decrypt,kms:ReEncryptFrom
+    Type: String
+  IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Default: kms:Decrypt,kms:ReEncryptFrom
+    Type: String
+  IamPasswordPolicyParamMaxPasswordAge:
+    Default: '90'
+    Type: String
+  IamPasswordPolicyParamMinimumPasswordLength:
+    Default: '14'
+    Type: String
+  IamPasswordPolicyParamPasswordReusePrevention:
+    Default: '24'
+    Type: String
+  IamPasswordPolicyParamRequireLowercaseCharacters:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireNumbers:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireSymbols:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireUppercaseCharacters:
+    Default: 'true'
+    Type: String
+  IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
+    Default: '90'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort1:
+    Default: '20'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort2:
+    Default: '21'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort3:
+    Default: '3389'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort4:
+    Default: '3306'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort5:
+    Default: '4333'
+    Type: String
+  VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
+    Default: '443'
+    Type: String
+Resources:
+  AccessKeysRotated:
+    Properties:
+      ConfigRuleName: access-keys-rotated
+      InputParameters:
+        maxAccessKeyAge:
+          Fn::If:
+          - accessKeysRotatedParamMaxAccessKeyAge
+          - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+    Type: AWS::Config::ConfigRule
+  AccountPartOfOrganizations:
+    Properties:
+      ConfigRuleName: account-part-of-organizations
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCOUNT_PART_OF_ORGANIZATIONS
+    Type: AWS::Config::ConfigRule
+  AcmCertificateExpirationCheck:
+    Properties:
+      ConfigRuleName: acm-certificate-expiration-check
+      InputParameters:
+        daysToExpiration:
+          Fn::If:
+          - acmCertificateExpirationCheckParamDaysToExpiration
+          - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ACM::Certificate
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACM_CERTIFICATE_EXPIRATION_CHECK
+    Type: AWS::Config::ConfigRule
+  AlbWafEnabled:
+    Properties:
+      ConfigRuleName: alb-waf-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_WAF_ENABLED
+    Type: AWS::Config::ConfigRule
+  ApiGwAssociatedWithWaf:
+    Properties:
+      ConfigRuleName: api-gw-associated-with-waf
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_ASSOCIATED_WITH_WAF
+    Type: AWS::Config::ConfigRule
+  ApiGwExecutionLoggingEnabled:
+    Properties:
+      ConfigRuleName: api-gw-execution-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ApiGateway::Stage
+        - AWS::ApiGatewayV2::Stage
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailCloudWatchLogsEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-cloud-watch-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailEncryptionEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-encryption-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudTrailLogFileValidationEnabled:
+    Properties:
+      ConfigRuleName: cloud-trail-log-file-validation-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudtrailSecurityTrailEnabled:
+    Properties:
+      ConfigRuleName: cloudtrail-security-trail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDTRAIL_SECURITY_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  CloudwatchAlarmActionCheck:
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-action-check
+      InputParameters:
+        alarmActionRequired: 'true'
+        insufficientDataActionRequired: 'true'
+        okActionRequired: 'false'
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::CloudWatch::Alarm
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
+    Type: AWS::Config::ConfigRule
+  CmkBackingKeyRotationEnabled:
+    Properties:
+      ConfigRuleName: cmk-backing-key-rotation-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  ElbLoggingEnabled:
+    Properties:
+      ConfigRuleName: elb-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::ElasticLoadBalancing::LoadBalancer
+        - AWS::ElasticLoadBalancingV2::LoadBalancer
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  GuarddutyEnabledCentralized:
+    Properties:
+      ConfigRuleName: guardduty-enabled-centralized
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+    Type: AWS::Config::ConfigRule
+  GuarddutyNonArchivedFindings:
+    Properties:
+      ConfigRuleName: guardduty-non-archived-findings
+      InputParameters:
+        daysHighSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysHighSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+          - Ref: AWS::NoValue
+        daysLowSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysLowSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+          - Ref: AWS::NoValue
+        daysMediumSev:
+          Fn::If:
+          - guarddutyNonArchivedFindingsParamDaysMediumSev
+          - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_NON_ARCHIVED_FINDINGS
+    Type: AWS::Config::ConfigRule
+  IamCustomerPolicyBlockedKmsActions:
+    Properties:
+      ConfigRuleName: iam-customer-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_CUSTOMER_POLICY_BLOCKED_KMS_ACTIONS
+    Type: AWS::Config::ConfigRule
+  IamGroupHasUsersCheck:
+    Properties:
+      ConfigRuleName: iam-group-has-users-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_GROUP_HAS_USERS_CHECK
+    Type: AWS::Config::ConfigRule
+  IamInlinePolicyBlockedKmsActions:
+    Properties:
+      ConfigRuleName: iam-inline-policy-blocked-kms-actions
+      InputParameters:
+        blockedActionsPatterns:
+          Fn::If:
+          - iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Group
+        - AWS::IAM::Role
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_INLINE_POLICY_BLOCKED_KMS_ACTIONS
+    Type: AWS::Config::ConfigRule
+  IamNoInlinePolicyCheck:
+    Properties:
+      ConfigRuleName: iam-no-inline-policy-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+        - AWS::IAM::Role
+        - AWS::IAM::Group
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_NO_INLINE_POLICY_CHECK
+    Type: AWS::Config::ConfigRule
+  IamPasswordPolicy:
+    Properties:
+      ConfigRuleName: iam-password-policy
+      InputParameters:
+        MaxPasswordAge:
+          Fn::If:
+          - iamPasswordPolicyParamMaxPasswordAge
+          - Ref: IamPasswordPolicyParamMaxPasswordAge
+          - Ref: AWS::NoValue
+        MinimumPasswordLength:
+          Fn::If:
+          - iamPasswordPolicyParamMinimumPasswordLength
+          - Ref: IamPasswordPolicyParamMinimumPasswordLength
+          - Ref: AWS::NoValue
+        PasswordReusePrevention:
+          Fn::If:
+          - iamPasswordPolicyParamPasswordReusePrevention
+          - Ref: IamPasswordPolicyParamPasswordReusePrevention
+          - Ref: AWS::NoValue
+        RequireLowercaseCharacters:
+          Fn::If:
+          - iamPasswordPolicyParamRequireLowercaseCharacters
+          - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+          - Ref: AWS::NoValue
+        RequireNumbers:
+          Fn::If:
+          - iamPasswordPolicyParamRequireNumbers
+          - Ref: IamPasswordPolicyParamRequireNumbers
+          - Ref: AWS::NoValue
+        RequireSymbols:
+          Fn::If:
+          - iamPasswordPolicyParamRequireSymbols
+          - Ref: IamPasswordPolicyParamRequireSymbols
+          - Ref: AWS::NoValue
+        RequireUppercaseCharacters:
+          Fn::If:
+          - iamPasswordPolicyParamRequireUppercaseCharacters
+          - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_PASSWORD_POLICY
+    Type: AWS::Config::ConfigRule
+  IamPolicyNoStatementsWithAdminAccess:
+    Properties:
+      ConfigRuleName: iam-policy-no-statements-with-admin-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+    Type: AWS::Config::ConfigRule
+  IamPolicyNoStatementsWithFullAccess:
+    Properties:
+      ConfigRuleName: iam-policy-no-statements-with-full-access
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::Policy
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_FULL_ACCESS
+    Type: AWS::Config::ConfigRule
+  IamRootAccessKeyCheck:
+    Properties:
+      ConfigRuleName: iam-root-access-key-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
+    Type: AWS::Config::ConfigRule
+  IamUserGroupMembershipCheck:
+    Properties:
+      ConfigRuleName: iam-user-group-membership-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_GROUP_MEMBERSHIP_CHECK
+    Type: AWS::Config::ConfigRule
+  IamUserMfaEnabled:
+    Properties:
+      ConfigRuleName: iam-user-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  IamUserNoPoliciesCheck:
+    Properties:
+      ConfigRuleName: iam-user-no-policies-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::IAM::User
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_NO_POLICIES_CHECK
+    Type: AWS::Config::ConfigRule
+  IamUserUnusedCredentialsCheck:
+    Properties:
+      ConfigRuleName: iam-user-unused-credentials-check
+      InputParameters:
+        maxCredentialUsageAge:
+          Fn::If:
+          - iamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+          - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+          - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
+    Type: AWS::Config::ConfigRule
+  IncomingSshDisabled:
+    Properties:
+      ConfigRuleName: restricted-ssh
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: INCOMING_SSH_DISABLED
+    Type: AWS::Config::ConfigRule
+  KmsCmkNotScheduledForDeletion:
+    Properties:
+      ConfigRuleName: kms-cmk-not-scheduled-for-deletion
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::KMS::Key
+      Source:
+        Owner: AWS
+        SourceIdentifier: KMS_CMK_NOT_SCHEDULED_FOR_DELETION
+    Type: AWS::Config::ConfigRule
+  MfaEnabledForIamConsoleAccess:
+    Properties:
+      ConfigRuleName: mfa-enabled-for-iam-console-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+    Type: AWS::Config::ConfigRule
+  MultiRegionCloudTrailEnabled:
+    Properties:
+      ConfigRuleName: multi-region-cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  NetfwPolicyRuleGroupAssociated:
+    Properties:
+      ConfigRuleName: netfw-policy-rule-group-associated
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::FirewallPolicy
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_POLICY_RULE_GROUP_ASSOCIATED
+    Type: AWS::Config::ConfigRule
+  NetfwStatelessRuleGroupNotEmpty:
+    Properties:
+      ConfigRuleName: netfw-stateless-rule-group-not-empty
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::NetworkFirewall::RuleGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: NETFW_STATELESS_RULE_GROUP_NOT_EMPTY
+    Type: AWS::Config::ConfigRule
+  RdsLoggingEnabled:
+    Properties:
+      ConfigRuleName: rds-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  RestrictedIncomingTraffic:
+    Properties:
+      ConfigRuleName: restricted-common-ports
+      InputParameters:
+        blockedPort1:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort1
+          - Ref: RestrictedIncomingTrafficParamBlockedPort1
+          - Ref: AWS::NoValue
+        blockedPort2:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort2
+          - Ref: RestrictedIncomingTrafficParamBlockedPort2
+          - Ref: AWS::NoValue
+        blockedPort3:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort3
+          - Ref: RestrictedIncomingTrafficParamBlockedPort3
+          - Ref: AWS::NoValue
+        blockedPort4:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort4
+          - Ref: RestrictedIncomingTrafficParamBlockedPort4
+          - Ref: AWS::NoValue
+        blockedPort5:
+          Fn::If:
+          - restrictedIncomingTrafficParamBlockedPort5
+          - Ref: RestrictedIncomingTrafficParamBlockedPort5
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
+    Type: AWS::Config::ConfigRule
+  RootAccountHardwareMfaEnabled:
+    Properties:
+      ConfigRuleName: root-account-hardware-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  RootAccountMfaEnabled:
+    Properties:
+      ConfigRuleName: root-account-mfa-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  S3AccountLevelPublicAccessBlocksPeriodic:
+    Properties:
+      ConfigRuleName: s3-account-level-public-access-blocks-periodic
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
+    Type: AWS::Config::ConfigRule
+  S3BucketLoggingEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-logging-enabled
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerRotationEnabledCheck:
+    Properties:
+      ConfigRuleName: secretsmanager-rotation-enabled-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_ROTATION_ENABLED_CHECK
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerScheduledRotationSuccessCheck:
+    Properties:
+      ConfigRuleName: secretsmanager-scheduled-rotation-success-check
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::SecretsManager::Secret
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SCHEDULED_ROTATION_SUCCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerSecretPeriodicRotation:
+    Properties:
+      ConfigRuleName: secretsmanager-secret-periodic-rotation
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SECRET_PERIODIC_ROTATION
+    Type: AWS::Config::ConfigRule
+  SecretsmanagerSecretUnused:
+    Properties:
+      ConfigRuleName: secretsmanager-secret-unused
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SECRET_UNUSED
+    Type: AWS::Config::ConfigRule
+  SecurityhubEnabled:
+    Properties:
+      ConfigRuleName: securityhub-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+    Type: AWS::Config::ConfigRule
+  VpcDefaultSecurityGroupClosed:
+    Properties:
+      ConfigRuleName: vpc-default-security-group-closed
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
+    Type: AWS::Config::ConfigRule
+  VpcSgOpenOnlyToAuthorizedPorts:
+    Properties:
+      ConfigRuleName: vpc-sg-open-only-to-authorized-ports
+      InputParameters:
+        authorizedTcpPorts:
+          Fn::If:
+          - vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+          - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+          - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+        - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
+    Type: AWS::Config::ConfigRule
+  Wafv2LoggingEnabled:
+    Properties:
+      ConfigRuleName: wafv2-logging-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAFV2_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+Conditions:
+  accessKeysRotatedParamMaxAccessKeyAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AccessKeysRotatedParamMaxAccessKeyAge
+  acmCertificateExpirationCheckParamDaysToExpiration:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: AcmCertificateExpirationCheckParamDaysToExpiration
+  guarddutyNonArchivedFindingsParamDaysHighSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysHighSev
+  guarddutyNonArchivedFindingsParamDaysLowSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysLowSev
+  guarddutyNonArchivedFindingsParamDaysMediumSev:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: GuarddutyNonArchivedFindingsParamDaysMediumSev
+  iamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamCustomerPolicyBlockedKmsActionsParamBlockedActionsPatterns
+  iamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamInlinePolicyBlockedKmsActionsParamBlockedActionsPatterns
+  iamPasswordPolicyParamMaxPasswordAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamMaxPasswordAge
+  iamPasswordPolicyParamMinimumPasswordLength:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamMinimumPasswordLength
+  iamPasswordPolicyParamPasswordReusePrevention:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamPasswordReusePrevention
+  iamPasswordPolicyParamRequireLowercaseCharacters:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+  iamPasswordPolicyParamRequireNumbers:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireNumbers
+  iamPasswordPolicyParamRequireSymbols:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireSymbols
+  iamPasswordPolicyParamRequireUppercaseCharacters:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+  iamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge
+  restrictedIncomingTrafficParamBlockedPort1:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort1
+  restrictedIncomingTrafficParamBlockedPort2:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort2
+  restrictedIncomingTrafficParamBlockedPort3:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort3
+  restrictedIncomingTrafficParamBlockedPort4:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort4
+  restrictedIncomingTrafficParamBlockedPort5:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: RestrictedIncomingTrafficParamBlockedPort5
+  vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts

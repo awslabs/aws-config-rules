@@ -77,16 +77,16 @@ Parameters:
     Default: '4333'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
-    Default: 'true'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
-    Default: 'true'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
-    Default: 'true'
+    Default: 'TRUE'
     Type: String
   S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
-    Default: 'true'
+    Default: 'TRUE'
     Type: String
 Resources:
   AccessKeysRotated:
@@ -812,16 +812,6 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: LAMBDA_FUNCTION_PUBLIC_ACCESS_PROHIBITED
-    Type: AWS::Config::ConfigRule
-  LambdaInsideVpc:
-    Properties:
-      ConfigRuleName: lambda-inside-vpc
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::Lambda::Function
-      Source:
-        Owner: AWS
-        SourceIdentifier: LAMBDA_INSIDE_VPC
     Type: AWS::Config::ConfigRule
   MfaEnabledForIamConsoleAccess:
     Properties:

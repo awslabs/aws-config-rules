@@ -1,0 +1,315 @@
+#############################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for the ABS CCIG 2.0 Material Workloads (Part 2)
+#
+#   This conformance pack helps verify compliance with the Association of Banks in
+#   Singapore Cloud Computing Implementation Guide 2.0 requirements for Material Workloads,
+#   this pack is inclusive of the config rules for Standard Workloads.
+#
+#   See Parameters section for names and descriptions of required parameters.
+
+Parameters:
+  RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Default: 'true'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort1:
+    Default: '20'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort2:
+    Default: '21'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort3:
+    Default: '3389'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort4:
+    Default: '3306'
+    Type: String
+  RestrictedIncomingTrafficParamBlockedPort5:
+    Default: '4333'
+    Type: String
+  S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
+    Default: 'true'
+    Type: String
+  S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
+    Default: 'true'
+    Type: String
+  S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
+    Default: 'true'
+    Type: String
+  S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
+    Default: 'true'
+    Type: String
+  S3BucketVersioningEnabledParamIsMfaDeleteEnabled:
+    Default: 'true'
+    Type: String
+  VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
+    Default: '443'
+    Type: String
+
+Resources:
+  MfaEnabledForIamConsoleAccess:
+    Properties:
+      ConfigRuleName: mfa-enabled-for-iam-console-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+    Type: AWS::Config::ConfigRule
+
+  MultiRegionCloudTrailEnabled:
+    Properties:
+      ConfigRuleName: multi-region-cloudtrail-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  NoUnrestrictedRouteToIgw:
+    Properties:
+      ConfigRuleName: no-unrestricted-route-to-igw
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::RouteTable
+      Source:
+        Owner: AWS
+        SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
+    Type: AWS::Config::ConfigRule
+
+  OpensearchEncryptedAtRest:
+    Properties:
+      ConfigRuleName: opensearch-encrypted-at-rest
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::OpenSearch::Domain
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
+    Type: AWS::Config::ConfigRule
+
+  RdsEnhancedMonitoringEnabled:
+    Properties:
+      ConfigRuleName: rds-enhanced-monitoring-enabled
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_ENHANCED_MONITORING_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  RedshiftClusterMaintenancesettingsCheck:
+    Properties:
+      ConfigRuleName: redshift-cluster-maintenancesettings-check
+      InputParameters:
+        allowVersionUpgrade:
+          Fn::If:
+            - redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+            - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+            - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::Redshift::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_MAINTENANCESETTINGS_CHECK
+    Type: AWS::Config::ConfigRule
+
+  RestrictedIncomingTraffic:
+    Properties:
+      ConfigRuleName: restricted-common-ports
+      InputParameters:
+        blockedPort1:
+          Fn::If:
+            - restrictedIncomingTrafficParamBlockedPort1
+            - Ref: RestrictedIncomingTrafficParamBlockedPort1
+            - Ref: AWS::NoValue
+        blockedPort2:
+          Fn::If:
+            - restrictedIncomingTrafficParamBlockedPort2
+            - Ref: RestrictedIncomingTrafficParamBlockedPort2
+            - Ref: AWS::NoValue
+        blockedPort3:
+          Fn::If:
+            - restrictedIncomingTrafficParamBlockedPort3
+            - Ref: RestrictedIncomingTrafficParamBlockedPort3
+            - Ref: AWS::NoValue
+        blockedPort4:
+          Fn::If:
+            - restrictedIncomingTrafficParamBlockedPort4
+            - Ref: RestrictedIncomingTrafficParamBlockedPort4
+            - Ref: AWS::NoValue
+        blockedPort5:
+          Fn::If:
+            - restrictedIncomingTrafficParamBlockedPort5
+            - Ref: RestrictedIncomingTrafficParamBlockedPort5
+            - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
+    Type: AWS::Config::ConfigRule
+
+  S3AccountLevelPublicAccessBlocksPeriodic:
+    Properties:
+      ConfigRuleName: s3-account-level-public-access-blocks-periodic
+      InputParameters:
+        BlockPublicAcls:
+          Fn::If:
+            - s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
+            - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
+            - Ref: AWS::NoValue
+        BlockPublicPolicy:
+          Fn::If:
+            - s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
+            - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
+            - Ref: AWS::NoValue
+        IgnorePublicAcls:
+          Fn::If:
+            - s3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
+            - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
+            - Ref: AWS::NoValue
+        RestrictPublicBuckets:
+          Fn::If:
+            - s3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
+            - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
+            - Ref: AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
+    Type: AWS::Config::ConfigRule
+
+  S3BucketDefaultLockEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-default-lock-enabled
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  S3BucketVersioningEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-versioning-enabled
+      InputParameters:
+        isMfaDeleteEnabled:
+          Fn::If:
+            - s3BucketVersioningEnabledParamIsMfaDeleteEnabled
+            - Ref: S3BucketVersioningEnabledParamIsMfaDeleteEnabled
+            - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  SecurityhubEnabled:
+    Properties:
+      ConfigRuleName: securityhub-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  VpcDefaultSecurityGroupClosed:
+    Properties:
+      ConfigRuleName: vpc-default-security-group-closed
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
+    Type: AWS::Config::ConfigRule
+
+  VpcFlowLogsEnabled:
+    Properties:
+      ConfigRuleName: vpc-flow-logs-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  VpcSgOpenOnlyToAuthorizedPorts:
+    Properties:
+      ConfigRuleName: vpc-sg-open-only-to-authorized-ports
+      InputParameters:
+        authorizedTcpPorts:
+          Fn::If:
+            - vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+            - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts
+            - Ref: AWS::NoValue
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
+    Type: AWS::Config::ConfigRule
+
+Conditions:
+  redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: RedshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade
+  restrictedIncomingTrafficParamBlockedPort1:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: RestrictedIncomingTrafficParamBlockedPort1
+  restrictedIncomingTrafficParamBlockedPort2:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: RestrictedIncomingTrafficParamBlockedPort2
+  restrictedIncomingTrafficParamBlockedPort3:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: RestrictedIncomingTrafficParamBlockedPort3
+  restrictedIncomingTrafficParamBlockedPort4:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: RestrictedIncomingTrafficParamBlockedPort4
+  restrictedIncomingTrafficParamBlockedPort5:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: RestrictedIncomingTrafficParamBlockedPort5
+  s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicAcls
+  s3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamBlockPublicPolicy
+  s3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamIgnorePublicAcls
+  s3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: S3AccountLevelPublicAccessBlocksPeriodicParamRestrictPublicBuckets
+  s3BucketVersioningEnabledParamIsMfaDeleteEnabled:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: S3BucketVersioningEnabledParamIsMfaDeleteEnabled
+  vpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts:
+    Fn::Not:
+      - Fn::Equals:
+          - ''
+          - Ref: VpcSgOpenOnlyToAuthorizedPortsParamAuthorizedTcpPorts

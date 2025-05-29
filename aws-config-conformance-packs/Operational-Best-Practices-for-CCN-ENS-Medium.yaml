@@ -825,8 +825,8 @@ Resources:
     Properties:
       ConfigRuleName: redshift-cluster-configuration-check
       InputParameters:
-        clusterDbEncrypted: 'true'
-        loggingEnabled: 'true'
+        clusterDbEncrypted: 'TRUE'
+        loggingEnabled: 'TRUE'
       Scope:
         ComplianceResourceTypes:
         - AWS::Redshift::Cluster
