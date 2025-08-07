@@ -65,7 +65,7 @@ class ComplianceTest(unittest.TestCase):
 
 
     ### IAM.list_service_specific_credentials mock responses
-    no_service_specific_credentials = { 'ServiceSpecificCredentials': [] }
+    no_service_specific_credentials = { 'ServiceSpecificCredentials': [], 'IsTruncated': False }
     service_specific_credentials_active = { 
         'ServiceSpecificCredentials': [
             {
@@ -73,7 +73,40 @@ class ComplianceTest(unittest.TestCase):
                 'ServiceSpecificCredentialId': MATCHING_CREDENTIAL_ID,
                 'ServiceName': MATCHING_SERVICE_NAME
             }
-        ]
+        ],
+        'IsTruncated': False
+    }
+    service_specific_credentials_active_page_one = { 
+        'ServiceSpecificCredentials': [
+            {
+                'Status': 'Active',
+                'ServiceSpecificCredentialId': MATCHING_CREDENTIAL_ID,
+                'ServiceName': MATCHING_SERVICE_NAME
+            }
+        ],
+        'IsTruncated': True,
+        'Marker': 'getPageTwo'
+    }
+    service_specific_credentials_inactive_page_one = { 
+        'ServiceSpecificCredentials': [
+            {
+                'Status': 'NotActive',
+                'ServiceSpecificCredentialId': NON_MATCHING_CREDENTIAL_ID,
+                'ServiceName': MATCHING_SERVICE_NAME
+            }
+        ],
+        'IsTruncated': True,
+        'Marker': 'getPageTwo'
+    }
+    service_specific_credentials_active_page_two = { 
+        'ServiceSpecificCredentials': [
+            {
+                'Status': 'Active',
+                'ServiceSpecificCredentialId': MATCHING_CREDENTIAL_ID,
+                'ServiceName': MATCHING_SERVICE_NAME
+            }
+        ],
+        'IsTruncated': False
     }
     service_specific_credentials_inactive = { 
         'ServiceSpecificCredentials': [
@@ -82,12 +115,13 @@ class ComplianceTest(unittest.TestCase):
                 'ServiceSpecificCredentialId': MATCHING_CREDENTIAL_ID,
                 'ServiceName': MATCHING_SERVICE_NAME
             }
-        ]
+        ],
+        'IsTruncated': False
     }
 
 
     def setUp(self):
-        IAM_CLIENT_MOCK.reset_mock()
+        IAM_CLIENT_MOCK.reset_mock(return_value=True, side_effect=True)
         IAM_CLIENT_MOCK.get_paginator.return_value = IAM_USER_PAGINATOR_MOCK
 
 
@@ -177,6 +211,43 @@ class ComplianceTest(unittest.TestCase):
             )]
         assert_successful_evaluation(self, response, response_expected)
     
+    # Scenario 6: Active SSCreds - paginated, active cred on page 2
+    def test_scenario6_sscredentials_paginated_active_page_two_returns_non_compliant(self):
+        IAM_CLIENT_MOCK.list_service_specific_credentials.side_effect = [
+            self.service_specific_credentials_inactive_page_one,
+            self.service_specific_credentials_active_page_two
+        ]
+        IAM_USER_PAGINATOR_MOCK.paginate.return_value = self.user_page_expect_non_compliant
+
+        response = RULE.evaluate_periodic({}, CLIENT_FACTORY, {})
+        response_expected = [
+            Evaluation(
+                ComplianceType.NON_COMPLIANT,
+                resourceId=self.NON_COMPLIANT_USER_ID,
+                resourceType=RESOURCE_TYPE,
+                annotation=f'Active service specific credential found: {self.MATCHING_CREDENTIAL_ID}'
+            )]
+        assert_successful_evaluation(self, response, response_expected)
+        assert IAM_CLIENT_MOCK.list_service_specific_credentials.call_count == 2
+
+    # Scenario 6: Active SSCreds - paginated, active cred on page 1
+    def test_scenario6_sscredentials_paginated_active_page_two_returns_non_compliant(self):
+        IAM_CLIENT_MOCK.list_service_specific_credentials.side_effect = [
+            self.service_specific_credentials_active_page_one,
+            self.service_specific_credentials_active_page_two
+        ]
+        IAM_USER_PAGINATOR_MOCK.paginate.return_value = self.user_page_expect_non_compliant
+
+        response = RULE.evaluate_periodic({}, CLIENT_FACTORY, {})
+        response_expected = [
+            Evaluation(
+                ComplianceType.NON_COMPLIANT,
+                resourceId=self.NON_COMPLIANT_USER_ID,
+                resourceType=RESOURCE_TYPE,
+                annotation=f'Active service specific credential found: {self.MATCHING_CREDENTIAL_ID}'
+            )]
+        assert_successful_evaluation(self, response, response_expected)
+        assert IAM_CLIENT_MOCK.list_service_specific_credentials.call_count == 1
 
     # Scenario 7: Active SSCreds - serviceName matches parameter
     def test_scenario7_sscredentials_matching_active_returns_non_compliant(self):

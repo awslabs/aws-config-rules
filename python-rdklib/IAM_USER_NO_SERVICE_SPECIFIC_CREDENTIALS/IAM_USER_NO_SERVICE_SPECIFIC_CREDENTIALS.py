@@ -83,25 +83,37 @@ from rdklib import Evaluator, Evaluation, ConfigRule, ComplianceType
 RESOURCE_TYPE = "AWS::IAM::User"
 
 class IAM_USER_NO_SERVICE_SPECIFIC_CREDENTIALS(ConfigRule):
-
-    def get_credentials_for_user(self, iam_client, user_name, service_name):
+    def get_credentials_for_user(self, iam_client, user_name, service_name, marker):
+        # list_service_specific_credentials throws an error if you supply None to 'ServiceName' or 'Marker'
         if service_name == None:
-            return iam_client.list_service_specific_credentials(UserName=user_name)
-        return iam_client.list_service_specific_credentials(
-            UserName=user_name,
-            ServiceName=service_name
-        )
-        
+            if marker == None:
+                return iam_client.list_service_specific_credentials(UserName=user_name)
+            return iam_client.list_service_specific_credentials(UserName=user_name, Marker=marker)
+        if marker == None:
+            return iam_client.list_service_specific_credentials(UserName=user_name, ServiceName=service_name)
+        return iam_client.list_service_specific_credentials(UserName=user_name, ServiceName=service_name, Marker=marker)
 
-    def evaluate_user(self, user_id, credentials):
-        for cred in credentials['ServiceSpecificCredentials']:
-            if (cred['Status'] == 'Active'):
-                return Evaluation(
-                    ComplianceType.NON_COMPLIANT,
-                    resourceId=user_id,
-                    resourceType=RESOURCE_TYPE,
-                    annotation=f'Active service specific credential found: {cred["ServiceSpecificCredentialId"]}'
-                )
+
+    def evaluate_user(self, iam_client, user_name, user_id, service_name):
+        marker = None
+        while True:
+            credentials = self.get_credentials_for_user(iam_client, user_name, service_name, marker)
+            for cred in credentials['ServiceSpecificCredentials']:
+                if (cred['Status'] == 'Active'):
+                    # found active credential, return NON_COMPLIANT
+                    return Evaluation(
+                        ComplianceType.NON_COMPLIANT,
+                        resourceId=user_id,
+                        resourceType=RESOURCE_TYPE,
+                        annotation=f'Active service specific credential found: {cred["ServiceSpecificCredentialId"]}'
+                    )
+            # IsTruncated is not present in repsonse if not paginated
+            if 'IsTruncated' in credentials and credentials['IsTruncated']:
+                # Truncated response, use 'marker' in next request for next page
+                marker = credentials['Marker']
+            else:
+                break
+
         return Evaluation(
             ComplianceType.COMPLIANT, 
             resourceId=user_id,
@@ -134,8 +146,7 @@ class IAM_USER_NO_SERVICE_SPECIFIC_CREDENTIALS(ConfigRule):
                     user_id = user['UserId']
                     user_name = user['UserName']
                     try:
-                        credentials = self.get_credentials_for_user(iam_client, user_name, service_name)
-                        evaluations.append(self.evaluate_user(user_id, credentials))
+                        evaluations.append(self.evaluate_user(iam_client, user_name, user_id, service_name))
                     except Exception as e:
                         evaluations.append(self.handle_credential_check_error(e, user_id))
             return evaluations
