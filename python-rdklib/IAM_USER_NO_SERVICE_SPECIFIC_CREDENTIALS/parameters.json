@@ -1,0 +1,14 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "IAM_USER_NO_SERVICE_SPECIFIC_CREDENTIALS",
+    "Description": "IAM_USER_NO_SERVICE_SPECIFIC_CREDENTIALS",
+    "SourceRuntime": "python3.10-lib",
+    "EvaluationMode": "DETECTIVE",
+    "CodeKey": "IAM_USER_NO_SERVICE_SPECIFIC_CREDENTIALS.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{\"ServiceName\": \"YOUR_ROLE_NAME\"}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
