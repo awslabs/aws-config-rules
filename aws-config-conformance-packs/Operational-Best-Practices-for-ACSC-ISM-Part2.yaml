@@ -1,0 +1,180 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for ACSC ISM - Part 2
+#
+#   This conformance pack helps verify compliance with ACSC ISM requirements.
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Resources:
+  # Control ID: 1984 - Event logs sent to a centralised logging facility are encrypted in transit
+  AppMeshVirtualGatewayTLS1984:
+    Properties:
+      ConfigRuleName: appmesh-virtual-gateway-backend-defaults-tls-1984
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::AppMesh::VirtualGateway
+      Source:
+        Owner: AWS
+        SourceIdentifier: APPMESH_VIRTUAL_GATEWAY_BACKEND_DEFAULTS_TLS
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1984 - Event logs sent to a centralised logging facility are encrypted in transit
+  AppMeshVirtualNodeTLS1984:
+    Properties:
+      ConfigRuleName: appmesh-virtual-node-backend-defaults-tls-on-1984
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::AppMesh::VirtualNode
+      Source:
+        Owner: AWS
+        SourceIdentifier: APPMESH_VIRTUAL_NODE_BACKEND_DEFAULTS_TLS_ON
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1984 - Event logs sent to a centralised logging facility are encrypted in transit
+  # Fixed: Changed from MSK_CLUSTER_TLS_REQUIRED to MSK_IN_CLUSTER_NODE_REQUIRE_TLS
+  MSKInClusterNodeRequireTLS1984:
+    Properties:
+      ConfigRuleName: msk-in-cluster-node-require-tls-1984
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::MSK::Cluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: MSK_IN_CLUSTER_NODE_REQUIRE_TLS
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1984 - Event logs sent to a centralised logging facility are encrypted in transit
+  RDSMySQLEncryptedTransit1984:
+    Properties:
+      ConfigRuleName: rds-mysql-instance-encrypted-in-transit-1984
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_MYSQL_INSTANCE_ENCRYPTED_IN_TRANSIT
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1984 - Event logs sent to a centralised logging facility are encrypted in transit
+  RDSPostgresEncryptedTransit1984:
+    Properties:
+      ConfigRuleName: rds-postgres-instance-encrypted-in-transit-1984
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::RDS::DBInstance
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_POSTGRES_INSTANCE_ENCRYPTED_IN_TRANSIT
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1985 - Event logs are protected from unauthorised access
+  EBSSnapshotPublicRestorable1985:
+    Properties:
+      ConfigRuleName: ebs-snapshot-public-restorable-check-1985
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Snapshot
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1985 - Event logs are protected from unauthorised access
+  S3BucketMFADelete1985:
+    Properties:
+      ConfigRuleName: s3-bucket-mfa-delete-enabled-1985
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_MFA_DELETE_ENABLED
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1985 - Event logs are protected from unauthorised access
+  S3BucketPublicReadProhibited1985:
+    Properties:
+      ConfigRuleName: s3-bucket-public-read-prohibited-1985
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1985 - Event logs are protected from unauthorised access
+  S3BucketPublicWriteProhibited1985:
+    Properties:
+      ConfigRuleName: s3-bucket-public-write-prohibited-1985
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1985 - Event logs are protected from unauthorised access
+  AuroraResourcesInLogicallyAirGappedVault1985:
+    Properties:
+      ConfigRuleName: aurora-resources-in-logically-air-gapped-vault-1985
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::RDS::DBCluster
+      Source:
+        Owner: AWS
+        SourceIdentifier: AURORA_RESOURCES_IN_LOGICALLY_AIR_GAPPED_VAULT
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1985 - Event logs are protected from unauthorised access
+  EBSResourcesInLogicallyAirGappedVault1985:
+    Properties:
+      ConfigRuleName: ebs-resources-in-logically-air-gapped-vault-1985
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Volume
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_RESOURCES_IN_LOGICALLY_AIR_GAPPED_VAULT
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1985 - Event logs are protected from unauthorised access
+  EC2ResourcesInLogicallyAirGappedVault1985:
+    Properties:
+      ConfigRuleName: ec2-resources-in-logically-air-gapped-vault-1985
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Instance
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_RESOURCES_IN_LOGICALLY_AIR_GAPPED_VAULT
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1985 - Event logs are protected from unauthorised access
+  EFSResourcesInLogicallyAirGappedVault1985:
+    Properties:
+      ConfigRuleName: efs-resources-in-logically-air-gapped-vault-1985
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EFS::FileSystem
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_RESOURCES_IN_LOGICALLY_AIR_GAPPED_VAULT
+    Type: AWS::Config::ConfigRule
+
+  # Control ID: 1985 - Event logs are protected from unauthorised access
+  S3ResourcesInLogicallyAirGappedVault1985:
+    Properties:
+      ConfigRuleName: s3-resources-in-logically-air-gapped-vault-1985
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_RESOURCES_IN_LOGICALLY_AIR_GAPPED_VAULT
+    Type: AWS::Config::ConfigRule

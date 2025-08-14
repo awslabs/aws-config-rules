@@ -496,6 +496,27 @@ Resources:
         Owner: AWS
         SourceIdentifier: WAF_REGIONAL_WEBACL_NOT_EMPTY
     Type: AWS::Config::ConfigRule
+  CloudwatchLogGroupEncrypted:
+    Properties:
+      ConfigRuleName: cloudwatch-log-group-encrypted
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  Ec2InstanceLaunchedWithAllowedAmi:
+    Properties:
+      ConfigRuleName: ec2-instance-launched-with-allowed-ami
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_LAUNCHED_WITH_ALLOWED_AMI
+    Type: AWS::Config::ConfigRule
+  S3BucketDefaultLockEnabled:
+    Properties:
+      ConfigRuleName: s3-bucket-default-lock-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
+    Type: AWS::Config::ConfigRule
 Conditions:
   backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit:
     Fn::Not:
