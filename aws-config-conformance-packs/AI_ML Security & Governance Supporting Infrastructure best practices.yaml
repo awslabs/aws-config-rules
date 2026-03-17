@@ -1,0 +1,862 @@
+##################################################################################
+# Conformance Pack: AI/ML Security & Governance Supporting Infrastructure best practices
+# 
+# Description: This conformance pack is intended to provide a baseline of security configurations for any AI workload (inclusive of AI, ML, generative AI, agentic AI, and physical AI)
+#
+# Total Rules: 79
+# - 13 Custom Guard DSL rules
+# - 66 AWS Managed rules
+#
+# Coverage:
+# - Security Services: 10 custom rules (GuardDuty, Security Hub, Macie, Detective, WAF, Network Firewall)
+# - Cognito: 8 managed rules + 3 custom (user auth, log delivery, identity role)
+# - CloudWatch: 4 rules (logging, encryption, alarms)
+# - IAM: 5 rules (access control)
+# - KMS: 1 rule (encryption keys)
+# - VPC: 4 rules (network isolation)
+# - CloudTrail: 8 rules (audit logging, data events)
+# - Lambda: 1 rule (event-driven)
+# - WAFv2: 8 managed rules (API protection)
+# - Cognito: 9 managed rules + 3 custom (user auth, log delivery, identity role)
+# - Network Firewall: 8 managed rules (network security)
+# - GuardDuty: 11 managed rules (threat detection)
+# - Security Hub: 1 managed rule
+# - Inspector: 4 managed rules
+# - Macie: 2 managed rules
+# - Access Analyzer: 1 managed rule
+#
+# IMPORTANT: Rules with Required Parameters
+# The following rules have been configured with required InputParameters:
+# 
+# 1. cloudwatch-alarm-action-check
+#    - alarmActionRequired: "true"
+#    - insufficientDataActionRequired: "false"
+#    - okActionRequired: "false"
+#
+# 2. netfw-policy-default-action-fragment-packets
+#    - statelessFragmentDefaultActions: "aws:drop"
+#
+# 3. netfw-policy-default-action-full-packets
+#    - statelessDefaultActions: "aws:drop"
+#
+# Note: These parameters enforce specific security postures. Modify values only if
+# your organization's security requirements differ from these defaults.
+##################################################################################
+
+Parameters:
+  AlarmActionRequired:
+    Type: String
+    Default: "true"
+  InsufficientDataActionRequired:
+    Type: String
+    Default: "false"
+  OkActionRequired:
+    Type: String
+    Default: "false"
+  StatelessFragmentDefaultActions:
+    Type: String
+    Default: "aws:drop"
+  StatelessDefaultActions:
+    Type: String
+    Default: "aws:drop"
+
+Resources:
+  # ============================================
+  # SECURITY SERVICES - CUSTOM RULES (10)
+  # ============================================
+  
+  GuardDutyFindingFrequency:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: guardduty-finding-frequency-fifteen-minutes
+        Description: Ensures GuardDuty publishes findings every 15 minutes for near real-time threat detection
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            PolicyText: |
+              rule guardduty_finding_frequency_fifteen_minutes {
+                  configuration.FindingPublishingFrequency == "FIFTEEN_MINUTES"
+                  <<
+                      Violation: Finding frequency is not 15 minutes
+                      Fix: Set to FIFTEEN_MINUTES in GuardDuty settings
+                  >>
+              }
+            EnableDebugLogDelivery: true
+        Scope:
+          ComplianceResourceTypes: ["AWS::GuardDuty::Detector"]
+  
+  GuardDutyMalwarePlans:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: guardduty-malware-protection-plan-active
+        Description: Ensures GuardDuty Malware Protection is active to scan for malicious files in workloads
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            PolicyText: |
+              rule guardduty_malware_protection_plan_active {
+                  configuration.Status == "ACTIVE"
+                  <<
+                      Violation: Malware Protection Plan is not active
+                      Fix: Enable Malware Protection Plan
+                  >>
+              }
+            EnableDebugLogDelivery: true
+        Scope:
+          ComplianceResourceTypes: ["AWS::GuardDuty::MalwareProtectionPlan"]
+  
+  SecurityHubNISTStandard:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: securityhub-nist-standard-enabled
+        Description: Ensures Security Hub has NIST 800-53 v5.0.0 enabled for federal compliance baseline. Modify the regex pattern to check for other standards or multiple frameworks
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            PolicyText: |
+              rule securityhub_standard_enabled {
+                  configuration.StandardsArn == /nist-800-53\/v\/5.0.0/
+                  <<
+                      Violation: NIST 800-53 v5.0.0 standard not enabled
+                      Fix: Enable in Security Hub standards
+                  >>
+              }
+            EnableDebugLogDelivery: true
+        Scope:
+          ComplianceResourceTypes: ["AWS::SecurityHub::Standard"]
+  
+  MacieFindingFrequency:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: macie-finding-frequency-fifteen-minutes
+        Description: Ensures Macie publishes sensitive data findings every 15 minutes for rapid response
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            PolicyText: |
+              rule macie_finding_frequency_fifteen_minutes {
+                  configuration.FindingPublishingFrequency == "FIFTEEN_MINUTES"
+                  <<
+                      Violation: Finding frequency is not 15 minutes
+                      Fix: Set to FIFTEEN_MINUTES in Macie settings
+                  >>
+              }
+            EnableDebugLogDelivery: true
+        Scope:
+          ComplianceResourceTypes: ["AWS::Macie::Session"]
+  
+  DetectiveGraphEnabled:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: detective-graph-enabled
+        Description: Ensures Detective behavior graph exists for security investigation and root cause analysis
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            PolicyText: |
+              rule detective_graph_enabled {
+                  configuration.Arn exists
+                  <<
+                      Violation: No Detective graph found
+                      Fix: Enable Amazon Detective
+                  >>
+              }
+            EnableDebugLogDelivery: true
+        Scope:
+          ComplianceResourceTypes: ["AWS::Detective::Graph"]
+
+
+  DetectiveOrgAdminGraphExists:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: detective-org-admin-graph-exists
+        Description: Ensures the delegated admin account has a Detective graph for org-wide investigation
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            EnableDebugLogDelivery: true
+            PolicyText: |
+              rule check { 
+                configuration.GraphArn exists
+                <<
+                  Violation: Detective Organization Admin must have a graph provisioned
+                  Fix: Ensure the delegated admin account has an active Detective graph
+                >>
+              }
+        Scope:
+          ComplianceResourceTypes: ["AWS::Detective::OrganizationAdmin"]    
+  
+  NetFWCustomerKMS:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: netfw-rulegroup-customer-kms
+        Description: Ensures Network Firewall rule groups are encrypted with customer-managed KMS keys
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            PolicyText: |
+              rule netfw_rulegroup_customer_kms {
+                  configuration.ruleGroupResponse.encryptionConfiguration.type == "CUSTOMER_KMS"
+                  <<
+                      Violation: Rule group must use customer-managed KMS key
+                      Fix: Set EncryptionConfiguration to CUSTOMER_KMS
+                  >>
+              }
+            EnableDebugLogDelivery: true
+        Scope:
+          ComplianceResourceTypes: ["AWS::NetworkFirewall::RuleGroup"]
+  
+  NetFWTLSInspection:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: netfw-tls-inspection-configured
+        Description: Ensures Network Firewall inspects encrypted traffic to detect threats in TLS sessions
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            PolicyText: |
+              rule netfw_tls_inspection_configured {
+                  configuration.tlsInspectionConfigurationResponse.tLSInspectionConfigurationArn exists
+                  <<
+                      Violation: TLS inspection must be configured
+                      Fix: Create and associate a TLS inspection config
+                  >>
+              }
+            EnableDebugLogDelivery: true
+        Scope:
+          ComplianceResourceTypes: ["AWS::NetworkFirewall::TLSInspectionConfiguration"]
+  
+  NetFWAIMLFiltering:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: aiml-netfw-url-category-filtering
+        Description: Ensures Network Firewall blocks or monitors AI/ML service URLs to prevent unauthorized model access and data exfiltration
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            PolicyText: |
+              rule netfw_aiml_url_filtering {
+                  configuration.ruleGroup.rulesSource.rulesString == /aws_url_category:Artificial Intelligence and Machine Learning/
+                  <<
+                      Violation: AI/ML URL category filtering not configured
+                      Fix: Add Suricata rule with aws_url_category
+                  >>
+              }
+            EnableDebugLogDelivery: true
+        Scope:
+          ComplianceResourceTypes: ["AWS::NetworkFirewall::RuleGroup"]
+
+  
+  WAFv2BotControl:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: wafv2-bot-control-enabled
+        Description: Ensures WAFv2 WebACLs have Bot Control to protect APIs from automated abuse
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            PolicyText: |
+              rule wafv2_bot_control_enabled {
+                  some configuration.Rules[*].Statement.ManagedRuleGroupStatement.Name == /AWSManagedRulesBotControlRuleSet|AWSBotControl/
+                  <<
+                      Violation: Bot Control rule group not enabled
+                      Fix: Add AWSManagedRulesBotControlRuleSet to WebACL
+                  >>
+              }
+            EnableDebugLogDelivery: true
+        Scope:
+          ComplianceResourceTypes: ["AWS::WAFv2::WebACL"]
+
+  # ============================================
+  # CLOUDWATCH - MONITORING (4 rules)
+  # ============================================
+  
+  CloudWatchLogGroupEncrypted:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudwatch-log-group-encrypted
+      Source: {Owner: AWS, SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED}
+  
+  CloudWatchAlarmActionCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudwatch-alarm-action-check
+      Source: {Owner: AWS, SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK}
+      InputParameters:
+        alarmActionRequired:
+          Ref: AlarmActionRequired
+        insufficientDataActionRequired:
+          Ref: InsufficientDataActionRequired
+        okActionRequired:
+          Ref: OkActionRequired
+  
+  CloudWatchLogGroupRetentionPeriod:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cw-loggroup-retention-period-check
+      Source: {Owner: AWS, SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK}
+  
+  CloudWatchMetricStreamTagged:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudwatch-metric-stream-tagged
+      Source: {Owner: AWS, SourceIdentifier: CLOUDWATCH_METRIC_STREAM_TAGGED}
+
+  # ============================================
+  # IAM - ACCESS CONTROL (5 rules)
+  # ============================================
+  
+  IAMPasswordPolicy:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-password-policy
+      Source: {Owner: AWS, SourceIdentifier: IAM_PASSWORD_POLICY}
+  
+  IAMPolicyNoStatementsWithAdminAccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-policy-no-statements-with-admin-access
+      Source: {Owner: AWS, SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS}
+  
+  IAMRootAccessKeyCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-root-access-key-check
+      Source: {Owner: AWS, SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK}
+  
+  IAMUserMFAEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-user-mfa-enabled
+      Source: {Owner: AWS, SourceIdentifier: IAM_USER_MFA_ENABLED}
+  
+  IAMUserNoPoliciesCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-user-no-policies-check
+      Source: {Owner: AWS, SourceIdentifier: IAM_USER_NO_POLICIES_CHECK}
+
+  # ============================================
+  # KMS - ENCRYPTION KEYS (1 rule)
+  # ============================================
+  
+  KMSBackingKeyRotationEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: kms-backing-key-rotation-enabled
+      Source: {Owner: AWS, SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED}
+
+  # ============================================
+  # VPC - NETWORK ISOLATION (4 rules)
+  # ============================================
+  
+  VPCDefaultSecurityGroupClosed:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: vpc-default-security-group-closed
+      Source: {Owner: AWS, SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED}
+  
+  VPCFlowLogsEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: vpc-flow-logs-enabled
+      Source: {Owner: AWS, SourceIdentifier: VPC_FLOW_LOGS_ENABLED}
+  
+  VPCNetworkACLUnusedCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: vpc-network-acl-unused-check
+      Source: {Owner: AWS, SourceIdentifier: VPC_NETWORK_ACL_UNUSED_CHECK}
+  
+  VPCSGOpenOnlyToAuthorizedPorts:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: vpc-sg-open-only-to-authorized-ports
+      Source: {Owner: AWS, SourceIdentifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS}
+
+  # ============================================
+  # CLOUDTRAIL - AUDIT LOGGING (2 rules)
+  # ============================================
+  
+  CloudTrailEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-enabled
+      Source: {Owner: AWS, SourceIdentifier: CLOUD_TRAIL_ENABLED}
+  
+  CloudTrailLogValidation:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloud-trail-log-file-validation-enabled
+      Source: {Owner: AWS, SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED}
+
+  # ============================================
+  # LAMBDA - EVENT-DRIVEN (1 rule)
+  # ============================================
+  
+  LambdaInsideVPC:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: lambda-inside-vpc
+      Source: {Owner: AWS, SourceIdentifier: LAMBDA_INSIDE_VPC}
+
+  # ============================================
+  # WAFV2 - API PROTECTION (8 rules)
+  # ============================================
+  
+  WAFv2Logging:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: wafv2-logging-enabled
+      Source: {Owner: AWS, SourceIdentifier: WAFV2_LOGGING_ENABLED}
+  
+  WAFv2RuleGroupLogging:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: wafv2-rulegroup-logging-enabled
+      Source: {Owner: AWS, SourceIdentifier: WAFV2_RULEGROUP_LOGGING_ENABLED}
+  
+  WAFv2RuleGroupNotEmpty:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: wafv2-rulegroup-not-empty
+      Source: {Owner: AWS, SourceIdentifier: WAFV2_RULEGROUP_NOT_EMPTY}
+  
+  WAFv2WebACLNotEmpty:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: wafv2-webacl-not-empty
+      Source: {Owner: AWS, SourceIdentifier: WAFV2_WEBACL_NOT_EMPTY}
+  
+  ALBWAFEnabledWAFv2:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: alb-waf-enabled-wafv2
+      Source: {Owner: AWS, SourceIdentifier: ALB_WAF_ENABLED}
+  
+  APIGatewayWAFv2:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: api-gw-associated-with-waf-wafv2
+      Source: {Owner: AWS, SourceIdentifier: API_GW_ASSOCIATED_WITH_WAF}
+  
+  CloudFrontWAFv2:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudfront-associated-with-waf-wafv2
+      Source: {Owner: AWS, SourceIdentifier: CLOUDFRONT_ASSOCIATED_WITH_WAF}
+  
+  AppSyncWAFv2:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: appsync-associated-with-waf
+      Source: {Owner: AWS, SourceIdentifier: APPSYNC_ASSOCIATED_WITH_WAF}
+
+  # ============================================
+  # COGNITO - USER AUTH (8 rules)
+  # ============================================
+  
+  CognitoIdentityPoolUnauthLogins:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cognito-identity-pool-unauthenticated-logins
+      Source: {Owner: AWS, SourceIdentifier: COGNITO_IDENTITY_POOL_UNAUTHENTICATED_LOGINS}
+  
+  CognitoIdentityPoolUnauthAccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cognito-identity-pool-unauth-access-check
+      Source: {Owner: AWS, SourceIdentifier: COGNITO_IDENTITY_POOL_UNAUTH_ACCESS_CHECK}
+  
+  CognitoUserPoolCustomAuthThreat:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cognito-userpool-cust-auth-threat-full-check
+      Source: {Owner: AWS, SourceIdentifier: COGNITO_USERPOOL_CUST_AUTH_THREAT_FULL_CHECK}
+  
+  CognitoUserPoolAdvancedSecurity:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cognito-user-pool-advanced-security-enabled
+      Source: {Owner: AWS, SourceIdentifier: COGNITO_USER_POOL_ADVANCED_SECURITY_ENABLED}
+  
+  CognitoUserPoolDeletionProtection:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cognito-user-pool-deletion-protection-enabled
+      Source: {Owner: AWS, SourceIdentifier: COGNITO_USER_POOL_DELETION_PROTECTION_ENABLED}
+  
+  CognitoUserPoolMFAEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cognito-user-pool-mfa-enabled
+      Source: {Owner: AWS, SourceIdentifier: COGNITO_USER_POOL_MFA_ENABLED}
+  
+  CognitoUserPoolPasswordPolicy:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cognito-user-pool-password-policy-check
+      Source: {Owner: AWS, SourceIdentifier: COGNITO_USER_POOL_PASSWORD_POLICY_CHECK}
+  
+  CognitoUserPoolTagged:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cognito-user-pool-tagged
+      Source: {Owner: AWS, SourceIdentifier: COGNITO_USER_POOL_TAGGED}
+
+
+  # ============================================
+  # COGNITO - Log Delivery (1 rules)
+  # ============================================
+
+  CognitoLogConfigExists:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: cognito-log-delivery-config-exists
+        Description: Ensures Cognito has log delivery configured for authentication audit trails
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            EnableDebugLogDelivery: true
+            PolicyText: |
+              rule check { 
+                configuration.LogConfigurations exists
+                configuration.LogConfigurations not empty
+                <<
+                  Violation: No log delivery configured
+                  Fix: Add a log delivery destination
+                >>
+              }
+        Scope:
+          ComplianceResourceTypes: ["AWS::Cognito::LogDeliveryConfiguration"]
+
+  # ============================================
+  # COGNITO - IdentityPoolRoleAttachment (2 rules)
+  # ============================================
+
+  IdentityPoolAuthenticatedRoleExists:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: cognito-identity-pool-authenticated-role-exists
+        Description: Ensures Cognito Identity Pools have an authenticated IAM role for authorized access
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            EnableDebugLogDelivery: true
+            PolicyText: |
+              rule check { 
+                configuration.Roles exists
+                configuration.Roles.authenticated exists
+                <<
+                  Violation: Identity Pool must have an authenticated role
+                  Fix: Configure an authenticated IAM role for the identity pool
+                >>
+              }
+        Scope:
+          ComplianceResourceTypes: ["AWS::Cognito::IdentityPoolRoleAttachment"]
+
+  IdentityPoolNoUnauthenticatedRole:
+      Type: AWS::Config::ConfigRule
+      Properties:
+        ConfigRuleName: cognito-identity-pool-no-unauthenticated-role
+        Description: Enforces least-privilege by preventing unauthenticated role access on Identity Pools
+        Source:
+          Owner: CUSTOM_POLICY
+          SourceDetails:
+            - EventSource: aws.config
+              MessageType: ConfigurationItemChangeNotification
+          CustomPolicyDetails:
+            PolicyRuntime: guard-2.x.x
+            EnableDebugLogDelivery: true
+            PolicyText: |
+              rule check { 
+                configuration.Roles.unauthenticated not exists
+                <<
+                  Violation: Identity Pool should not have an unauthenticated role for AI workloads
+                  Fix: Remove unauthenticated role
+                >>
+              }
+        Scope:
+          ComplianceResourceTypes: ["AWS::Cognito::IdentityPoolRoleAttachment"]   
+
+
+
+  # ============================================
+  # NETWORK FIREWALL - NETWORK SECURITY (8 rules)
+  # ============================================
+  
+  NetFWDeletionProtection:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: netfw-deletion-protection-enabled
+      Source: {Owner: AWS, SourceIdentifier: NETFW_DELETION_PROTECTION_ENABLED}
+  
+  NetFWLogging:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: netfw-logging-enabled
+      Source: {Owner: AWS, SourceIdentifier: NETFW_LOGGING_ENABLED}
+  
+  NetFWMultiAZ:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: netfw-multi-az-enabled
+      Source: {Owner: AWS, SourceIdentifier: NETFW_MULTI_AZ_ENABLED}
+  
+  NetFWPolicyFragments:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: netfw-policy-default-action-fragment-packets
+      Source: {Owner: AWS, SourceIdentifier: NETFW_POLICY_DEFAULT_ACTION_FRAGMENT_PACKETS}
+      InputParameters:
+        statelessFragmentDefaultActions:
+          Ref: StatelessFragmentDefaultActions
+  
+  NetFWPolicyFullPackets:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: netfw-policy-default-action-full-packets
+      Source: {Owner: AWS, SourceIdentifier: NETFW_POLICY_DEFAULT_ACTION_FULL_PACKETS}
+      InputParameters:
+        statelessDefaultActions:
+          Ref: StatelessDefaultActions
+  
+  NetFWPolicyRuleGroup:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: netfw-policy-rule-group-associated
+      Source: {Owner: AWS, SourceIdentifier: NETFW_POLICY_RULE_GROUP_ASSOCIATED}
+  
+  NetFWStatelessNotEmpty:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: netfw-stateless-rule-group-not-empty
+      Source: {Owner: AWS, SourceIdentifier: NETFW_STATELESS_RULE_GROUP_NOT_EMPTY}
+  
+  NetFWSubnetProtection:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: netfw-subnet-change-protection-enabled
+      Source: {Owner: AWS, SourceIdentifier: NETFW_SUBNET_CHANGE_PROTECTION_ENABLED}
+
+  # ============================================
+  # GUARDDUTY - THREAT DETECTION (11 rules)
+  # ============================================
+  
+  GuardDutyEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-enabled-centralized
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED}
+  
+  GuardDutyS3Protection:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-s3-protection-enabled
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_S3_PROTECTION_ENABLED}
+  
+  GuardDutyEKSAudit:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-eks-protection-audit-enabled
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_EKS_PROTECTION_AUDIT_ENABLED}
+  
+  GuardDutyEKSRuntime:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-eks-protection-runtime-enabled
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_EKS_PROTECTION_RUNTIME_ENABLED}
+  
+  GuardDutyLambda:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-lambda-protection-enabled
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_LAMBDA_PROTECTION_ENABLED}
+  
+  GuardDutyMalware:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-malware-protection-enabled
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_MALWARE_PROTECTION_ENABLED}
+  
+  GuardDutyRDS:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-rds-protection-enabled
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_RDS_PROTECTION_ENABLED}
+  
+  GuardDutyEC2Runtime:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-ec2-protection-runtime-enabled
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_EC2_PROTECTION_RUNTIME_ENABLED}
+  
+  GuardDutyECSRuntime:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-ecs-protection-runtime-enabled
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_ECS_PROTECTION_RUNTIME_ENABLED}
+  
+  GuardDutyRuntimeMonitoring:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-runtime-monitoring-enabled
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_RUNTIME_MONITORING_ENABLED}
+  
+  GuardDutyNonArchivedFindings:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: guardduty-non-archived-findings
+      Source: {Owner: AWS, SourceIdentifier: GUARDDUTY_NON_ARCHIVED_FINDINGS}
+
+  # ============================================
+  # SECURITY HUB (1 rule)
+  # ============================================
+  
+  SecurityHubEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: securityhub-enabled
+      Source: {Owner: AWS, SourceIdentifier: SECURITYHUB_ENABLED}
+
+  # ============================================
+  # INSPECTOR (4 rules)
+  # ============================================
+  
+  InspectorEC2Scan:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: inspector-ec2-scan-enabled
+      Source: {Owner: AWS, SourceIdentifier: INSPECTOR_EC2_SCAN_ENABLED}
+  
+  InspectorECRScan:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: inspector-ecr-scan-enabled
+      Source: {Owner: AWS, SourceIdentifier: INSPECTOR_ECR_SCAN_ENABLED}
+  
+  InspectorLambdaCode:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: inspector-lambda-code-scan-enabled
+      Source: {Owner: AWS, SourceIdentifier: INSPECTOR_LAMBDA_CODE_SCAN_ENABLED}
+  
+  InspectorLambdaStandard:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: inspector-lambda-standard-scan-enabled
+      Source: {Owner: AWS, SourceIdentifier: INSPECTOR_LAMBDA_STANDARD_SCAN_ENABLED}
+
+  # ============================================
+  # MACIE (2 rules)
+  # ============================================
+  
+  MacieStatus:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: macie-status-check
+      Source: {Owner: AWS, SourceIdentifier: MACIE_STATUS_CHECK}
+  
+  MacieAutoDiscovery:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: macie-auto-sensitive-data-discovery-check
+      Source: {Owner: AWS, SourceIdentifier: MACIE_AUTO_SENSITIVE_DATA_DISCOVERY_CHECK}
+
+  # ============================================
+  # ACCESS ANALYZER (1 rule)
+  # ============================================
+  
+  AccessAnalyzerEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: iam-external-access-analyzer-enabled
+      Source: {Owner: AWS, SourceIdentifier: IAM_EXTERNAL_ACCESS_ANALYZER_ENABLED}
+
+  # ============================================
+  # CLOUDTRAIL - DATA EVENTS (6 rules)
+  # ============================================
+  
+  CloudTrailAllReadS3DataEventCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-all-read-s3-data-event-check
+      Source: {Owner: AWS, SourceIdentifier: CLOUDTRAIL_ALL_READ_S3_DATA_EVENT_CHECK}
+  
+  CloudTrailAllWriteS3DataEventCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-all-write-s3-data-event-check
+      Source: {Owner: AWS, SourceIdentifier: CLOUDTRAIL_ALL_WRITE_S3_DATA_EVENT_CHECK}
+  
+  CloudTrailS3BucketAccessLogging:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-s3-bucket-access-logging
+      Source: {Owner: AWS, SourceIdentifier: CLOUDTRAIL_S3_BUCKET_ACCESS_LOGGING}
+  
+  CloudTrailS3BucketPublicAccessProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-s3-bucket-public-access-prohibited
+      Source: {Owner: AWS, SourceIdentifier: CLOUDTRAIL_S3_BUCKET_PUBLIC_ACCESS_PROHIBITED}
+  
+  CloudTrailS3DataEventsEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-s3-dataevents-enabled
+      Source: {Owner: AWS, SourceIdentifier: CLOUDTRAIL_S3_DATAEVENTS_ENABLED}
+  
+  CloudTrailSecurityTrailEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-security-trail-enabled
+      Source: {Owner: AWS, SourceIdentifier: CLOUDTRAIL_SECURITY_TRAIL_ENABLED}

@@ -1,0 +1,837 @@
+##################################################################################
+# Conformance Pack: Amazon Sagemaker AI Security and Governance best practices
+# Expected to be deployed in conjunction with AI/ML Security & Governance Supporting Infrastructure best practices conformance pack
+#
+# Description: This conformance pack is intended to provide a baseline of security configurations for any AI workload (inclusive of AI, ML, generative AI, agentic AI, and physical AI)
+#
+# Total Rules: 91
+# - 4 Custom Guard DSL rules
+# - 87 AWS Managed rules
+#
+# Coverage:
+# - Sagemaker: 4 custom rules + 15 managed rules (endpoints, store, monitoring)
+# - S3: 14 rules (training data, model storage)
+# - ECS: 9 rules (containerized inference)
+# - EFS: 4 rules (shared storage)
+# - EKS: 3 rules (Kubernetes ML)
+# - EMR: 2 rules (data preprocessing)
+# - Glue: 4 rules (data processing, ML transforms)
+# - Athena: 7 rules (data catalog, workgroups, query analysis)
+# - DynamoDB: 9 rules (feature store)
+# - RDS: 20 rules (feature store)
+#
+# Required Tags (hardcoded in Guard DSL rules):
+# - Environment: Deployment environment (dev, staging, prod)
+# - DataClassification: Data sensitivity (public, internal, confidential, restricted)
+# - OwnerTeam: Team responsible for the resource
+#
+# Tag Format by Resource (Guard DSL limitation):
+# - Array format [{{Key, Value}}]: Guardrail, Profile -> use "some Tags[*].Key == X"
+# - Map format {{key: value}}: KB, Prompt, Browser -> use "Tags.Environment exists"
+# - No tags: Runtime
+#
+# Note: To change required tags, update Guard DSL rules manually for each format.
+#
+# IMPORTANT: Rules with Configurable Parameters
+# The following managed rules use conformance pack Parameters for their InputParameters.
+# Modify the default values in the Parameters section to match your requirements.
+#
+# 1. sagemaker-notebook-instance-platform-version
+#    - SupportedPlatformIdentifierVersions: "notebook-al2-v2"
+#
+# 2. ecs-no-environment-secrets
+#    - EcsSecretKeys: "AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,ECS_ENGINE_AUTH_DATA"
+#
+# 3. eks-cluster-supported-version
+#    - OldestEksVersionSupported: "1.27"
+#
+# 4. glue-spark-job-supported-version
+#    - MinimumSupportedGlueVersion: "3.0"
+#
+# Note: These parameters enforce specific security postures. Modify values only if
+# your organization's security requirements differ from these defaults.
+##################################################################################
+
+Parameters:
+  SupportedPlatformIdentifierVersions:
+    Type: String
+    Default: "notebook-al2-v2"
+  EcsSecretKeys:
+    Type: String
+    Default: "AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,ECS_ENGINE_AUTH_DATA"
+  OldestEksVersionSupported:
+    Type: String
+    Default: "1.27"
+  MinimumSupportedGlueVersion:
+    Type: String
+    Default: "3.0"
+
+Resources:
+  # ============================================
+  # SAGEMAKER CUSTOM RULES - ENDPOINT CONFIG (2)
+  # ============================================
+  
+  EndpointDataCapture:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: aiml-sagemaker-endpoint-data-capture
+      Description: Ensures model inference inputs/outputs are captured for AI/ML audit, bias detection, and compliance
+      Source:
+        Owner: CUSTOM_POLICY
+        SourceDetails:
+          - EventSource: aws.config
+            MessageType: ConfigurationItemChangeNotification
+        CustomPolicyDetails:
+          PolicyRuntime: guard-2.x.x
+          PolicyText: |
+            rule check { 
+              configuration.DataCaptureConfig exists
+              configuration.DataCaptureConfig.EnableCapture == true
+            
+              <<
+                Violation: Data capture must be configured
+                Fix: Configure DataCaptureConfig
+              >>
+            }
+      Scope:
+        ComplianceResourceTypes: ["AWS::SageMaker::EndpointConfig"]
+  
+  EndpointNetworkIsolation:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: aiml-sagemaker-endpoint-network-isolation
+      Description: Prevents model containers from making outbound calls to protect training data and model IP
+      Source:
+        Owner: CUSTOM_POLICY
+        SourceDetails:
+          - EventSource: aws.config
+            MessageType: ConfigurationItemChangeNotification
+        CustomPolicyDetails:
+          PolicyRuntime: guard-2.x.x
+          PolicyText: |
+            rule check { configuration.EnableNetworkIsolation == true 
+              <<
+                Violation: Network isolation must be enabled
+                Fix: Enable NetworkIsolation
+              >>
+            }
+      Scope:
+        ComplianceResourceTypes: ["AWS::SageMaker::EndpointConfig"]
+  
+  # ============================================
+  # SAGEMAKER CUSTOM RULES - FEATURE STORE (1)
+  # ============================================
+  
+  FeatureGroupOnlineStore:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: aiml-sagemaker-featuregroup-online-store
+      Description: Ensures SageMaker Feature Groups have online store for real-time AI/ML feature serving
+      Source:
+        Owner: CUSTOM_POLICY
+        SourceDetails:
+          - EventSource: aws.config
+            MessageType: ConfigurationItemChangeNotification
+        CustomPolicyDetails:
+          PolicyRuntime: guard-2.x.x
+          PolicyText: |
+            rule check { configuration.OnlineStoreConfig exists 
+              <<
+                Violation: Online store must be configured
+                Fix: Configure OnlineStoreConfig
+              >>
+            }
+      Scope:
+        ComplianceResourceTypes: ["AWS::SageMaker::FeatureGroup"]
+  
+  # ============================================
+  # SAGEMAKER CUSTOM RULES - MONITORING (1)
+  # ============================================
+  
+  MonitoringStatusActive:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: aiml-sagemaker-monitoring-active
+      Description: Ensures SageMaker model monitoring is active for drift detection and AI/ML observability
+      Source:
+        Owner: CUSTOM_POLICY
+        SourceDetails:
+          - EventSource: aws.config
+            MessageType: ConfigurationItemChangeNotification
+        CustomPolicyDetails:
+          PolicyRuntime: guard-2.x.x
+          PolicyText: |
+            rule check { configuration.MonitoringScheduleStatus in ["Scheduled", "Running"] 
+              <<
+                Violation: Monitoring must be Scheduled or Running
+                Fix: Check resource state and resolve issues
+              >>
+            }
+      Scope:
+        ComplianceResourceTypes: ["AWS::SageMaker::MonitoringSchedule"]
+
+  
+  # ============================================
+  # SAGEMAKER AWS MANAGED RULES (15)
+  # ============================================
+  
+  SageMakerNotebookNoDirectInternet:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-notebook-no-direct-internet-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_NOTEBOOK_NO_DIRECT_INTERNET_ACCESS
+  
+  SageMakerNotebookKMS:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-notebook-instance-kms-key-configured
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_NOTEBOOK_INSTANCE_KMS_KEY_CONFIGURED
+  
+  SageMakerNotebookInsideVPC:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-notebook-instance-inside-vpc
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_NOTEBOOK_INSTANCE_INSIDE_VPC
+  
+  SageMakerNotebookPlatformVersion:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-notebook-instance-platform-version
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_NOTEBOOK_INSTANCE_PLATFORM_VERSION
+      InputParameters:
+        supportedPlatformIdentifierVersions:
+          Ref: SupportedPlatformIdentifierVersions
+  
+  SageMakerNotebookRootAccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-notebook-instance-root-access-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_NOTEBOOK_INSTANCE_ROOT_ACCESS_CHECK
+  
+  SageMakerModelInVPC:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-model-in-vpc
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_MODEL_IN_VPC
+  
+  SageMakerModelIsolation:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-model-isolation-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_MODEL_ISOLATION_ENABLED
+  
+  SageMakerEndpointKMS:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-endpoint-configuration-kms-key-configured
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_ENDPOINT_CONFIGURATION_KMS_KEY_CONFIGURED
+  
+  SageMakerEndpointProdInstanceCount:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-endpoint-config-prod-instance-count
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_ENDPOINT_CONFIG_PROD_INSTANCE_COUNT
+  
+  SageMakerDomainInVPC:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-domain-in-vpc
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_DOMAIN_IN_VPC
+  
+  SageMakerDomainTagged:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-domain-tagged
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_DOMAIN_TAGGED
+  
+  SageMakerFeatureGroupTagged:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-feature-group-tagged
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_FEATURE_GROUP_TAGGED
+  
+  SageMakerImageDescription:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-image-description
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_IMAGE_DESCRIPTION
+  
+  SageMakerImageTagged:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-image-tagged
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_IMAGE_TAGGED
+  
+  SageMakerAppImageConfigTagged:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sagemaker-app-image-config-tagged
+      Source:
+        Owner: AWS
+        SourceIdentifier: SAGEMAKER_APP_IMAGE_CONFIG_TAGGED
+
+  # ============================================
+  # AWS MANAGED RULES - S3 (14)
+  # ============================================
+  
+  S3AccountPublicAccessBlocks:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-account-level-public-access-blocks-periodic
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
+  
+  S3BucketACLProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-acl-prohibited
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_ACL_PROHIBITED
+  
+  S3BucketDefaultLock:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-default-lock-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_DEFAULT_LOCK_ENABLED
+  
+  S3BucketLevelPublicAccessProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-level-public-access-prohibited
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LEVEL_PUBLIC_ACCESS_PROHIBITED
+  
+  S3BucketLogging:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-logging-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
+  
+  S3BucketPolicyGrantee:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-policy-grantee-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_POLICY_GRANTEE_CHECK
+  
+  S3PublicReadProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-public-read-prohibited
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+  
+  S3PublicWriteProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-public-write-prohibited
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+  
+  S3BucketReplication:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-replication-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_REPLICATION_ENABLED
+  
+  S3EncryptionEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-server-side-encryption-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+  
+  S3SSLRequestsOnly:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-ssl-requests-only
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
+  
+  S3VersioningEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-bucket-versioning-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+  
+  S3DefaultEncryptionKMS:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: s3-default-encryption-kms
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_DEFAULT_ENCRYPTION_KMS
+  
+  CloudTrailS3DataEvents:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: cloudtrail-s3-dataevents-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDTRAIL_S3_DATAEVENTS_ENABLED
+  
+  # ============================================
+  # AWS MANAGED RULES - ECS (9)
+  # ============================================
+  
+  ECSContainerInsights:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ecs-container-insights-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINER_INSIGHTS_ENABLED
+  
+  ECSContainersNonPrivileged:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ecs-containers-nonprivileged
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_NONPRIVILEGED
+  
+  ECSContainersReadOnly:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ecs-containers-readonly-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_CONTAINERS_READONLY_ACCESS
+  
+  ECSFargateLatestPlatform:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ecs-fargate-latest-platform-version
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_FARGATE_LATEST_PLATFORM_VERSION
+  
+  ECSNoEnvironmentSecrets:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ecs-no-environment-secrets
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_NO_ENVIRONMENT_SECRETS
+      InputParameters:
+        secretKeys:
+          Ref: EcsSecretKeys
+  
+  ECSTaskMemoryHardLimit:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ecs-task-definition-memory-hard-limit
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_MEMORY_HARD_LIMIT
+  
+  ECSTaskNonRootUser:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ecs-task-definition-nonroot-user
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_NONROOT_USER
+  
+  ECSTaskPIDMode:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ecs-task-definition-pid-mode-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_PID_MODE_CHECK
+  
+  ECSTaskUserForHostMode:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: ecs-task-definition-user-for-host-mode-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK
+  
+  # ============================================
+  # AWS MANAGED RULES - EFS (4)
+  # ============================================
+  
+  EFSAccessPointRootDir:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: efs-access-point-enforce-root-directory
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ACCESS_POINT_ENFORCE_ROOT_DIRECTORY
+  
+  EFSAccessPointUserIdentity:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: efs-access-point-enforce-user-identity
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ACCESS_POINT_ENFORCE_USER_IDENTITY
+  
+  EFSEncrypted:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: efs-encrypted-check
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ENCRYPTED_CHECK
+  
+  EFSInBackupPlan:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: efs-in-backup-plan
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_IN_BACKUP_PLAN
+  
+  # ============================================
+  # AWS MANAGED RULES - EKS (3)
+  # ============================================
+  
+  EKSClusterSupportedVersion:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: eks-cluster-supported-version
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_CLUSTER_SUPPORTED_VERSION
+      InputParameters:
+        oldestVersionSupported:
+          Ref: OldestEksVersionSupported
+  
+  EKSEndpointNoPublicAccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: eks-endpoint-no-public-access
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_ENDPOINT_NO_PUBLIC_ACCESS
+  
+  EKSSecretsEncrypted:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: eks-secrets-encrypted
+      Source:
+        Owner: AWS
+        SourceIdentifier: EKS_SECRETS_ENCRYPTED
+  
+  # ============================================
+  # AWS MANAGED RULES - EMR (2)
+  # ============================================
+  
+  EMRKerberosEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: emr-kerberos-enabled
+      Source:
+        Owner: AWS
+        SourceIdentifier: EMR_KERBEROS_ENABLED
+  
+  EMRMasterNoPublicIP:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: emr-master-no-public-ip
+      Source:
+        Owner: AWS
+        SourceIdentifier: EMR_MASTER_NO_PUBLIC_IP
+
+  # ============================================
+  # RDS - FEATURE STORE METADATA (20 rules)
+  # ============================================
+  
+  RDSAutomaticMinorVersionUpgrade:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-automatic-minor-version-upgrade-enabled
+      Source: {Owner: AWS, SourceIdentifier: RDS_AUTOMATIC_MINOR_VERSION_UPGRADE_ENABLED}
+  
+  RDSClusterDeletionProtection:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-cluster-deletion-protection-enabled
+      Source: {Owner: AWS, SourceIdentifier: RDS_CLUSTER_DELETION_PROTECTION_ENABLED}
+  
+  RDSClusterEncryptedAtRest:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-cluster-encrypted-at-rest
+      Source: {Owner: AWS, SourceIdentifier: RDS_CLUSTER_ENCRYPTED_AT_REST}
+  
+  RDSClusterIAMAuthentication:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-cluster-iam-authentication-enabled
+      Source: {Owner: AWS, SourceIdentifier: RDS_CLUSTER_IAM_AUTHENTICATION_ENABLED}
+  
+  RDSClusterMultiAZ:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-cluster-multi-az-enabled
+      Source: {Owner: AWS, SourceIdentifier: RDS_CLUSTER_MULTI_AZ_ENABLED}
+  
+  RDSDBSecurityGroupNotAllowed:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-db-security-group-not-allowed
+      Source: {Owner: AWS, SourceIdentifier: RDS_DB_SECURITY_GROUP_NOT_ALLOWED}
+  
+  RDSEnhancedMonitoring:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-enhanced-monitoring-enabled
+      Source: {Owner: AWS, SourceIdentifier: RDS_ENHANCED_MONITORING_ENABLED}
+  
+  RDSInstanceDeletionProtection:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-instance-deletion-protection-enabled
+      Source: {Owner: AWS, SourceIdentifier: RDS_INSTANCE_DELETION_PROTECTION_ENABLED}
+  
+  RDSInstanceIAMAuthentication:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-instance-iam-authentication-enabled
+      Source: {Owner: AWS, SourceIdentifier: RDS_INSTANCE_IAM_AUTHENTICATION_ENABLED}
+  
+  RDSInstancePublicAccessCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-instance-public-access-check
+      Source: {Owner: AWS, SourceIdentifier: RDS_INSTANCE_PUBLIC_ACCESS_CHECK}
+  
+  RDSInBackupPlan:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-in-backup-plan
+      Source: {Owner: AWS, SourceIdentifier: RDS_IN_BACKUP_PLAN}
+  
+  RDSLoggingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-logging-enabled
+      Source: {Owner: AWS, SourceIdentifier: RDS_LOGGING_ENABLED}
+  
+  RDSMultiAZSupport:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-multi-az-support
+      Source: {Owner: AWS, SourceIdentifier: RDS_MULTI_AZ_SUPPORT}
+  
+  RDSSnapshotEncrypted:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-snapshot-encrypted
+      Source: {Owner: AWS, SourceIdentifier: RDS_SNAPSHOT_ENCRYPTED}
+  
+  RDSSnapshotsPublicProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-snapshots-public-prohibited
+      Source: {Owner: AWS, SourceIdentifier: RDS_SNAPSHOTS_PUBLIC_PROHIBITED}
+  
+  RDSStorageEncrypted:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-storage-encrypted
+      Source: {Owner: AWS, SourceIdentifier: RDS_STORAGE_ENCRYPTED}
+  
+  RDSLastBackupRecoveryPointCreated:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-last-backup-recovery-point-created
+      Source: {Owner: AWS, SourceIdentifier: RDS_LAST_BACKUP_RECOVERY_POINT_CREATED}
+  
+  RDSClusterDefaultAdminCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-cluster-default-admin-check
+      Source: {Owner: AWS, SourceIdentifier: RDS_CLUSTER_DEFAULT_ADMIN_CHECK}
+  
+  RDSInstanceDefaultAdminCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-instance-default-admin-check
+      Source: {Owner: AWS, SourceIdentifier: RDS_INSTANCE_DEFAULT_ADMIN_CHECK}
+  
+  RDSResourcesProtectedByBackupPlan:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: rds-resources-protected-by-backup-plan
+      Source: {Owner: AWS, SourceIdentifier: RDS_RESOURCES_PROTECTED_BY_BACKUP_PLAN}
+  
+  # ============================================
+  # DYNAMODB - FEATURE STORE (9 rules)
+  # ============================================
+  
+  DynamoDBAutoscalingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-autoscaling-enabled
+      Source: {Owner: AWS, SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED}
+  
+  DynamoDBInBackupPlan:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-in-backup-plan
+      Source: {Owner: AWS, SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN}
+  
+  DynamoDBLastBackupRecoveryPointCreated:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-last-backup-recovery-point-created
+      Source: {Owner: AWS, SourceIdentifier: DYNAMODB_LAST_BACKUP_RECOVERY_POINT_CREATED}
+  
+  DynamoDBPITREnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-pitr-enabled
+      Source: {Owner: AWS, SourceIdentifier: DYNAMODB_PITR_ENABLED}
+  
+  DynamoDBResourcesProtectedByBackupPlan:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-resources-protected-by-backup-plan
+      Source: {Owner: AWS, SourceIdentifier: DYNAMODB_RESOURCES_PROTECTED_BY_BACKUP_PLAN}
+  
+  DynamoDBTableEncryptedKMS:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-table-encrypted-kms
+      Source: {Owner: AWS, SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS}
+  
+  DynamoDBTableEncryptionEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-table-encryption-enabled
+      Source: {Owner: AWS, SourceIdentifier: DYNAMODB_TABLE_ENCRYPTION_ENABLED}
+  
+  DynamoDBThroughputLimitCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-throughput-limit-check
+      Source: {Owner: AWS, SourceIdentifier: DYNAMODB_THROUGHPUT_LIMIT_CHECK}
+  
+  DynamoDBTableDeletionProtectionEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: dynamodb-table-deletion-protection-enabled
+      Source: {Owner: AWS, SourceIdentifier: DYNAMODB_TABLE_DELETION_PROTECTION_ENABLED}
+  
+
+  # ============================================
+  # GLUE/ATHENA - DATA PROCESSING (11 rules)
+  # ============================================
+  
+  GlueJobLoggingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: glue-job-logging-enabled
+      Source: {Owner: AWS, SourceIdentifier: GLUE_JOB_LOGGING_ENABLED}
+  
+  GlueMLTransformEncryptedAtRest:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: glue-ml-transform-encrypted-at-rest
+      Source: {Owner: AWS, SourceIdentifier: GLUE_ML_TRANSFORM_ENCRYPTED_AT_REST}
+  
+  GlueMLTransformTagged:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: glue-ml-transform-tagged
+      Source: {Owner: AWS, SourceIdentifier: GLUE_ML_TRANSFORM_TAGGED}
+  
+  GlueSparkJobSupportedVersion:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: glue-spark-job-supported-version
+      Source: {Owner: AWS, SourceIdentifier: GLUE_SPARK_JOB_SUPPORTED_VERSION}
+      InputParameters:
+        minimumSupportedGlueVersion:
+          Ref: MinimumSupportedGlueVersion
+  
+  AthenaWorkgroupEncryptedAtRest:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: athena-workgroup-encrypted-at-rest
+      Source: {Owner: AWS, SourceIdentifier: ATHENA_WORKGROUP_ENCRYPTED_AT_REST}
+  
+  AthenaWorkgroupLoggingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: athena-workgroup-logging-enabled
+      Source: {Owner: AWS, SourceIdentifier: ATHENA_WORKGROUP_LOGGING_ENABLED}
+  
+  AthenaDataCatalogDescription:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: athena-data-catalog-description
+      Source: {Owner: AWS, SourceIdentifier: ATHENA_DATA_CATALOG_DESCRIPTION}
+  
+  AthenaPreparedStatementDescription:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: athena-prepared-statement-description
+      Source: {Owner: AWS, SourceIdentifier: ATHENA_PREPARED_STATEMENT_DESCRIPTION}
+  
+  AthenaWorkgroupDescription:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: athena-workgroup-description
+      Source: {Owner: AWS, SourceIdentifier: ATHENA_WORKGROUP_DESCRIPTION}
+  
+  AthenaWorkgroupEnforceWorkgroupConfiguration:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: athena-workgroup-enforce-workgroup-configuration
+      Source: {Owner: AWS, SourceIdentifier: ATHENA_WORKGROUP_ENFORCE_WORKGROUP_CONFIGURATION}
+  
+  AthenaWorkgroupEngineVersionAutoUpgrade:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: athena-workgroup-engine-version-auto-upgrade
+      Source: {Owner: AWS, SourceIdentifier: ATHENA_WORKGROUP_ENGINE_VERSION_AUTO_UPGRADE}
