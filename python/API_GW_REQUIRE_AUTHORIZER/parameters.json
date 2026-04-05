@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "API_GW_REQUIRE_AUTHORIZER",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "API_GW_REQUIRE_AUTHORIZER.zip",
+    "InputParameters": "{\"RequireAuthTypes\":[\"AWS_IAM\"]}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::ApiGateway::Stage"
+  },
+  "Tags": "[]"
+}
