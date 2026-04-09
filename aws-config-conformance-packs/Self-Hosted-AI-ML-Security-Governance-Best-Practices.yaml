@@ -4,15 +4,14 @@
 #
 # Description: This conformance pack is intended to provide a baseline of security configurations for any AI workload (inclusive of AI, ML, generative AI, agentic AI, and physical AI)
 #
-# Total Rules: 130
-# - 9 Custom Guard DSL rules
+# Total Rules: 121
 # - 121 AWS Managed rules
 #
 # Coverage:
-# - Comprehend, Kendra, HealthLake, Fraud Detector: 4 custom + 4 managed 
-# - OpenSearch: 4 custom rules (vector search for RAG) + 10 managed 
+# - Comprehend, Kendra, HealthLake, Fraud Detector: 4 managed 
+# - OpenSearch: 10 managed 
 # - EC2: 40 rules (GPU instances, ASG, launch templates, monitoring)
-# - ALB/NLB: 15 managed + 1 custom (inference endpoints, TLS, logging, health checks)
+# - ALB/NLB: 15 managed(inference endpoints, TLS, logging, health checks)
 # - API Gateway: 10 rules (serverless APIs, WAF, auth)
 # - ECR: 5 rules (container images, scanning)
 # - Secrets Manager: 5 rules (credentials, rotation)
@@ -21,18 +20,6 @@
 # - EFS: 4 rules (shared storage)
 # - EKS: 3 rules (Kubernetes ML)
 # - EMR: 2 rules (data preprocessing)
-#
-# Required Tags (hardcoded in Guard DSL rules):
-# - Environment: Deployment environment (dev, staging, prod)
-# - DataClassification: Data sensitivity (public, internal, confidential, restricted)
-# - OwnerTeam: Team responsible for the resource
-#
-# Tag Format by Resource (Guard DSL limitation):
-# - Array format [{{Key, Value}}]: Guardrail, Profile -> use "some Tags[*].Key == X"
-# - Map format {{key: value}}: KB, Prompt, Browser -> use "Tags.Environment exists"
-# - No tags: Runtime
-#
-# Note: To change required tags, update Guard DSL rules manually for each format.
 #
 # IMPORTANT: Rules with Configurable Parameters
 # The following managed rules use conformance pack Parameters for their InputParameters.
@@ -93,114 +80,6 @@ Parameters:
     Default: "password,secret,token,key,api"
 
 Resources:
-  # ============================================
-  # Comprehend, Kendra, HealthLake, Fraud Detector - CUSTOM RULES (4)
-  # ============================================
-  
-  ComprehendFlywheelRequiredTags:
-    Type: AWS::Config::ConfigRule
-    Properties:
-      ConfigRuleName: aiml-comprehend-flywheel-tags
-      Description: Ensures Comprehend Flywheels have governance tags for AI/ML model lifecycle tracking
-      Source:
-        Owner: CUSTOM_POLICY
-        SourceDetails:
-          - EventSource: aws.config
-            MessageType: ConfigurationItemChangeNotification
-        CustomPolicyDetails:
-          PolicyRuntime: guard-2.x.x
-          PolicyText: |
-            rule check { 
-              configuration.Tags exists
-              some configuration.Tags[*].Key == "Environment"
-              some configuration.Tags[*].Key == "OwnerTeam"
-              some configuration.Tags[*].Key == "DataClassification"
-              <<
-                Violation: Missing required governance tags
-                Fix: Add Environment, DataClassification, OwnerTeam tags
-              >>
-            }
-          EnableDebugLogDelivery: true
-      Scope:
-        ComplianceResourceTypes: ["AWS::Comprehend::Flywheel"]
-  
-  KendraIndexRequiredTags:
-    Type: AWS::Config::ConfigRule
-    Properties:
-      ConfigRuleName: aiml-kendra-index-tags
-      Description: Ensures Kendra Indexes have governance tags for AI/ML search and retrieval tracking
-      Source:
-        Owner: CUSTOM_POLICY
-        SourceDetails:
-          - EventSource: aws.config
-            MessageType: ConfigurationItemChangeNotification
-        CustomPolicyDetails:
-          PolicyRuntime: guard-2.x.x
-          PolicyText: |
-            rule check { 
-              configuration.Tags exists
-              some configuration.Tags[*].Key == "Environment"
-              some configuration.Tags[*].Key == "OwnerTeam"
-              some configuration.Tags[*].Key == "DataClassification"
-              <<
-                Violation: Missing required governance tags
-                Fix: Add Environment, DataClassification, OwnerTeam tags
-              >>
-            }
-          EnableDebugLogDelivery: true
-      Scope:
-        ComplianceResourceTypes: ["AWS::Kendra::Index"]
-  
-  HealthLakeFHIRDatastoreStatusCheck:
-    Type: AWS::Config::ConfigRule
-    Properties:
-      ConfigRuleName: aiml-healthlake-fhir-status
-      Description: Ensures HealthLake FHIRDatastores are ACTIVE before AI/ML health data processing
-      Source:
-        Owner: CUSTOM_POLICY
-        SourceDetails:
-          - EventSource: aws.config
-            MessageType: ConfigurationItemChangeNotification
-        CustomPolicyDetails:
-          PolicyRuntime: guard-2.x.x
-          PolicyText: |
-            rule check { 
-              configuration.DatastoreStatus == "ACTIVE"
-              <<
-                Violation: FHIRDatastore is not ACTIVE
-                Fix: Ensure datastore is in ACTIVE state before use
-              >>
-            }
-          EnableDebugLogDelivery: true
-      Scope:
-        ComplianceResourceTypes: ["AWS::HealthLake::FHIRDatastore"]
-  
-  HealthLakeFHIRDatastoreRequiredTags:
-    Type: AWS::Config::ConfigRule
-    Properties:
-      ConfigRuleName: aiml-healthlake-fhir-tags
-      Description: Ensures HealthLake FHIRDatastores have governance tags for AI/ML health data compliance
-      Source:
-        Owner: CUSTOM_POLICY
-        SourceDetails:
-          - EventSource: aws.config
-            MessageType: ConfigurationItemChangeNotification
-        CustomPolicyDetails:
-          PolicyRuntime: guard-2.x.x
-          PolicyText: |
-            rule check { 
-              configuration.Tags exists
-              some configuration.Tags[*].Key == "Environment"
-              some configuration.Tags[*].Key == "OwnerTeam"
-              some configuration.Tags[*].Key == "DataClassification"
-              <<
-                Violation: Missing required governance tags
-                Fix: Add Environment, DataClassification, OwnerTeam tags
-              >>
-            }
-          EnableDebugLogDelivery: true
-      Scope:
-        ComplianceResourceTypes: ["AWS::HealthLake::FHIRDatastore"]
 
   # ============================================
   # Comprehend, Kendra, HealthLake, Fraud Detector - MANAGED RULES (4)
@@ -303,108 +182,6 @@ Resources:
       ConfigRuleName: opensearch-update-check
       Source: {Owner: AWS, SourceIdentifier: OPENSEARCH_UPDATE_CHECK}
 
-
-  # ============================================
-  # OPENSEARCH SERVERLESS - CUSTOM RULES (4)
-  # ============================================
-  
-  OpenSearchServerlessVectorSearchType:
-    Type: AWS::Config::ConfigRule
-    Properties:
-      ConfigRuleName: aiml-oss-vectorsearch-type
-      Description: Ensures OpenSearch Serverless collections use VECTORSEARCH type for RAG and embedding workloads
-      Source:
-        Owner: CUSTOM_POLICY
-        SourceDetails:
-          - EventSource: aws.config
-            MessageType: ConfigurationItemChangeNotification
-        CustomPolicyDetails:
-          PolicyRuntime: guard-2.x.x
-          PolicyText: |
-            rule check { 
-              configuration.Type == "VECTORSEARCH"
-              <<
-                Violation: Collection must be VECTORSEARCH type for AI/ML workloads
-                Fix: Use VECTORSEARCH collection type
-              >>
-            }
-          EnableDebugLogDelivery: true
-      Scope:
-        ComplianceResourceTypes: ["AWS::OpenSearchServerless::Collection"]
-  
-  OpenSearchServerlessCustomerKMS:
-    Type: AWS::Config::ConfigRule
-    Properties:
-      ConfigRuleName: opensearch-serverless-customer-kms
-      Description: Ensures OpenSearch Serverless collections are encrypted with customer-managed KMS keys
-      Source:
-        Owner: CUSTOM_POLICY
-        SourceDetails:
-          - EventSource: aws.config
-            MessageType: ConfigurationItemChangeNotification
-        CustomPolicyDetails:
-          PolicyRuntime: guard-2.x.x
-          PolicyText: |
-            rule check { 
-              configuration.EncryptionPolicy exists
-              configuration.EncryptionPolicy.KmsKeyArn exists
-              configuration.EncryptionPolicy.KmsKeyArn != ""
-              <<
-                Violation: Collection must use customer-managed KMS key
-                Fix: Configure encryption policy with customer KMS key
-              >>
-            }
-          EnableDebugLogDelivery: true
-      Scope:
-        ComplianceResourceTypes: ["AWS::OpenSearchServerless::Collection"]
-  
-  OpenSearchServerlessStandbyReplicas:
-    Type: AWS::Config::ConfigRule
-    Properties:
-      ConfigRuleName: opensearch-serverless-standby-replicas
-      Description: Ensures OpenSearch Serverless collections have standby replicas for high availability
-      Source:
-        Owner: CUSTOM_POLICY
-        SourceDetails:
-          - EventSource: aws.config
-            MessageType: ConfigurationItemChangeNotification
-        CustomPolicyDetails:
-          PolicyRuntime: guard-2.x.x
-          PolicyText: |
-            rule check { 
-              configuration.StandbyReplicas == "ENABLED"
-              <<
-                Violation: Collection must have standby replicas enabled for HA
-                Fix: Enable standby replicas
-              >>
-            }
-          EnableDebugLogDelivery: true
-      Scope:
-        ComplianceResourceTypes: ["AWS::OpenSearchServerless::Collection"]
-  
-  OpenSearchSecurityConfigSessionTimeout:
-    Type: AWS::Config::ConfigRule
-    Properties:
-      ConfigRuleName: opensearch-securityconfig-session-timeout
-      Description: Limits OpenSearch Serverless SAML session duration to 60 minutes to reduce session hijack risk
-      Source:
-        Owner: CUSTOM_POLICY
-        SourceDetails:
-          - EventSource: aws.config
-            MessageType: ConfigurationItemChangeNotification
-        CustomPolicyDetails:
-          PolicyRuntime: guard-2.x.x
-          PolicyText: |
-            rule check { 
-              configuration.SamlOptions.SessionTimeout <= 60
-              <<
-                Violation: Session timeout must be 60 minutes or less
-                Fix: Set SessionTimeout to 60 or lower
-              >>
-            }
-          EnableDebugLogDelivery: true
-      Scope:
-        ComplianceResourceTypes: ["AWS::OpenSearchServerless::SecurityConfig"]
 
   # ============================================
   # EC2 - SELF-HOSTED AI COMPUTE (40 rules)
@@ -756,32 +533,6 @@ Resources:
     Properties:
       ConfigRuleName: elbv2-listener-encryption-in-transit
       Source: {Owner: AWS, SourceIdentifier: ELBV2_LISTENER_ENCRYPTION_IN_TRANSIT}
-
-  ELBv2TargetGroupHealthCheckComplianceRule:
-    Type: AWS::Config::ConfigRule
-    Properties:
-      ConfigRuleName: elbv2-targetgroup-healthcheck-compliance
-      Description: Ensures target groups have health checks enabled and use encrypted protocols (HTTPS or TLS)
-      Source:
-        Owner: CUSTOM_POLICY
-        SourceDetails:
-          - EventSource: aws.config
-            MessageType: ConfigurationItemChangeNotification
-        CustomPolicyDetails:
-          PolicyRuntime: guard-2.x.x
-          PolicyText: |
-            rule check {
-              configuration.HealthCheckEnabled == true
-              configuration.HealthCheckProtocol exists
-              configuration.HealthCheckProtocol in ["HTTPS", "TLS"]
-              <<
-                Violation: Target group must have health checks enabled with HTTPS or TLS protocol
-                Fix: Enable health checks and set HealthCheckProtocol to HTTPS or TLS
-              >>
-            }
-          EnableDebugLogDelivery: true
-      Scope:
-        ComplianceResourceTypes: ["AWS::ElasticLoadBalancingV2::TargetGroup"]
 
   # ============================================
   # API GATEWAY - SERVERLESS APIs (10 rules)
