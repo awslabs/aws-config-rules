@@ -1,9 +1,9 @@
 ##################################################################################
 #
 #   Conformance Pack:
-#     Operational Best Practices for FedRAMP(Low)
+#     Operational Best Practices for FedRAMP (Low)
 #
-#   This conformance pack helps verify compliance with FedRAMP(Low) requirements.
+#   This conformance pack helps verify compliance with FedRAMP (Low) requirements.
 #
 #   See Parameters section for names and descriptions of required parameters.
 #
@@ -252,7 +252,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   CloudTrailEnabled:
     Properties:
-      ConfigRuleName: cloudtrail-enabled
+      ConfigRuleName: cloud-trail-enabled
       Source:
         Owner: AWS
         SourceIdentifier: CLOUD_TRAIL_ENABLED
@@ -471,7 +471,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   Ec2InstanceManagedBySsm:
     Properties:
-      ConfigRuleName: ec2-instance-managed-by-systems-manager
+      ConfigRuleName: ec2-instance-managed-by-ssm
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::Instance
@@ -553,16 +553,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: EC2_VOLUME_INUSE_CHECK
     Type: AWS::Config::ConfigRule
-  EcsTaskDefinitionMemoryHardLimit:
-    Properties:
-      ConfigRuleName: ecs-task-definition-memory-hard-limit
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::ECS::TaskDefinition
-      Source:
-        Owner: AWS
-        SourceIdentifier: ECS_TASK_DEFINITION_MEMORY_HARD_LIMIT
-    Type: AWS::Config::ConfigRule
+  # EcsTaskDefinitionMemoryHardLimit:
+  #   Properties:
+  #     ConfigRuleName: ecs-task-definition-memory-hard-limit
+  #     Scope:
+  #       ComplianceResourceTypes:
+  #       - AWS::ECS::TaskDefinition
+  #     Source:
+  #       Owner: AWS
+  #       SourceIdentifier: ECS_TASK_DEFINITION_MEMORY_HARD_LIMIT
+  #   Type: AWS::Config::ConfigRule
   EcsTaskDefinitionUserForHostModeCheck:
     Properties:
       ConfigRuleName: ecs-task-definition-user-for-host-mode-check
@@ -864,7 +864,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   IncomingSshDisabled:
     Properties:
-      ConfigRuleName: restricted-ssh
+      ConfigRuleName: incoming-ssh-disabled
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::SecurityGroup
@@ -874,7 +874,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   InstancesInVpc:
     Properties:
-      ConfigRuleName: ec2-instances-in-vpc
+      ConfigRuleName: instances-in-vpc
       Scope:
         ComplianceResourceTypes:
         - AWS::EC2::Instance
@@ -952,10 +952,17 @@ Resources:
     Type: AWS::Config::ConfigRule
   MultiRegionCloudTrailEnabled:
     Properties:
-      ConfigRuleName: multi-region-cloudtrail-enabled
+      ConfigRuleName: multi-region-cloud-trail-enabled
       Source:
         Owner: AWS
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  NaclNoUnrestrictedSshRdp:
+    Properties:
+      ConfigRuleName: nacl-no-unrestricted-ssh-rdp
+      Source:
+        Owner: AWS
+        SourceIdentifier: NACL_NO_UNRESTRICTED_SSH_RDP
     Type: AWS::Config::ConfigRule
   NoUnrestrictedRouteToIgw:
     Properties:
@@ -973,16 +980,16 @@ Resources:
         Owner: AWS
         SourceIdentifier: NO_UNRESTRICTED_ROUTE_TO_IGW
     Type: AWS::Config::ConfigRule
-  OpensearchInVpcOnly:
-    Properties:
-      ConfigRuleName: opensearch-in-vpc-only
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::OpenSearch::Domain
-      Source:
-        Owner: AWS
-        SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
-    Type: AWS::Config::ConfigRule
+  # OpensearchInVpcOnly:
+  #   Properties:
+  #     ConfigRuleName: opensearch-in-vpc-only
+  #     Scope:
+  #       ComplianceResourceTypes:
+  #       - AWS::OpenSearch::Domain
+  #     Source:
+  #       Owner: AWS
+  #       SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
+  #   Type: AWS::Config::ConfigRule
   RdsEnhancedMonitoringEnabled:
     Properties:
       ConfigRuleName: rds-enhanced-monitoring-enabled
@@ -1117,56 +1124,56 @@ Resources:
         Owner: AWS
         SourceIdentifier: REDSHIFT_REQUIRE_TLS_SSL
     Type: AWS::Config::ConfigRule
-  RestrictedIncomingTraffic:
-    Properties:
-      ConfigRuleName: restricted-common-ports
-      InputParameters:
-        blockedPort1:
-          Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort1
-          - Ref: RestrictedIncomingTrafficParamBlockedPort1
-          - Ref: AWS::NoValue
-        blockedPort2:
-          Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort2
-          - Ref: RestrictedIncomingTrafficParamBlockedPort2
-          - Ref: AWS::NoValue
-        blockedPort3:
-          Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort3
-          - Ref: RestrictedIncomingTrafficParamBlockedPort3
-          - Ref: AWS::NoValue
-        blockedPort4:
-          Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort4
-          - Ref: RestrictedIncomingTrafficParamBlockedPort4
-          - Ref: AWS::NoValue
-        blockedPort5:
-          Fn::If:
-          - restrictedIncomingTrafficParamBlockedPort5
-          - Ref: RestrictedIncomingTrafficParamBlockedPort5
-          - Ref: AWS::NoValue
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::EC2::SecurityGroup
-      Source:
-        Owner: AWS
-        SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
-    Type: AWS::Config::ConfigRule
-  RootAccountHardwareMfaEnabled:
-    Properties:
-      ConfigRuleName: root-account-hardware-mfa-enabled
-      Source:
-        Owner: AWS
-        SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
-    Type: AWS::Config::ConfigRule
-  RootAccountMfaEnabled:
-    Properties:
-      ConfigRuleName: root-account-mfa-enabled
-      Source:
-        Owner: AWS
-        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
-    Type: AWS::Config::ConfigRule
+  # RestrictedIncomingTraffic:
+  #   Properties:
+  #     ConfigRuleName: restricted-common-ports
+  #     InputParameters:
+  #       blockedPort1:
+  #         Fn::If:
+  #         - restrictedIncomingTrafficParamBlockedPort1
+  #         - Ref: RestrictedIncomingTrafficParamBlockedPort1
+  #         - Ref: AWS::NoValue
+  #       blockedPort2:
+  #         Fn::If:
+  #         - restrictedIncomingTrafficParamBlockedPort2
+  #         - Ref: RestrictedIncomingTrafficParamBlockedPort2
+  #         - Ref: AWS::NoValue
+  #       blockedPort3:
+  #         Fn::If:
+  #         - restrictedIncomingTrafficParamBlockedPort3
+  #         - Ref: RestrictedIncomingTrafficParamBlockedPort3
+  #         - Ref: AWS::NoValue
+  #       blockedPort4:
+  #         Fn::If:
+  #         - restrictedIncomingTrafficParamBlockedPort4
+  #         - Ref: RestrictedIncomingTrafficParamBlockedPort4
+  #         - Ref: AWS::NoValue
+  #       blockedPort5:
+  #         Fn::If:
+  #         - restrictedIncomingTrafficParamBlockedPort5
+  #         - Ref: RestrictedIncomingTrafficParamBlockedPort5
+  #         - Ref: AWS::NoValue
+  #     Scope:
+  #       ComplianceResourceTypes:
+  #       - AWS::EC2::SecurityGroup
+  #     Source:
+  #       Owner: AWS
+  #       SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
+  #   Type: AWS::Config::ConfigRule
+  # RootAccountHardwareMfaEnabled:
+  #   Properties:
+  #     ConfigRuleName: root-account-hardware-mfa-enabled
+  #     Source:
+  #       Owner: AWS
+  #       SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
+  #   Type: AWS::Config::ConfigRule
+  # RootAccountMfaEnabled:
+  #   Properties:
+  #     ConfigRuleName: root-account-mfa-enabled
+  #     Source:
+  #       Owner: AWS
+  #       SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+  #   Type: AWS::Config::ConfigRule
   S3AccountLevelPublicAccessBlocksPeriodic:
     Properties:
       ConfigRuleName: s3-account-level-public-access-blocks-periodic
@@ -1352,15 +1359,15 @@ Resources:
         Owner: AWS
         SourceIdentifier: VPC_VPN_2_TUNNELS_UP
     Type: AWS::Config::ConfigRule
-  WafRegionalWebaclNotEmpty:
-    Properties:
-      ConfigRuleName: waf-regional-webacl-not-empty
-      Scope:
-        ComplianceResourceTypes:
-        - AWS::WAFRegional::WebACL
-      Source:
-        Owner: AWS
-        SourceIdentifier: WAF_REGIONAL_WEBACL_NOT_EMPTY
+  # WafRegionalWebaclNotEmpty:
+  #   Properties:
+  #     ConfigRuleName: waf-regional-webacl-not-empty
+  #     Scope:
+  #       ComplianceResourceTypes:
+  #       - AWS::WAFRegional::WebACL
+  #     Source:
+  #       Owner: AWS
+  #       SourceIdentifier: WAF_REGIONAL_WEBACL_NOT_EMPTY
     Type: AWS::Config::ConfigRule
   Wafv2LoggingEnabled:
     Properties:
