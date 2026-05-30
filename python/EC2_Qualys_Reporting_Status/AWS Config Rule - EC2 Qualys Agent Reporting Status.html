@@ -1,0 +1,833 @@
+<!doctype html>
+<html><head><title>AWS Config Rule - EC2 Qualys Agent Reporting Status</title><meta charset="UTF-8"><link href="http://fonts.googleapis.com/css?family=Crimson+Text:400,400italic,700,700italic|Roboto:400,700,700italic,400italic" rel="stylesheet" type="text/css"><style>/*
+ * Copyright 2014 Quip
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+body {
+    font-size: 15px;
+    color: #333;
+    background: white;
+    padding: 60px 95px;
+    max-width: 900px;
+    margin: 0 auto;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern";
+    font-kerning: normal;
+    -moz-font-feature-settings: "kern";
+    -webkit-font-feature-settings: "kern";
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+th {
+    font-family: Roboto, sans-serif;
+    font-weight: 700;
+    margin: 0;
+    margin-top: 1.25em;
+    margin-bottom: 0.75em;
+}
+
+h1 {
+    font-size: 35px;
+    line-height: 42px;
+}
+
+h1:first-child {
+    margin-top: 0;
+}
+
+h2 {
+    font-size: 18px;
+    line-height: 22px;
+}
+
+h3 {
+    font-size: 13px;
+    line-height: 16px;
+}
+
+.capitalize-h3 h3 {
+    text-transform: uppercase;
+}
+
+/* Body text */
+body,
+p,
+ul,
+ol,
+td {
+    font-family: "Crimson Text", serif;
+    font-size: 16px;
+    line-height: 20px;
+}
+
+blockquote,
+q {
+    display: block;
+    margin: 1em 0;
+    font-style: italic;
+}
+
+blockquote a,
+q a {
+    text-decoration: underline;
+}
+
+blockquote {
+    padding-left: 10px;
+    border-left: 4px solid #a6a6a6;
+}
+
+q {
+    color: #a6a6a6;
+    line-height: 40px;
+    font-size: 24px;
+    text-align: center;
+    quotes: none;
+}
+
+q a {
+    color: #a6a6a6;
+}
+
+code,
+pre {
+    font-family: Consolas, "Liberation Mono", Menlo, "Courier Prime Web",
+        Courier, monospace;
+    background: #f2f2f2;
+}
+
+code {
+    padding: 1px;
+    margin: 0 -1px;
+    border-radius: 3px;
+}
+
+pre {
+    display: block;
+    line-height: 20px;
+    text-shadow: 0 1px white;
+    padding: 5px 5px 5px 30px;
+    white-space: nowrap;
+    position: relative;
+    margin: 1em 0;
+}
+
+pre:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 15px;
+    border-left: solid 1px #dadada;
+}
+
+/* Lists */
+div[data-section-style="5"],
+div[data-section-style="6"],
+div[data-section-style="7"] {
+    margin: 12px 0;
+}
+
+ul {
+    padding: 0 0 0 40px;
+}
+
+ul li {
+    margin-bottom: 0.4em;
+}
+
+/* Bulleted list */
+div[data-section-style="5"] ul {
+    list-style-type: disc;
+}
+div[data-section-style="5"] ul ul {
+    list-style-type: circle;
+}
+div[data-section-style="5"] ul ul ul {
+    list-style-type: square;
+}
+div[data-section-style="5"] ul ul ul ul {
+    list-style-type: disc;
+}
+div[data-section-style="5"] ul ul ul ul ul {
+    list-style-type: circle;
+}
+div[data-section-style="5"] ul ul ul ul ul ul {
+    list-style-type: square;
+}
+
+/* Numbered list */
+div[data-section-style="6"] ul {
+    list-style-type: decimal;
+}
+div[data-section-style="6"] ul ul {
+    list-style-type: lower-alpha;
+}
+div[data-section-style="6"] ul ul ul {
+    list-style-type: lower-roman;
+}
+div[data-section-style="6"] ul ul ul ul {
+    list-style-type: decimal;
+}
+div[data-section-style="6"] ul ul ul ul ul {
+    list-style-type: lower-alpha;
+}
+div[data-section-style="6"] ul ul ul ul ul ul {
+    list-style-type: lower-roman;
+}
+
+/* Checklist */
+div[data-section-style="7"] ul {
+    list-style-type: none;
+}
+
+div[data-section-style="7"] ul li:before {
+    content: "\2610";
+    position: absolute;
+    display: inline;
+    margin-right: 1.2em;
+    margin-left: -1.2em;
+}
+
+div[data-section-style="7"] ul li.parent:before {
+    content: "";
+}
+
+div[data-section-style="7"] ul li.checked {
+    text-decoration: line-through;
+}
+
+div[data-section-style="7"] ul li.checked:before {
+    content: "\2611";
+    text-decoration: none;
+}
+
+/* Tables */
+div[data-section-style="8"] {
+    margin: 12px 0;
+}
+
+table {
+    border-spacing: 0;
+    border-collapse: separate;
+    border: solid 1px #bbb;
+    table-layout: fixed;
+    position: relative;
+}
+
+table th,
+table td {
+    padding: 2px 2px 0;
+    min-width: 1.5em;
+    word-wrap: break-word;
+}
+
+table th {
+    border-bottom: 1px solid #c7cbd1;
+    background: #f2f2f2;
+    font-weight: bold;
+    vertical-align: bottom;
+    color: #3a4449;
+    text-align: center;
+}
+
+table td {
+    padding-top: 0;
+    border-left: 1px solid #c7cbd1;
+    border-top: 1px solid #c7cbd1;
+    vertical-align: top;
+}
+
+table td.bold {
+    font-weight: bold;
+}
+
+table td.italic {
+    font-style: italic;
+}
+
+table td.underline {
+    text-decoration: underline;
+}
+
+table td.strikethrough {
+    text-decoration: line-through;
+}
+
+table td.underline.strikethrough {
+    text-decoration: underline line-through;
+}
+
+table td:first-child {
+    border-left: hidden;
+}
+
+table tr:first-child td {
+    border-top: hidden;
+}
+
+/* Images */
+div[data-section-style="11"] {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+div[data-section-style="11"][data-section-float="0"] {
+    clear: both;
+    text-align: center;
+}
+
+div[data-section-style="11"][data-section-float="1"] {
+    float: left;
+    clear: left;
+    margin-right: 20px;
+}
+
+div[data-section-style="11"][data-section-float="2"] {
+    float: right;
+    clear: right;
+    margin-left: 20px;
+}
+
+div[data-section-style="11"] img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: auto;
+}
+
+hr {
+    width: 70px;
+    margin: 20px auto;
+}
+
+/* Apps */
+div[data-section-style="19"].placeholder {
+    margin: 0.8em auto;
+    padding: 4px 0;
+    display: block;
+    color: #3d87f5;
+    text-align: center;
+    border: 1px solid rgba(41, 182, 242, 0.2);
+    border-radius: 3px;
+    background: #e9f8fe;
+    font-family: Roboto, sans-serif;
+}
+
+div[data-section-style="19"].first-party-element {
+    margin-bottom: 10px;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+div[data-section-style="19"].first-party-element.kanban {
+    background-image: url("https://quip-cdn.com/nK0hSyhsb4jrLIL2s5Ma-g");
+    height: 166px;
+}
+
+div[data-section-style="19"].first-party-element.calendar {
+    background-image: url("https://quip-cdn.com/OYujqLny03RILxcLIiyERg");
+    height: 244px;
+}
+
+div[data-section-style="19"].first-party-element.poll {
+    background-image: url("https://quip-cdn.com/fbIiFrcKGv__4NB7CBfxoA");
+    height: 116px;
+}
+
+div[data-section-style="19"].first-party-element.countdown {
+    background-image: url("https://quip-cdn.com/3bPhykD2dBei9sSjCWteTQ");
+    height: 96px;
+}
+
+div[data-section-style="19"].first-party-element.process_bar {
+    background-image: url("https://quip-cdn.com/ybQlHnHEIIBLog5rZmYs_w");
+    height: 36px;
+}
+
+div[data-section-style="19"].first-party-element.project_tracker {
+    background-image: url("https://quip-cdn.com/OFQU087b4Mxzz1ZaHwtjXA");
+    height: 164px;
+}
+
+div[data-section-style="19"] img {
+    margin: 0.5em;
+}
+
+div[data-section-style="19"] img.masked-image {
+    margin: 0;
+    transform-origin: top left;
+}
+
+div[data-section-style="19"] .image-mask {
+    position: relative;
+    overflow: hidden;
+}
+/*
+ * Copyright 2019 Quip
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+body {
+    counter-reset: indent0 indent1 indent2 indent3 indent4 indent5 indent6
+        indent7 indent8;
+}
+
+/* Numbered list */
+div[data-section-style="6"] {
+    counter-reset: indent0 indent1 indent2 indent3 indent4 indent5 indent6
+        indent7 indent8;
+}
+div[data-section-style="6"].list-numbering-continue {
+    counter-reset: none;
+}
+div[data-section-style="6"].list-numbering-restart-at {
+    counter-reset: indent0 var(--indent0) indent1 indent2 indent3 indent4
+        indent5 indent6 indent7 indent8;
+}
+div[data-section-style="6"] ul {
+    /* indent0 is not reset since it is shared across the div elements */
+    list-style-type: none !important;
+}
+div[data-section-style="6"] ul ul {
+    counter-reset: indent1;
+}
+div[data-section-style="6"] ul ul ul {
+    counter-reset: indent2;
+}
+div[data-section-style="6"] ul ul ul ul {
+    counter-reset: indent3;
+}
+div[data-section-style="6"] ul ul ul ul ul {
+    counter-reset: indent4;
+}
+div[data-section-style="6"] ul ul ul ul ul ul {
+    counter-reset: indent5;
+}
+div[data-section-style="6"] ul li {
+    counter-increment: indent0;
+}
+div[data-section-style="6"] ul ul li {
+    counter-increment: indent1;
+}
+div[data-section-style="6"] ul ul ul li {
+    counter-increment: indent2;
+}
+div[data-section-style="6"] ul ul ul ul li {
+    counter-increment: indent3;
+}
+div[data-section-style="6"] ul ul ul ul ul li {
+    counter-increment: indent4;
+}
+div[data-section-style="6"] ul ul ul ul ul ul li {
+    counter-increment: indent5;
+}
+div[data-section-style="6"] ul li:before {
+    content: counter(indent0, decimal) ". ";
+}
+div[data-section-style="6"] ul ul li:before {
+    content: counter(indent1, lower-alpha) ". ";
+}
+div[data-section-style="6"] ul ul ul li:before {
+    content: counter(indent2, lower-roman) ". ";
+}
+div[data-section-style="6"] ul ul ul ul li:before {
+    content: counter(indent3, decimal) ". ";
+}
+div[data-section-style="6"] ul ul ul ul ul li:before {
+    content: counter(indent4, lower-alpha) ". ";
+}
+div[data-section-style="6"] ul ul ul ul ul ul li:before {
+    content: counter(indent5, lower-roman) ". ";
+}
+</style></head><body><h1 id='SDC9CALxUqn'>AWS Config Rule - EC2 Qualys Agent Reporting Status</h1>
+
+<br/>
+
+The following guide aims to assist on deploying a custom AWS Config Rule that leverages third party REST APIs (Qualys) to evaluate AWS Resources in an automated fashion. <br/>
+
+<br/>
+
+<h3 id='SDC9CAngAnO'>Problem to be solved:</h3>
+
+AWS Config continuously monitors and records your AWS resource configurations and allows you to automate the evaluation of recorded configurations against desired configurations, unfortunately sometimes these desired configurations require customers to evaluate third party solutions that do not reside within the Services in AWS. <br/>
+
+<br/>
+
+Using the Rule Development Kit (RDK) and AWS Services such as AWS Config, Secrets Manager and Key Management Service (KMS) we can orchestrate these evaluations.<br/>
+
+<h3 id='SDC9CA1yNRz'>Design considerations:</h3>
+
+The code provided along with this guide will require you to have administrator access to multiple services, each one of them has a step-by-step setup process in this guide. <br/>
+
+<h3 id='SDC9CAhE7Ta'>High-Level Requirements:</h3>
+
+In order to make the most out of this guide it is recommended to know basic Python and understand some programming concepts such as functions and variables.<br/>
+
+<h3 id='SDC9CATFS20'>Use cases and user stories:</h3>
+
+The code used in this guide shows how to integrate a third party REST API that requires XML structures while leveraging AWS’ own APIs that use JSON structures. The concept behind this walk-through is that multiple services can be integrated into AWS Config to generate a custom evaluation, regardless of whether they’re part of the AWS Services or not.<br/>
+
+<br/>
+
+<b>User Stories:</b> <br/>
+
+<div data-section-style='5' class="" style=""><ul id='SDC9CAe99fy'><li id='SDC9CAwtkuF' class='' value='1'>“As a Security Analyst, I would like a way to granularly define AWS Config Rules so that I can get a concise view/report that shows me an asset's compliance status based on my security standards”  
+
+<br/></li><li id='SDC9CAxASRP' class=''>“As a Security Manager, I would like a simple, automated view, that showed me and my peers what resources we have in AWS and their current status against our multiple security solutions” 
+
+<br/></li></ul></div><h3 id='SDC9CAm7gkx'>High-level architecture and design</h3>
+
+In order to deploy this or similar rules you will need to have the <a href="https://github.com/awslabs/aws-config-rdk">Rule Development Kit (RDK) </a>installed in your development environment and deployed on your AWS Account. <br/>
+
+<br/>
+
+For example, the code in this guide was created with the following command:<br/>
+
+<code>rdk create EC2_Qualys_Reporting_Status --runtime python3.7 —maximum-frequency TwentyFour_Hours</code><br/>
+
+<h3 id='SDC9CAk0odt'>Important Dependencies and Potential Blockers:</h3>
+
+You will need to have a minimum set of permissions in AWS in order to use RDK, Secrets Manager or KMS<br/>
+
+<h3 id='SDC9CAxm5dE'><span bgcolor="#fce2cf" style="background-color:#fce2cf"><u>Update the code according to your environment</u></span></h3>
+
+<b>Lines 245-250 </b>specify the Secrets Manager Details used to retrieve your Qualys Credentials.<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/LB0KqBNGIY1w_cfcFoOgZw?a=g8PTWt3tKzBtOkfFtelO71ZASE8KLbzPsG2YsN3vMDUa' id='SDC9CA6c8BB' alt=''></img></div><br/>
+
+The “<b>platform</b>” variable defines your current Qualys API Server. <br/>
+
+Examples include: <br/>
+
+<div data-section-style='5' class="" style=""><ul id='SDC9CAg1RCO'><li id='SDC9CAJWrZQ' class='' value='1'><a href="http://qualysapi.qg3.apps.qualys.com">qualysapi.</a>qg2<a href="http://qualysapi.qg3.apps.qualys.com">.apps.qualys.com</a>
+
+<br/></li><li id='SDC9CASuBbN' class=''><a href="http://qualysapi.qg3.apps.qualys.com">qualysapi.</a>qg3<a href="http://qualysapi.qg3.apps.qualys.com">.apps.qualys.com</a>
+
+<br/></li><li id='SDC9CAF9JFZ' class=''> <a href="http://qualysapi.qg3.apps.qualys.com">qualysapi.</a>qg4<a href="http://qualysapi.qg3.apps.qualys.com">.apps.qualys.com</a>
+
+<br/></li></ul></div>See your Qualys Documentation to known which Qualys API Server to use.<br/>
+
+<br/>
+
+If you use a different URL format you’d need to update the “<b>qualys_query_instanceId</b>” function:<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/NNJ_sZp1bIKzg4e0tozjzA?a=qkN8Ll7YSCMgStfHQaNytUy1S7a30gmtAP7A8u3KNaQa' id='SDC9CAVAnvJ' alt=''></img></div><br/>
+
+The HOST variable inside this function specifies the Qualys API Server<br/>
+
+<br/>
+
+If you follow the steps in this guide you will only need to make sure your “<b>platform</b>” and “<b>region_name</b>” variables match your environment.<br/>
+
+<h1 id='SDC9CAogOkY'>Using this Custom AWS Config Rule</h1>
+
+The rule will evaluate EC2 Instances against the Qualys REST API. The purpose of this check is to see if the Instance has an agent installed and reporting back to Qualys.<br/>
+
+<br/>
+
+Here’s what the AWS Config Rule will look like once it’s been deployed:<br/>
+
+<br/>
+
+<b>Complaint Results:</b><br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/FkRBQ2nXe40zr1NoLVZOtQ?a=VmFmOKZwA7KjLKtom4alEaa5x6ovqmiiTk5ZjkUnLQQa' id='SDC9CA133Tf' alt='' width='800' height='317'></img></div><b>Noncompliant Results:</b><br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/KxHdIWbYzgS-U9zmYPVGbA?a=B4S2kZYg4XlEntOPvNByR0T0AwfmJGfdjLXNbgboJR4a' id='SDC9CAhGtnj' alt='' width='800' height='402'></img></div><br/>
+
+Due to the structure of the code and some security best practices, the rule will not be able to generate evaluations as soon as it’s deployed. You will need to follow this guide in order to remediate this.<br/>
+
+<br/>
+
+<h2 id='SDC9CAMkX01'>1. Deploy the rule using RDK</h2>
+
+Make sure rdk is configured on your account, you can check this by running the “rdk init“ command:<br/>
+
+<br/>
+
+<code>$ rdk init</code><br/>
+
+<code>Running init!</code><br/>
+
+<code>Found Config Recorder: default</code><br/>
+
+<code>Found Config Role: arn:aws:iam::123456789123:role/rdk/config-role</code><br/>
+
+<code>Found Bucket: config-bucket-123456789123</code><br/>
+
+<code>Config Service is ON</code><br/>
+
+<code>Config setup complete.</code><br/>
+
+<code>Found code bucket: config-rule-code-bucket-123456789123-us-east-1</code><br/>
+
+<br/>
+
+Next, make sure you’re on the directory where your RDK Rule folder is, if the RDK Rule Folder is named “QualysTESTRule” it should look like this:<br/>
+
+<br/>
+
+<code>$ ls</code><br/>
+
+<code>QualysTESTRule</code><br/>
+
+<code>$ ls -ahR QualysTESTRule/</code><br/>
+
+<code>. QualysTESTRule.py QualysTESTRule_test.py</code><br/>
+
+<code>.. parameters.json</code><br/>
+
+<br/>
+
+To deploy the rule use the rdk deploy command:<br/>
+
+<code>$ rdk deploy QualysTESTRule</code><br/>
+
+<code>Running deploy!</code><br/>
+
+<code>Found Custom Rule.</code><br/>
+
+<code>Zipping QualysTESTRule</code><br/>
+
+<code>Uploading QualysTESTRule</code><br/>
+
+<code>Upload complete.</code><br/>
+
+<code>Creating CloudFormation Stack for QualysTESTRule</code><br/>
+
+<code>Waiting for CloudFormation stack operation to complete...</code><br/>
+
+<code>Waiting for CloudFormation stack operation to complete...</code><br/>
+
+<code>Waiting for CloudFormation stack operation to complete...</code><br/>
+
+<code>Waiting for CloudFormation stack operation to complete...</code><br/>
+
+<code>Waiting for CloudFormation stack operation to complete...</code><br/>
+
+<code>Waiting for CloudFormation stack operation to complete...</code><br/>
+
+<code>Waiting for CloudFormation stack operation to complete...</code><br/>
+
+<code>Waiting for CloudFormation stack operation to complete...</code><br/>
+
+<code>CloudFormation stack operation complete.</code><br/>
+
+<code>Config deploy complete.</code><br/>
+
+<br/>
+
+<br/>
+
+<h3 id='SDC9CA4oecO'>Optional: Check the logs of the Custom Rule </h3>
+
+<br/>
+
+If you navigate to your AWS Config at this point you will see “No results reported“ for this Rule, if you click on the rule name it will take you to the Rule View. <br/>
+
+<br/>
+
+Click on Edit on the top right corner <br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/2EDwx1bGScP1V7e78GmUzA?a=eeJtqW7fgLQeKJBLCaSCp8b5hdl3ntiOmoGdauXfuqoa' id='SDC9CAFckxL' alt=''></img></div><br/>
+
+This will take you to the Rule Settings, since this is a custom rule, it uses a lambda with the RDK code we deployed.<br/>
+
+You can check the logs for this function by clicking on “Edit AWS Lambda function” in the main section of this window (under the <b>AWS Lambda function ARN*</b> field) <br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/PbxYrlEhi5lVZpl_sf8ZJw?a=RGNrft5aMjrIa3vomtGhqvjaQzMuGEX8LVbZsOBOKdUa' id='SDC9CAA25L4' alt=''></img></div><br/>
+
+From the lambda console you can click on the “Monitoring” Tab to see more details about the function<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/1QujmwfuuuARM7LI5KOAPg?a=4gwOoxIuYGTbHbXDoZkxQ076cjYAGdYh2nWW4zwTusAa' id='SDC9CAFyKeU' alt=''></img></div><br/>
+
+Near the top right corner of the Monitoring Tab you can see the “View logs in CloudWatch” button<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/GYWj-nxupzLAz_4YTdQYdg?a=97NjFbC19dDWBqwEaRGSFOOxZ4BNImFmE9BDlcDyE9Ya' id='SDC9CANa7vK' alt=''></img></div><br/>
+
+This will take you to CloudWatch where you can click on the latest Log stream and see details about the lambda execution<br/>
+
+<br/>
+
+Since we have not setup the Qualys Credentials in Secrets Manager or the required permissions for this lambda, the following error will show up in the logs:<br/>
+
+<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/ovF0oLFqAgntdfy4xzOwQQ?a=34WKZ13FcrS0cUnHWQEaoZjtjxmC5QBVXEy1Zw8L4owa' id='SDC9CATzKMh' alt='' width='800' height='186'></img></div>To remediate the error we need to follow the next steps in this guide.<br/>
+
+<h2 id='SDC9CAFgWwC'>2. Creating the Secret Managers Secret for Authentication</h2>
+
+<br/>
+
+Start by creating a Secret in Secrets Manager, this will be where our Qualys API Credentials will be stored<br/>
+
+<br/>
+
+From the Secrets Manager Console, select “Store a New Secret”.<br/>
+
+<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/fe1-5jMirZvfKogcFGq5XA?a=SoNisQWtVaWXox6MaulFuh6RbgqapXR4IAm6IRLXUA0a' id='SDC9CAML3Z3' alt=''></img></div><br/>
+
+<br/>
+
+Once you’re in the new secret page, select “Other type of secrets”<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/tW0q65OD224dzmkNg-nxAw?a=y30oY04SgDOiS98tojpDdG3ax4mvx8N8FPgy1a4TYlca' id='SDC9CAqNhE4' alt=''></img></div><br/>
+
+We’re using the following Key/Value structure:<br/>
+
+<div data-section-style='13'><table id='SDC9CAvXntf' title='Sheet1' style='width: 20.4em'><thead><tr><th class='empty' style='width: 2em'/><th id='SDC9CAsD6LI'  style='width: 9.06667em'>Secret Key
+
+<br/></th><th id='SDC9CAMTiZ8'  style='width: 11.3333em'>Secret Value
+
+<br/></th></tr></thead><tbody><tr id='SDC9CAezvNH'><td style='background-color:#f0f0f0'>1</td><td id='s:SDC9CAezvNH;SDC9CArkkRT' style=''>qualys_usr
+
+<br/></td><td id='s:SDC9CAezvNH;SDC9CA0rdOy' style=''>thisisyourusername
+
+<br/></td></tr><tr id='SDC9CAxlHD2'><td style='background-color:#f0f0f0'>2</td><td id='s:SDC9CAxlHD2;SDC9CArkkRT' style=''>qualys_pswrd
+
+<br/></td><td id='s:SDC9CAxlHD2;SDC9CA0rdOy' style=''>ABCDEFg1hIJKlmnOpQ#
+
+<br/></td></tr></tbody></table></div>So it should look like this:<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/EmgVfxXII2WeN8BZdsuwsg?a=JQOTRVrWuUmLWpURqPcQa0Aa1Yd6W7dPGaaPZtmq6eEa' id='SDC9CAecnyV' alt=''></img></div><br/>
+
+If you use a different Secret Key/Value structure, you’d need to update the code under the “<b>get_qualys_auth</b>” function so that the authorization returned (line 199) queries the right keys.<br/>
+
+<br/>
+
+You may create a new Encryption Key or use one of your previously created Customer Managed Keys<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/5OQ9qHk8se4dRX07qCK5Vg?a=hgaEAd8xYWtWO3hUE2dXHsazteQ5IateicRWQYBtTlAa' id='SDC9CAqJgcm' alt='' width='800' height='121'></img></div>We are naming this Secret “<b>QualysCredentials</b>”, if you decide to name it differently you will need to update the code accordingly (Line 246)<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/4zDAAkddTzZmMqwDzOmZHw?a=WwvQl2WVSUCbRQpFls0F0aNlXanWpf1SommEwEUkMx0a' id='SDC9CA7Ra9V' alt='' width='800' height='588'></img></div><br/>
+
+<h2 id='SDC9CAQ7m5R'>3. Creating the KMS CMK to En/Decrypt your Secrets</h2>
+
+<br/>
+
+Go to “Key Management Service (KMS)” in your AWS Console you can also get here from the previous step by selecting “<a href="https://us-east-1.console.aws.amazon.com/kms/home?region=us-east-1#/kms/keys">Add new key</a>”<br/>
+
+<br/>
+
+Select “Create Key”<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/zs544pVsJzgPpJIhxgZ3sw?a=zM7ydfDaJcRPhBaK0okgv2vne5FJgU4piogjOfdsgVQa' id='SDC9CAgwjms' alt=''></img></div><br/>
+
+In this example we’re creating a Symmetric Key with KMS generated Key Material as shown below:<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/7MRrmlqE2HWL2hhs90qtEg?a=RdTyR51gxbP9nsZ42NFBjxvjMawBmQROZKsv5hjJkUIa' id='SDC9CAOYXRt' alt='' width='798' height='529'></img></div><br/>
+
+You will need to specify an Alias for the key, fill out other information as necessary:<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/a-6yFzYoWolmEp7a8ZCjwA?a=tyFsE7WmNHBBa2MtlS93pAbXJOjN334JzesPLsVVWNca' id='SDC9CAX6n0F' alt=''></img></div><br/>
+
+<br/>
+
+You’d need to specify a Key Administrator, this will be the user that has Admin access over the key itself<br/>
+
+<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/vW1qOyWYqaM8AssQc3T5IQ?a=IgImlU3HgAaCVvMnud6f0y72Gkyrb5HBtrJtKst7JXka' id='SDC9CAcuMHR' alt='' width='797' height='572'></img></div>Next you will need to specify Access to use the Key by adding the Role for “AWSServiceRoleForConfig” to the list of users.<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/pszB4Ft_dNHwFV_YnckeTw?a=P1LDMX7luUOsJfMz8R274SA6FLqYqy4bOJsLaMNK1qAa' id='SDC9CABFzJ2' alt='' width='800' height='142'></img></div><br/>
+
+<h2 id='SDC9CAlxVyz'>Allowing your lambda to retrieve the Secret</h2>
+
+Once you have your Encryption Key setup along with your Secret in Secrets Manager you’d need to allow your Rule’s Lambda to retrieve the secret. You can do this from IAM.<br/>
+
+<br/>
+
+Look for your Lambda Role, RDK will create one per rule by default, you can use the name of your rule to locate it. In this example the rule name is “QualysTESTRule”<br/>
+
+<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/TeQExWuzs3CDfsvfgE_uJQ?a=8PQP8zaolWU7l6hIsSt6c7ffhVfGOhcRYZPN7NnDgvIa' id='SDC9CA1eIfe' alt='' width='800' height='435'></img></div><br/>
+
+You’d need to attach new permissions to this role, you can create a new Policy or use an In-Line policy. Do so according to your organization’s standards. <br/>
+
+<div data-section-style='5' class="" style=""><ul id='SDC9CAg1LiS'><li id='SDC9CAEAtOh' class='' value='1'>In the Service Field, select “Secrets Manager”
+
+<br/></li><li id='SDC9CAzrWoZ' class=''>In Access Level, select “Read: GetSecretValue”
+
+<br/></li></ul></div><div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/C1ZTta2qjgfTWCffA8AA8A?a=Gxbx9aWDFZDMaj9hW3XzmJZSDMYW7MXqBq79r89CEDoa' id='SDC9CAmBZlP' alt='' width='800' height='559'></img></div>Next you will specify your resource, this is the Secret Manager’s Secret ARN <br/>
+
+<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/0Qy2N8GhTu1JKpLMrSjQTQ?a=dPIafoQ8DV6jC0aB6nn9Rv3lP9UadQTctRgOdIchaSYa' id='SDC9CAPnCHr' alt='' width='800' height='135'></img></div><br/>
+
+You can retrieve your Secret ARN from the Secrets Manager Console:<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/PnE-NOrrrs6lF2nmAL-6TA?a=2PJ9aHTL7a2UvJkfxVToaIewFeB4X1XEVstohgEMsX8a' id='SDC9CAW1sez' alt='' width='800' height='298'></img></div><br/>
+
+If you decide to use a different Secret Name make sure you update line 246 to point to the right Secret.<br/>
+
+<br/>
+
+<h2 id='SDC9CAuMhjy'>Re-evaluating</h2>
+
+After you setup your environment as per the instructions above, you can re-evaluate your rule so that it communicates with Qualys and checks the reporting status of your instances.<br/>
+
+<br/>
+
+To do this, navigate back to the Rule View in AWS Config.<br/>
+
+<br/>
+
+On the top right corner, click on the “Re-evaluate” button to force the rule to run once more.<br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/GZzu3EmqUdfTXSZtKeS4ew?a=3nhN0QlgxjF9P8SeqqhXJ8cwZw7ItdJoImreTgvKJVIa' id='SDC9CAVkRwR' alt='' width='800' height='113'></img></div>After this, the rule will run as per the “Trigger type” specified in the rule settings, the screenshot above shows a periodic schedule of once each hour. You can customize this by editing the parameters.json file in the rule folder before deployment. <br/>
+
+<div data-section-style='11' style='max-width:100%'><img src='https://quip-amazon.com/blob/SDC9AAKVGGZ/ca-4olnFScPz9NvU6oiyAg?a=ZDa30O49WtlbAQBdxEO9UhIvsWBq0uQGzrIvl92UG0Ea' id='SDC9CAPrCpG' alt=''></img></div><br/>
+
+<br/>
+
+<h1 id='SDC9CA5dNLD'>References</h1>
+
+<div data-section-style='5' class="" style=""><ul id='SDC9CABHles'><li id='SDC9CAxK6iH' class='' value='1'>RDK minimum permissions: <a href="https://github.com/awslabs/aws-config-rdk/blob/master/policy/rdk-minimum-permissions.json">https://github.com/awslabs/aws-config-rdk/blob/master/policy/rdk-minimum-permissions.json</a>
+
+<br/></li><li id='SDC9CALRxHE' class=''>RDK: <a href="https://github.com/awslabs/aws-config-rdk">https://github.com/awslabs/aws-config-rdk</a>
+
+<br/></li><li id='SDC9CAk0MUX' class=''>Secrets Manager: <a href="https://aws.amazon.com/secrets-manager/">https://aws.amazon.com/secrets-manager/</a>
+
+<br/></li><li id='SDC9CAujd1v' class=''>KMS: <a href="https://aws.amazon.com/kms/">https://aws.amazon.com/kms/</a>
+
+<br/></li><li id='SDC9CA1KrB7' class=''>AWS Config: <a href="https://aws.amazon.com/config/">https://aws.amazon.com/config/</a>
+
+<br/></li><li id='SDC9CAevmRl' class=''>Qualys API Reference Doc: <a href="https://www.qualys.com/docs/qualys-api-quick-reference.pdf">https://www.qualys.com/docs/qualys-api-quick-reference.pdf</a>
+
+<br/></li><li id='SDC9CAOJrfm' class=''>Boto3 EC2 Documentation: <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html">https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html</a>
+
+<br/></li><li id='SDC9CAgeB0F' class=''>IAM: <a href="https://aws.amazon.com/iam/">https://aws.amazon.com/iam/</a>
+
+<br/></li></ul></div></body></html>

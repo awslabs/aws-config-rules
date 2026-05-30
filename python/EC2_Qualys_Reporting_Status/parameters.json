@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_Qualys_Reporting_Status",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "EC2_Qualys_Reporting_Status.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "TwentyFour_Hours"
+  },
+  "Tags": "[]"
+}
