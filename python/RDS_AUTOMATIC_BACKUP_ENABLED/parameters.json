@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "RDS_AUTOMATIC_BACKUP_ENABLED",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "RDS_AUTOMATIC_BACKUP_ENABLED.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::RDS::DBInstance"
+  },
+  "Tags": "[]"
+}
