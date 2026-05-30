@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "EC2_TERMINATION_PROTECTION",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "EC2_TERMINATION_PROTECTION.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::EC2::Instance"
+  },
+  "Tags": "[]"
+}
