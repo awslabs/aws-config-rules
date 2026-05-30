@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "CLOUDFORMATION_STACK_TERMINATION_PROTECTION",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "CLOUDFORMATION_STACK_TERMINATION_PROTECTION.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::CloudFormation::Stack"
+  },
+  "Tags": "[]"
+}
