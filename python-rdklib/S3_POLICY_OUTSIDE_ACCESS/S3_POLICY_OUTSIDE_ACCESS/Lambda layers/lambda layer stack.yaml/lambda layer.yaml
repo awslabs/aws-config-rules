@@ -1,0 +1,16 @@
+# Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Transform: AWS::Serverless-2016-10-31
+
+Description: 'This template creates AWS Config lambda Layer'
+
+Resources:
+  ConfigLambdaLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: Config-Lambda-Layer
+      Description: Lambda Layer for config rules boilerplate code
+      CompatibleRuntimes:
+        - python3.6
+        - python3.7
+        - python3.8
+      ContentUri: 's3://custom-config-lambda-2/python.zip'
