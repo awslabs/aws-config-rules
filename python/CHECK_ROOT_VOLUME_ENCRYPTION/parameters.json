@@ -1,0 +1,12 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "CHECK_ROOT_VOLUME_ENCRYPTION.zip", 
+    "SourceRuntime": "python3.6", 
+    "RuleName": "CHECK_ROOT_VOLUME_ENCRYPTION", 
+    "SourceEvents": "AWS::EC2::Instance", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}"
+  }, 
+  "Tags": "[]"
+}
