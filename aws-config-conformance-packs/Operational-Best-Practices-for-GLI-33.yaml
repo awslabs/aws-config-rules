@@ -1,0 +1,520 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for GLI-33 (Event Wagering Systems)
+#
+#   This conformance pack maps AWS Config managed rules to the technical security
+#   controls defined in GLI-33 v1.1, Appendix B: Operational Audit for Technical
+#   Security Controls.
+#
+#   GLI-33 is the standard used by Gaming Laboratories International (GLI), BMM
+#   Testlabs, and other independent testing laboratories to certify Event Wagering
+#   Systems globally. This pack focuses on infrastructure controls that are
+#   detectable via AWS Config. Application-layer requirements (wagering logic,
+#   player accounts, geolocation) are out of scope.
+#
+#   See also:
+#     - GLI-33 v1.1 (May 2019): https://gaminglabs.com/gli-standards/
+#     - AWS Shared Responsibility Model: https://aws.amazon.com/compliance/shared-responsibility-model/
+#
+##################################################################################
+
+Parameters:
+  AccessKeysRotatedParamMaxAccessKeyAge:
+    Default: '90'
+    Type: String
+  IamPasswordPolicyParamMaxPasswordAge:
+    Default: '90'
+    Type: String
+  IamPasswordPolicyParamMinimumPasswordLength:
+    Default: '8'
+    Type: String
+  IamPasswordPolicyParamRequireNumbers:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireSymbols:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireUppercaseCharacters:
+    Default: 'true'
+    Type: String
+  IamPasswordPolicyParamRequireLowercaseCharacters:
+    Default: 'true'
+    Type: String
+
+Resources:
+
+  ##################################################################################
+  # B.2 System Operation & Security
+  ##################################################################################
+
+  # B.2.3 Logical Access Control - MFA enforcement
+  IamUserMfaEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-iam-user-mfa-enabled
+      Description: >-
+        [GLI-33 B.2.3] Checks whether MFA is enabled for all IAM users that
+        use a console password. Multi-factor authentication is required for all
+        human access to the Event Wagering System.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_MFA_ENABLED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  RootAccountMfaEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-root-account-mfa-enabled
+      Description: >-
+        [GLI-33 B.2.3] Checks whether the root account has MFA enabled.
+        Root account access must be protected with the strongest available
+        authentication.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  MfaEnabledForIamConsoleAccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-mfa-enabled-for-iam-console-access
+      Description: >-
+        [GLI-33 B.2.3] Checks whether MFA is enabled for all IAM users with
+        console access.
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  # B.2.3 Logical Access Control - Password policy
+  IamPasswordPolicy:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-iam-password-policy
+      Description: >-
+        [GLI-33 B.2.3] Checks whether the IAM password policy enforces minimum
+        length (8 chars), complexity, and 90-day rotation as recommended by GLI-33.
+      InputParameters:
+        MaxPasswordAge:
+          Ref: IamPasswordPolicyParamMaxPasswordAge
+        MinimumPasswordLength:
+          Ref: IamPasswordPolicyParamMinimumPasswordLength
+        RequireNumbers:
+          Ref: IamPasswordPolicyParamRequireNumbers
+        RequireSymbols:
+          Ref: IamPasswordPolicyParamRequireSymbols
+        RequireUppercaseCharacters:
+          Ref: IamPasswordPolicyParamRequireUppercaseCharacters
+        RequireLowercaseCharacters:
+          Ref: IamPasswordPolicyParamRequireLowercaseCharacters
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_PASSWORD_POLICY
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  # B.2.3 Logical Access Control - Access key rotation
+  AccessKeysRotated:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-access-keys-rotated
+      Description: >-
+        [GLI-33 B.2.3] Checks whether active access keys are rotated within
+        the specified number of days (default 90).
+      InputParameters:
+        maxAccessKeyAge:
+          Ref: AccessKeysRotatedParamMaxAccessKeyAge
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  # B.2.3 Logical Access Control - No root access keys
+  IamRootAccessKeyCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-iam-root-access-key-check
+      Description: >-
+        [GLI-33 B.2.3] Checks whether the root user access key is available.
+        Root access keys should not exist.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  # B.2.3/B.2.4 Separation of duties - No admin access policies
+  IamPolicyNoStatementsWithAdminAccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-iam-policy-no-admin-access
+      Description: >-
+        [GLI-33 B.2.4] Checks whether IAM policies grant full administrative
+        privileges. Separation of duties requires that no single role has
+        unrestricted access.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+
+  # B.2.3/B.2.4 Separation of duties - No inline policies
+  IamNoInlinePolicy:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-iam-no-inline-policy
+      Description: >-
+        [GLI-33 B.2.4] Checks that IAM users, roles, and groups do not have
+        inline policies. Managed policies support auditability and consistency.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_NO_INLINE_POLICY
+
+  # B.2.7 Electronic Document Retention - CloudTrail enabled
+  CloudTrailEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-cloudtrail-enabled
+      Description: >-
+        [GLI-33 B.2.7] Checks whether CloudTrail is enabled. All actions in
+        the Event Wagering System environment must be logged in an unalterable
+        format.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  MultiRegionCloudTrailEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-multi-region-cloudtrail-enabled
+      Description: >-
+        [GLI-33 B.2.7] Checks whether multi-region CloudTrail is enabled to
+        capture API activity across all regions.
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  CloudTrailLogFileValidationEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-cloudtrail-log-file-validation
+      Description: >-
+        [GLI-33 B.2.7] Checks whether CloudTrail log file integrity validation
+        is enabled. Log integrity is required so that audit records cannot be
+        tampered with.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  CloudTrailEncryptionEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-cloudtrail-encryption-enabled
+      Description: >-
+        [GLI-33 B.2.7] Checks whether CloudTrail logs are encrypted with KMS.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  CloudTrailCloudWatchLogsEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-cloudtrail-cloudwatch-logs-enabled
+      Description: >-
+        [GLI-33 B.2.7] Checks whether CloudTrail logs are delivered to
+        CloudWatch Logs for real-time monitoring and alerting.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  ##################################################################################
+  # B.3 Backup and Recovery
+  ##################################################################################
+
+  # B.3.1 Data Security - Encryption at rest
+  EncryptedVolumes:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-encrypted-volumes
+      Description: >-
+        [GLI-33 B.3.1] Checks whether EBS volumes are encrypted. Data at rest
+        must be protected against unauthorized access.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ENCRYPTED_VOLUMES
+
+  RdsStorageEncrypted:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-rds-storage-encrypted
+      Description: >-
+        [GLI-33 B.3.1] Checks whether RDS DB instances have storage encryption
+        enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_STORAGE_ENCRYPTED
+
+  S3BucketServerSideEncryptionEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-s3-default-encryption-enabled
+      Description: >-
+        [GLI-33 B.3.1] Checks whether S3 buckets have default server-side
+        encryption enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+
+  # B.3.3 Backup Frequency
+  DbInstanceBackupEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-db-instance-backup-enabled
+      Description: >-
+        [GLI-33 B.3.3] Checks whether RDS DB instances have automated backups
+        enabled. Backup frequency must be at least daily.
+      Source:
+        Owner: AWS
+        SourceIdentifier: DB_INSTANCE_BACKUP_ENABLED
+
+  DynamodbPitrEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-dynamodb-pitr-enabled
+      Description: >-
+        [GLI-33 B.3.3] Checks whether point-in-time recovery is enabled for
+        DynamoDB tables.
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_PITR_ENABLED
+
+  # B.3.5 System Failure - Multi-AZ redundancy
+  RdsMultiAzSupport:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-rds-multi-az-support
+      Description: >-
+        [GLI-33 B.3.5] Checks whether RDS DB instances are configured for
+        Multi-AZ deployment. No single failure of any component should cause
+        data loss.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_MULTI_AZ_SUPPORT
+
+  # B.3.9 Disaster Recovery - Deletion protection
+  RdsInstanceDeletionProtectionEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-rds-deletion-protection-enabled
+      Description: >-
+        [GLI-33 B.3.9] Checks whether RDS instances have deletion protection
+        enabled to prevent accidental data loss.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_DELETION_PROTECTION_ENABLED
+
+  ##################################################################################
+  # B.4 Communications
+  ##################################################################################
+
+  # B.4.4 Communications Over Internet - Encryption in transit
+  ElbTlsHttpsListenersOnly:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-elb-tls-https-listeners-only
+      Description: >-
+        [GLI-33 B.4.4] Checks whether ELB listeners use HTTPS/TLS. All
+        communications over public networks must be encrypted.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_TLS_HTTPS_LISTENERS_ONLY
+
+  AlbHttpToHttpsRedirectionCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-alb-http-to-https-redirection
+      Description: >-
+        [GLI-33 B.4.4] Checks whether HTTP to HTTPS redirection is configured
+        on ALB listeners.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK
+
+  S3BucketSslRequestsOnly:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-s3-bucket-ssl-requests-only
+      Description: >-
+        [GLI-33 B.4.4] Checks whether S3 bucket policies require SSL for
+        requests.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
+
+  # B.4.6 Network Security Management - Network segmentation
+  VpcDefaultSecurityGroupClosed:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-vpc-default-security-group-closed
+      Description: >-
+        [GLI-33 B.4.6] Checks whether the default security group of a VPC
+        restricts all traffic. Networks must be logically separated.
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
+
+  RestrictedSsh:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-restricted-ssh
+      Description: >-
+        [GLI-33 B.4.6] Checks whether security groups allow unrestricted SSH
+        access. Unused services and ports must be blocked.
+      Source:
+        Owner: AWS
+        SourceIdentifier: INCOMING_SSH_DISABLED
+
+  Ec2InstancesInVpc:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-ec2-instances-in-vpc
+      Description: >-
+        [GLI-33 B.4.6] Checks whether EC2 instances are in a VPC. All system
+        components must be on logically separated networks.
+      Source:
+        Owner: AWS
+        SourceIdentifier: INSTANCES_IN_VPC
+
+  # B.4.6 Network Security Management - IDS/IPS
+  GuardDutyEnabledCentralized:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-guardduty-enabled-centralized
+      Description: >-
+        [GLI-33 B.4.6] Checks whether GuardDuty is enabled. An IDS/IPS must be
+        in place to detect and prevent attacks including DDoS, ARP spoofing,
+        and man-in-the-middle attacks.
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  ##################################################################################
+  # B.5 Third-Party Service Providers
+  ##################################################################################
+
+  # B.5.1 Third-Party Communications - VPC Flow Logs for audit trail
+  VpcFlowLogsEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-vpc-flow-logs-enabled
+      Description: >-
+        [GLI-33 B.5.1/B.7.5] Checks whether VPC Flow Logs are enabled. All
+        login events and communications involving third-party service providers
+        must be recorded.
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
+
+  ##################################################################################
+  # B.6 Technical Controls
+  ##################################################################################
+
+  # B.6.2 Cryptographic Controls
+  CloudWatchLogGroupEncrypted:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-cloudwatch-log-group-encrypted
+      Description: >-
+        [GLI-33 B.6.2] Checks whether CloudWatch Log Groups are encrypted with
+        KMS. The grade of encryption must be appropriate to the sensitivity of
+        the data.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  # B.6.3 Encryption Key Management - Key rotation
+  CmkBackingKeyRotationEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-cmk-backing-key-rotation-enabled
+      Description: >-
+        [GLI-33 B.6.3] Checks whether automatic key rotation is enabled for
+        customer-managed KMS keys. Key management processes must cover securely
+        changing the current encryption keyset.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  KmsCmkNotScheduledForDeletion:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-kms-cmk-not-scheduled-for-deletion
+      Description: >-
+        [GLI-33 B.6.3] Checks whether KMS keys are not scheduled for deletion.
+        Revoking keys must follow defined processes with recovery capability.
+      Source:
+        Owner: AWS
+        SourceIdentifier: KMS_CMK_NOT_SCHEDULED_FOR_DELETION
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  ##################################################################################
+  # B.7 Remote Access and Firewalls
+  ##################################################################################
+
+  # B.7.4 Firewalls - No public access (default deny)
+  S3BucketPublicReadProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-s3-bucket-public-read-prohibited
+      Description: >-
+        [GLI-33 B.7.4] Checks whether S3 buckets allow public read access.
+        The firewall shall reject all connections except those specifically
+        approved.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  S3BucketPublicWriteProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-s3-bucket-public-write-prohibited
+      Description: >-
+        [GLI-33 B.7.4] Checks whether S3 buckets allow public write access.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+      MaximumExecutionFrequency: TwentyFour_Hours
+
+  ##################################################################################
+  # B.8 Change Management
+  ##################################################################################
+
+  # B.8.2 Program Change Control Procedures - CloudTrail for change tracking
+  # (CloudTrail rules already defined above under B.2.7 serve this purpose)
+
+  # B.8.3 Software Development Life Cycle - covered by account separation
+  # (This is an architectural control enforced by SCPs, not a Config rule)
+
+  ##################################################################################
+  # B.9 Periodic Security Testing
+  ##################################################################################
+
+  # B.9.1 Technical Security Testing - Continuous vulnerability assessment
+  SecurityHubEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: gli33-securityhub-enabled
+      Description: >-
+        [GLI-33 B.9] Checks whether AWS Security Hub is enabled for centralized
+        security findings. Supports continuous vulnerability assessment alongside
+        periodic third-party penetration testing.
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+      MaximumExecutionFrequency: TwentyFour_Hours
