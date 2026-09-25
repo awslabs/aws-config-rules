@@ -2,7 +2,7 @@
 
 AWS Community repository of custom Config rules. Contributions welcome. Instructions for leveraging these rules are below.
 
-**Please review each rule carefully and test within your dev/test environment before integrating into production.**
+**These rules are examples intended to guide users in working with the AWS Config Rule Development Kit (RDK). They are not intended to have comprehensive coverage of all possible states your resources may encounter and are not guaranteed to be up-to-date. Please review each rule carefully and test within your dev/test environment before integrating into production.**
 
 ## Getting started with the developement of AWS Config Rules
 See the [CONTRIBUTING.md](https://github.com/awslabs/aws-config-rules/blob/master/CONTRIBUTING.md).
