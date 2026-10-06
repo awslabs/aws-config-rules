@@ -1,0 +1,550 @@
+
+###############################################################################
+# AWS Config Conformance Pack
+# Operational Best Practices for Chilean Data Protection Law 21,719
+#
+# This conformance pack implements technical controls required by Chilean Law 21,719
+# "Ley de Protección y Tratamiento de Datos Personales" (Data Protection Law)
+# 
+# Effective Date: December 1, 2026
+# Created: January 22, 2026
+#
+# Key Articles Covered:
+# - Article 3: Data Protection Principles
+# - Article 14 bis: Duty of Confidentiality
+# - Article 14 ter: Transparency and Information
+# - Article 14 quater: Privacy by Design and Default
+# - Article 14 quinquies: Security Measures
+# - Article 14 sexies: Breach Notification
+# - Article 17: Data Retention and Deletion
+# - Articles 27-29: International Data Transfers
+#
+# Total Managed Rules: 50
+###############################################################################
+
+Parameters:
+  AccessKeysRotatedParamMaxAccessKeyAge:
+    Default: '90'
+    Description: Maximum number of days without rotation for access keys (Article 14 quinquies - regular verification)
+    Type: String
+  
+  IAMUserUnusedCredentialsParamMaxCredentialUsageAge:
+    Default: '90'
+    Description: Maximum number of days a credential can remain unused (Article 14 bis - access control)
+    Type: String
+
+Conditions:
+  accessKeysRotatedParamMaxAccessKeyAge: !Not
+    - !Equals
+      - !Ref AccessKeysRotatedParamMaxAccessKeyAge
+      - ''
+  
+  iamUserUnusedCredentialsParamMaxCredentialUsageAge: !Not
+    - !Equals
+      - !Ref IAMUserUnusedCredentialsParamMaxCredentialUsageAge
+      - ''
+
+Resources:
+  ###########################################
+  # Article 14 quinquies - Encryption Controls
+  ###########################################
+  
+  S3BucketServerSideEncryptionEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-s3-bucket-server-side-encryption-enabled
+      Description: Checks that S3 buckets have server-side encryption enabled (Article 14 quinquies - encryption requirement)
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+
+  EncryptedVolumes:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-encrypted-volumes
+      Description: Checks that EBS volumes are encrypted (Article 14 quinquies - encryption requirement)
+      Source:
+        Owner: AWS
+        SourceIdentifier: ENCRYPTED_VOLUMES
+
+  RDSStorageEncrypted:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-rds-storage-encrypted
+      Description: Checks that RDS instances have storage encryption enabled (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_STORAGE_ENCRYPTED
+
+  DynamoDBTableEncryptedKMS:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-dynamodb-table-encrypted-kms
+      Description: Checks that DynamoDB tables are encrypted with KMS (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_TABLE_ENCRYPTED_KMS
+
+  CloudWatchLogGroupEncrypted:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-cloudwatch-log-group-encrypted
+      Description: Checks that CloudWatch Log Groups are encrypted (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
+
+  SNSEncryptedKMS:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-sns-encrypted-kms
+      Description: Checks that SNS topics are encrypted with KMS (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: SNS_ENCRYPTED_KMS
+
+  EFSEncryptedCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-efs-encrypted-check
+      Description: Checks that EFS file systems are encrypted (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ENCRYPTED_CHECK
+
+  ###########################################
+  # Article 14 bis - Confidentiality Controls
+  ###########################################
+
+  IAMPolicyNoStatementsWithAdminAccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-iam-policy-no-statements-with-admin-access
+      Description: Checks that IAM policies do not grant admin access (Article 14 bis - confidentiality)
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+
+  IAMUserNoPoliciesCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-iam-user-no-policies-check
+      Description: Checks that IAM users do not have policies attached (Article 14 bis)
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_NO_POLICIES_CHECK
+
+  S3BucketPublicReadProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-s3-bucket-public-read-prohibited
+      Description: Checks that S3 buckets do not allow public read access (Article 14 quinquies - confidentiality)
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+
+  S3BucketPublicWriteProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-s3-bucket-public-write-prohibited
+      Description: Checks that S3 buckets do not allow public write access (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+
+  VPCDefaultSecurityGroupClosed:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-vpc-default-security-group-closed
+      Description: Checks that default security groups restrict all traffic (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
+
+  RestrictedSSH:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-restricted-ssh
+      Description: Checks that security groups do not allow unrestricted SSH access (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: INCOMING_SSH_DISABLED
+
+  EC2InstanceProfileAttached:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-ec2-instance-profile-attached
+      Description: Checks that EC2 instances have IAM profiles attached (Article 14 bis)
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_PROFILE_ATTACHED
+
+  ###########################################
+  # Article 14 quinquies - Integrity Controls
+  ###########################################
+
+  CloudTrailEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-cloudtrail-enabled
+      Description: Checks that CloudTrail is enabled (Article 14 quinquies - integrity and accountability)
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+
+  CloudTrailLogFileValidationEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-cloud-trail-log-file-validation-enabled
+      Description: Checks that CloudTrail log file validation is enabled (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
+
+  S3BucketVersioningEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-s3-bucket-versioning-enabled
+      Description: Checks that S3 buckets have versioning enabled (Article 14 quinquies - integrity)
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+
+  DynamoDBPITREnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-dynamodb-pitr-enabled
+      Description: Checks that DynamoDB tables have point-in-time recovery enabled (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_PITR_ENABLED
+
+  ###########################################
+  # Article 14 quinquies - Availability and Resilience
+  ###########################################
+
+  RDSMultiAZSupport:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-rds-multi-az-support
+      Description: Checks that RDS instances use Multi-AZ (Article 14 quinquies - availability)
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_MULTI_AZ_SUPPORT
+
+  ELBDeletionProtectionEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-elb-deletion-protection-enabled
+      Description: Checks that ELBs have deletion protection enabled (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_DELETION_PROTECTION_ENABLED
+
+  DynamoDBAutoscalingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-dynamodb-autoscaling-enabled
+      Description: Checks that DynamoDB tables have autoscaling enabled (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
+
+  ###########################################
+  # Article 14 quinquies(c) - Rapid Recovery
+  ###########################################
+
+  DBBackupEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-db-backup-enabled
+      Description: Checks that database backups are enabled (Article 14 quinquies - rapid recovery)
+      Source:
+        Owner: AWS
+        SourceIdentifier: DB_INSTANCE_BACKUP_ENABLED
+
+  RedshiftBackupEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-redshift-backup-enabled
+      Description: Checks that Redshift clusters have backups enabled (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_BACKUP_ENABLED
+
+  ElastiCacheRedisClusterAutomaticBackupCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-elasticache-redis-cluster-automatic-backup-check
+      Description: Checks that ElastiCache Redis clusters have automatic backups (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
+
+  S3BucketReplicationEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-s3-bucket-replication-enabled
+      Description: Checks that S3 buckets have replication enabled (Article 14 quinquies - resilience)
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_REPLICATION_ENABLED
+
+  ###########################################
+  # Article 14 quinquies(d) - Regular Verification
+  ###########################################
+
+  SecurityHubEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-securityhub-enabled
+      Description: Checks that Security Hub is enabled (Article 14 quinquies - regular verification)
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+
+  GuardDutyEnabledCentralized:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-guardduty-enabled-centralized
+      Description: Checks that GuardDuty is enabled (Article 14 sexies - breach detection)
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+
+  AccessKeysRotated:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-access-keys-rotated
+      Description: Checks that IAM access keys are rotated (Article 14 quinquies - regular verification)
+      InputParameters:
+        maxAccessKeyAge: !If
+          - accessKeysRotatedParamMaxAccessKeyAge
+          - !Ref AccessKeysRotatedParamMaxAccessKeyAge
+          - !Ref AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+
+  IAMPasswordPolicy:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-iam-password-policy
+      Description: Checks that IAM password policy meets requirements (Article 14 bis)
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_PASSWORD_POLICY
+
+  IAMUserMFAEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-iam-user-mfa-enabled
+      Description: Checks that IAM users have MFA enabled (Article 14 bis - access control)
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_MFA_ENABLED
+
+  RootAccountMFAEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-root-account-mfa-enabled
+      Description: Checks that root account has MFA enabled (Article 14 bis)
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+
+  ###########################################
+  # Article 17 & 3(c) - Data Retention
+  ###########################################
+
+  S3LifecyclePolicyCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-s3-lifecycle-policy-check
+      Description: Checks that S3 buckets have lifecycle policies (Article 17 - data retention)
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_LIFECYCLE_POLICY_CHECK
+
+  CloudWatchLogGroupRetentionPeriodCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-cloudwatch-log-group-retention-period-check
+      Description: Checks that CloudWatch Log Groups have retention periods (Article 17)
+      Source:
+        Owner: AWS
+        SourceIdentifier: CW_LOGGROUP_RETENTION_PERIOD_CHECK
+
+  ###########################################
+  # Article 14 sexies - Breach Detection and Logging
+  ###########################################
+
+  VPCFlowLogsEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-vpc-flow-logs-enabled
+      Description: Checks that VPC Flow Logs are enabled (Article 14 sexies - breach detection)
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
+
+  CloudTrailCloudWatchLogsEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-cloud-trail-cloud-watch-logs-enabled
+      Description: Checks that CloudTrail logs are sent to CloudWatch (Article 14 sexies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_CLOUD_WATCH_LOGS_ENABLED
+
+  S3BucketLoggingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-s3-bucket-logging-enabled
+      Description: Checks that S3 bucket logging is enabled (Article 14 sexies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
+
+  RDSLoggingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-rds-logging-enabled
+      Description: Checks that RDS instances have logging enabled (Article 14 sexies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_LOGGING_ENABLED
+
+  APIGWExecutionLoggingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-api-gw-execution-logging-enabled
+      Description: Checks that API Gateway has execution logging enabled (Article 14 sexies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: API_GW_EXECUTION_LOGGING_ENABLED
+
+  ELBLoggingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-elb-logging-enabled
+      Description: Checks that ELB has access logging enabled (Article 14 sexies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_LOGGING_ENABLED
+
+  WAFv2LoggingEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-wafv2-logging-enabled
+      Description: Checks that WAFv2 has logging enabled (Article 14 sexies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: WAFV2_LOGGING_ENABLED
+
+  ###########################################
+  # Article 14 quater - Privacy by Design
+  ###########################################
+
+  S3BucketLevelPublicAccessProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-s3-bucket-level-public-access-prohibited
+      Description: Checks that S3 buckets block public access (Article 14 quater - privacy by default)
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LEVEL_PUBLIC_ACCESS_PROHIBITED
+
+  EC2InstanceNoPublicIP:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-ec2-instance-no-public-ip
+      Description: Checks that EC2 instances do not have public IPs (Article 14 quater)
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_NO_PUBLIC_IP
+
+  RDSInstancePublicAccessCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-rds-instance-public-access-check
+      Description: Checks that RDS instances are not publicly accessible (Article 14 quater)
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_PUBLIC_ACCESS_CHECK
+
+  RedshiftClusterPublicAccessCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-redshift-cluster-public-access-check
+      Description: Checks that Redshift clusters are not publicly accessible (Article 14 quater)
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_CLUSTER_PUBLIC_ACCESS_CHECK
+
+  ###########################################
+  # Article 27-29 - International Data Transfers
+  ###########################################
+
+  EC2InstancesInVPC:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-ec2-instances-in-vpc
+      Description: Checks that EC2 instances are in VPC (Article 27 - transfer controls)
+      Source:
+        Owner: AWS
+        SourceIdentifier: INSTANCES_IN_VPC
+
+  ###########################################
+  # Additional Security Controls
+  ###########################################
+
+  SecretsManagerRotationEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-secretsmanager-rotation-enabled-check
+      Description: Checks that Secrets Manager secrets have rotation enabled (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_ROTATION_ENABLED_CHECK
+
+  SecretsManagerScheduledRotationSuccess:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-secretsmanager-scheduled-rotation-success-check
+      Description: Checks that Secrets Manager rotation succeeds (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECRETSMANAGER_SCHEDULED_ROTATION_SUCCESS_CHECK
+
+  IAMUserUnusedCredentialsCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-iam-user-unused-credentials-check
+      Description: Checks for unused IAM credentials (Article 14 bis - access control)
+      InputParameters:
+        maxCredentialUsageAge: !If
+          - iamUserUnusedCredentialsParamMaxCredentialUsageAge
+          - !Ref IAMUserUnusedCredentialsParamMaxCredentialUsageAge
+          - !Ref AWS::NoValue
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
+
+  MultiRegionCloudTrailEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-multi-region-cloudtrail-enabled
+      Description: Checks that CloudTrail is enabled in all regions (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+
+  CloudTrailEncryptionEnabled:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: chile-dp-cloud-trail-encryption-enabled
+      Description: Checks that CloudTrail logs are encrypted (Article 14 quinquies)
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
