@@ -1,0 +1,255 @@
+################################################################################
+# Threat-Informed Security Best Practices (Fundamental)
+#
+# This conformance pack contains AWS Config rules recommended by AWS Security
+# Incident Response security engineers. These rules identify preventable,
+# common misconfigurations that are known to create vulnerabilities exploited
+# in attacks against AWS environments.
+#
+# Rules are classified according to the Threat Technique Catalog for AWS
+# (based on MITRE ATT&CK®) and organized by threat category:
+#   - Initial Access: S3 Protection
+#   - Initial Access: EC2 Security (IMDSv2)
+#   - Initial Access: Resource Access Protection (Security Groups)
+#
+# References:
+#   - Threat Technique Catalog for AWS:
+#     https://aws-samples.github.io/threat-technique-catalog-for-aws/
+#   - AWS Security Incident Response:
+#     https://aws.amazon.com/security-incident-response/
+#   - AWS Config Conformance Packs:
+#     https://docs.aws.amazon.com/config/latest/developerguide/conformance-packs.html
+################################################################################
+
+Parameters:
+  S3BucketLevelPublicAccessProhibitedExcludedPublicBuckets:
+    Type: String
+    Default: ''
+    Description: "Comma-separated list of known allowed public Amazon S3 bucket names."
+
+  S3AccessPointPublicAccessBlocksExcludedAccessPoints:
+    Type: String
+    Default: ''
+    Description: "Comma-separated list of names for allowed public Amazon S3 access points."
+
+  S3AccountLevelPublicAccessIgnorePublicAcls:
+    Type: String
+    Default: 'True'
+    Description: "Whether to enforce the IgnorePublicAcls option. Set to 'true' or 'false'."
+
+  S3AccountLevelPublicAccessBlockPublicPolicy:
+    Type: String
+    Default: 'True'
+    Description: "Whether to enforce the BlockPublicPolicy option. Set to 'true' or 'false'."
+
+  S3AccountLevelPublicAccessBlockPublicAcls:
+    Type: String
+    Default: 'True'
+    Description: "Whether to enforce the BlockPublicAcls option. Set to 'true' or 'false'."
+
+  S3AccountLevelPublicAccessRestrictPublicBuckets:
+    Type: String
+    Default: 'True'
+    Description: "Whether to enforce the RestrictPublicBuckets option. Set to 'true' or 'false'."
+
+  VPCSecurityGroupPortRestrictionRestrictedPorts:
+    Type: String
+    Default: '22,3389'
+    Description: "Comma-separated list of ports that should not be open to 0.0.0.0/0. Default: SSH (22) and RDP (3389)."
+
+  VPCSecurityGroupPortRestrictionProtocolType:
+    Type: String
+    Default: 'ALL'
+    Description: "Protocol type to check. Valid values: TCP, UDP, ALL."
+
+  VPCSecurityGroupPortRestrictionExcludeExternalSecurityGroups:
+    Type: String
+    Default: 'True'
+    Description: "Whether to exclude external security groups from evaluation. Set to 'true' or 'false'."
+
+  VPCSecurityGroupPortRestrictionIpType:
+    Type: String
+    Default: 'ALL'
+    Description: "IP version to check. Valid values: IPv4, IPv6, ALL."
+
+Resources:
+
+  # ============================================================================
+  # Initial Access - S3 Protection
+  # ============================================================================
+
+  S3BucketPublicReadProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sire-ia-s3-s3-bucket-public-read-prohibited
+      Description: "Checks that S3 buckets do not allow public read access."
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+
+  S3BucketPublicWriteProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sire-ia-s3-s3-bucket-public-write-prohibited
+      Description: "Checks that S3 buckets do not allow public write access."
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+
+  S3AccessPointInVpcOnly:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sire-ia-s3-s3-access-point-in-vpc-only
+      Description: "Checks whether Amazon S3 access points are configured to only allow access from within a VPC."
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCESS_POINT_IN_VPC_ONLY
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::AccessPoint
+
+  S3AccessPointPublicAccessBlocks:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sire-ia-s3-s3-access-point-public-access-blocks
+      Description: "Checks whether Amazon S3 access points have public access block settings enabled."
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCESS_POINT_PUBLIC_ACCESS_BLOCKS
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::AccessPoint
+      InputParameters:
+        excludedAccessPoints:
+          Fn::If:
+          - HasExcludedAccessPoints
+          - Ref: S3AccessPointPublicAccessBlocksExcludedAccessPoints
+          - Ref: AWS::NoValue
+
+  S3AccountLevelPublicAccessBlocksPeriodic:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sire-ia-s3-s3-account-level-public-access-blocks-periodic
+      Description: "Periodically checks whether Amazon S3 account-level public access block settings remain enabled."
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
+      MaximumExecutionFrequency: TwentyFour_Hours
+      InputParameters:
+        IgnorePublicAcls:
+          Ref: S3AccountLevelPublicAccessIgnorePublicAcls
+        BlockPublicPolicy:
+          Ref: S3AccountLevelPublicAccessBlockPublicPolicy
+        BlockPublicAcls:
+          Ref: S3AccountLevelPublicAccessBlockPublicAcls
+        RestrictPublicBuckets:
+          Ref: S3AccountLevelPublicAccessRestrictPublicBuckets
+
+  S3BucketLevelPublicAccessProhibited:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sire-ia-s3-s3-bucket-level-public-access-prohibited
+      Description: "Checks if S3 buckets are publicly accessible at the bucket level."
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LEVEL_PUBLIC_ACCESS_PROHIBITED
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::S3::Bucket
+      InputParameters:
+        excludedPublicBuckets:
+          Fn::If:
+          - HasExcludedPublicBuckets
+          - Ref: S3BucketLevelPublicAccessProhibitedExcludedPublicBuckets
+          - Ref: AWS::NoValue
+
+  # ============================================================================
+  # Initial Access - EC2 Security (IMDSv2)
+  # ============================================================================
+
+  AutoscalingLaunchconfigRequiresImdsv2:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sire-ia-ec2-autoscaling-launchconfig-requires-imdsv2
+      Description: "Checks whether EC2 Auto Scaling groups have launch configurations that require IMDSv2."
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_LAUNCHCONFIG_REQUIRES_IMDSV2
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::AutoScaling::LaunchConfiguration
+
+  Ec2Imdsv2Check:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sire-ia-ec2-ec2-imdsv2-check
+      Description: "Checks whether EC2 instances are configured to require IMDSv2."
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_IMDSV2_CHECK
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Instance
+
+  Ec2LaunchTemplateImdsv2Check:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sire-ia-ec2-ec2-launch-template-imdsv2-check
+      Description: "Checks whether EC2 launch templates are configured to require IMDSv2."
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_LAUNCH_TEMPLATE_IMDSV2_CHECK
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::LaunchTemplate
+
+  # ============================================================================
+  # Initial Access - Resource Access Protection (Security Groups)
+  # ============================================================================
+
+  VPCSecurityGroupPortRestrictionCheck:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: sire-ia-ra-vpc-sg-port-restriction-check
+      Description: "Checks whether security groups allow unrestricted inbound traffic on specified ports."
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_SG_PORT_RESTRICTION_CHECK
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::SecurityGroup
+      InputParameters:
+        restrictPorts:
+          Fn::If:
+          - HasRestrictedPorts
+          - Ref: VPCSecurityGroupPortRestrictionRestrictedPorts
+          - Ref: AWS::NoValue
+        protocolType:
+          Ref: VPCSecurityGroupPortRestrictionProtocolType
+        excludeExternalSecurityGroups:
+          Ref: VPCSecurityGroupPortRestrictionExcludeExternalSecurityGroups
+        ipType:
+          Ref: VPCSecurityGroupPortRestrictionIpType
+
+Conditions:
+  HasExcludedPublicBuckets:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3BucketLevelPublicAccessProhibitedExcludedPublicBuckets
+  HasExcludedAccessPoints:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3AccessPointPublicAccessBlocksExcludedAccessPoints
+  HasRestrictedPorts:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: VPCSecurityGroupPortRestrictionRestrictedPorts
