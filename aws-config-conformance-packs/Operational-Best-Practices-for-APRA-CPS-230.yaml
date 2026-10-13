@@ -1,0 +1,289 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for APRA CPS 230
+#
+#   This conformance pack helps verify compliance with the APRA Prudential Standard
+#   CPS 230 Operational Risk Management. It covers the AWS-observable operational-risk
+#   controls: IT capability/patching (para 24), monitoring (para 26), control
+#   effectiveness (para 29), business continuity / backup & DR (para 33) and tolerance-
+#   level resilience (para 37). Governance/process paragraphs are out of scope.
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit:
+    Default: days
+    Type: String
+  BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue:
+    Default: '1'
+    Type: String
+  BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays:
+    Default: '35'
+    Type: String
+Resources:
+  Cps230AsgMultiAz:
+    Properties:
+      ConfigRuleName: cps230-autoscaling-multiple-az
+      Description: 'CPS 230 para 37 - Tolerance levels: Auto Scaling groups span multiple AZs.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: AUTOSCALING_MULTIPLE_AZ
+    Type: AWS::Config::ConfigRule
+  Cps230AuroraBackup:
+    Properties:
+      ConfigRuleName: cps230-aurora-resources-protected-by-backup-plan
+      Description: 'CPS 230 para 33 - Business continuity: Aurora resources are protected by a backup plan.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: AURORA_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  Cps230BackupEncrypted:
+    Properties:
+      ConfigRuleName: cps230-backup-recovery-point-encrypted
+      Description: 'CPS 230 para 33 - Business continuity: AWS Backup recovery points are encrypted.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  Cps230BackupNoManualDeletion:
+    Properties:
+      ConfigRuleName: cps230-backup-recovery-point-manual-deletion-disabled
+      Description: 'CPS 230 para 33 - Business continuity: backup recovery points are protected from manual deletion.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_MANUAL_DELETION_DISABLED
+    Type: AWS::Config::ConfigRule
+  Cps230BackupPlanMinFreqRetention:
+    Properties:
+      ConfigRuleName: cps230-backup-plan-min-frequency-and-min-retention-check
+      Description: 'CPS 230 para 33 - Business continuity: backup plans meet minimum frequency and retention.'
+      InputParameters:
+        requiredFrequencyUnit:
+          Fn::Sub: ${BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit}
+        requiredFrequencyValue:
+          Fn::Sub: ${BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyValue}
+        requiredRetentionDays:
+          Fn::Sub: ${BackupPlanMinFrequencyAndMinRetentionCheckParamRequiredRetentionDays}
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_PLAN_MIN_FREQUENCY_AND_MIN_RETENTION_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps230ClbMultiAz:
+    Properties:
+      ConfigRuleName: cps230-clb-multiple-az
+      Description: 'CPS 230 para 37 - Tolerance levels: Classic Load Balancers span multiple AZs.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLB_MULTIPLE_AZ
+    Type: AWS::Config::ConfigRule
+  Cps230CloudtrailEnabled:
+    Properties:
+      ConfigRuleName: cps230-cloudtrail-enabled
+      Description: 'CPS 230 para 26 - Information systems to monitor operational risk: CloudTrail is enabled.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230DynamoAutoscaling:
+    Properties:
+      ConfigRuleName: cps230-dynamodb-autoscaling-enabled
+      Description: 'CPS 230 para 37 - Tolerance levels: DynamoDB autoscaling is enabled.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_AUTOSCALING_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230DynamoInBackupPlan:
+    Properties:
+      ConfigRuleName: cps230-dynamodb-in-backup-plan
+      Description: 'CPS 230 para 33 - Business continuity: DynamoDB tables are in an AWS Backup plan.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  Cps230DynamoPitr:
+    Properties:
+      ConfigRuleName: cps230-dynamodb-pitr-enabled
+      Description: 'CPS 230 para 33 - Business continuity: DynamoDB point-in-time recovery is enabled.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_PITR_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230EbsInBackupPlan:
+    Properties:
+      ConfigRuleName: cps230-ebs-in-backup-plan
+      Description: 'CPS 230 para 33 - Business continuity: EBS volumes are in an AWS Backup plan.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  Cps230Ec2BackupPlan:
+    Properties:
+      ConfigRuleName: cps230-ec2-resources-protected-by-backup-plan
+      Description: 'CPS 230 para 33 - Business continuity: EC2 resources are protected by a backup plan.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  Cps230EfsInBackupPlan:
+    Properties:
+      ConfigRuleName: cps230-efs-in-backup-plan
+      Description: 'CPS 230 para 33 - Business continuity: EFS file systems are in an AWS Backup plan.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  Cps230ElasticacheBackup:
+    Properties:
+      ConfigRuleName: cps230-elasticache-redis-cluster-automatic-backup-check
+      Description: 'CPS 230 para 33 - Business continuity: ElastiCache Redis clusters have automatic backups.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELASTICACHE_REDIS_CLUSTER_AUTOMATIC_BACKUP_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps230ElbCrossZone:
+    Properties:
+      ConfigRuleName: cps230-elb-cross-zone-load-balancing-enabled
+      Description: 'CPS 230 para 37 - Tolerance levels: ELB cross-zone load balancing is enabled.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_CROSS_ZONE_LOAD_BALANCING_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230ElbDeletionProtection:
+    Properties:
+      ConfigRuleName: cps230-elb-deletion-protection-enabled
+      Description: 'CPS 230 para 37 - Tolerance levels: load balancers have deletion protection.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: ELB_DELETION_PROTECTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230FsxBackupPlan:
+    Properties:
+      ConfigRuleName: cps230-fsx-resources-protected-by-backup-plan
+      Description: 'CPS 230 para 33 - Business continuity: FSx resources are protected by a backup plan.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: FSX_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  Cps230GuardDuty:
+    Properties:
+      ConfigRuleName: cps230-guardduty-enabled-centralized
+      Description: 'CPS 230 para 29 - Control effectiveness monitoring: Amazon GuardDuty is enabled.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+    Type: AWS::Config::ConfigRule
+  Cps230MultiRegionCloudtrail:
+    Properties:
+      ConfigRuleName: cps230-multi-region-cloudtrail-enabled
+      Description: 'CPS 230 para 26 - Information systems to monitor operational risk: a multi-region CloudTrail is enabled.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230OpenSearchFaultTolerance:
+    Properties:
+      ConfigRuleName: cps230-opensearch-data-node-fault-tolerance
+      Description: 'CPS 230 para 37 - Tolerance levels: OpenSearch data nodes are fault-tolerant.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: OPENSEARCH_DATA_NODE_FAULT_TOLERANCE
+    Type: AWS::Config::ConfigRule
+  Cps230PatchCompliance:
+    Properties:
+      ConfigRuleName: cps230-ec2-managedinstance-patch-compliance
+      Description: 'CPS 230 para 24 - Sound IT capability: managed EC2 instances are patch-compliant (asset health).'
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps230RdsBackup:
+    Properties:
+      ConfigRuleName: cps230-db-instance-backup-enabled
+      Description: 'CPS 230 para 33 - Business continuity: RDS instances have automated backups.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: DB_INSTANCE_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230RdsClusterMultiAz:
+    Properties:
+      ConfigRuleName: cps230-rds-cluster-multi-az-enabled
+      Description: 'CPS 230 para 37 - Tolerance levels: RDS clusters are Multi-AZ.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_CLUSTER_MULTI_AZ_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230RdsDeletionProtection:
+    Properties:
+      ConfigRuleName: cps230-rds-instance-deletion-protection-enabled
+      Description: 'CPS 230 para 37 - Tolerance levels: RDS instances have deletion protection.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_DELETION_PROTECTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230RdsInBackupPlan:
+    Properties:
+      ConfigRuleName: cps230-rds-in-backup-plan
+      Description: 'CPS 230 para 33 - Business continuity: RDS instances are in an AWS Backup plan.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  Cps230RdsMultiAz:
+    Properties:
+      ConfigRuleName: cps230-rds-multi-az-support
+      Description: 'CPS 230 para 37 - Tolerance levels: RDS instances use Multi-AZ for availability.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_MULTI_AZ_SUPPORT
+    Type: AWS::Config::ConfigRule
+  Cps230RedshiftBackup:
+    Properties:
+      ConfigRuleName: cps230-redshift-backup-enabled
+      Description: 'CPS 230 para 33 - Business continuity: Redshift automated snapshots are enabled.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230S3Versioning:
+    Properties:
+      ConfigRuleName: cps230-s3-bucket-versioning-enabled
+      Description: 'CPS 230 para 33 - Business continuity: S3 bucket versioning is enabled (recoverability).'
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230SecurityHub:
+    Properties:
+      ConfigRuleName: cps230-securityhub-enabled
+      Description: 'CPS 230 para 29 - Control effectiveness monitoring: AWS Security Hub is enabled.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230SsmManaged:
+    Properties:
+      ConfigRuleName: cps230-ec2-instance-managed-by-ssm
+      Description: 'CPS 230 para 24 - Sound IT capability: EC2 instances are managed by AWS Systems Manager.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_MANAGED_BY_SSM
+    Type: AWS::Config::ConfigRule
+  Cps230VpcFlowLogs:
+    Properties:
+      ConfigRuleName: cps230-vpc-flow-logs-enabled
+      Description: 'CPS 230 para 26 - Information systems to monitor operational risk: VPC flow logs are enabled.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps230VpnTunnels:
+    Properties:
+      ConfigRuleName: cps230-vpc-vpn-2-tunnels-up
+      Description: 'CPS 230 para 37 - Tolerance levels: Site-to-Site VPNs have both tunnels up.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_VPN_2_TUNNELS_UP
+    Type: AWS::Config::ConfigRule

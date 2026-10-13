@@ -1,0 +1,417 @@
+##################################################################################
+#
+#   Conformance Pack:
+#     Operational Best Practices for APRA CPS 234
+#
+#   This conformance pack helps verify compliance with the APRA Prudential Standard
+#   CPS 234 Information Security (July 2019). It complements the existing
+#   Operational-Best-Practices-for-APRA-CPG-234 pack, which maps the (older) APRA
+#   *practice guide* CPG 234 rather than the binding *standard* CPS 234.
+#
+#   See Parameters section for names and descriptions of required parameters.
+#
+##################################################################################
+
+Parameters:
+  AccessKeysRotatedParamMaxAccessKeyAge:
+    Default: '90'
+    Type: String
+  IamPasswordPolicyParamMaxPasswordAge:
+    Default: '90'
+    Type: String
+  IamPasswordPolicyParamMinimumPasswordLength:
+    Default: '14'
+    Type: String
+  IamPasswordPolicyParamPasswordReusePrevention:
+    Default: '24'
+    Type: String
+  IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge:
+    Default: '90'
+    Type: String
+Resources:
+  Cps234AccessKeysRotated:
+    Properties:
+      ConfigRuleName: cps234-access-keys-rotated
+      Description: CPS 234 para 21 - IAM access keys are rotated within the configured maximum age.
+      InputParameters:
+        maxAccessKeyAge:
+          Fn::Sub: ${AccessKeysRotatedParamMaxAccessKeyAge}
+      Source:
+        Owner: AWS
+        SourceIdentifier: ACCESS_KEYS_ROTATED
+    Type: AWS::Config::ConfigRule
+  Cps234AlbHttpsRedirect:
+    Properties:
+      ConfigRuleName: cps234-alb-http-to-https-redirection-check
+      Description: CPS 234 para 21 - ALB HTTP listeners redirect to HTTPS.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ALB_HTTP_TO_HTTPS_REDIRECTION_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps234BackupRecoveryPointEncrypted:
+    Properties:
+      ConfigRuleName: cps234-backup-recovery-point-encrypted
+      Description: CPS 234 para 21 - AWS Backup recovery points are encrypted.
+      Source:
+        Owner: AWS
+        SourceIdentifier: BACKUP_RECOVERY_POINT_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  Cps234CloudTrailEnabled:
+    Properties:
+      ConfigRuleName: cps234-cloudtrail-enabled
+      Description: CPS 234 para 21 - AWS CloudTrail is enabled (audit trail).
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234CloudTrailEncryption:
+    Properties:
+      ConfigRuleName: cps234-cloudtrail-encryption-enabled
+      Description: CPS 234 para 21 - CloudTrail logs are encrypted with KMS.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234CloudTrailLogValidation:
+    Properties:
+      ConfigRuleName: cps234-cloudtrail-log-file-validation-enabled
+      Description: CPS 234 para 21 - CloudTrail log file validation is enabled (tamper-evidence).
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234CloudTrailMultiRegion:
+    Properties:
+      ConfigRuleName: cps234-multi-region-cloudtrail-enabled
+      Description: CPS 234 para 21 - a multi-region CloudTrail is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234DynamoDbEncryption:
+    Properties:
+      ConfigRuleName: cps234-dynamodb-table-encryption-enabled
+      Description: CPS 234 para 21 - DynamoDB tables are encrypted.
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_TABLE_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234DynamoDbPitr:
+    Properties:
+      ConfigRuleName: cps234-dynamodb-pitr-enabled
+      Description: CPS 234 para 21 - DynamoDB point-in-time recovery is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: DYNAMODB_PITR_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234EbsDefaultEncryption:
+    Properties:
+      ConfigRuleName: cps234-ec2-ebs-encryption-by-default
+      Description: CPS 234 para 21 - account-level EBS encryption by default is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_EBS_ENCRYPTION_BY_DEFAULT
+    Type: AWS::Config::ConfigRule
+  Cps234EbsEncryptedVolumes:
+    Properties:
+      ConfigRuleName: cps234-encrypted-volumes
+      Description: CPS 234 para 21 - attached EBS volumes are encrypted.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ENCRYPTED_VOLUMES
+    Type: AWS::Config::ConfigRule
+  Cps234EbsInBackupPlan:
+    Properties:
+      ConfigRuleName: cps234-ebs-in-backup-plan
+      Description: CPS 234 para 21 - EBS volumes are covered by an AWS Backup plan.
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  Cps234EbsSnapshotPublic:
+    Properties:
+      ConfigRuleName: cps234-ebs-snapshot-public-restorable-check
+      Description: CPS 234 para 21 - EBS snapshots are not publicly restorable.
+      Source:
+        Owner: AWS
+        SourceIdentifier: EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps234EfsEncrypted:
+    Properties:
+      ConfigRuleName: cps234-efs-encrypted-check
+      Description: CPS 234 para 21 - EFS file systems are encrypted.
+      Source:
+        Owner: AWS
+        SourceIdentifier: EFS_ENCRYPTED_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps234GuardDuty:
+    Properties:
+      ConfigRuleName: cps234-guardduty-enabled-centralized
+      Description: CPS 234 para 21 / 23 - Amazon GuardDuty is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: GUARDDUTY_ENABLED_CENTRALIZED
+    Type: AWS::Config::ConfigRule
+  Cps234IamNoInlinePolicy:
+    Properties:
+      ConfigRuleName: cps234-iam-no-inline-policy-check
+      Description: 'CPS 234 para 21 - least privilege: no inline policies on users/groups/roles (use managed, reviewable policies).'
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_NO_INLINE_POLICY_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps234IamPasswordPolicy:
+    Properties:
+      ConfigRuleName: cps234-iam-password-policy
+      Description: CPS 234 para 21 - strong account password policy (length, complexity, reuse, rotation).
+      InputParameters:
+        MaxPasswordAge:
+          Fn::Sub: ${IamPasswordPolicyParamMaxPasswordAge}
+        MinimumPasswordLength:
+          Fn::Sub: ${IamPasswordPolicyParamMinimumPasswordLength}
+        PasswordReusePrevention:
+          Fn::Sub: ${IamPasswordPolicyParamPasswordReusePrevention}
+        RequireLowercaseCharacters: 'true'
+        RequireNumbers: 'true'
+        RequireSymbols: 'true'
+        RequireUppercaseCharacters: 'true'
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_PASSWORD_POLICY
+    Type: AWS::Config::ConfigRule
+  Cps234IamPolicyNoAdminAccess:
+    Properties:
+      ConfigRuleName: cps234-iam-policy-no-statements-with-admin-access
+      Description: 'CPS 234 para 21 - least privilege: customer-managed IAM policies must not grant full ''*:*'' administrative
+        access.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_POLICY_NO_STATEMENTS_WITH_ADMIN_ACCESS
+    Type: AWS::Config::ConfigRule
+  Cps234IamRootAccessKey:
+    Properties:
+      ConfigRuleName: cps234-iam-root-access-key-check
+      Description: CPS 234 para 21 - the root user must not have active access keys.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps234IamUserMfa:
+    Properties:
+      ConfigRuleName: cps234-iam-user-mfa-enabled
+      Description: CPS 234 para 21 - MFA enabled for IAM users.
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234IamUserNoPolicies:
+    Properties:
+      ConfigRuleName: cps234-iam-user-no-policies-check
+      Description: 'CPS 234 para 21 - least privilege: policies attached to groups/roles, not directly to IAM users.'
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_NO_POLICIES_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps234IamUserUnusedCredentials:
+    Properties:
+      ConfigRuleName: cps234-iam-user-unused-credentials-check
+      Description: CPS 234 para 21 - remove unused IAM passwords and access keys (stale credentials).
+      InputParameters:
+        maxCredentialUsageAge:
+          Fn::Sub: ${IamUserUnusedCredentialsCheckParamMaxCredentialUsageAge}
+      Source:
+        Owner: AWS
+        SourceIdentifier: IAM_USER_UNUSED_CREDENTIALS_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps234KmsKeyRotation:
+    Properties:
+      ConfigRuleName: cps234-cmk-backing-key-rotation-enabled
+      Description: CPS 234 para 21 - automatic rotation enabled for KMS customer master keys.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CMK_BACKING_KEY_ROTATION_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234KmsNotScheduledForDeletion:
+    Properties:
+      ConfigRuleName: cps234-kms-cmk-not-scheduled-for-deletion
+      Description: CPS 234 para 21 - KMS keys are not scheduled for deletion (protect encrypted data).
+      Source:
+        Owner: AWS
+        SourceIdentifier: KMS_CMK_NOT_SCHEDULED_FOR_DELETION
+    Type: AWS::Config::ConfigRule
+  Cps234LogGroupEncrypted:
+    Properties:
+      ConfigRuleName: cps234-cloudwatch-log-group-encrypted
+      Description: CPS 234 para 21 - CloudWatch log groups are encrypted with KMS.
+      Source:
+        Owner: AWS
+        SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  Cps234MfaConsoleAccess:
+    Properties:
+      ConfigRuleName: cps234-mfa-enabled-for-iam-console-access
+      Description: CPS 234 para 21 - MFA enabled for all IAM users with a console password.
+      Source:
+        Owner: AWS
+        SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
+    Type: AWS::Config::ConfigRule
+  Cps234PatchCompliance:
+    Properties:
+      ConfigRuleName: cps234-ec2-managedinstance-patch-compliance-status-check
+      Description: CPS 234 para 27 - managed EC2 instances are patch-compliant.
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps234RdsBackup:
+    Properties:
+      ConfigRuleName: cps234-db-instance-backup-enabled
+      Description: CPS 234 para 21 - RDS instances have automated backups enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: DB_INSTANCE_BACKUP_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234RdsInBackupPlan:
+    Properties:
+      ConfigRuleName: cps234-rds-in-backup-plan
+      Description: CPS 234 para 21 - RDS instances are covered by an AWS Backup plan.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_IN_BACKUP_PLAN
+    Type: AWS::Config::ConfigRule
+  Cps234RdsPublicAccess:
+    Properties:
+      ConfigRuleName: cps234-rds-instance-public-access-check
+      Description: CPS 234 para 21 - RDS instances are not publicly accessible.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_INSTANCE_PUBLIC_ACCESS_CHECK
+    Type: AWS::Config::ConfigRule
+  Cps234RdsSnapshotPublic:
+    Properties:
+      ConfigRuleName: cps234-rds-snapshots-public-prohibited
+      Description: CPS 234 para 21 - RDS snapshots are not public.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_SNAPSHOTS_PUBLIC_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  Cps234RdsStorageEncrypted:
+    Properties:
+      ConfigRuleName: cps234-rds-storage-encrypted
+      Description: CPS 234 para 21 - RDS instances have storage encryption enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: RDS_STORAGE_ENCRYPTED
+    Type: AWS::Config::ConfigRule
+  Cps234RedshiftTls:
+    Properties:
+      ConfigRuleName: cps234-redshift-require-tls-ssl
+      Description: CPS 234 para 21 - Redshift clusters require TLS/SSL for connections.
+      Source:
+        Owner: AWS
+        SourceIdentifier: REDSHIFT_REQUIRE_TLS_SSL
+    Type: AWS::Config::ConfigRule
+  Cps234RootHardwareMfa:
+    Properties:
+      ConfigRuleName: cps234-root-account-hardware-mfa-enabled
+      Description: CPS 234 para 21 - hardware MFA enabled on the root user.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234RootMfa:
+    Properties:
+      ConfigRuleName: cps234-root-account-mfa-enabled
+      Description: CPS 234 para 21 - MFA enabled on the root user.
+      Source:
+        Owner: AWS
+        SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234S3AccountPublicAccessBlock:
+    Properties:
+      ConfigRuleName: cps234-s3-account-level-public-access-blocks-periodic
+      Description: CPS 234 para 21 - account-level S3 Block Public Access is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS_PERIODIC
+    Type: AWS::Config::ConfigRule
+  Cps234S3BucketLogging:
+    Properties:
+      ConfigRuleName: cps234-s3-bucket-logging-enabled
+      Description: CPS 234 para 21 - S3 server access logging is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_LOGGING_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234S3Encryption:
+    Properties:
+      ConfigRuleName: cps234-s3-bucket-server-side-encryption-enabled
+      Description: CPS 234 para 21 - S3 buckets have server-side encryption enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234S3PublicRead:
+    Properties:
+      ConfigRuleName: cps234-s3-bucket-public-read-prohibited
+      Description: CPS 234 para 21 - S3 buckets prohibit public read access.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  Cps234S3PublicWrite:
+    Properties:
+      ConfigRuleName: cps234-s3-bucket-public-write-prohibited
+      Description: CPS 234 para 21 - S3 buckets prohibit public write access.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_PUBLIC_WRITE_PROHIBITED
+    Type: AWS::Config::ConfigRule
+  Cps234S3SslRequestsOnly:
+    Properties:
+      ConfigRuleName: cps234-s3-bucket-ssl-requests-only
+      Description: CPS 234 para 21 - S3 bucket policies require requests to use SSL/TLS.
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_SSL_REQUESTS_ONLY
+    Type: AWS::Config::ConfigRule
+  Cps234S3Versioning:
+    Properties:
+      ConfigRuleName: cps234-s3-bucket-versioning-enabled
+      Description: CPS 234 para 21 - S3 bucket versioning is enabled (recoverability).
+      Source:
+        Owner: AWS
+        SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234SecurityHub:
+    Properties:
+      ConfigRuleName: cps234-securityhub-enabled
+      Description: CPS 234 para 21 - AWS Security Hub is enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: SECURITYHUB_ENABLED
+    Type: AWS::Config::ConfigRule
+  Cps234SnsEncrypted:
+    Properties:
+      ConfigRuleName: cps234-sns-encrypted-kms
+      Description: CPS 234 para 21 - SNS topics are encrypted with KMS.
+      Source:
+        Owner: AWS
+        SourceIdentifier: SNS_ENCRYPTED_KMS
+    Type: AWS::Config::ConfigRule
+  Cps234SsmManagedInstance:
+    Properties:
+      ConfigRuleName: cps234-ec2-instance-managed-by-ssm
+      Description: CPS 234 para 27 - EC2 instances are managed by AWS Systems Manager (scan coverage).
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_INSTANCE_MANAGED_BY_SSM
+    Type: AWS::Config::ConfigRule
+  Cps234VpcFlowLogs:
+    Properties:
+      ConfigRuleName: cps234-vpc-flow-logs-enabled
+      Description: CPS 234 para 21 - VPC flow logs are enabled.
+      Source:
+        Owner: AWS
+        SourceIdentifier: VPC_FLOW_LOGS_ENABLED
+    Type: AWS::Config::ConfigRule
