@@ -1179,8 +1179,3 @@ Resources:
         Source:
           Owner: AWS
           SourceIdentifier: EMR_MASTER_NO_PUBLIC_IP
-Conditions:
-  CommercialPartition:
-    Fn::Equals:
-      - Ref: AWS::Partition
-      - aws

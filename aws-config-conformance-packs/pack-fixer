@@ -15,7 +15,7 @@ for n in `ls *.y*ml`; do echo $n; ./region-check $n >> unsupported_in_${AWS_DEFA
 
 # conditionalize each unsupported rule
 cp /dev/null unsupported_in_${AWS_DEFAULT_REGION}_edits.sed
-sort -u unsupported_in_${AWS_DEFAULT_REGION} | awk '{printf "s/%s/&\\n\\ \\ \\ \\ Condition:\\ CommercialPartition/\n", $1}' >> unsupported_in_${AWS_DEFAULT_REGION}_edits.sed
+sort -u unsupported_in_${AWS_DEFAULT_REGION} | awk '{printf "s/%s:/&\\n\\ \\ \\ \\ Condition:\\ CommercialPartition/\n", $1}' >> unsupported_in_${AWS_DEFAULT_REGION}_edits.sed
 
 # edit each pack with unsupported rules
 sort -u unsupported_in_${AWS_DEFAULT_REGION} | grep -lf - *.y*ml | xargs \

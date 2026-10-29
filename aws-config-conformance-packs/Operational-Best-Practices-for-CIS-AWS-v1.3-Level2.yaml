@@ -419,6 +419,7 @@ Resources:
     Type: AWS::Config::ConfigRule
   IAMAccessAnalyzerEnabled:
     Condition: CommercialPartition
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: iam-access-analyzer-enabled
       Description: Ensure that IAM Access analyzer is enabled. Within the IAM section of the console, select Access analyzer and ensure that the STATUS is set to Active.

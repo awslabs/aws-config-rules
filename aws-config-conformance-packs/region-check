@@ -8,7 +8,8 @@
 #   export AWS_ACCESS_KEY_ID="..."
 #   export AWS_SECRET_ACCESS_KEY="..."
 #   export AWS_SESSION_TOKEN="..."
-#   export AWS_DEFAULT_REGION="..."
+#   export AWS_DEFAULT_REGION="us-gov-east-1"
+#
 #   ./region-check whatever.yaml
 #   for n in `ls *.y*ml`; do echo $n; ./region-check $n >> unsupported_in_${AWS_DEFAULT_REGION}  ; done
 #   sort -u unsupported_in_${AWS_DEFAULT_REGION}

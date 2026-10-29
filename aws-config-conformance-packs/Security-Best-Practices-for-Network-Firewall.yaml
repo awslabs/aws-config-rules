@@ -8,11 +8,9 @@
 
 Parameters:
   NetfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions:
-    Condition: CommercialPartition
     Default: aws:drop,aws:forward_to_sfe
     Type: String
   NetfwPolicyDefaultActionFullPacketsParamStatelessDefaultActions:
-    Condition: CommercialPartition
     Default: aws:drop,aws:forward_to_sfe
     Type: String
 Resources:

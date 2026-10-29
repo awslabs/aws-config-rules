@@ -755,8 +755,3 @@ Resources:
         Source:
           Owner: AWS
           SourceIdentifier: CLOUDTRAIL_SECURITY_TRAIL_ENABLED
-Conditions:
-  CommercialPartition:
-    Fn::Equals:
-      - Ref: AWS::Partition
-      - aws

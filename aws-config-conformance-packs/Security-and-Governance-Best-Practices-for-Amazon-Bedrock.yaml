@@ -711,8 +711,3 @@ Resources:
         Source:
           Owner: AWS
           SourceIdentifier: RDS_RESOURCES_PROTECTED_BY_BACKUP_PLAN
-Conditions:
-  CommercialPartition:
-    Fn::Equals:
-      - Ref: AWS::Partition
-      - aws

@@ -198,6 +198,7 @@ Resources:
           - AWS::EC2::Instance
 
   Ec2LaunchTemplateImdsv2Check:
+    Condition: CommercialPartition
     Type: AWS::Config::ConfigRule
     Properties:
       ConfigRuleName: sire-ia-ec2-ec2-launch-template-imdsv2-check
@@ -238,6 +239,10 @@ Resources:
           Ref: VPCSecurityGroupPortRestrictionIpType
 
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   HasExcludedPublicBuckets:
     Fn::Not:
     - Fn::Equals:
