@@ -17,6 +17,7 @@ Parameters:
     Type: String
 Resources:
   EksClusterOldestSupportedVersion:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: eks-cluster-oldest-supported-version
       InputParameters:
@@ -63,6 +64,10 @@ Resources:
         SourceIdentifier: EKS_SECRETS_ENCRYPTED
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   eksClusterOldestSupportedVersionParamOldestVersionSupported:
     Fn::Not:
     - Fn::Equals:

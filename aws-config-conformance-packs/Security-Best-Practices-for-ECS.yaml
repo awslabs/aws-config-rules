@@ -55,6 +55,7 @@ Resources:
         SourceIdentifier: ECS_FARGATE_LATEST_PLATFORM_VERSION
     Type: AWS::Config::ConfigRule
   EcsNoEnvironmentSecrets:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ecs-no-environment-secrets
       InputParameters:
@@ -71,6 +72,7 @@ Resources:
         SourceIdentifier: ECS_NO_ENVIRONMENT_SECRETS
     Type: AWS::Config::ConfigRule
   EcsTaskDefinitionMemoryHardLimit:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ecs-task-definition-memory-hard-limit
       Scope:
@@ -81,6 +83,7 @@ Resources:
         SourceIdentifier: ECS_TASK_DEFINITION_MEMORY_HARD_LIMIT
     Type: AWS::Config::ConfigRule
   EcsTaskDefinitionNonrootUser:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ecs-task-definition-nonroot-user
       Scope:
@@ -91,6 +94,7 @@ Resources:
         SourceIdentifier: ECS_TASK_DEFINITION_NONROOT_USER
     Type: AWS::Config::ConfigRule
   EcsTaskDefinitionPidModeCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ecs-task-definition-pid-mode-check
       Scope:
@@ -117,6 +121,10 @@ Resources:
         SourceIdentifier: ECS_TASK_DEFINITION_USER_FOR_HOST_MODE_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   ecsNoEnvironmentSecretsParamSecretKeys:
     Fn::Not:
     - Fn::Equals:

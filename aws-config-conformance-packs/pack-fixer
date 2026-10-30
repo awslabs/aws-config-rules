@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# Usage example:
+#   export AWS_ACCESS_KEY_ID="..."
+#   export AWS_SECRET_ACCESS_KEY="..."
+#   export AWS_SESSION_TOKEN="..."
+#
+#   export AWS_DEFAULT_REGION="us-gov-east-1"
+#   export AWS_REGION="us-gov-east-1"
+#   export AWS_USE_FIPS_ENDPOINT=true
+
+# find the unsupported rules - this is slow
+cp /dev/null unsupported_in_${AWS_DEFAULT_REGION}
+for n in `ls *.y*ml`; do echo $n; ./region-check $n >> unsupported_in_${AWS_DEFAULT_REGION}  ; done
+
+# conditionalize each unsupported rule
+cp /dev/null unsupported_in_${AWS_DEFAULT_REGION}_edits.sed
+sort -u unsupported_in_${AWS_DEFAULT_REGION} | awk '{printf "s/%s:/&\\n\\ \\ \\ \\ Condition:\\ CommercialPartition/\n", $1}' >> unsupported_in_${AWS_DEFAULT_REGION}_edits.sed
+
+# edit each pack with unsupported rules
+sort -u unsupported_in_${AWS_DEFAULT_REGION} | grep -lf - *.y*ml | xargs \
+sed -i '' \
+    -e 's/^Conditions:/&\n\ \ CommercialPartition:\n\ \ \ \ Fn::Equals:\n\ \ \ \ \ \ -\ Ref:\ AWS::Partition\n\ \ \ \ \ \ -\ aws/' \
+    -f unsupported_in_${AWS_DEFAULT_REGION}_edits.sed

@@ -124,6 +124,7 @@ Resources:
         SourceIdentifier: BEANSTALK_ENHANCED_HEALTH_REPORTING_ENABLED
     Type: AWS::Config::ConfigRule
   ClbMultipleAz:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: clb-multiple-az
       Scope:
@@ -320,6 +321,7 @@ Resources:
         SourceIdentifier: ECS_CONTAINER_INSIGHTS_ENABLED
     Type: AWS::Config::ConfigRule
   EcsTaskDefinitionMemoryHardLimit:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ecs-task-definition-memory-hard-limit
       Scope:
@@ -392,6 +394,7 @@ Resources:
         SourceIdentifier: ELB_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
   Elbv2MultipleAz:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: elbv2-multiple-az
       Scope:
@@ -469,6 +472,7 @@ Resources:
         SourceIdentifier: LAMBDA_DLQ_CHECK
     Type: AWS::Config::ConfigRule
   LambdaVpcMultiAzCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: lambda-vpc-multi-az-check
       Scope:
@@ -486,6 +490,7 @@ Resources:
         SourceIdentifier: MULTI_REGION_CLOUD_TRAIL_ENABLED
     Type: AWS::Config::ConfigRule
   OpensearchDataNodeFaultTolerance:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: opensearch-data-node-fault-tolerance
       Scope:
@@ -496,6 +501,7 @@ Resources:
         SourceIdentifier: OPENSEARCH_DATA_NODE_FAULT_TOLERANCE
     Type: AWS::Config::ConfigRule
   OpensearchLogsToCloudwatch:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: opensearch-logs-to-cloudwatch
       Scope:
@@ -731,6 +737,10 @@ Resources:
         SourceIdentifier: WAFV2_LOGGING_ENABLED
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   cloudwatchAlarmActionCheckParamAlarmActionRequired:
     Fn::Not:
     - Fn::Equals:

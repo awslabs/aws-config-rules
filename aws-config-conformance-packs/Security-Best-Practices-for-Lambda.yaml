@@ -51,6 +51,7 @@ Resources:
         SourceIdentifier: LAMBDA_INSIDE_VPC
     Type: AWS::Config::ConfigRule
   LambdaVpcMultiAzCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: lambda-vpc-multi-az-check
       Scope:
@@ -61,6 +62,10 @@ Resources:
         SourceIdentifier: LAMBDA_VPC_MULTI_AZ_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   lambdaFunctionSettingsCheckParamRuntime:
     Fn::Not:
     - Fn::Equals:

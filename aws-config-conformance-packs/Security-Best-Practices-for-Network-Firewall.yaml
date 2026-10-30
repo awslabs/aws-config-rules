@@ -15,6 +15,7 @@ Parameters:
     Type: String
 Resources:
   NetfwPolicyDefaultActionFragmentPackets:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: netfw-policy-default-action-fragment-packets
       InputParameters:
@@ -31,6 +32,7 @@ Resources:
         SourceIdentifier: NETFW_POLICY_DEFAULT_ACTION_FRAGMENT_PACKETS
     Type: AWS::Config::ConfigRule
   NetfwPolicyDefaultActionFullPackets:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: netfw-policy-default-action-full-packets
       InputParameters:
@@ -67,6 +69,10 @@ Resources:
         SourceIdentifier: NETFW_STATELESS_RULE_GROUP_NOT_EMPTY
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   netfwPolicyDefaultActionFragmentPacketsParamStatelessFragmentDefaultActions:
     Fn::Not:
     - Fn::Equals:

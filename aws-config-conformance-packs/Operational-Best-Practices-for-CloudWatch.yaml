@@ -54,6 +54,7 @@ Resources:
         SourceIdentifier: CLOUDWATCH_ALARM_ACTION_CHECK
     Type: AWS::Config::ConfigRule
   CloudwatchAlarmActionEnabledCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudwatch-alarm-action-enabled-check
       Scope:
@@ -105,6 +106,10 @@ Resources:
         SourceIdentifier: CLOUDWATCH_LOG_GROUP_ENCRYPTED
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   cloudwatchAlarmActionCheckParamAlarmActionRequired:
     Fn::Not:
     - Fn::Equals:

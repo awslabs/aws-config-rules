@@ -167,6 +167,7 @@ Resources:
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
   Ec2NoAmazonKeyPair:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ec2-no-amazon-key-pair
       Scope:
@@ -194,6 +195,7 @@ Resources:
         SourceIdentifier: EC2_STOPPED_INSTANCE
     Type: AWS::Config::ConfigRule
   Ec2TokenHopLimitCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ec2-token-hop-limit-check
       Scope:
@@ -253,6 +255,10 @@ Resources:
         SourceIdentifier: SERVICE_VPC_ENDPOINT_ENABLED
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   cloudwatchAlarmResourceCheckParamMetricName:
     Fn::Not:
     - Fn::Equals:

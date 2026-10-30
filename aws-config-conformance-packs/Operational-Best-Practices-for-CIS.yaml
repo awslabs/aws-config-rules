@@ -75,6 +75,7 @@ Resources:
         SourceIdentifier: IAM_ROOT_ACCESS_KEY_CHECK
       MaximumExecutionFrequency: Twelve_Hours
   RootAccountMFAEnabled:
+    Condition: CommercialPartition
     Type: AWS::Config::ConfigRule
     Properties:
       ConfigRuleName: RootAccountMFAEnabled
@@ -85,6 +86,7 @@ Resources:
         SourceIdentifier: ROOT_ACCOUNT_MFA_ENABLED
       MaximumExecutionFrequency: Twelve_Hours
   RootAccountHardwareMFAEnabled:
+    Condition: CommercialPartition
     Type: AWS::Config::ConfigRule
     Properties:
       ConfigRuleName: RootAccountHardwareMFAEnabled
@@ -273,3 +275,9 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
+
+Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws

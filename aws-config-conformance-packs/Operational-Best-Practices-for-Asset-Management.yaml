@@ -66,6 +66,7 @@ Resources:
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
   Ec2SecurityGroupAttachedToEniPeriodic:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ec2-security-group-attached-to-eni-periodic
       Scope:
@@ -149,6 +150,10 @@ Resources:
         SourceIdentifier: VPC_NETWORK_ACL_UNUSED_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   ec2VolumeInuseCheckParamDeleteOnTermination:
     Fn::Not:
     - Fn::Equals:

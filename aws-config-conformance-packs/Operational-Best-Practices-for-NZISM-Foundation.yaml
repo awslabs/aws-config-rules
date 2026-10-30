@@ -6,6 +6,10 @@ Parameters:
       - 'true'
       - 'false'
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   IsEdge:
     Fn::Equals:
       - Ref: DeployEdgeRules
@@ -77,6 +81,7 @@ Resources:
         SourceIdentifier: CLOUD_TRAIL_LOG_FILE_VALIDATION_ENABLED
       Description: "MUST 16.6.12.C.01[CID:2022], MUST 23.5.11.C.01[CID:7496]| Access Control and Passwords/Event Logging and Auditing/Event log protection & Public Cloud Security/Logging ..."
   CloudfrontAccesslogsEnabled:
+    Condition: CommercialPartition
     Condition: IsEdge
     Controls: ['2013', '7496']
     Type: AWS::Config::ConfigRule
@@ -87,6 +92,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_ACCESSLOGS_ENABLED
       Description: "SHOULD 16.6.10.C.02[CID:2013], MUST 23.5.11.C.01[CID:7496]| Access Control and Passwords/Event Logging and Auditing/Additional events to be logged & Public Cloud Secur..."
   CloudfrontAssociatedWithWaf:
+    Condition: CommercialPartition
     Condition: IsEdge
     Controls: ['3562']
     Type: AWS::Config::ConfigRule
@@ -97,6 +103,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_ASSOCIATED_WITH_WAF
       Description: "MUST 19.1.12.C.01[CID:3562]| Gateway security/Gateways/Configuration of gateways"
   CloudfrontDefaultRootObjectConfigured:
+    Condition: CommercialPartition
     Condition: IsEdge
     Controls: ['1661']
     Type: AWS::Config::ConfigRule
@@ -107,6 +114,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_DEFAULT_ROOT_OBJECT_CONFIGURED
       Description: "SHOULD 14.5.6.C.01[CID:1661]| Software security/Web Application Development/Agency website content"
   CloudfrontViewerPolicyHttps:
+    Condition: CommercialPartition
     Condition: IsEdge
     Controls: ['1847']
     Type: AWS::Config::ConfigRule
@@ -501,6 +509,7 @@ Resources:
         SourceIdentifier: GUARDDUTY_EKS_PROTECTION_AUDIT_ENABLED
       Description: "SHOULD 18.4.11.C.01[CID:3857]| Network security/Intrusion Detection and Prevention/Configuring the IDS/IPS"
   GuarddutyEksProtectionRuntimeEnabled:
+    Condition: CommercialPartition
     Controls: ['3857']
     Type: AWS::Config::ConfigRule
     Properties:
@@ -534,6 +543,7 @@ Resources:
         SourceIdentifier: GUARDDUTY_LAMBDA_PROTECTION_ENABLED
       Description: "SHOULD 18.4.11.C.01[CID:3857]| Network security/Intrusion Detection and Prevention/Configuring the IDS/IPS"
   GuarddutyRuntimeMonitoringEnabled:
+    Condition: CommercialPartition
     Controls: ['1154']
     Type: AWS::Config::ConfigRule
     Properties:
@@ -637,6 +647,7 @@ Resources:
         SourceIdentifier: MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS
       Description: "SHOULD 16.1.35.C.02[CID:1841], SHOULD 16.4.31.C.02[CID:6843], SHOULD 16.7.34.C.02[CID:6953], MUST 23.3.19.C.01[CID:7436], MUST 23.3.19.C.01[CID:7437]| Access Control a..."
   OpensearchEncryptedAtRest:
+    Condition: CommercialPartition
     Controls: ['2082', '4441', '4839']
     Type: AWS::Config::ConfigRule
     Properties:
@@ -649,6 +660,7 @@ Resources:
         SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
       Description: "SHOULD 17.1.53.C.04[CID:2082], SHOULD 20.4.4.C.02[CID:4441], SHOULD 22.1.24.C.04[CID:4839]| Cryptography/Cryptographic Fundamentals/Reducing storage and physical trans..."
   OpensearchInVpcOnly:
+    Condition: CommercialPartition
     Controls: ['3562', '3623', '7466']
     Type: AWS::Config::ConfigRule
     Properties:
@@ -661,6 +673,7 @@ Resources:
         SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
       Description: "MUST 19.1.12.C.01[CID:3562], SHOULD 19.1.14.C.02[CID:3623], MUST 23.4.10.C.01[CID:7466]| Gateway security/Gateways: (Configuration of gateways & Demilitarised zones) &..."
   OpensearchNodeToNodeEncryptionCheck:
+    Condition: CommercialPartition
     Controls: ['1847', '4839']
     Type: AWS::Config::ConfigRule
     Properties:
@@ -848,6 +861,7 @@ Resources:
         SourceIdentifier: INCOMING_SSH_DISABLED
       Description: "SHOULD 17.5.8.C.02[CID:2726]| Cryptography/Secure Shell/Automated remote access"
   RootAccountHardwareMfaEnabled:
+    Condition: CommercialPartition
     Controls: ['1841', '6843', '6953', '7436', '7437']
     Type: AWS::Config::ConfigRule
     Properties:
@@ -857,6 +871,7 @@ Resources:
         SourceIdentifier: ROOT_ACCOUNT_HARDWARE_MFA_ENABLED
       Description: "SHOULD 16.1.35.C.02[CID:1841], SHOULD 16.4.31.C.02[CID:6843], SHOULD 16.7.34.C.02[CID:6953], MUST 23.3.19.C.01[CID:7436], MUST 23.3.19.C.01[CID:7437]| Access Control a..."
   RootAccountMfaEnabled:
+    Condition: CommercialPartition
     Controls: ['1841', '7436', '7437']
     Type: AWS::Config::ConfigRule
     Properties:

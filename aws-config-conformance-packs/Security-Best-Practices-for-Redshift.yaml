@@ -98,6 +98,7 @@ Resources:
         SourceIdentifier: REDSHIFT_DEFAULT_ADMIN_CHECK
     Type: AWS::Config::ConfigRule
   RedshiftDefaultDbNameCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: redshift-default-db-name-check
       Scope:
@@ -128,6 +129,10 @@ Resources:
         SourceIdentifier: REDSHIFT_REQUIRE_TLS_SSL
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   redshiftClusterConfigurationCheckParamClusterDbEncrypted:
     Fn::Not:
     - Fn::Equals:

@@ -8,6 +8,7 @@
 
 Resources:
   EfsAccessPointEnforceRootDirectory:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: efs-access-point-enforce-root-directory
       Scope:
@@ -41,3 +42,9 @@ Resources:
         Owner: AWS
         SourceIdentifier: EFS_IN_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
+
+Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws

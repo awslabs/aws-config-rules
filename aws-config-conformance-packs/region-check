@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+
+# Origin:
+#   https://gist.github.com/atheiman/f345ea4aa059bf2d2c5dec490547a86f
+#  was mentioned in
+#   https://github.com/awslabs/aws-config-rules/issues/410
+# Usage example:
+#   export AWS_ACCESS_KEY_ID="..."
+#   export AWS_SECRET_ACCESS_KEY="..."
+#   export AWS_SESSION_TOKEN="..."
+#   export AWS_DEFAULT_REGION="us-gov-east-1"
+#
+#   ./region-check whatever.yaml
+#   for n in `ls *.y*ml`; do echo $n; ./region-check $n >> unsupported_in_${AWS_DEFAULT_REGION}  ; done
+#   sort -u unsupported_in_${AWS_DEFAULT_REGION}
+
+import boto3
+import botocore
+import json
+import os
+import time
+import yaml
+import re
+import sys
+
+config_conformance_pack_template = sys.argv[1]
+identity = boto3.client("sts").get_caller_identity()
+region = boto3.session.Session().region_name
+config = boto3.client("config")
+
+# print("Testing for regional support of AWS Config managed rules")
+# print(f"Region: '{region}'")
+# print(f"Identity: '{identity['Arn']}'")
+# print(f"YAML CloudFormation template: '{config_conformance_pack_template}'")
+# print(f"Unsupported CloudFormation resource ids / ConfigRuleNames / SourceIdentifiers will be listed below:")
+# print(f"Unsupported CloudFormation resource ids will be listed below:")
+# print("-----")
+
+
+def delete_rule(rule_name):
+    try:
+        config.delete_config_rule(ConfigRuleName=rule_name)
+    except botocore.exceptions.ClientError as e:
+        if e.response["Error"]["Code"] == "ResourceInUseException":
+            time.sleep(5)
+            delete_rule(rule_name)
+        elif e.response["Error"]["Code"] != "NoSuchConfigRuleException":
+            print(f"ERROR - Failed to delete Config rule '{rule_name}' due to unexpected error:")
+            raise e
+
+
+with open(config_conformance_pack_template) as template_file:
+    cfn_template = yaml.safe_load(template_file)
+
+rules = {k:v for k, v in cfn_template["Resources"].items() if v["Type"] == "AWS::Config::ConfigRule" and v["Properties"]["Source"]["Owner"] == "AWS"}
+unsupported_rules = {}
+
+for resource_name, rule in rules.items():
+    rule_name = f"region-check-{rule['Properties']['ConfigRuleName']}"
+    delete_rule(rule_name)
+
+    filtered_rule_definition = {
+        "ConfigRuleName": rule_name,
+        "Source": rule["Properties"]["Source"],
+    }
+
+    try:
+        config.put_config_rule(ConfigRule=filtered_rule_definition)
+    except botocore.exceptions.ClientError as e:
+        if e.response["Error"]["Code"] == "InvalidParameterValueException":
+            if re.search("the sourceidentifier [\\w_]+ is invalid", e.response["Error"]["Message"].lower()):
+                # print(f"{resource_name} / {rule['Properties']['ConfigRuleName']} / {rule['Properties']['Source']['SourceIdentifier']}")
+                print(f"{resource_name}")
+                unsupported_rules[resource_name] = rule
+            elif re.search("the required parameter .* is not present in the inputparameters", e.response["Error"]["Message"].lower()) is None:
+                print(repr(e))
+        else:
+            print(f"ERROR - Failed to create Config rule '{rule_name}' due to unexpected error:")
+            raise e
+
+    delete_rule(rule_name)

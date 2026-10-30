@@ -36,6 +36,7 @@ Resources:
   # ============================================
 
   BedrockAgentCoreGatewayAuthorizerEnabled:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: bedrockagentcore-gateway-authorizer-enabled
@@ -44,6 +45,7 @@ Resources:
           SourceIdentifier: BEDROCKAGENTCORE_GATEWAY_AUTHORIZER_ENABLED
 
   BedrockAgentCoreRuntimePrivateNetworkRequired:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: bedrockagentcore-runtime-private-network-required
@@ -52,6 +54,7 @@ Resources:
           SourceIdentifier: BEDROCKAGENTCORE_RUNTIME_PRIVATE_NETWORK_REQUIRED
 
   BedrockAgentCoreMemoryEncryptionEnabled:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: bedrock-agentcore-memory-encryption-enabled
@@ -64,6 +67,7 @@ Resources:
   # ============================================
 
   OpenSearchServerlessStandbyReplicasEnabled:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: opensearchserverless-collection-standbyreplicas-enabled
@@ -76,6 +80,7 @@ Resources:
   # ============================================
 
   OpenSearchAccessControl:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: opensearch-access-control-enabled
@@ -84,6 +89,7 @@ Resources:
           SourceIdentifier: OPENSEARCH_ACCESS_CONTROL_ENABLED
 
   OpenSearchAuditLogging:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: opensearch-audit-logging-enabled
@@ -92,6 +98,7 @@ Resources:
           SourceIdentifier: OPENSEARCH_AUDIT_LOGGING_ENABLED
 
   OpenSearchDataNodeFaultTolerance:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: opensearch-data-node-fault-tolerance
@@ -100,6 +107,7 @@ Resources:
           SourceIdentifier: OPENSEARCH_DATA_NODE_FAULT_TOLERANCE
 
   OpenSearchEncryptedAtRest:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: opensearch-encrypted-at-rest
@@ -108,6 +116,7 @@ Resources:
           SourceIdentifier: OPENSEARCH_ENCRYPTED_AT_REST
 
   OpenSearchHTTPSRequired:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: opensearch-https-required
@@ -116,6 +125,7 @@ Resources:
           SourceIdentifier: OPENSEARCH_HTTPS_REQUIRED
 
   OpenSearchInVPCOnly:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: opensearch-in-vpc-only
@@ -124,6 +134,7 @@ Resources:
           SourceIdentifier: OPENSEARCH_IN_VPC_ONLY
 
   OpenSearchLogsToCloudWatch:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: opensearch-logs-to-cloudwatch
@@ -132,6 +143,7 @@ Resources:
           SourceIdentifier: OPENSEARCH_LOGS_TO_CLOUDWATCH
 
   OpenSearchNodeToNodeEncryption:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: opensearch-node-to-node-encryption-check
@@ -371,6 +383,7 @@ Resources:
             Ref: ApiGwEndpointConfigurationTypes
 
   APIGWRestAPITagged:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: api-gw-rest-api-tagged
@@ -379,6 +392,7 @@ Resources:
           SourceIdentifier: API_GW_REST_API_TAGGED
 
   APIGWStageTagged:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: api-gw-stage-tagged
@@ -387,6 +401,7 @@ Resources:
           SourceIdentifier: API_GW_STAGE_TAGGED
 
   APIGWv2AccessLogsEnabled:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: api-gwv2-access-logs-enabled
@@ -395,6 +410,7 @@ Resources:
           SourceIdentifier: API_GWV2_ACCESS_LOGS_ENABLED
 
   APIGWv2AuthorizationTypeConfigured:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: api-gwv2-authorization-type-configured
@@ -415,6 +431,7 @@ Resources:
           SourceIdentifier: SNS_ENCRYPTED_KMS
 
   SNSTopicMessageDeliveryNotificationEnabled:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sns-topic-message-delivery-notification-enabled
@@ -435,6 +452,7 @@ Resources:
   # ============================================
 
   StepFunctionsStateMachineLoggingEnabled:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: step-functions-state-machine-logging-enabled
@@ -447,6 +465,7 @@ Resources:
   # ============================================
 
   NeptuneClusterBackupRetention:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: neptune-cluster-backup-retention-check
@@ -455,6 +474,7 @@ Resources:
           SourceIdentifier: NEPTUNE_CLUSTER_BACKUP_RETENTION_CHECK
 
   NeptuneClusterCloudWatchLogExport:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: neptune-cluster-cloudwatch-log-export-enabled
@@ -463,6 +483,7 @@ Resources:
           SourceIdentifier: NEPTUNE_CLUSTER_CLOUDWATCH_LOG_EXPORT_ENABLED
 
   NeptuneClusterCopyTagsToSnapshot:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: neptune-cluster-copy-tags-to-snapshot-enabled
@@ -471,6 +492,7 @@ Resources:
           SourceIdentifier: NEPTUNE_CLUSTER_COPY_TAGS_TO_SNAPSHOT_ENABLED
 
   NeptuneClusterDeletionProtection:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: neptune-cluster-deletion-protection-enabled
@@ -479,6 +501,7 @@ Resources:
           SourceIdentifier: NEPTUNE_CLUSTER_DELETION_PROTECTION_ENABLED
 
   NeptuneClusterEncrypted:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: neptune-cluster-encrypted
@@ -487,6 +510,7 @@ Resources:
           SourceIdentifier: NEPTUNE_CLUSTER_ENCRYPTED
 
   NeptuneClusterIAMAuth:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: neptune-cluster-iam-database-authentication
@@ -495,6 +519,7 @@ Resources:
           SourceIdentifier: NEPTUNE_CLUSTER_IAM_DATABASE_AUTHENTICATION
 
   NeptuneClusterMultiAZ:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: neptune-cluster-multi-az-enabled
@@ -503,6 +528,7 @@ Resources:
           SourceIdentifier: NEPTUNE_CLUSTER_MULTI_AZ_ENABLED
 
   NeptuneClusterSnapshotEncrypted:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: neptune-cluster-snapshot-encrypted
@@ -511,6 +537,7 @@ Resources:
           SourceIdentifier: NEPTUNE_CLUSTER_SNAPSHOT_ENCRYPTED
 
   NeptuneClusterSnapshotPublicProhibited:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: neptune-cluster-snapshot-public-prohibited
@@ -539,6 +566,7 @@ Resources:
           SourceIdentifier: RDS_CLUSTER_DELETION_PROTECTION_ENABLED
 
   RDSClusterEncryptedAtRest:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: rds-cluster-encrypted-at-rest
@@ -563,6 +591,7 @@ Resources:
           SourceIdentifier: RDS_CLUSTER_MULTI_AZ_ENABLED
 
   RDSDBSecurityGroupNotAllowed:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: rds-db-security-group-not-allowed
@@ -659,6 +688,7 @@ Resources:
           SourceIdentifier: RDS_LAST_BACKUP_RECOVERY_POINT_CREATED
 
   RDSClusterDefaultAdminCheck:
+    Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: rds-cluster-default-admin-check

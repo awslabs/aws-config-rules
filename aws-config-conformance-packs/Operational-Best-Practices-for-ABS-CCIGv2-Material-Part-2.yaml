@@ -76,6 +76,7 @@ Resources:
     Type: AWS::Config::ConfigRule
 
   OpensearchEncryptedAtRest:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: opensearch-encrypted-at-rest
       Scope:
@@ -253,6 +254,10 @@ Resources:
     Type: AWS::Config::ConfigRule
 
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   redshiftClusterMaintenancesettingsCheckParamAllowVersionUpgrade:
     Fn::Not:
       - Fn::Equals:

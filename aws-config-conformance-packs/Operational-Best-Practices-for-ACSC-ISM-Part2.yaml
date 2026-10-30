@@ -12,6 +12,7 @@
 Resources:
   # Control ID: 1984 - Event logs sent to a centralised logging facility are encrypted in transit
   AppMeshVirtualGatewayTLS1984:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: appmesh-virtual-gateway-backend-defaults-tls-1984
       Scope:
@@ -24,6 +25,7 @@ Resources:
 
   # Control ID: 1984 - Event logs sent to a centralised logging facility are encrypted in transit
   AppMeshVirtualNodeTLS1984:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: appmesh-virtual-node-backend-defaults-tls-on-1984
       Scope:
@@ -36,6 +38,7 @@ Resources:
 
   # Control ID: 1984 - Event logs sent to a centralised logging facility are encrypted in transit
   MSKInClusterNodeRequireTLS1984:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: msk-in-cluster-node-require-tls-1984
       Scope:
@@ -120,6 +123,7 @@ Resources:
 
   # Control ID: 1985 - Event logs are protected from unauthorised access
   AuroraResourcesInLogicallyAirGappedVault1985:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: aurora-resources-in-logically-air-gapped-vault-1985
       Scope:
@@ -132,6 +136,7 @@ Resources:
 
   # Control ID: 1985 - Event logs are protected from unauthorised access
   EBSResourcesInLogicallyAirGappedVault1985:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ebs-resources-in-logically-air-gapped-vault-1985
       Scope:
@@ -144,6 +149,7 @@ Resources:
 
   # Control ID: 1985 - Event logs are protected from unauthorised access
   EC2ResourcesInLogicallyAirGappedVault1985:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ec2-resources-in-logically-air-gapped-vault-1985
       Scope:
@@ -156,6 +162,7 @@ Resources:
 
   # Control ID: 1985 - Event logs are protected from unauthorised access
   EFSResourcesInLogicallyAirGappedVault1985:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: efs-resources-in-logically-air-gapped-vault-1985
       Scope:
@@ -168,6 +175,7 @@ Resources:
 
   # Control ID: 1985 - Event logs are protected from unauthorised access
   S3ResourcesInLogicallyAirGappedVault1985:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: s3-resources-in-logically-air-gapped-vault-1985
       Scope:
@@ -177,3 +185,9 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_RESOURCES_IN_LOGICALLY_AIR_GAPPED_VAULT
     Type: AWS::Config::ConfigRule
+
+Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws

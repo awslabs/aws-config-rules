@@ -17,6 +17,7 @@ Parameters:
     Type: String
 Resources:
   DaxEncryptionEnabled:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: dax-encryption-enabled
       Source:
@@ -92,6 +93,10 @@ Resources:
         SourceIdentifier: SERVICE_VPC_ENDPOINT_ENABLED
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   dynamodbThroughputLimitCheckParamAccountRCUThresholdPercentage:
     Fn::Not:
     - Fn::Equals:

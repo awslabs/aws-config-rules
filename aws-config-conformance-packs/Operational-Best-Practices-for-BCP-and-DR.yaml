@@ -46,6 +46,7 @@ Resources:
         SourceIdentifier: AURORA_RESOURCES_PROTECTED_BY_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
   AutoscalingCapacityRebalancing:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: autoscaling-capacity-rebalancing
       Scope:
@@ -66,6 +67,7 @@ Resources:
         SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
     Type: AWS::Config::ConfigRule
   AutoscalingMultipleAz:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: autoscaling-multiple-az
       Scope:
@@ -158,6 +160,7 @@ Resources:
         SourceIdentifier: BEANSTALK_ENHANCED_HEALTH_REPORTING_ENABLED
     Type: AWS::Config::ConfigRule
   ClbMultipleAz:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: clb-multiple-az
       Scope:
@@ -324,6 +327,7 @@ Resources:
         SourceIdentifier: LAMBDA_CONCURRENCY_CHECK
     Type: AWS::Config::ConfigRule
   LambdaVpcMultiAzCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: lambda-vpc-multi-az-check
       Scope:
@@ -334,6 +338,7 @@ Resources:
         SourceIdentifier: LAMBDA_VPC_MULTI_AZ_CHECK
     Type: AWS::Config::ConfigRule
   OpensearchDataNodeFaultTolerance:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: opensearch-data-node-fault-tolerance
       Scope:
@@ -441,6 +446,10 @@ Resources:
         SourceIdentifier: VPC_VPN_2_TUNNELS_UP
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   backupPlanMinFrequencyAndMinRetentionCheckParamRequiredFrequencyUnit:
     Fn::Not:
     - Fn::Equals:

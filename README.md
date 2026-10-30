@@ -1,3 +1,14 @@
+# *Notes on this Fork*
+
+*This fork adds conditions to some of the Config Managed Rule invocations in the [upstream](https://github.com/awslabs/aws-config-rules)'s Conformance Packs, allowing the Conformance Packs to be deployed in the AWS GovCloud partition. The conditions protect rules that are supported in the AWS Commercial partition, but not in GovCloud.*
+
+*For reference, see*
+* *[AWS Config in AWS GovCloud (US)](https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-config.html)*
+* *[List of AWS Config Managed Rules by Region Availability | AWS GovCloud (US-East)](https://docs.aws.amazon.com/config/latest/developerguide/managing-rules-by-region-availability.html#aws-govcloud-us-east-section-head)*
+* *[List of AWS Config Managed Rules by Region Availability | AWS GovCloud (US-West)](https://docs.aws.amazon.com/config/latest/developerguide/managing-rules-by-region-availability.html#aws-govcloud-us-west-section-head)*
+
+*This fork also includes a [script](aws-config-conformance-packs/region-check) to reveal Rules in a Conformance Pack that are not supported in a Partition/Region, and a [wrapper script](aws-config-conformance-packs/pack-fixer) to assist in adding conditions to the Conformance Pack templates.*
+
 # AWS Config Rules Repository
 
 AWS Community repository of custom Config rules. Contributions welcome. Instructions for leveraging these rules are below.

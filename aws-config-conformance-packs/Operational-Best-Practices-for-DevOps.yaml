@@ -43,6 +43,7 @@ Resources:
         SourceIdentifier: CLOUDFORMATION_STACK_NOTIFICATION_CHECK
     Type: AWS::Config::ConfigRule
   CodebuildProjectArtifactEncryption:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: codebuild-project-artifact-encryption
       Scope:
@@ -103,6 +104,7 @@ Resources:
         SourceIdentifier: CODEBUILD_PROJECT_SOURCE_REPO_URL_CHECK
     Type: AWS::Config::ConfigRule
   CodedeployAutoRollbackMonitorEnabled:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: codedeploy-auto-rollback-monitor-enabled
       Scope:
@@ -113,6 +115,7 @@ Resources:
         SourceIdentifier: CODEDEPLOY_AUTO_ROLLBACK_MONITOR_ENABLED
     Type: AWS::Config::ConfigRule
   CodedeployEc2MinimumHealthyHostsConfigured:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: codedeploy-ec2-minimum-healthy-hosts-configured
       Scope:
@@ -123,6 +126,7 @@ Resources:
         SourceIdentifier: CODEDEPLOY_EC2_MINIMUM_HEALTHY_HOSTS_CONFIGURED
     Type: AWS::Config::ConfigRule
   CodedeployLambdaAllatonceTrafficShiftDisabled:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: codedeploy-lambda-allatonce-traffic-shift-disabled
       Scope:
@@ -133,6 +137,7 @@ Resources:
         SourceIdentifier: CODEDEPLOY_LAMBDA_ALLATONCE_TRAFFIC_SHIFT_DISABLED
     Type: AWS::Config::ConfigRule
   CodepipelineDeploymentCountCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: codepipeline-deployment-count-check
       Scope:
@@ -143,6 +148,7 @@ Resources:
         SourceIdentifier: CODEPIPELINE_DEPLOYMENT_COUNT_CHECK
     Type: AWS::Config::ConfigRule
   CodepipelineRegionFanoutCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: codepipeline-region-fanout-check
       InputParameters:
@@ -229,6 +235,7 @@ Resources:
         SourceIdentifier: ECS_FARGATE_LATEST_PLATFORM_VERSION
     Type: AWS::Config::ConfigRule
   EcsTaskDefinitionMemoryHardLimit:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ecs-task-definition-memory-hard-limit
       Scope:
@@ -239,6 +246,7 @@ Resources:
         SourceIdentifier: ECS_TASK_DEFINITION_MEMORY_HARD_LIMIT
     Type: AWS::Config::ConfigRule
   EcsTaskDefinitionNonrootUser:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ecs-task-definition-nonroot-user
       Scope:
@@ -249,6 +257,7 @@ Resources:
         SourceIdentifier: ECS_TASK_DEFINITION_NONROOT_USER
     Type: AWS::Config::ConfigRule
   EcsTaskDefinitionPidModeCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ecs-task-definition-pid-mode-check
       Scope:
@@ -293,6 +302,10 @@ Resources:
         SourceIdentifier: ELASTIC_BEANSTALK_MANAGED_UPDATES_ENABLED
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   codepipelineRegionFanoutCheckParamRegionFanoutFactor:
     Fn::Not:
     - Fn::Equals:

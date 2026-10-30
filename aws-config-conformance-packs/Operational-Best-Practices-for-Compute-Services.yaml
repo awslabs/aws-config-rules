@@ -33,6 +33,7 @@ Parameters:
     Type: String
 Resources:
   AutoscalingCapacityRebalancing:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: autoscaling-capacity-rebalancing
       Scope:
@@ -53,6 +54,7 @@ Resources:
         SourceIdentifier: AUTOSCALING_GROUP_ELB_HEALTHCHECK_REQUIRED
     Type: AWS::Config::ConfigRule
   AutoscalingLaunchConfigHopLimit:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: autoscaling-launch-config-hop-limit
       Scope:
@@ -83,6 +85,7 @@ Resources:
         SourceIdentifier: AUTOSCALING_LAUNCHCONFIG_REQUIRES_IMDSV2
     Type: AWS::Config::ConfigRule
   AutoscalingMultipleAz:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: autoscaling-multiple-az
       Scope:
@@ -233,6 +236,7 @@ Resources:
         SourceIdentifier: EC2_MANAGEDINSTANCE_PATCH_COMPLIANCE_STATUS_CHECK
     Type: AWS::Config::ConfigRule
   Ec2NoAmazonKeyPair:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ec2-no-amazon-key-pair
       Scope:
@@ -243,6 +247,7 @@ Resources:
         SourceIdentifier: EC2_NO_AMAZON_KEY_PAIR
     Type: AWS::Config::ConfigRule
   Ec2SecurityGroupAttachedToEniPeriodic:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ec2-security-group-attached-to-eni-periodic
       Scope:
@@ -260,6 +265,7 @@ Resources:
         SourceIdentifier: EC2_STOPPED_INSTANCE
     Type: AWS::Config::ConfigRule
   Ec2TokenHopLimitCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: ec2-token-hop-limit-check
       Scope:
@@ -377,6 +383,7 @@ Resources:
         SourceIdentifier: LAMBDA_INSIDE_VPC
     Type: AWS::Config::ConfigRule
   LambdaVpcMultiAzCheck:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: lambda-vpc-multi-az-check
       Scope:
@@ -413,6 +420,10 @@ Resources:
         SourceIdentifier: SERVICE_VPC_ENDPOINT_ENABLED
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   cloudwatchAlarmResourceCheckParamMetricName:
     Fn::Not:
     - Fn::Equals:

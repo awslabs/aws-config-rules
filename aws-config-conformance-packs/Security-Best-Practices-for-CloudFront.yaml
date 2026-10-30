@@ -7,6 +7,7 @@
 
 Resources:
   CloudfrontAccesslogsEnabled:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudfront-accesslogs-enabled
       Scope:
@@ -17,6 +18,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_ACCESSLOGS_ENABLED
     Type: AWS::Config::ConfigRule
   CloudfrontAssociatedWithWaf:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudfront-associated-with-waf
       Scope:
@@ -27,6 +29,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_ASSOCIATED_WITH_WAF
     Type: AWS::Config::ConfigRule
   CloudfrontCustomSslCertificate:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudfront-custom-ssl-certificate
       Scope:
@@ -37,6 +40,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_CUSTOM_SSL_CERTIFICATE
     Type: AWS::Config::ConfigRule
   CloudfrontDefaultRootObjectConfigured:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudfront-default-root-object-configured
       Scope:
@@ -47,6 +51,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_DEFAULT_ROOT_OBJECT_CONFIGURED
     Type: AWS::Config::ConfigRule
   CloudfrontNoDeprecatedSslProtocols:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudfront-no-deprecated-ssl-protocols
       Scope:
@@ -57,6 +62,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_NO_DEPRECATED_SSL_PROTOCOLS
     Type: AWS::Config::ConfigRule
   CloudfrontOriginAccessIdentityEnabled:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudfront-origin-access-identity-enabled
       Scope:
@@ -67,6 +73,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_ORIGIN_ACCESS_IDENTITY_ENABLED
     Type: AWS::Config::ConfigRule
   CloudfrontOriginFailoverEnabled:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudfront-origin-failover-enabled
       Scope:
@@ -77,6 +84,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_ORIGIN_FAILOVER_ENABLED
     Type: AWS::Config::ConfigRule
   CloudfrontSniEnabled:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudfront-sni-enabled
       Scope:
@@ -87,6 +95,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_SNI_ENABLED
     Type: AWS::Config::ConfigRule
   CloudfrontTrafficToOriginEncrypted:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudfront-traffic-to-origin-encrypted
       Scope:
@@ -97,6 +106,7 @@ Resources:
         SourceIdentifier: CLOUDFRONT_TRAFFIC_TO_ORIGIN_ENCRYPTED
     Type: AWS::Config::ConfigRule
   CloudfrontViewerPolicyHttps:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: cloudfront-viewer-policy-https
       Scope:
@@ -106,3 +116,9 @@ Resources:
         Owner: AWS
         SourceIdentifier: CLOUDFRONT_VIEWER_POLICY_HTTPS
     Type: AWS::Config::ConfigRule
+
+Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws

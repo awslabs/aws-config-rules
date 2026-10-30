@@ -283,6 +283,7 @@ Resources:
         SourceIdentifier: RESTRICTED_INCOMING_TRAFFIC
     Type: AWS::Config::ConfigRule
   RootAccountMfaEnabled:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: root-account-mfa-enabled
       Source:
@@ -374,6 +375,7 @@ Resources:
         SourceIdentifier: S3_BUCKET_VERSIONING_ENABLED
     Type: AWS::Config::ConfigRule
   AccountContactDetailsConfigured:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: account-contact-details-configured
       Description: Ensure the contact email and telephone number for AWS accounts are current and map to more than one individual in your organization. Within the My Account section of the console ensure correct information is specified in the Contact Information section.
@@ -382,6 +384,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AccountSecurityContactConfigured:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: account-security-contact-configured
       Description: Ensure the contact email and telephone number for the your organizations security team are current. Within the My Account section of the AWS Management Console ensure the correct information is specified in the Security section.
@@ -390,6 +393,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AccountSecurityQuestionsConfigured:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: account-security-questions-configured
       Description: Ensure the security questions that can be used to authenticate individuals calling AWS customer service for support are configured. Within the My Account section of the AWS Management Console ensure three security challenge questions are configured.
@@ -398,6 +402,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   RootAccountRegularUse:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: root-account-regular-use
       Description: Ensure the use of the root account is avoided for everyday tasks. Within IAM, run a credential report to examine when the root user was last used.
@@ -406,6 +411,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   IAMUserConsoleAndAPIAccessAtCreation:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: iam-user-console-and-api-access-at-creation
       Description: Ensure access keys are not setup during the initial user setup for all IAM users that have a console password. For all IAM users with console access, compare the user 'Creation time` to the Access Key `Created` date.
@@ -414,6 +420,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   IAMUserSingleAccessKey:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: iam-user-single-access-key
       Description: Ensure there is only one active access key available for any single IAM user. For all IAM users check that there is only one active key used within the Security Credentials tab for each user within IAM.
@@ -422,6 +429,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   IAMExpiredCertificates:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: iam-expired-certificates
       Description: Ensure that all the expired SSL/TLS certificates stored in IAM are removed. From the command line with the installed AWS CLI run the 'aws iam list-server-certificates' command and determine if there are any expired server certificates.
@@ -430,6 +438,8 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   IAMAccessAnalyzerEnabled:
+    Condition: CommercialPartition
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: iam-access-analyzer-enabled
       Description: Ensure that IAM Access analyzer is enabled. Within the IAM section of the console, select Access analyzer and ensure that the STATUS is set to Active.
@@ -438,6 +448,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmUnauthorizedAPIcalls:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: alarm-unauthorized-api-calls
       Description: Ensure a log metric filter and an alarm exists for unauthorized API calls.
@@ -446,6 +457,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmSignInWithoutMFA:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: alarm-sign-in-without-mfa
       Description: Ensure a log metric filter and an alarm exists for AWS Management Console sign-in without Multi-Factor Authentication (MFA).
@@ -454,6 +466,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmRootAccountUse:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: alarm-root-account-use
       Description: Ensure a log metric filter and an alarm exists for usage of the root account.
@@ -462,6 +475,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmIAMpolicyChange:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: alarm-iam-policy-change
       Description: Ensure a log metric filter and an alarm exists for IAM policy changes.
@@ -470,6 +484,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmCloudtrailConfigChange:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: alarm-cloudtrail-config-change
       Description: Ensure a log metric filter and an alarm exists for AWS CloudTrail configuration changes.
@@ -478,6 +493,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmS3BucketPolicyChange:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: alarm-s3-bucket-policy-change
       Description: Ensure a log metric filter and an alarm exists for Amazon S3 bucket policy changes.
@@ -486,6 +502,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmVPCNetworkGatewayChange:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: alarm-vpc-network-gateway-change
       Description: Ensure a log metric filter and an alarm exists for changes to network gateways.
@@ -494,6 +511,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmVPCroutetableChange:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: alarm-vpc-route-table-change
       Description: Ensure a log metric filter and an alarm exists for route table changes.
@@ -502,6 +520,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmVPCChange:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: alarm-vpc-change
       Description: Ensure a log metric filter and an alarm exists for Amazon Virtual Private Cloud (VPC) changes.
@@ -510,6 +529,7 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
   AlarmOrganizationsChange:
+    Condition: CommercialPartition
     Properties:
       ConfigRuleName: alarm-organizations-change
       Description: Ensure a log metric filter and an alarm exists for AWS Organizations changes.
@@ -518,6 +538,10 @@ Resources:
         SourceIdentifier: AWS_CONFIG_PROCESS_CHECK
     Type: AWS::Config::ConfigRule
 Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
   accessKeysRotatedParamMaxAccessKeyAge:
     Fn::Not:
     - Fn::Equals:
