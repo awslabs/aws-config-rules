@@ -59,3 +59,9 @@ Resources:
         Owner: AWS
         SourceIdentifier: WAF_REGIONAL_WEBACL_NOT_EMPTY
     Type: AWS::Config::ConfigRule
+
+Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws

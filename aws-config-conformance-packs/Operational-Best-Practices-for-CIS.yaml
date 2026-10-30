@@ -275,3 +275,9 @@ Resources:
       Source:
         Owner: AWS
         SourceIdentifier: VPC_DEFAULT_SECURITY_GROUP_CLOSED
+
+Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws

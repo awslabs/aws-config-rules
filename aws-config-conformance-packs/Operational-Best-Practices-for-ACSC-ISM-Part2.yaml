@@ -185,3 +185,9 @@ Resources:
         Owner: AWS
         SourceIdentifier: S3_RESOURCES_IN_LOGICALLY_AIR_GAPPED_VAULT
     Type: AWS::Config::ConfigRule
+
+Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws

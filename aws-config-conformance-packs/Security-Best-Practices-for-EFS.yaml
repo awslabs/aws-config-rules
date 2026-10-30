@@ -42,3 +42,9 @@ Resources:
         Owner: AWS
         SourceIdentifier: EFS_IN_BACKUP_PLAN
     Type: AWS::Config::ConfigRule
+
+Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws

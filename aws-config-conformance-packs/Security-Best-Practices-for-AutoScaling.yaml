@@ -81,3 +81,9 @@ Resources:
         Owner: AWS
         SourceIdentifier: AUTOSCALING_MULTIPLE_INSTANCE_TYPES
     Type: AWS::Config::ConfigRule
+
+Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
