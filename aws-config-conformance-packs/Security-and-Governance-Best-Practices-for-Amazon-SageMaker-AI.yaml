@@ -69,7 +69,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_NOTEBOOK_INSTANCE_KMS_KEY_CONFIGURED
 
   SageMakerNotebookInsideVPC:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-notebook-instance-inside-vpc
@@ -89,7 +89,7 @@ Resources:
             Ref: SupportedPlatformIdentifierVersions
 
   SageMakerNotebookRootAccess:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-notebook-instance-root-access-check
@@ -98,7 +98,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_NOTEBOOK_INSTANCE_ROOT_ACCESS_CHECK
 
   SageMakerModelInVPC:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-model-in-vpc
@@ -107,7 +107,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_MODEL_IN_VPC
 
   SageMakerModelIsolation:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-model-isolation-enabled
@@ -116,7 +116,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_MODEL_ISOLATION_ENABLED
 
   SageMakerModelPrivateRegistryRequired:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-model-private-registry-required
@@ -125,7 +125,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_MODEL_PRIVATE_REGISTRY_REQUIRED
 
   SageMakerModelMulticontainerPrivateRegistry:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-model-multicontainer-private-registry
@@ -150,7 +150,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_ENDPOINT_CONFIG_PROD_INSTANCE_COUNT
 
   SageMakerDomainInVPC:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-domain-in-vpc
@@ -159,7 +159,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_DOMAIN_IN_VPC
 
   SageMakerDomainTagged:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-domain-tagged
@@ -168,7 +168,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_DOMAIN_TAGGED
 
   SageMakerFeatureGroupTagged:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-feature-group-tagged
@@ -177,7 +177,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_FEATURE_GROUP_TAGGED
 
   SageMakerFeatureGroupDescription:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-featuregroup-description
@@ -186,7 +186,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_FEATUREGROUP_DESCRIPTION
 
   SageMakerFeatureGroupEncryptionAtRest:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-featuregroup-encryption-at-rest
@@ -195,7 +195,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_FEATUREGROUP_ENCRYPTION_AT_REST
 
   SageMakerFeatureGroupOnlineStoreEncryption:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-featuregroup-online-store-encryption
@@ -204,7 +204,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_FEATUREGROUP_ONLINE_STORE_ENCRYPTION
 
   SageMakerImageDescription:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-image-description
@@ -213,7 +213,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_IMAGE_DESCRIPTION
 
   SageMakerImageTagged:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-image-tagged
@@ -222,7 +222,7 @@ Resources:
           SourceIdentifier: SAGEMAKER_IMAGE_TAGGED
 
   SageMakerAppImageConfigTagged:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: sagemaker-app-image-config-tagged
@@ -383,7 +383,7 @@ Resources:
           SourceIdentifier: ECS_FARGATE_LATEST_PLATFORM_VERSION
 
   ECSNoEnvironmentSecrets:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: ecs-no-environment-secrets
@@ -395,7 +395,7 @@ Resources:
             Ref: EcsSecretKeys
 
   ECSTaskNonRootUser:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: ecs-task-definition-nonroot-user
@@ -404,7 +404,7 @@ Resources:
           SourceIdentifier: ECS_TASK_DEFINITION_NONROOT_USER
 
   ECSTaskPIDMode:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: ecs-task-definition-pid-mode-check
@@ -425,7 +425,7 @@ Resources:
   # ============================================
 
   EFSAccessPointRootDir:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: efs-access-point-enforce-root-directory
@@ -521,7 +521,7 @@ Resources:
           SourceIdentifier: GLUE_JOB_LOGGING_ENABLED
 
   GlueMLTransformEncryptedAtRest:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: glue-ml-transform-encrypted-at-rest
@@ -530,7 +530,7 @@ Resources:
           SourceIdentifier: GLUE_ML_TRANSFORM_ENCRYPTED_AT_REST
 
   GlueMLTransformTagged:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: glue-ml-transform-tagged
@@ -550,7 +550,7 @@ Resources:
             Ref: MinimumSupportedGlueVersion
 
   AthenaWorkgroupEncryptedAtRest:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: athena-workgroup-encrypted-at-rest
@@ -567,7 +567,7 @@ Resources:
           SourceIdentifier: ATHENA_WORKGROUP_LOGGING_ENABLED
 
   AthenaDataCatalogDescription:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: athena-data-catalog-description
@@ -576,7 +576,7 @@ Resources:
           SourceIdentifier: ATHENA_DATA_CATALOG_DESCRIPTION
 
   AthenaPreparedStatementDescription:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: athena-prepared-statement-description
@@ -585,7 +585,7 @@ Resources:
           SourceIdentifier: ATHENA_PREPARED_STATEMENT_DESCRIPTION
 
   AthenaWorkgroupDescription:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: athena-workgroup-description
@@ -594,7 +594,7 @@ Resources:
           SourceIdentifier: ATHENA_WORKGROUP_DESCRIPTION
 
   AthenaWorkgroupEnforceWorkgroupConfiguration:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: athena-workgroup-enforce-workgroup-configuration
@@ -603,7 +603,7 @@ Resources:
           SourceIdentifier: ATHENA_WORKGROUP_ENFORCE_WORKGROUP_CONFIGURATION
 
   AthenaWorkgroupEngineVersionAutoUpgrade:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: athena-workgroup-engine-version-auto-upgrade
@@ -708,7 +708,7 @@ Resources:
           SourceIdentifier: RDS_CLUSTER_DELETION_PROTECTION_ENABLED
 
   RDSClusterEncryptedAtRest:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: rds-cluster-encrypted-at-rest
@@ -733,7 +733,7 @@ Resources:
           SourceIdentifier: RDS_CLUSTER_MULTI_AZ_ENABLED
 
   RDSDBSecurityGroupNotAllowed:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: rds-db-security-group-not-allowed
@@ -830,7 +830,7 @@ Resources:
           SourceIdentifier: RDS_LAST_BACKUP_RECOVERY_POINT_CREATED
 
   RDSClusterDefaultAdminCheck:
-    Condition: CommercialPartition
+      Condition: CommercialPartition
       Type: AWS::Config::ConfigRule
       Properties:
         ConfigRuleName: rds-cluster-default-admin-check
@@ -853,3 +853,9 @@ Resources:
         Source:
           Owner: AWS
           SourceIdentifier: RDS_RESOURCES_PROTECTED_BY_BACKUP_PLAN
+
+Conditions:
+  CommercialPartition:
+    Fn::Equals:
+      - Ref: AWS::Partition
+      - aws
