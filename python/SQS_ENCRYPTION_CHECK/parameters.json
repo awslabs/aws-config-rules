@@ -1,12 +1,12 @@
 {
-  "Version": "1.0",
+  "Version": "2.0",
   "Parameters": {
     "RuleName": "SQS_ENCRYPTION_CHECK",
     "SourceRuntime": "python3.7",
     "CodeKey": "SQS_ENCRYPTION_CHECK.zip",
-    "InputParameters": "{\"QueueNameStartsWith\":\"cookin, servefo\"}",
+    "InputParameters": "{\"ExemptedQueueNames\":\".*(dev).*, exempted-queue\"}",
     "OptionalParameters": "{}",
-    "SourcePeriodic": "Three_Hours"
+    "SourcePeriodic": "TwentyFour_Hours"
   },
   "Tags": "[]"
 }
