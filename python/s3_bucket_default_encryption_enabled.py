@@ -133,7 +133,7 @@ def lambda_handler(event, context):
     # Check for oversized item
     if "configurationItem" in invoking_event:
         configuration_item = invoking_event["configurationItem"]
-    elif "configurationItemSummary" in invokingEvent:
+    elif "configurationItemSummary" in invoking_event:
         configuration_item = invoking_event["configurationItemSummary"]
 
     # Optional parameters
