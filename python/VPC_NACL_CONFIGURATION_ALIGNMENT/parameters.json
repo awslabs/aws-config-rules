@@ -1,0 +1,12 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "VPC_NACL_CONFIGURATION_ALIGNMENT.py",
+    "SourceRuntime": "python3.7",
+    "CodeKey": "VPC_NACL_CONFIGURATION_ALIGNMENT.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourcePeriodic": "One_Hour"
+  },
+  "Tags": "[]"
+}
