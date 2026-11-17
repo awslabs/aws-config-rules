@@ -1,0 +1,15 @@
+{
+    "Version": "1.0", 
+    "Parameters": {
+      "CodeKey": "IAM_TEST_ACTIONS.zip", 
+      "SourceRuntime": "python3.7", 
+      "RuleName": "IAM_TEST_ACTIONS", 
+      "OptionalParameters": "{permittedRoleNames,resourceArns}", 
+      "InputParameters": "{actions}",
+      "SourceEvents": "AWS::IAM::Role",
+      "RuleSets": [
+        "iam"
+      ]
+    }, 
+    "Tags": "[]"
+  }
