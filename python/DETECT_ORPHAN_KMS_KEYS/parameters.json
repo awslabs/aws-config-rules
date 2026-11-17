@@ -1,0 +1,11 @@
+{
+  "Version": "1.0", 
+  "Parameters": {
+    "CodeKey": "DETECT_ORPHAN_KMS_KEYS.zip", 
+    "SourceRuntime": "python3.6", 
+    "RuleName": "DETECT_ORPHAN_KMS_KEYS", 
+    "SourceEvents": "AWS::KMS::Key", 
+    "OptionalParameters": "{}", 
+    "InputParameters": "{}"
+  }
+}
