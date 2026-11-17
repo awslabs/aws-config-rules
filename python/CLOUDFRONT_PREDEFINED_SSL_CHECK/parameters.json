@@ -1,0 +1,17 @@
+{
+  "Version": "1.0",
+  "Parameters": {
+    "RuleName": "CLOUDFRONT_PREDEFINED_SSL_CHECK",
+    "SourceRuntime": "python3.6",
+    "CodeKey": "CLOUDFRONT_PREDEFINED_SSL_CHECK.zip",
+    "InputParameters": "{}",
+    "OptionalParameters": "{}",
+    "SourceEvents": "AWS::CloudFront::Distribution",
+    "RuleSets": [
+      "rulecriticity:high",
+      "pci",
+      "pci:4.1",
+      "cloudfront"
+    ]
+  }
+}
